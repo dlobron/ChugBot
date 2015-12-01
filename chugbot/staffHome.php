@@ -73,6 +73,6 @@
     echo footerText();
 ?>
 </div>
-<img id="bottom" src="meta/bottom.png" alt="">
+<img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>

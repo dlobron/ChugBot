@@ -143,7 +143,7 @@
     echo $dbErr;
     ?>
 
-<img id="top" src="meta/top.png" alt="">
+<img id="top" src="images/top.png" alt="">
 <div id="form_container">
 
 <h1><a>Edit Camper Info</a></h1>
@@ -253,6 +253,6 @@ HERE;
     ?>
 </div>
 </div>
-<img id="bottom" src="meta/bottom.png" alt="">
+<img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>
