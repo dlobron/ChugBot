@@ -1,5 +1,5 @@
 # ChugBot
-A website that assigns campers to activities using a modified version of the stable marriage algorithm.
+A website that assigns campers to activities using a modified version of the stable marriage problem.
 
 ChugBot is a PHP/MySQL Web application.  It's designed for use by my kids' summer camp.  The camp staff uses the administrative pages to
 add activities for the upcoming summer sessions.  Activities are divided into groups, and groups are assigned in 2-week blocks.  Each 
@@ -15,3 +15,5 @@ who got a less-good assignment on a previous round.  The goal is to do an optima
 
 Since the bot cannot know all the details of each camper and activity, the camp staff have the ability to override the assignment.  In
 fact, the assignment should be treated as a "suggestion," which the camp staff will refine.
+
+
