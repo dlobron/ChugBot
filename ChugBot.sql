@@ -1,9 +1,6 @@
-# To run the database, start MAMP.
-# To admin, use the PHPMyAdmin page, or connect to the database: 
-# /Applications/MAMP/Library/bin/mysql --host=localhost -u root -proot
 # To load this file:
-# source /Users/dlobron/fp_dev/sandbox/personal/chugBot/ChugBot.sql
-# SQL to create our database and tables:
+# source <path-to-file>
+# Remember to remove test data from the end of this file before loading for production use.
 
 CREATE DATABASE IF NOT EXISTS chugbot_db COLLATE utf8_unicode_ci;
 USE chugbot_db;
