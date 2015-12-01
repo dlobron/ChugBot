@@ -18,7 +18,7 @@ please follow these instructions:
 2. Copy the contents of the "chugbot" directory to the root of where you want the website to run.  For example, if your webserver
 root is /home/web/htdocs (assuming a Unix-like directory structure), and you want this application to appear in a browser as mycamp.org/chugbot/, you would copy these files to /home/web/htdocs/chugbot/.
 
-That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: the identify themselves by an email address.  This design favors ease of use over high security, since activity preferences are assumed not to be high-security data.  
+That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: they identify themselves by an email address.  This design favors ease of use over high security, since activity preferences are assumed not to be high-security data.  
 
 The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which means "circle" or "camp activity group." Some of the terms in the application are also transliterated Hebrew (our kids attend a Jewish summer camp).  Feel free to change these for your camp, or keep them as-is.  A quick glossary of terms:
 
