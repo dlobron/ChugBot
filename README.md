@@ -16,4 +16,22 @@ who got a less-good assignment on a previous round.  The goal is to do an optima
 Since the bot cannot know all the details of each camper and activity, the camp staff have the ability to override the assignment.  In
 fact, the assignment should be treated as a "suggestion," which the camp staff will refine.
 
+The application assumes that you have PHP installed in your webserver, and that you have access to a MySQL database.  To set things up,
+please follow these instructions:
 
+1. Enter the MySQL command line as root, and run "source ChugBot.sql".  Note that currently there is some sample data there - you should
+remove this with a text editor before loading it.
+
+2. Copy the contents of the "chugbot" directory to the root of where you want the website to run.  For example, if your webserver
+root is /home/web/htdocs (assuming a Unix-like directory structure), and you want this application to appear in a browser as mycamp.org/chugbot/, 
+you would copy these files to /home/web/htdocs/chugot/.
+
+The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which means "circle" or "camp activity group." Some of the terms in
+the application are also transliterated Hebrew (our kids attend a Jewish summer camp).  Feel free to change these for your camp, or keep 
+them as-is.  A quick glossary of terms:
+
+- chug ("HOOG"): An individual activity.
+- edah ("A-DAH"): An age group of campers.
+- group: A group of activities.
+- session: A session for which campers can register, such as July or August.
+- block: A time block within a session, such as July 1 or August 2.  This is the unit within which the bot does camper/chug assignment.
