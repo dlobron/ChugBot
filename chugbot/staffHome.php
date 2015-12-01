@@ -49,23 +49,23 @@
 </div>
 
 <div id="multi_form_container">
-<?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
+<?php echo genPickListForm($edahId2Name, "edah", "yes", "edot"); ?>
 </div>
 
 <div id="multi_form_container">
-<?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
+<?php echo genPickListForm($sessionId2Name, "session", "yes", "sessions"); ?>
 </div>
 
 <div id="multi_form_container">
-<?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
+<?php echo genPickListForm($blockId2Name, "block", "yes", "blocks"); ?>
 </div>
 
 <div id="multi_form_container">
-<?php echo genPickListForm($groupId2Name, "group", "groups"); ?>
+<?php echo genPickListForm($groupId2Name, "group", "yes", "groups"); ?>
 </div>
 
 <div id="multi_form_container">
-<?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
+<?php echo genPickListForm($chugId2Name, "chug", "yes", "chugim"); ?>
 </div>
 
 <div id="footer">

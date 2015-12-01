@@ -40,7 +40,7 @@
                 }
                 mysqli_free_result($result);
             }
-            $homeAnchor = homeAnchor();
+            $homeAnchor = staffHomeAnchor();
             $addAnother = urlBaseText() . "/addGroup.php";
             if (empty($group_id)) {
                 $dbErr = dbErrorString($sql, "Failed to add/update group $name: could not find in database.");

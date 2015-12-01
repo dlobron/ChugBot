@@ -23,22 +23,40 @@
     fillId2Name($mysqli, $groupId2Name, $dbErr,
                 "group_id", "groups");
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        if ((! empty($_POST["fromHome"])) ||
+            (! empty($_POST["fromStaffHomePage"]))) {
+            $fromHome = TRUE;
+        }
         $chug_id = test_input($_POST["chug_id"]);
+        $name = test_input($_POST["name"]);
         $chugIdNum = -1;
         if (empty($chug_id)) {
-            $chugIdErr = errorString("The edit page requires a chug ID");
-        } else {
+            if ($fromHome && (! empty($name))) {
+                // If we're coming from the staff home page, we might have a
+                // name instead of an ID.  In this case, translate the name to
+                // an ID (names are guaranteed unique by the database).
+                $sql = "SELECT chug_id from chugim where name=\"$name\"";
+                $result = $mysqli->query($sql);
+                if ($result == FALSE) {
+                    $dbErr = dbErrorString($sql, $mysqli->error);
+                } else if ($result->num_rows != 1) {
+                    $chugIdErr = errorString("chug name $name not found");
+                } else {
+                    $row = $result->fetch_array(MYSQLI_NUM);
+                    $chug_id = $row[0];
+                }
+            } else {
+                $chugIdErr = errorString("The edit page requires a chug ID");
+            }
+        }
+        if (! empty($chug_id)) {
             $chugIdNum = intval($chug_id);
         }
         $maxSizeNum = MAX_SIZE_NUM; // Default "no max" value.
         $minSizeNum = MIN_SIZE_NUM; // Default "no min" value.
-        $name = test_input($_POST["name"]);
         $group_id = test_input($_POST["group_id"]);
         $max_size = test_input($_POST["max_size"]);
         $min_size = test_input($_POST["min_size"]);
-        if (! empty($_POST["fromHome"])) {
-            $fromHome = TRUE;
-        }
         if (! empty($_POST["fromAddPage"])) {
             $fromAddPage = TRUE;
         }
@@ -63,7 +81,7 @@
             if ($result == FALSE) {
                 $dbErr = dbErrorString($sql, $mysqli->error);
             } else if ($result->num_rows != 1) {
-                $chugIdErr = errorString("chug ID $chug_id not found");
+                $chugIdErr = errorString("chug ID $chugIdNum not found");
             } else {
                 $row = $result->fetch_array(MYSQLI_NUM);
                 $name = $row[0];
@@ -114,7 +132,7 @@
             empty($minMaxErr) && empty($chugIdErr)) {
             $groupIdNum = intval($group_id);
             
-            $homeAnchor = homeAnchor();
+            $homeAnchor = staffHomeAnchor();
         
             if ($submitData == TRUE) {
                 // Update this chug in the chugim table.

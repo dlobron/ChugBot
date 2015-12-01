@@ -11,7 +11,7 @@
     $mysqli = connect_db();
     
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if (isset($_POST["from_staff_home_page"])) {
+        if (isset($_POST["fromStaffHomePage"])) {
             $fromStaffHomePage = TRUE;
             $_POST["name"] = ""; // Unset the name, in case it was selected in the drop-down.
         }

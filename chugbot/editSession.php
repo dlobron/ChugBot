@@ -41,7 +41,7 @@
             }
             
             $mysqli = connect_db();
-            $homeAnchor = homeAnchor();
+            $homeAnchor = staffHomeAnchor();
             $addAnother = urlBaseText() . "/addSession.php";
             if (session_id == -1) {
                 $errStr = errorString("Failed to add/update session");

@@ -44,7 +44,7 @@
         }
     }
     
-    function genPickListForm(&$id2Name, $name, $plural = "") {
+    function genPickListForm(&$id2Name, $name, $staffHome, $plural = "") {
         if (empty($plural)) {
             $plural = $name . "s";
         }
@@ -72,7 +72,7 @@ EOM;
         $formEnd = <<<EOM
 </select>
 <p class="guidelines"><small>Select $article $ucName from the drop-down list and click Edit, or click Add to add a new $ucName.</small></p>
-<input type="hidden" name="from_staff_home_page" id="from_staff_home_page" value="1" />
+<input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="$staffHome" />
 <input class="button_text" type="submit" name="submit" value="Edit $ucName" formaction="$editUrl"/>
 </li>
 <li>
