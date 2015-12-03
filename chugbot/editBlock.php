@@ -114,7 +114,7 @@
 </head>
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr, $nameErr));
+    $errText = genFatalErrorReport(array($dbErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();

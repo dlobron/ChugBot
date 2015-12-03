@@ -40,7 +40,7 @@
                 if ($result == FALSE) {
                     $dbErr = dbErrorString($sql, $mysqli->error);
                 } else if ($result->num_rows != 1) {
-                    $chugIdErr = errorString("chug name $name not found");
+                    $chugIdErr = dbErrorString($sql, "chug name $name not found in database");
                 } else {
                     $row = $result->fetch_array(MYSQLI_NUM);
                     $chug_id = $row[0];
@@ -188,7 +188,7 @@
 <body id="main_body" >
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr, $chugIdErr, $groupIdErr, $nameErr, $minMaxErr));
+    $errText = genFatalErrorReport(array($dbErr, $chugIdErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();
@@ -224,7 +224,6 @@
     echo genPickList($groupId2Name, $group_id, "group");
     ?>
 </select>
-<span class="error"><?php echo $groupErr;?></span>
 </div><p class="guidelines" id="guide_2"><small>Please assign this chug to a group.</small></p>
 <span class="error"><?php echo $groupIdErr;?></span>
 </li>
