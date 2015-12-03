@@ -35,14 +35,18 @@
 </head>
 
 <?php
-    echo $dbErr;
+    $errText = genFatalErrorReport(array($dbErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
     ?>
 
 <body id="main_body" >
 
 <div id="centered_container">
 <h1>Admin Home</a></h1>
-<h2>Camp Admin Control Panel</h2>
+<h2>Camp Staff Control Panel</h2>
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
 <p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>
 <p>Please hover your mouse over a menu for further help.<p>

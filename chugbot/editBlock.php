@@ -114,8 +114,13 @@
 </head>
 
 <?php
-    echo $dbErr;
-    echo $nameErr;
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
+    ?>
+<?php
     echo $addedStr;
     ?>
 

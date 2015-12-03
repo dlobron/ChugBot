@@ -2,7 +2,14 @@
 # source <path-to-file>
 # Remember to remove test data from the end of this file before loading for production use.
 
+# Create the database
 CREATE DATABASE IF NOT EXISTS chugbot_db COLLATE utf8_unicode_ci;
+
+# Create a user for the chugbot program (if it does not already exist), and
+# grant the access it needs.
+GRANT INSERT,SELECT,UPDATE,DELETE ON chugbot_db.* TO 'chugbot'@'localhost' IDENTIFIED BY 'chugbot';
+
+# Switch to the new database, in preparation for creating tables.
 USE chugbot_db;
 
 # Create a table to hold admin data.
@@ -38,7 +45,7 @@ block_id int NOT NULL,
 FOREIGN KEY fk_block_id(block_id) REFERENCES blocks(block_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-session_id int NOT NULL,
+session_id int,
 FOREIGN KEY fk_session_id(session_id) REFERENCES sessions(session_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
@@ -57,13 +64,13 @@ COLLATE utf8_unicode_ci;
 # a session.
 CREATE TABLE campers(
 camper_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-edah_id int NOT NULL,
+edah_id int,
 FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
-ON DELETE RESTRICT
+ON DELETE SET NULL
 ON UPDATE CASCADE,
-session_id int NOT NULL,
+session_id int,
 FOREIGN KEY fk_session_id(session_id) REFERENCES sessions(session_id)
-ON DELETE CASCADE
+ON DELETE SET NULL
 ON UPDATE CASCADE,
 first varchar(50) NOT NULL,
 last varchar(50) NOT NULL,
@@ -76,7 +83,8 @@ COLLATE utf8_unicode_ci;
 # For example, swimming might be in group aleph.
 CREATE TABLE groups(
 group_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-name varchar(50) NOT NULL) # aleph, bet, or gimel
+name varchar(50) NOT NULL, # aleph, bet, or gimel
+UNIQUE KEY uk_groups(name))
 COLLATE utf8_unicode_ci;
 
 # This table holds data on each chug.  Each chug belongs to exactly one group (aleph, bet, or gimel), and
@@ -86,9 +94,9 @@ COLLATE utf8_unicode_ci;
 # The "active" bit indicates that this chug is active for the current summer.
 CREATE TABLE chugim(
 name varchar(50) NOT NULL,
-group_id int NOT NULL,
+group_id int,
 FOREIGN KEY fk_group(group_id) REFERENCES groups(group_id)
-ON DELETE RESTRICT
+ON DELETE SET NULL
 ON UPDATE CASCADE,
 max_size int NULL,
 min_size int NULL,
@@ -131,27 +139,27 @@ ON DELETE CASCADE
 ON UPDATE CASCADE,
 first_choice_id int,
 FOREIGN KEY fk_first_choice_id(first_choice_id) REFERENCES chugim(chug_id)
-ON DELETE RESTRICT
+ON DELETE SET NULL
 ON UPDATE CASCADE,
 second_choice_id int,
 FOREIGN KEY fk_second_choice_id(second_choice_id) REFERENCES chugim(chug_id)
-ON DELETE RESTRICT
+ON DELETE SET NULL
 ON UPDATE CASCADE,
 third_choice_id int,
 FOREIGN KEY fk_third_choice_id(third_choice_id) REFERENCES chugim(chug_id)
-ON DELETE RESTRICT
+ON DELETE SET NULL
 ON UPDATE CASCADE,
 fourth_choice_id int,
 FOREIGN KEY fk_fourth_choice_id(fourth_choice_id) REFERENCES chugim(chug_id)
-ON DELETE RESTRICT
+ON DELETE SET NULL
 ON UPDATE CASCADE,
 fifth_choice_id int,
 FOREIGN KEY fk_fifth_choice_id(fifth_choice_id) REFERENCES chugim(chug_id)
-ON DELETE RESTRICT
+ON DELETE SET NULL
 ON UPDATE CASCADE,
 sixth_choice_id int,
 FOREIGN KEY fk_sixth_choice_id(sixth_choice_id) REFERENCES chugim(chug_id)
-ON DELETE RESTRICT
+ON DELETE SET NULL
 ON UPDATE CASCADE,
 PRIMARY KEY(camper_id, group_id, block_id))
 COLLATE utf8_unicode_ci;
@@ -194,3 +202,7 @@ INSERT INTO edot (name) VALUES ("Solelim");
 INSERT INTO groups (name) VALUES ("aleph");
 INSERT INTO groups (name) VALUES ("bet");
 INSERT INTO groups (name) VALUES ("gimel");
+
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (1, 1, "Elena", "TheGreat", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 2, "Robin", "EconomistGirl", "dlobron@gmail.com");
+

@@ -43,8 +43,11 @@
 <script type="text/javascript" src="meta/view.js"></script>
 
 <?php
-    echo $nameErr;
-    echo $dbErr;
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
     ?>
 
 </head>

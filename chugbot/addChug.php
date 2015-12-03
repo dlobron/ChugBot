@@ -111,7 +111,11 @@
 <body id="main_body" >
 
 <?php
-    echo "$dbErr";
+    $errText = genFatalErrorReport(array($dbErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
     ?>
 
 <img id="top" src="images/top.png" alt="">

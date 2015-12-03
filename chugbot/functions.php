@@ -2,6 +2,35 @@
     define("MAX_SIZE_NUM", 10000);
     define("MIN_SIZE_NUM", -1);
     
+    function genFatalErrorReport($errorList) {
+        $errorHtml = "";
+        $ec = 0;
+        foreach ($errorList as $errorText) {
+            if (empty($errorText)) {
+                continue;
+            }
+            $errorHtml = $errorHtml . $errorText;
+            $ec = $ec + 1;
+        }
+        $desc = "Errors";
+        if ($ec == 0) {
+            return NULL;
+        } else if ($ec == 1) {
+            $desc = "An error";
+        }
+        $retVal = <<<EOM
+<div id="error_box">
+<h3>Oops!  $desc occurred:</h3>
+EOM;
+        $retVal = $retVal . $errorHtml . "</div>";
+        $retVal = $retVal . "<p>Please hit \"Back\" and try again, or report the error to an administrator if it persists.</p>";
+        $retVal = $retVal . "<div id=\"footer\">";
+        $retVal = $retVal . footerText();
+        $retVal = $retVal . "</div><img id=\"bottom\" src=\"images/bottom.png\" alt=\"\"></body></html>";
+        
+        return $retVal;
+    }
+    
     function populateActiveInstances(&$mysqli,
                                      &$activeIdMap,
                                      &$dbErr,
@@ -53,6 +82,7 @@
         $formName = "form_" . $name;
         $editUrl = urlIfy("edit" . $ucName . ".php");
         $addUrl = urlIfy("add" . $ucName . ".php");
+        $deleteUrl = urlIfy("delete.php");
         $article = "a";
         if (preg_match('/^[aeiou]/i', $name)) {
             $article = "an";
@@ -67,13 +97,15 @@
 <option value="" disabled=disabled selected>---</option>
 EOM;
         foreach ($id2Name as $itemId => $itemName) {
-            $retVal  = $retVal . "<option value=\"$itemName\">$itemName</option>";
+            $csVal = "$itemName,$plural"; # Table name is plural.
+            $retVal  = $retVal . "<option value=\"$csVal\">$itemName</option>";
         }
         $formEnd = <<<EOM
 </select>
 <p class="guidelines"><small>Select $article $ucName from the drop-down list and click Edit, or click Add to add a new $ucName.</small></p>
 <input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="$staffHome" />
-<input class="button_text" type="submit" name="submit" value="Edit $ucName" formaction="$editUrl"/>
+<input class="button_text" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
+<input class="button_text" type="submit" name="submit" value="Delete" onclick="return confirm('Are you sure you wish to delete this $ucName?  Click OK to confirm deletion, or else Cancel.')" formaction="$deleteUrl"/>
 </li>
 <li>
 </form>
@@ -130,15 +162,31 @@ EOM;
         mysqli_free_result($result);
     }
     
-    function test_input($data) {
+    function test_input($data, $nosplit = FALSE) {
         if (empty($data)) {
             return $data;
+        }
+        
+        // If the data is comma-separated, use only the first value, unless $nosplit
+        // is set.
+        if (! $nosplit) {
+            $arr = explode(',', $data);
+            $data = $arr[0];
         }
         
         $data = trim($data);
         $data = stripslashes($data);
         $data = htmlspecialchars($data);
         return $data;
+    }
+    
+    function csv_input($data) {
+        $tested = test_input($data, TRUE); // Test, but don't split yet.
+        if (empty($tested)) {
+            return array();
+        }
+        
+        return explode(',', $tested);
     }
     
     function urlBaseText() {
@@ -229,7 +277,7 @@ EOM;
     }
     
     function errorString($data) {
-        return "<font color=\"red\">* $data</font>";
+        return "<font color=\"red\">* $data</font><br>";
     }
     
     function dbErrorString($sql, $data) {
@@ -241,7 +289,7 @@ EOM;
         } else {
             $msg = "Database Error: $data";
         }
-        $retVal = "<font color=\"red\">$msg</font>";
+        $retVal = "<font color=\"red\">$msg</font><br>";
         $retVal = $retVal . "Error: " . $sql . "<br>";
 	return $retVal;
     }

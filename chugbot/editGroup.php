@@ -80,8 +80,13 @@
 </head>
 
 <?php
-    echo $nameErr;
-    echo $dbErr;
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
+    ?>
+<?php
     echo $addedStr;
     ?>
 

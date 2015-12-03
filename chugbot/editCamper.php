@@ -1,18 +1,6 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Edit Camper Info</title>
-<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
-<script type="text/javascript" src="meta/view.js"></script>
-
-</head>
-
 <?php
     session_start();
-    include 'functions.php';?>
-
-<?php
+    include 'functions.php';
 
     // Define variables and set to empty values.
     $edah_id = $session_id = $first = $last = $email = $needs_first_choice = $inactive = $camper_id = "";
@@ -137,10 +125,24 @@
     $mysqli->close();
 ?>
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit Camper Info</title>
+<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
+<script type="text/javascript" src="meta/view.js"></script>
+
+</head>
+
 <body id="main_body" >
 
 <?php
-    echo $dbErr;
+    $errText = genFatalErrorReport(array($dbErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
     ?>
 
 <img id="top" src="images/top.png" alt="">

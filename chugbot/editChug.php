@@ -188,11 +188,13 @@
 <body id="main_body" >
 
 <?php
-    echo "$dbErr";
-    echo "$chugIdErr";
-    echo "$groupIdErr";
-    echo "$nameErr";
-    echo "$minMaxErr";
+    $errText = genFatalErrorReport(array($dbErr, $chugIdErr, $groupIdErr, $nameErr, $minMaxErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
+    ?>
+<?php
     echo "$successMsg";
     ?>
 

@@ -7,6 +7,24 @@ body
 	text-align:center;
 }
 
+#error_box
+{
+	position: relative;
+        margin-top: 5px;
+        top: 1px;
+        background:#fff;
+        margin:0 auto;
+        text-align: left;
+        width:35%;
+        padding-bottom: 3px;
+        padding-left: 5px;
+        padding-right: 5px;
+        border: 2px solid red;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+}
+
 #centered_container
 {
 	position: relative;

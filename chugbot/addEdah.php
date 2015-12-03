@@ -49,8 +49,11 @@
 </head>
 
 <?php
-    echo $dbErr;
-    echo $nameErr;
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
     ?>
 
 <body id="main_body" >

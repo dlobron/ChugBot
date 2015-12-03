@@ -1,16 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Add Camper Page</title>
-<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
-<script type="text/javascript" src="meta/view.js"></script>
-
-</head>
-
-<?php include 'functions.php';?>
-
 <?php
+    include 'functions.php';
 
     // Define variables and set to empty values.
     $edah_id = $session_id = $first = $last = $email = "";
@@ -69,7 +59,7 @@
             
             $submitOk = $mysqli->query($sql);
             if ($submitOk == FALSE) {
-                echo(dbErrorString($sql, $mysqli->error));
+                $dbErr = dbErrorString($sql, $mysqli->error);
             } else {
                 $camper_id = strval($mysqli->insert_id);
                 $paramHash = array("camper_id" => $camper_id);
@@ -81,10 +71,23 @@
     $mysqli->close();
 ?>
 
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Add Camper Page</title>
+<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
+<script type="text/javascript" src="meta/view.js"></script>
+
+</head>
+
 <body id="main_body" >
 
 <?php
-    echo $dbErr;
+    $errText = genFatalErrorReport(array($dbErr));
+    if (! is_null($errText)) {
+        echo $errText;
+        exit();
+    }
     ?>
 
 <img id="top" src="images/top.png" alt="">
