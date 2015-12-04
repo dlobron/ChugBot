@@ -43,6 +43,11 @@ body
 	-webkit-border-radius: 10px;
 }
 
+#centered_container a {
+        text-decoration: none;
+        border-bottom: 1px dotted #999999;
+}
+
 #multi_form_container
 {
 	position: relative;
@@ -52,7 +57,7 @@ body
 	background:#fff;
 	margin:5 auto;
 	text-align:left;
-	width:35%;
+	width:45%;
 	padding-bottom: 1px;
 	border: 1px solid silver;
 	border-radius: 10px;

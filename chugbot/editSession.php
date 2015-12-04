@@ -85,7 +85,7 @@
     }
     ?>
 <?php
-    echo $addedMsg;
+    echo genSuccessMessage($addedMsg);
     ?>
 
 <body id="main_body" >

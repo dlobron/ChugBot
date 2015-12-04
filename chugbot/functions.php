@@ -1,8 +1,32 @@
 <?php
     include 'constants.php';
     
-    define("MAX_SIZE_NUM", 10000);
-    define("MIN_SIZE_NUM", -1);
+    function genSuccessMessage ($message) {
+        if (empty($message)) {
+            return "";
+        }
+        $retVal = "<div id=\"centered_container\">";
+        $retVal = $retVal . $message;
+        $retVal = $retVal . "</div>";
+        return $retVal;
+    }
+    
+    function getCamperRowForId(&$mysqli, $camper_id, &$dbErr, &$idErr) {
+        $camperIdNum = intval($camper_id);
+        $sql = "select * from campers where camper_id = $camperIdNum";
+        $retVal = array();
+        $result = $mysqli->query($sql);
+        if ($result == FALSE) {
+            $dbErr = dbErrorString($sql, $mysqli->error);
+        } else if ($result->num_rows != 1) {
+            $camperIdErr = errorString("camper ID $camper_id not found");
+        } else {
+            $retVal =  $result->fetch_array(MYSQLI_NUM);
+        }
+        mysqli_free_result($result);
+        
+        return $retVal;
+    }
     
     function genFatalErrorReport($errorList) {
         $errorHtml = "";
@@ -89,6 +113,10 @@ EOM;
         if (preg_match('/^[aeiou]/i', $name)) {
             $article = "an";
         }
+        $edahExtraText = "";
+        if ($name == "edah") {
+            $edahExtraText = " To view the campers in this $ucName, click the \"Campers\" button.";
+        }
         $retVal = <<<EOM
 <form id="$formName" class="appnitro" method="post">
 <div class="form_description">
@@ -104,14 +132,16 @@ EOM;
         }
         $formEnd = <<<EOM
 </select>
-<p class="guidelines"><small>To add or delete $article $ucName, choose from the drop-down list and click Edit or Delete.  Click Add to add a new $ucName.</small></p>
+<p class="guidelines"><small>To add or delete $article $ucName, choose from the drop-down list and click Edit or Delete.  Click Add to add a new $ucName. $edahExtraText</small></p>
 <input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
 <input class="button_text" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
-<input class="button_text" type="submit" name="submit" value="Delete" onclick="return confirm('Are you sure you wish to delete this $ucName?  Click OK to confirm deletion, or else Cancel.')" formaction="$deleteUrl"/>
+<input class="button_text" type="submit" name="submit" value="Delete" onclick="return confirm('Are you sure you want to delete this $ucName?')" formaction="$deleteUrl"/>
 EOM;
         $retVal = $retVal . $formEnd;
         if ($name == "edah") {
-        
+            $camperUrl = urlIfy("viewCampersByEdah.php");
+            $retVal =
+                $retVal . "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Campers\" formaction=\"$camperUrl\"/>";
         }
         $formEnd = <<<EOM
 </li>

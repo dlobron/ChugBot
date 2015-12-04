@@ -4,10 +4,12 @@
 
     // Define variables and set to empty values.
     $edah_id = $session_id = $first = $last = $email = $needs_first_choice = $inactive = $camper_id = "";
-    $edahErr = $sessionErr = $nameErr = $emailErr = $camperIdErr = $dbErr = "";
+    $edahErr = $sessionErr = $nameErr = $emailErr = $camperIdErr = $dbErr = $badCidErr = "";
+    $successMessage = "";
     $submitData = FALSE;
     $fromAddPage = FALSE;
     $fromHome = FALSE;
+    $fromViewCampers = FALSE;
     
     // Connect to the database.
     $mysqli = connect_db();
@@ -46,19 +48,11 @@
         if (empty($camper_id)) {
             $camperIdErr = errorString("The edit page requires a camper ID");
         }
-        // If we're coming from the add or home page, we get all parameters
-        // from the ID.
+        // If we're coming from a base page, we grab all parameters using the ID.
         if (($fromAddPage || $fromHome) &&
             empty($camperIdErr)) {
-            $camperIdNum = intval($camper_id);
-            $sql = "select * from campers where camper_id = $camperIdNum";
-            $result = $mysqli->query($sql);
-            if ($result == FALSE) {
-                $dbErr = dbErrorString($sql, $mysqli->error);
-            } else if ($result->num_rows != 1) {
-                $camperIdErr = errorString("camper ID $camper_id not found");
-            } else {
-                $row = $result->fetch_array(MYSQLI_NUM);
+            $row = getCamperRowForId($mysqli, $camper_id, $dbErr, $camperIdErr);
+            if (count($row) > 0) {
                 $edah_id = $row[1];
                 $session_id = $row[2];
                 $first = $row[3];
@@ -67,7 +61,6 @@
                 $needs_first_choice = $row[6];
                 $active = $row[7];
             }
-            mysqli_free_result($result);
         }
         // For required inputs, throw an error if not present.
         if (empty($edah_id)) {
@@ -114,11 +107,32 @@
                     echo(dbErrorString($sql, $mysqli->error));
                 } else {
                     // TODO: Add link back to admin home.
-                    echo("<h3>$first $last updated!  Please edit below if needed, or return $homeAnchor.</h3>");
+                    $successMessage = "<h3>$first $last updated!  Please edit below if needed, or return $homeAnchor.</h3>";
                 }
             } else if ($fromAddPage) {
-                echo "<h3>$first $last added successfully!  Please edit below if needed, or return $homeAnchor.</h3>";
+                $successMessage = "<h3>$first $last added successfully!  Please edit below if needed, or return $homeAnchor.</h3>";
             }
+        }
+    } else {
+        // If we did not get here by POST, we expect the camper ID to be in the
+        // query string.
+        $qs = $_SERVER['QUERY_STRING'];
+        $parts = explode("=", $qs);
+        if (count($parts) != 2) {
+            $badCidErr = errorString("Could not parse camper ID from query string $qs");
+        }
+        $camper_id = $parts[1];
+        $row = getCamperRowForId($mysqli, $camper_id, $dbErr, $badCidErr);
+        if (count($row) > 0) {
+            $edah_id = $row[1];
+            $session_id = $row[2];
+            $first = $row[3];
+            $last = $row[4];
+            $email = $row[5];
+            $needs_first_choice = $row[6];
+            $active = $row[7];
+        } else {
+            $badCidErr = errorString("No database entry for camper ID $camper_id");
         }
     }
     
@@ -138,11 +152,14 @@
 <body id="main_body" >
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $badCidErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();
     }
+    ?>
+<?php
+    echo genSuccessMessage($successMessage);
     ?>
 
 <img id="top" src="images/top.png" alt="">

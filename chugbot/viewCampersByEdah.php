@@ -13,14 +13,16 @@
             $nameErr = errorString("Edah name is required in order to find campers in edah.");
         }
         // Grab the camper IDs in this edah.
-        $sql = "SELECT c.camper_id camper_id, c.first first, c.last last FROM campers c, edot e " .
-        "WHERE c.edah_id = e.edah_id and e.name=\"$name\";
+        $sql = "SELECT c.camper_id camper_id, c.first first, c.last last FROM campers c, edot e WHERE c.edah_id = e.edah_id and e.name=\"$name\"";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $dbErr = dbErrorString($sql, $mysqli->error);
         } else {
-            while ($row = $result->fetch_array(MYSQLI_NUM)) {
-                $camperId2Name[$row[0]] = "$row[2], $row[1]";
+            while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+                $camperId = $row[0];
+                $last = $row[2];
+                $first = $row[1];
+                $camperId2Name[$camperId] = "$last, $first";
             }
         }
     }
@@ -32,7 +34,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Campers for $name</title>
+<title>Campers for <?php echo $name; ?></title>
 <link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
 <script type="text/javascript" src="meta/view.js"></script>
 
@@ -50,16 +52,17 @@
 
 <div id="centered_container">
 <h1>View Campers</a></h1>
-<h2>Campers for $name</h2>
-<p>This page lists the campers in edah $name who have entered preferences in this system.  To update
+<h2>Campers for <?php echo $name; ?></h2>
+<p>This page lists the <?php echo $name; ?> campers who have entered preferences in this system.  To update
 information or settings for a camper, click the camper's name.  To return to the staff admin
 page, please click <?php echo staffHomeAnchor(); ?>.</p>
 </div>
 
-<div id="text_container">
+<br><br>
+<div id="centered_container">
 <?php
     if (count($camperId2Name) == 0) {
-        echo "<h3>No campers were found in the system for edah $name</h3>";
+        echo "<h3>No $name campers were found in the system.</h3>";
     }
     arsort($camperId2Name);
     foreach ($camperId2Name as $camperId => $camperName) {

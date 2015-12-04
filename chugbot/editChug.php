@@ -195,7 +195,7 @@
     }
     ?>
 <?php
-    echo "$successMsg";
+    echo genSuccessMessage($successMsg);
     ?>
 
 <img id="top" src="images/top.png" alt="">
