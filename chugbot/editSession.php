@@ -113,6 +113,7 @@
 <li class="buttons">
 <input type="hidden" name="form_id" value="1063607" />
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<?php echo staffHomeAnchor("Cancel"); ?>
 </li>
 </ul>
 <input type="hidden" name="session_id" id="session_id" value="<?php echo $session_id;?>"/>

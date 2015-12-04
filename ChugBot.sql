@@ -206,3 +206,5 @@ INSERT INTO groups (name) VALUES ("gimel");
 INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (1, 1, "Elena", "TheGreat", "dlobron@gmail.com");
 INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 2, "Robin", "EconomistGirl", "dlobron@gmail.com");
 
+INSERT INTO chugim (name, group_id, max_size, min_size) VALUES ("Underwater Basket Weaving", 1, 5 10);
+INSERT INTO chugim (name, group_id, max_size, min_size)	VALUES ("Krav Maga", 1, 3 15);

@@ -60,6 +60,23 @@ body
     	-webkit-border-radius: 10px;
 }
 
+#text_container
+{
+	position: relative;
+	margin-top:5px;
+	left: 10px;
+	top: 5px;
+	background:#fff;
+	margin:5 auto;
+	text-align:left;
+	width:35%;
+	padding-bottom: 1px;
+	border: 1px solid silver;
+	border-radius: 10px;
+    	-moz-border-radius: 10px;
+    	-webkit-border-radius: 10px;
+}
+
 #form_container
 {
 	background:#fff;	

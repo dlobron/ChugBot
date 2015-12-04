@@ -1,4 +1,6 @@
 <?php
+    include 'constants.php';
+    
     define("MAX_SIZE_NUM", 10000);
     define("MIN_SIZE_NUM", -1);
     
@@ -73,7 +75,7 @@ EOM;
         }
     }
     
-    function genPickListForm(&$id2Name, $name, $staffHome, $plural = "") {
+    function genPickListForm(&$id2Name, $name, $plural = "") {
         if (empty($plural)) {
             $plural = $name . "s";
         }
@@ -102,10 +104,16 @@ EOM;
         }
         $formEnd = <<<EOM
 </select>
-<p class="guidelines"><small>Select $article $ucName from the drop-down list and click Edit, or click Add to add a new $ucName.</small></p>
-<input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="$staffHome" />
+<p class="guidelines"><small>To add or delete $article $ucName, choose from the drop-down list and click Edit or Delete.  Click Add to add a new $ucName.</small></p>
+<input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
 <input class="button_text" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
 <input class="button_text" type="submit" name="submit" value="Delete" onclick="return confirm('Are you sure you wish to delete this $ucName?  Click OK to confirm deletion, or else Cancel.')" formaction="$deleteUrl"/>
+EOM;
+        $retVal = $retVal . $formEnd;
+        if ($name == "edah") {
+        
+        }
+        $formEnd = <<<EOM
 </li>
 <li>
 </form>
@@ -205,14 +213,14 @@ EOM;
         return urlIfy("index.php");
     }
     
-    function homeAnchor() {
+    function homeAnchor($text = "home") {
         $homeUrl = homeUrl();
-        return "<a href=\"$homeUrl\">home</a>";
+        return "<a href=\"$homeUrl\">$text</a>";
     }
     
-    function staffHomeAnchor() {
+    function staffHomeAnchor($text = "home") {
         $homeUrl = urlIfy("staffHome.php");
-        return "<a href=\"$homeUrl\">home</a>";
+        return "<a href=\"$homeUrl\">$text</a>";
     }
     
     function loginRequiredMessage() {
@@ -295,7 +303,7 @@ EOM;
     }
     
     function connect_db() {
-        $mysqli = new mysqli("localhost", "chugbot", "chugbot", "chugbot_db");
+        $mysqli = new mysqli(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWD, MYSQL_DB);
         if (mysqli_connect_error()) {
             die('Connect Error: ('.mysqli_connect_errno().') '.mysqli_connect_error());
         }

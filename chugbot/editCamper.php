@@ -244,6 +244,7 @@ HERE;
 <input type="hidden" name="form_id" value="1063606" />
 
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<?php echo homeAnchor("Cancel"); ?>
 </li>
 </ul>
 <input type="hidden" id="camper_id" name="camper_id" value="<?php echo $camper_id;?>"/>

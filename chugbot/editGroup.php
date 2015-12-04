@@ -115,6 +115,7 @@
 <li class="buttons">
 <input type="hidden" name="form_id" value="1063612" />
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<?php echo staffHomeAnchor("Cancel"); ?>
 </li>
 </ul>
 <input type="hidden" name="group_id" id="group_id" value="<?php echo $group_id;?>"/>

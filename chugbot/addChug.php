@@ -179,6 +179,7 @@
 <input type="hidden" name="fromAddPage" id="fromAddPage" value="1" />
 
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<?php echo staffHomeAnchor("Cancel"); ?>
 </li>
 </ul>
 </form>

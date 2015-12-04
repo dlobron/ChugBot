@@ -165,6 +165,7 @@ block is associated with one or more sessions: for example, "July 1" might be as
 <input type="hidden" name="block_id" id="block_id" value="<?php echo $block_id;?>"/>
 <input type="hidden" name="submitData" id="submitData" value="1" />
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<?php echo staffHomeAnchor("Cancel"); ?>
 </li>
 </ul>
 </form>
