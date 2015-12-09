@@ -48,6 +48,14 @@ body
         border-bottom: 1px dotted #999999;
 }
 
+#centered_container ol {
+        font-size: 1.2em; 	
+}
+
+#centered_container li {
+        margin: 0 0 10px 0;
+}
+
 #multi_form_container
 {
 	position: relative;
@@ -808,7 +816,7 @@ color: #000;
 }
 
 .calendar thead .weekend { 
-color: #666;
+color: #777;
 }
 
 .calendar thead .hilite { 
@@ -841,7 +849,7 @@ color: #fbb;
 .calendar table .wn {
 padding: 2px 2px 2px 2px;
 border-right: 1px solid #000;
-background: #666;
+background: #777;
 }
 
 .calendar tbody .rowhilite td {
@@ -873,7 +881,7 @@ color: #222 !important;
 }
 
 .calendar tbody td.weekend { 
-color: #666;
+color: #777;
 }
 
 .calendar tbody td.today { 

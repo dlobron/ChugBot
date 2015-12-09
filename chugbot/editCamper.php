@@ -10,6 +10,7 @@
     $fromAddPage = FALSE;
     $fromHome = FALSE;
     $fromViewCampers = FALSE;
+    $submitAndContinue = FALSE;
     
     // Connect to the database.
     $mysqli = connect_db();
@@ -30,6 +31,9 @@
         }
         if (! empty($_POST["fromHome"])) {
             $fromHome = TRUE;
+        }
+        if (! empty($_POST["submitAndContinue"])) {
+            $submitAndContinue = TRUE;
         }
         $edah_id = test_input($_POST["edah_id"]);
         $session_id = test_input($_POST["session_id"]);
@@ -105,8 +109,15 @@
                 $submitOk = $mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     echo(dbErrorString($sql, $mysqli->error));
+                } else if ($submitAndContinue) {
+                    // We've submitted our data, and we now need to continue to the perference-ranking page.  We pass the
+                    // camper ID to that page.
+                    //$paramHash = array("camper_id" => $camper_id);
+                    //echo(genPassToEditPageForm("rankCamperChoices.php", $paramHash));                    
+		    $rankUrl = urlIfy("rankCamperChoices.html?cid=$camper_id");
+                    header("Location: $rankUrl");
+                    exit;
                 } else {
-                    // TODO: Add link back to admin home.
                     $successMessage = "<h3>$first $last updated!  Please edit below if needed, or return $homeAnchor.</h3>";
                 }
             } else if ($fromAddPage) {
@@ -169,7 +180,8 @@
 <form id="form_1063606" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <div class="form_description">
 <h2>Edit Camper Info</h2>
-<p>(<font color="red">*</font> = required field).</p>
+<p>Please edit your camper information below, and click Submit to update (<font color="red">*</font> = required field).  When
+you are finished editing, click Save and Continue to save your changes and proceed to the next page.</p>
 </div>
 <ul>
 
@@ -261,6 +273,7 @@ HERE;
 <input type="hidden" name="form_id" value="1063606" />
 
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<input id="saveAndContinue" class="button_text" type="submit" name="submitAndContinue" value="Submit & Continue" />
 <?php echo homeAnchor("Cancel"); ?>
 </li>
 </ul>

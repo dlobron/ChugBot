@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+  <meta charset="utf-8">
+  <title>Ordering Preferences</title>
+  <link rel="stylesheet"
+	href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="meta/view.css">  
+  <style>
+  #sortable1, #sortable2 {
+    border: 1px solid #eee;
+    width: 142px;
+    min-height: 210px;
+    list-style-type: none;
+    margin: 0;
+    padding: 5px 0 0 0;
+    float: left;
+    margin-right: 10px;
+    margin-left: 20px; 
+    margin-top: 30px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+  }
+  #sortable1 li, #sortable2 li {
+    margin: 0 5px 5px 5px;
+    padding: 5px;
+    font-size: 1.2em;
+    width: 120px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+  }
+  </style>
+  <script>
+  $(function() {
+    $( "#sortable1, #sortable2" ).sortable({
+      connectWith: ".connectedSortable"
+    }).disableSelection();
+  });
+  </script>
+  <script>
+  $(function() {
+    $( document ).tooltip();
+  });
+  </script>
+  <script>
+  function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g,
+    " "));
+  $( document ).ready(function() {
+     var camperId = getParameterByName('cid');
+     $.ajax({
+      url: 'ajax.php',
+      type: 'post',
+      data: {'rank_page_camper_id': camperId},
+      success: function(json) {
+         // Parse the JSON from the ajax page.  We expect an array
+         // of objects that map a block/group name to an array of
+         // chug names.
+         $.each(json, function(i, item) {
+
+         }
+      },
+      error: function(xhr, desc, err) {
+        console.log(xhr);
+        console.log("Details: " + desc + "\nError:" + err);
+      }
+    }); // end ajax call
+  
+
+}
+</head>
+<body>
+
+<div id="centered_container">
+<h2>Welcome to the Preference Page!</h2>
+<h3>How to Make Your Choices:</h3>
+<ol>
+<li>For each time period, choose up to six preferred Chugim, and drag them from the left
+  column to the right column.</li>
+<li>Use your mouse to drag the right column into order of preference, from top
+  to bottom.  For example, if your top three choices are Climbing (#1), Boating
+  (#2), and Cooking (#3), you would drag Climbing to the top, with Boating
+  under Climbing and Cooking under Boating.</li>
+<li>When you have arranged preferences for all your time periods, click Submit!</li>
+</ol>
+</div>
+ 
+<ul name="sortedSource1" id="sortable1" class="connectedSortable" title="Drag up to six chugim from here...">
+  <li value="1" class="ui-state-default">Item 1</li>
+  <li value="2" class="ui-state-default">Item 2</li>
+  <li value="3" class="ui-state-default">Item 3</li>
+  <li value="4" class="ui-state-default">Item 4</li>
+  <li value="5" class="ui-state-default">Item 5</li>
+  <li value="6" class="ui-state-default">Item 6</li>
+  <li value="7" class="ui-state-default">Item 7</li>
+  <li value="8" class="ui-state-default">Item 8</li>
+</ul>
+ 
+<ul name="sortedSource2" id="sortable2" class="connectedSortable" title="...to here. Then, sort your
+									 choices from top to bottom.">
+</ul>
+ 
+ 
+</body>
+</html>
