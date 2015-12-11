@@ -3,11 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
   <meta charset="utf-8">
-  <title>Ordering Preferences</title>
+  <title>Preference Page</title>
   <link rel="stylesheet"
-	href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+	href="jquery/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="jquery/jquery-1.11.3.js"></script>
+  <script src="jquery/ui/1.11.4/jquery-ui.js"></script>
+  <script src="meta/ajax.js"></script>
   <link rel="stylesheet" href="meta/view.css">  
   <style>
   #sortable1, #sortable2 {
@@ -36,46 +37,22 @@
   }
   </style>
   <script>
-  $(function() {
+  $(document).ready(function() {
     $( "#sortable1, #sortable2" ).sortable({
       connectWith: ".connectedSortable"
     }).disableSelection();
   });
-  </script>
-  <script>
   $(function() {
-    $( document ).tooltip();
+    $(document).tooltip();
   });
-  </script>
-  <script>
   function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g,
     " "));
-  $( document ).ready(function() {
-     var camperId = getParameterByName('cid');
-     $.ajax({
-      url: 'ajax.php',
-      type: 'post',
-      data: {'rank_page_camper_id': camperId},
-      success: function(json) {
-         // Parse the JSON from the ajax page.  We expect an array
-         // of objects that map a block/group name to an array of
-         // chug names.
-         $.each(json, function(i, item) {
-
-         }
-      },
-      error: function(xhr, desc, err) {
-        console.log(xhr);
-        console.log("Details: " + desc + "\nError:" + err);
-      }
-    }); // end ajax call
-  
-
-}
+  }
+  </script>
 </head>
 <body>
 
@@ -93,7 +70,15 @@
 </ol>
 </div>
  
-<ul name="sortedSource1" id="sortable1" class="connectedSortable" title="Drag up to six chugim from here...">
+<ul name="sortedSource1" id="sortable1" class="connectedSortable" title="Drag up
+									 to six chugim
+									 from
+									 left to
+									 right,
+									 then
+									 sort
+									 from
+									 top to bottom.">
   <li value="1" class="ui-state-default">Item 1</li>
   <li value="2" class="ui-state-default">Item 2</li>
   <li value="3" class="ui-state-default">Item 3</li>
@@ -104,8 +89,7 @@
   <li value="8" class="ui-state-default">Item 8</li>
 </ul>
  
-<ul name="sortedSource2" id="sortable2" class="connectedSortable" title="...to here. Then, sort your
-									 choices from top to bottom.">
+<ul name="sortedSource2" id="sortable2" class="connectedSortable">
 </ul>
  
  

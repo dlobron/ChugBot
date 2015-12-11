@@ -7,7 +7,7 @@ CREATE DATABASE IF NOT EXISTS chugbot_db COLLATE utf8_unicode_ci;
 
 # Create a user for the chugbot program (if it does not already exist), and
 # grant the access it needs.
-GRANT INSERT,SELECT,UPDATE,DELETE ON chugbot_db.* TO 'chugbot'@'localhost' IDENTIFIED BY 'chugbot';
+GRANT CREATE,INSERT,SELECT,UPDATE,DELETE ON chugbot_db.* TO 'chugbot'@'localhost' IDENTIFIED BY 'chugbot';
 
 # Switch to the new database, in preparation for creating tables.
 USE chugbot_db;
