@@ -296,15 +296,13 @@ EOM;
         $qs_from_post = test_input($_POST['query_string']);
         $qs_from_post = preg_replace("/&#?[a-z0-9]+;/i","", $qs_from_post);
         if (! empty($qs)) {
-            $parts = explode("=/", $qs);
+            $parts = explode("/", $qs);
         } else if (! empty($qs_from_post)) {
-            $parts = explode("=/", $qs_from_post);
+            $parts = explode("/", $qs_from_post);
         }
-        if (count($parts) == 2 &&
-            $parts[0] == "from") {
-            $url = urlBaseText() . $parts[1];
-        }
-            
+        $len = count($parts);
+        $url = urlBaseText() . $parts[$len - 1];
+        
         return $url;
     }
     

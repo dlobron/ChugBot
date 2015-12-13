@@ -23,20 +23,20 @@ $(function() {
 				  $.each(block2groupmap, function(groupname, chuglist) {
 					  var sourceName = baseName + (++sortedCounter).toString();
 					  var destName = baseName + (++sortedCounter).toString();
-					  html += "<div id=\"chug_choice_container\">";
-					  html += "<h3>" + blockname + " " + groupname + "</h3>";
+					  html += "<div id=\"chug_choice_container\">\n";
+					  html += "<h3>" + blockname + " " + groupname + "</h3>\n";
 					  html += "<ul name=\"" + sourceName + "\" id=\"sortable1\" class=\"connectedSortable\" ";
-					  html += "title=\"Drag up to six chugim from left to right, then sort from top to bottom in order of preference.\">";
+					  html += "title=\"Drag up to six chugim from left to right, then sort from top to bottom in order of preference.\">\n";
 					  $.each(chuglist, function(index, value) {
-						  html += "<li value=\"" + value + "\" class=\"ui-state-default\">" + value + "</li>";
+						  html += "<li value=\"" + value + "\" class=\"ui-state-default\">" + value + "</li>\n";
 					      });
 					  html += "</ul>";
-					  html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">";
-					  html += "</ul></div>";
+					  html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">\n";
+					  html += "</ul></div>\n";				  
 				      });
-				  html += "</body></html>";
-				  $("body").append(html);
 			      });
+		       html += "</body></html>";
+		       $("body").append(html);
 		},
 		    error: function(xhr, desc, err) {
 		       console.log(xhr);

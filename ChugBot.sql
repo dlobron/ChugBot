@@ -100,6 +100,7 @@ ON DELETE SET NULL
 ON UPDATE CASCADE,
 max_size int NULL,
 min_size int NULL,
+description varchar(2048),
 chug_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 UNIQUE KEY uk_chugim(name))
 COLLATE utf8_unicode_ci;
@@ -187,12 +188,15 @@ INSERT INTO sessions (name) VALUES ("July and August");
 INSERT INTO sessions (name) VALUES ("Mini Aleph");
 
 INSERT INTO blocks (name) VALUES ("July 1");
+INSERT INTO blocks (name) VALUES ("July 2");
 INSERT INTO blocks (name) VALUES ("August 2");
 
 INSERT INTO block_instances (block_id, session_id) VALUES (1, 1);
-INSERT INTO block_instances (block_id, session_id) VALUES (2, 2);
 INSERT INTO block_instances (block_id, session_id) VALUES (1, 3);
+INSERT INTO block_instances (block_id, session_id) VALUES (2, 1);
 INSERT INTO block_instances (block_id, session_id) VALUES (2, 3);
+INSERT INTO block_instances (block_id, session_id) VALUES (3, 2);
+INSERT INTO block_instances (block_id, session_id) VALUES (3, 3);
 
 INSERT INTO edot (name) VALUES ("Kochavim");
 INSERT INTO edot (name) VALUES ("Ilanot 1");
@@ -204,7 +208,7 @@ INSERT INTO groups (name) VALUES ("bet");
 INSERT INTO groups (name) VALUES ("gimel");
 
 INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (1, 1, "Elena", "TheGreat", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 2, "Robin", "EconomistGirl", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Robin", "EconomistGirl", "dlobron@gmail.com");
 
 # aleph chugim
 INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Swimming", 1, 5, 10);
@@ -230,3 +234,10 @@ INSERT INTO chug_instances(chug_id, block_id) VALUES (4, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (6, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (7, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (8, 2);
+
+INSERT INTO chug_instances(chug_id, block_id) VALUES (2, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (3, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (4, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (6, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (7, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (8, 3);

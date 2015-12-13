@@ -20,6 +20,7 @@
         "ci.chug_id = c.chug_id AND " .
         "c.group_id = g.group_id " .
         "ORDER BY blockname, groupname, chugname";
+        error_log("DBG: $sql");
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');

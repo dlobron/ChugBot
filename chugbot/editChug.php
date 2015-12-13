@@ -4,7 +4,7 @@
     bounceToLogin();
 
     // Define variables and set to empty values.
-    $chug_id = $name = $group_id = $max_size = $min_size = "";
+    $chug_id = $name = $group_id = $max_size = $min_size = $description = "";
     $chugIdErr = $nameErr = $groupIdErr = $dbErr = $minMaxErr = "";
     $activeBlockIds = array();
     $submitData = FALSE;
@@ -29,6 +29,7 @@
         }
         $chug_id = test_input($_POST["chug_id"]);
         $name = test_input($_POST["name"]);
+        
         $chugIdNum = -1;
         if (empty($chug_id)) {
             if ($fromHome && (! empty($name))) {
@@ -57,6 +58,7 @@
         $group_id = test_input($_POST["group_id"]);
         $max_size = test_input($_POST["max_size"]);
         $min_size = test_input($_POST["min_size"]);
+        $description = test_input($_POST["description"]);
         if (! empty($_POST["fromAddPage"])) {
             $fromAddPage = TRUE;
         }
@@ -88,6 +90,7 @@
                 $group_id = $row[1];
                 $max_size = $row[2];
                 $min_size = $row[3];
+                $description = $row[4];
                 // Reset min and max if they are set to the internal min and
                 // max, so we don't echo those values.
                 if (intval($max_size) == MAX_SIZE_NUM) {
@@ -138,7 +141,7 @@
                 // Update this chug in the chugim table.
                 $sql =
                 "UPDATE chugim SET name = \"$name\", group_id = $groupIdNum, max_size = $maxSizeNum, " .
-                "min_size = $minSizeNum WHERE chug_id = $chugIdNum";
+                "min_size = $minSizeNum, description = \"$description\" WHERE chug_id = $chugIdNum";
                 $submitOk = $mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $dbErr = dbErrorString($sql, $mysqli->error);
@@ -249,8 +252,15 @@
 <label class="description" for="name"> Max participants</label>
 <div>
 <input id="max_size" name="max_size" class="element text medium" type="text" maxlength="4" value="<?php echo $max_size;?>"/>
-</div><p class="guidelines" id="guide_4"><small>Enter the maximum number of campers allowed in this chug at a time (optional: default = no size limit)</small></p>
+</div><p class="guidelines" id="guide_5"><small>Enter the maximum number of campers allowed in this chug at a time (optional: default = no size limit)</small></p>
 <span class="error"><?php echo $minMaxErr;?></span>
+</li>
+
+<li id="li_6" >
+<label class="description" for="description"> Description</label>
+<div>
+<textarea id="description" name="description" class="element textarea medium" maxlength="2014" placeholder="Enter description here" ><?php echo $description;?></textarea>
+</div><p class="guidelines" id="guide_6"><small>Enter an optional description of this activity.</small></p>
 </li>
 
 <li class="buttons">

@@ -4,7 +4,7 @@
     bounceToLogin();
 
     // Define variables and set to empty values.
-    $name = $group_id = $max_size = $min_size = "";
+    $name = $group_id = $max_size = $min_size = $description = "";
     $nameErr = $groupIdErr = $dbErr = $minMaxErr = "";
     $fromHome = FALSE;
     $activeBlockIds = array();
@@ -26,6 +26,7 @@
         $group_id = test_input($_POST["group_id"]);
         $max_size = test_input($_POST["max_size"]);
         $min_size = test_input($_POST["min_size"]);
+        $description = test_input($_POST["description"]);
         if (! empty($_POST["fromHome"])) {
             $fromHome = TRUE;
         }
@@ -64,8 +65,8 @@
             // First, we insert the chug into the chugim table.  We then get
             // its ID, and update chug_instances.
             $sql =
-            "INSERT INTO chugim (name, group_id, max_size, min_size) " .
-            "VALUES (\"$name\", $groupIdNum, $maxSizeNum, $minSizeNum)";
+            "INSERT INTO chugim (name, group_id, max_size, min_size, description) " .
+            "VALUES (\"$name\", $groupIdNum, $maxSizeNum, $minSizeNum, \"$description\")";
             $submitOk = $mysqli->query($sql);
             if ($submitOk == FALSE) {
                 $dbErr = dbErrorString($sql, $mysqli->error);
@@ -170,8 +171,15 @@
 <label class="description" for="name"> Max participants</label>
 <div>
 <input id="max_size" name="max_size" class="element text medium" type="text" maxlength="4" value="<?php echo $max_size;?>"/>
-</div><p class="guidelines" id="guide_4"><small>Enter the maximum number of campers allowed in this chug at a time (optional: default = no size limit)</small></p>
+</div><p class="guidelines" id="guide_5"><small>Enter the maximum number of campers allowed in this chug at a time (optional: default = no size limit)</small></p>
 <span class="error"><?php echo $minMaxErr;?></span>
+</li>
+
+<li id="li_6" >
+<label class="description" for="description"> Description</label>
+<div>
+<textarea id="description" name="description" class="element textarea medium" maxlength="2014" placeholder="Enter description here" ><?php echo $description;?></textarea>
+</div><p class="guidelines" id="guide_6"><small>Enter an optional description of this activity.</small></p>
 </li>
 
 <li class="buttons">
