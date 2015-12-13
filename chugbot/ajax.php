@@ -20,7 +20,6 @@
         "ci.chug_id = c.chug_id AND " .
         "c.group_id = g.group_id " .
         "ORDER BY blockname, groupname, chugname";
-        error_log($sql);
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
@@ -44,7 +43,10 @@
             }
             array_push($dataToJson[$blockname][$groupname], $chugname);
         }
+
+        $dbgStr = json_encode($dataToJson);
         echo json_encode($dataToJson);
+        exit();
     }
 
 ?>

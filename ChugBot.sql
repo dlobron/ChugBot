@@ -206,8 +206,27 @@ INSERT INTO groups (name) VALUES ("gimel");
 INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (1, 1, "Elena", "TheGreat", "dlobron@gmail.com");
 INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 2, "Robin", "EconomistGirl", "dlobron@gmail.com");
 
+# aleph chugim
 INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Swimming", 1, 5, 10);
 INSERT INTO chugim (name, group_id, min_size, max_size)	VALUES ("Krav Maga", 1, 3, 15);
+INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Cooking", 1, 0, 0);
+INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Ropes", 1, 1, 5);
+# bet chugim
+INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Boating", 2, 5, 10);
+INSERT INTO chugim (name, group_id, min_size, max_size)	VALUES ("Outdoor Cooking", 2, 3, 15);
+INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Israeli Dance", 2, 0, 0);
+INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Canoeing", 2, 1, 5);
 
 INSERT INTO chug_instances(chug_id, block_id) VALUES (1, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (2, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (3, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (5, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (6, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (7, 1);
+
 INSERT INTO chug_instances(chug_id, block_id) VALUES (2, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (3, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (4, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (6, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (7, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (8, 2);
