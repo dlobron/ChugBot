@@ -4,6 +4,24 @@ $(function() {
 	$.ajax({
 		url: 'ajax.php',
 		    type: 'post',
+		    data:{camper_id_for_first_name: camperId},
+		    success: function(data) {
+		    var json = JSON.stringify(data);
+		    $( ".firstname" ).text(function() {
+			    if (data.name &&
+				data.name.length > 0) {
+				return $(this).text().replace("Ramahniks", data.name);
+			    }
+			});
+		},
+		    error: function(xhr, desc, err) {
+		       console.log(xhr);
+		       console.log("Details: " + desc + "\nError:" + err);
+		}
+	    });
+	$.ajax({
+		url: 'ajax.php',
+		    type: 'post',
 		    data: {rank_page_camper_id: camperId},
 		    success: function(json) {
 		       success = true; // Set a global
@@ -20,15 +38,22 @@ $(function() {
 		       var sortedCounter = 0;
 		       $.each(json, 
 			      function(blockname, block2groupmap) {
-				  $.each(block2groupmap, function(groupname, chuglist) {
+				  $.each(block2groupmap, function(groupname, chugName2DescList) {
 					  var sourceName = baseName + (++sortedCounter).toString();
 					  var destName = baseName + (++sortedCounter).toString();
 					  html += "<div id=\"chug_choice_container\">\n";
 					  html += "<h3>" + blockname + " " + groupname + "</h3>\n";
-					  html += "<ul name=\"" + sourceName + "\" id=\"sortable1\" class=\"connectedSortable\" ";
-					  html += "title=\"Drag up to six chugim from left to right, then sort from top to bottom in order of preference.\">\n";
-					  $.each(chuglist, function(index, value) {
-						  html += "<li value=\"" + value + "\" class=\"ui-state-default\">" + value + "</li>\n";
+					  html += "<ul name=\"" + sourceName + "\" id=\"sortable1\" class=\"connectedSortable\" >\n";
+					  $.each(chugName2DescList, function(index, chugName2Desc) {
+						  $.each(chugName2Desc, function(chugName, chugDesc) {
+							  var titleText = "";
+							  if (chugDesc) {
+							      // If we have a chug description, write it as a tool tip.
+							      titleText = "title=\"" + chugDesc + "\"";
+							  }
+							  html += "<li value=\"" + chugName + "\" class=\"ui-state-default\" " + 
+							      titleText + " >" + chugName + "</li>";
+						      });
 					      });
 					  html += "</ul>";
 					  html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">\n";

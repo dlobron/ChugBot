@@ -207,8 +207,8 @@ INSERT INTO groups (name) VALUES ("aleph");
 INSERT INTO groups (name) VALUES ("bet");
 INSERT INTO groups (name) VALUES ("gimel");
 
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (1, 1, "Elena", "TheGreat", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Robin", "EconomistGirl", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (1, 1, "Shira", "Lobron", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Gabriel", "Lobron", "dlobron@gmail.com");
 
 # aleph chugim
 INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Swimming", 1, 5, 10);
