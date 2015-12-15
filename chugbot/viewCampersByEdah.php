@@ -54,20 +54,26 @@
 <h1>View Campers</a></h1>
 <h2>Campers for <?php echo $name; ?></h2>
 <p>This page lists the <?php echo $name; ?> campers who have entered preferences in this system.  To update
-information or settings for a camper, click the camper's name.  To return to the staff admin
+information or settings for a camper, click the Edit button next to the camper's name.  To return to the staff admin
 page, please click <?php echo staffHomeAnchor(); ?>.</p>
 </div>
 
 <br><br>
-<div id="centered_container">
+<div id="multi_form_container">
 <?php
     if (count($camperId2Name) == 0) {
         echo "<h3>No $name campers were found in the system.</h3>";
-    }
-    arsort($camperId2Name);
-    foreach ($camperId2Name as $camperId => $camperName) {
-        $editUrl = urlIfy("editCamper.php?cid=$camperId");
-        echo "<a href=\"$editUrl\">$camperName</a><br>";
+    } else {
+        asort($camperId2Name);
+        $editUrl = urlIfy("editCamper.php");
+        foreach ($camperId2Name as $camperId => $camperName) {
+            $editUrl = urlIfy("editCamper.php");
+            echo "<form class=\"appnitro\" method=\"post\" action=\"$editUrl\">";
+            echo "<input type=hidden name=\"camper_id\" id=\"camper_id\" value=$camperId />";
+            echo "<input type=hidden name=\"fromHome\" id=\"fromHome\" value=1 />";
+            echo "<p>$camperName &nbsp; &nbsp; <input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit\" /></p>";
+            echo "</form>";
+        }
     }
     ?>
 </div>

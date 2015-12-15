@@ -110,11 +110,14 @@
                 if ($submitOk == FALSE) {
                     echo(dbErrorString($sql, $mysqli->error));
                 } else if ($submitAndContinue) {
-                    // We've submitted our data, and we now need to continue to the perference-ranking page.  We pass the
+                    // We've submitted our data, and we now need to continue to the preference-ranking page.  We pass the
                     // camper ID to that page.
                     //$paramHash = array("camper_id" => $camper_id);
                     //echo(genPassToEditPageForm("rankCamperChoices.php", $paramHash));                    
-		    $rankUrl = urlIfy("rankCamperChoices.html?cid=$camper_id");
+		    //$rankUrl = urlIfy("rankCamperChoices.html?cid=$camper_id");
+		    // Set the camper ID in the user's session, so JQuery can grab it via an Ajax call.
+		    $_SESSION["camper_id"] = $camper_id;
+		    $rankUrl = urlIfy("rankCamperChoices.html");
                     header("Location: $rankUrl");
                     exit;
                 } else {

@@ -9,6 +9,7 @@
     // a new one, and to enter an email address.  Password changes will be
     // handled by a separate page - it's too complicated to squeeze all the logic
     // into this page.
+    $resetUrl = urlBaseText() . "staffReset.php";
     $dbError = "";
     $existingPasswordHashed = "";
     $staffPasswordHashed = "";
@@ -94,7 +95,6 @@
                 // If they match, we set $_SESSION['admin_logged_in'] = TRUE;, and redirect
                 // to the admin home page.
                 if (! password_verify($staff_password, $existingPasswordHashed)) {
-                    $resetUrl = urlBaseText() . "staffReset.php";
                     $staffPasswordErr = errorString("Password does not match - please try again.") .
                     "<p>If you forgot the password, please click <a href=\"$resetUrl\">here</a> to reset it.</p>";
                     usleep(500000); // Sleep for 0.5 sec, to slow a dictionary attack.
@@ -143,7 +143,7 @@
         echo ("<p>Please create a staff password, and enter an email in case you need to reset or change the password.<br>");
         echo ("The password should be between 5 and 20 characters.</p>");
     } else {
-        echo ("<p>Please enter the staff admin password.</p>");
+        echo ("<p>Please enter the staff admin password.  To change the existing password, or if you forgot the password, please click <a href=\"$resetUrl\">here</a>.</p>");
     }
     echo loginRequiredMessage();
     echo "After logging in, you will be $redirText";

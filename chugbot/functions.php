@@ -115,7 +115,7 @@ EOM;
         }
         $edahExtraText = "";
         if ($name == "edah") {
-            $edahExtraText = " To view the campers in this $ucName, click the \"Campers\" button.";
+            $edahExtraText = " To view the campers in an edah, select an edah and click <font color=\"red\">\"Show Campers\"</font>.";
         }
         $retVal = <<<EOM
 <form id="$formName" class="appnitro" method="post">
@@ -141,7 +141,7 @@ EOM;
         if ($name == "edah") {
             $camperUrl = urlIfy("viewCampersByEdah.php");
             $retVal =
-                $retVal . "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Campers\" formaction=\"$camperUrl\"/>";
+                $retVal . "<input class=\"button_text\" style=\"color:red\" type=\"submit\" name=\"submit\" value=\"Show Campers\" formaction=\"$camperUrl\"/>";
         }
         $formEnd = <<<EOM
 </li>

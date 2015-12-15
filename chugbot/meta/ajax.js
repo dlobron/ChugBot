@@ -1,10 +1,9 @@
 var success = false;
 $(function() {
-	var camperId = getParameterByName('cid');
 	$.ajax({
 		url: 'ajax.php',
 		    type: 'post',
-		    data:{camper_id_for_first_name: camperId},
+		    data:{get_first_name: 1},
 		    success: function(data) {
 		    var json = JSON.stringify(data);
 		    $( ".firstname" ).text(function() {
@@ -22,7 +21,7 @@ $(function() {
 	$.ajax({
 		url: 'ajax.php',
 		    type: 'post',
-		    data: {rank_page_camper_id: camperId},
+		    data: {get_chug_info: 1},
 		    success: function(json) {
 		       success = true; // Set a global
 		       // Parse the JSON from the ajax page.  We expect a hash from block name
@@ -49,7 +48,7 @@ $(function() {
 							  var titleText = "";
 							  if (chugDesc) {
 							      // If we have a chug description, write it as a tool tip.
-							      titleText = "title=\"" + chugDesc + "\"";
+							      titleText = "title=\"" + chugName + ": " + chugDesc + "\"";
 							  }
 							  html += "<li value=\"" + chugName + "\" class=\"ui-state-default\" " + 
 							      titleText + " >" + chugName + "</li>";
