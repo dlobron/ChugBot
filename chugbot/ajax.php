@@ -2,13 +2,13 @@
     session_start();
     include 'functions.php';
     
-    // We'll return all our data as JSON.
+    // We'll return all our data as JSON.
     header('content-type: application/json; charset=UTF-8');
     
     // Get the first name for a camper ID.
     $mysqli = connect_db();
     if (isset($_POST["get_first_name"])) {
-        $camper_id = $_SESSION["camper_id"];
+        $camper_id = $_SESSION["camper_id"];
         $sql = "SELECT first from campers where camper_id = $camper_id";
         $result = $mysqli->query($sql);
         $nameMap = array();
@@ -26,7 +26,7 @@
     }
     
     if (isset($_POST["get_chug_info"])) {
-        $camper_id = $_SESSION["camper_id"];
+        $camper_id = $_SESSION["camper_id"];
         $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.description chugdesc " .
         "FROM " .
         "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g " .
@@ -41,7 +41,7 @@
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => "Database Failure")));
+            die(json_encode(array("error" => "Database Failure")));
         }
         // Create an associative array with the following key/val pairs:
         // blockname/GR, where GR is another associative array with these key/val pairs:
@@ -53,7 +53,7 @@
             $blockname = $row[0];
             $groupname = $row[1];
             $chugname = $row[2];
-            $chugdesc = $row[3]; // May be empty
+            $chugdesc = $row[3]; // May be empty
             if (! array_key_exists($blockname, $dataToJson)) {
                 $dataToJson[$blockname] = array();
             }
@@ -70,4 +70,4 @@
         exit();
     }
 
-?>
+?>
