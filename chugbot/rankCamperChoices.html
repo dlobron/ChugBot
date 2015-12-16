@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="meta/view.css">  
   <style>
     #sortable1, #sortable2 {
-    border: 1px solid #eee;
+    border: 2px dotted silver;
     width: 142px;
     min-height: 210px;
     list-style-type: none;
@@ -61,7 +61,14 @@
   column to the right column.  Hover over a Chug name to see a brief description.</li>
 <li>Use your mouse to drag the right column into order of preference, from top
   to bottom.</li>
-<li>When you have arranged preferences for all your time periods, click Submit!</li>
+<li>When you have arranged preferences for all your time periods, click the
+  <font color="red">Submit</font> button.</li>
 </ol>
+<form>
+<input type="submit" name="SubmitPrefs" id="SubmitPrefs" style="color:red;
+								width:60px; 
+								height:30px;" value="Submit" />
+</form>
+<div id="results"></div>
 </div>
  

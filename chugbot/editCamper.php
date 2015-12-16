@@ -184,7 +184,7 @@
 <div class="form_description">
 <h2>Edit Camper Info</h2>
 <p>Please edit your camper information below, and click Submit to update (<font color="red">*</font> = required field).  When
-you are finished editing, click Save and Continue to save your changes and proceed to the next page.</p>
+you are finished editing, click Submit & Continue.</p>
 </div>
 <ul>
 

@@ -1,11 +1,51 @@
 var success = false;
 $(function() {
+	$("#SubmitPrefs").click(function(event) {
+		event.preventDefault();
+		// Collect data from the dest arrays when the submit button is clicked.
+		var arrayOrderedLists = [];
+		var divs = document.getElementsByName("chug_choice_container");
+		for (var i = 0; i < divs.length; i++){
+		    var divElement = divs[i];
+		    var ulList = divElement.getElementsByTagName("ul");
+		    for (var j = 0; j < ulList.length; j++) {
+			var ulElement = ulList[j];
+			var listName = ulElement.getAttribute("name");
+			if (listName == "src") {
+			    continue; // We're only interested in the drag-dest list.
+			}
+			var orderedList = [];
+			orderedList.push(listName); // Put the block/group name first in the list.
+			console.log("DBG: Elements in ordered list for " + listName);
+			var listElements = ulElement.getElementsByTagName("li");
+			for (var k = 0; k < listElements.length; k++) {
+			    var listElement = listElements[k];
+			    var value = listElement.getAttribute("value");
+			    console.log("DBG: " + value);
+			    orderedList.push(value);
+			}
+		    }
+		    arrayOrderedLists.push(orderedList);
+		}
+		$.ajax({
+			url: 'ajax.php',
+			    type: 'post',
+			    data:{submit_prefs: 1, pref_arrays: arrayOrderedLists},
+			    success: function(data) {
+			    $( "#results" ).text("<h3>Preferences submitted!</h3> Please edit if needed, or click <a href=\"../\">here</a> to return home.");
+			},
+			    error: function() {
+			    $( "#results" ).text("Oops! The system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator.");
+			}
+		    });
+	    });
+    });
+$(function() {
 	$.ajax({
 		url: 'ajax.php',
 		    type: 'post',
 		    data:{get_first_name: 1},
 		    success: function(data) {
-		    var json = JSON.stringify(data);
 		    $( ".firstname" ).text(function() {
 			    if (data.name &&
 				data.name.length > 0) {
@@ -34,15 +74,13 @@ $(function() {
 		       // the DB.
 		       var html = "";
 		       var baseName = "sortedSource";
-		       var sortedCounter = 0;
 		       $.each(json, 
 			      function(blockname, block2groupmap) {
 				  $.each(block2groupmap, function(groupname, chugName2DescList) {
-					  var sourceName = baseName + (++sortedCounter).toString();
-					  var destName = baseName + (++sortedCounter).toString();
-					  html += "<div id=\"chug_choice_container\">\n";
+					  var destName = blockname + "||" + groupname;
+					  html += "<div id=\"chug_choice_container\" name=\"chug_choice_container\" >\n";
 					  html += "<h3>" + blockname + " " + groupname + "</h3>\n";
-					  html += "<ul name=\"" + sourceName + "\" id=\"sortable1\" class=\"connectedSortable\" >\n";
+					  html += "<ul name=\"src\" id=\"sortable1\" class=\"connectedSortable\" >\n";
 					  $.each(chugName2DescList, function(index, chugName2Desc) {
 						  $.each(chugName2Desc, function(chugName, chugDesc) {
 							  var titleText = "";
