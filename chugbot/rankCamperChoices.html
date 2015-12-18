@@ -1,4 +1,4 @@
-><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -11,6 +11,18 @@
   <script src="meta/ajax.js"></script>
   <link rel="stylesheet" href="meta/view.css">  
   <style>
+    .toggler {
+    position: relative;
+    margin: auto;
+    margin-top: 20px;
+    background:#fff;
+    text-align: center;
+    width:35%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    font-size: 1.2em;    
+    }
+
     #sortable1, #sortable2 {
     border: 2px dotted silver;
     width: 142px;
@@ -69,6 +81,14 @@
 								width:60px; 
 								height:30px;" value="Submit" />
 </form>
-<div id="results"></div>
 </div>
+<div class="toggler">
+  <div id="results" class="ui-widget-content ui-corner-all" style="display:none">
+    <p>
+      <h3>Preferences submitted, NAME!</h3>  You may close your browser, or
+      click <a href="URL">here</a> to return to the ChugBot home page.
+    </p>
+  </div>
+</div>
+
  

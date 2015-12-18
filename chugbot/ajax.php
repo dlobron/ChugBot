@@ -2,13 +2,121 @@
     session_start();
     include 'functions.php';
     
+    function getCamperId() {
+        $camper_id = $_SESSION["camper_id"];
+        if (! isset($camper_id)) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => "Camper ID not set")));
+        }
+        return $camper_id;
+    }
+    
     // We'll return all our data as JSON.
     header('content-type: application/json; charset=UTF-8');
+    $mysqli = connect_db();
+    
+    // Update preferences for a camper, and email them a confirmation of their
+    // choices if they have an email.
+    if (isset($_POST["submit_prefs"])) {
+        $camper_id = getCamperId();
+        $pref_arrays = $_POST["pref_arrays"];
+        // We have an array of arrays.  Each array is a list of preferred chugim,
+        // in order, for a block/group tuple (for example, July 1, aleph).  The
+        // first item in the array is a ||-separated tuple indicating these things,
+        // for example: August 2||aleph.
+        // First, make an associative array mapping chug name to ID.
+        $chugName2Id = array();
+        $sql = "SELECT name, chug_id FROM chugim";
+        $result = $mysqli->query($sql);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => "Database error: can't get chug name->ID map")));
+        }
+        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+            $chugName2Id[$row[0]] = $row[1];
+        }
+        foreach ($pref_arrays as $chuglist) {
+            $group_id = -1;
+            $block_id = -1;
+            $updateSql = "";
+            $deleteSql = "";
+            for ($i = 0; $i < count($chuglist); $i++) {
+                if ($i > 6) {
+                    break; // Only choices 1-6 are counted (0 is the block/group string).
+                }
+                if ($i == 0) {
+                    // Parse the block and group name, and grab the corresponding IDs
+                    // from the database.
+                    $parts = explode("||", $chuglist[0]);
+                    $block = $parts[0];
+                    $group = $parts[1];
+                    $sql = "SELECT block_id FROM blocks WHERE name=\"$block\"";
+                    $result = $mysqli->query($sql);
+                    if ($result == FALSE) {
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => "Database error: block $block not found")));
+                    }
+                    $row = $result->fetch_row();
+                    $group_id = $row[0];
+                    $sql = "SELECT group_id FROM groups WHERE name=\"$group\"";
+                    $result = $mysqli->query($sql);
+                    if ($result == FALSE) {
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => "Database error: block $block not found")));
+                    }
+                    $row = $result->fetch_row();
+                    $block_id = $row[0];
+                    $insertSql =
+                    "INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, " .
+                    "second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) " .
+                    "VALUES ($camper_id, $group_id, $block_id, CHOICE1, CHOICE2, CHOICE3, CHOICE4, CHOICE5, CHOICE6)";
+                    $deleteSql =
+                    "DELETE FROM preferences WHERE camper_id=$camper_id AND group_id=$group_id AND block_id=$block_id";
+                    continue;
+                }
+                $chug = $chuglist[$i];
+                if (! isset($chugName2Id[$chug])) {
+                    error_log("ajax: no ID found for chug $chug");
+                    header('HTTP/1.1 500 Internal Server Error');
+                    die(json_encode(array("error" => "Database error: chug choice $chug has no ID in the database")));
+                }
+                $chug_id = $chugName2Id[$chug];
+                $toReplace = "CHOICE" . strval($i);
+                $insertSql = str_replace($toReplace, $chug_id, $insertSql);
+            }
+            // Replace remaining CHOICE elements.
+            $insertSql = preg_replace("/CHOICE\d/i", "NULL", $insertSql);
+            
+            // Run the deletion, and then the insert.
+            $result = $mysqli->query($deleteSql);
+            if ($result == FALSE) {
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => "Delete failed")));
+            }
+            $result = $mysqli->query($insertSql);
+            if ($result == FALSE) {
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => "Insert failed")));
+            }
+            $sql = "SELECT first from campers where camper_id = $camper_id";
+            $result = $mysqli->query($sql);
+            $retVal = array();
+            if ($result != FALSE) {
+                $row = $result->fetch_row();
+                $retVal["name"] = $row[0];
+                $retVal["homeUrl"] = homeUrl();
+            }
+            echo json_encode($retVal);
+            exit();
+        }
+        
+        $mysqli->close();
+        exit();
+    }
     
     // Get the first name for a camper ID.
-    $mysqli = connect_db();
     if (isset($_POST["get_first_name"])) {
-        $camper_id = $_SESSION["camper_id"];
+        $camper_id = $camper_id = getCamperId();
         $sql = "SELECT first from campers where camper_id = $camper_id";
         $result = $mysqli->query($sql);
         $nameMap = array();
@@ -25,8 +133,9 @@
         exit();
     }
     
+    // Get the chug lists corresponding to a camper's registration.
     if (isset($_POST["get_chug_info"])) {
-        $camper_id = $_SESSION["camper_id"];
+        $camper_id = $camper_id = getCamperId();
         $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.description chugdesc " .
         "FROM " .
         "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g " .

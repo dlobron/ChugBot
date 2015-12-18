@@ -16,12 +16,10 @@ $(function() {
 			}
 			var orderedList = [];
 			orderedList.push(listName); // Put the block/group name first in the list.
-			console.log("DBG: Elements in ordered list for " + listName);
 			var listElements = ulElement.getElementsByTagName("li");
 			for (var k = 0; k < listElements.length; k++) {
 			    var listElement = listElements[k];
 			    var value = listElement.getAttribute("value");
-			    console.log("DBG: " + value);
 			    orderedList.push(value);
 			}
 		    }
@@ -32,10 +30,15 @@ $(function() {
 			    type: 'post',
 			    data:{submit_prefs: 1, pref_arrays: arrayOrderedLists},
 			    success: function(data) {
-			    $( "#results" ).text("<h3>Preferences submitted!</h3> Please edit if needed, or click <a href=\"../\">here</a> to return home.");
+			    $( "#results" ).text(function() {
+				    txt = $(this).text().replace("NAME", data.name);
+				    return txt.replace("URL", data.homeUrl);
+				});
+			    $( "#results" ).show("slide", 500 );
 			},
 			    error: function() {
 			    $( "#results" ).text("Oops! The system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator.");
+			    $( "#results" ).show("slide", 250 );
 			}
 		    });
 	    });
