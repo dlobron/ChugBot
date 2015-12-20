@@ -300,8 +300,10 @@ EOM;
         } else if (! empty($qs_from_post)) {
             $parts = explode("/", $qs_from_post);
         }
-        $len = count($parts);
-        $url = urlBaseText() . $parts[$len - 1];
+	if (count($parts) > 0) {
+	   $len = count($parts);
+           $url = urlBaseText() . $parts[$len - 1];
+        }
         
         return $url;
     }

@@ -50,7 +50,7 @@
 
 <body id="main_body" >
 
-<div id="centered_container">
+<div class="centered_container">
 <h1>View Campers</a></h1>
 <h2>Campers for <?php echo $name; ?></h2>
 <p>This page lists the <?php echo $name; ?> campers who have entered preferences in this system.  To update
@@ -59,7 +59,7 @@ page, please click <?php echo staffHomeAnchor(); ?>.</p>
 </div>
 
 <br><br>
-<div id="multi_form_container">
+<div class="multi_form_container">
 <?php
     if (count($camperId2Name) == 0) {
         echo "<h3>No $name campers were found in the system.</h3>";

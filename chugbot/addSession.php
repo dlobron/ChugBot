@@ -55,7 +55,7 @@
 <body id="main_body" >
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Add Session</a></h1>
 <form id="form_1063607" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
@@ -75,7 +75,7 @@
 </li>
 
 <li class="buttons">
-<input type="hidden" name="form_id" value="1063608" />
+<input type="hidden" name="form_id" value="1063612" />
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
 <?php echo staffHomeAnchor("Cancel"); ?>
 </li>

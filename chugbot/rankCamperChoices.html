@@ -8,9 +8,31 @@
 	href="jquery/ui/1.11.4/themes/smoothness/jquery-ui.css">
   <script src="jquery/jquery-1.11.3.min.js"></script>
   <script src="jquery/ui/1.11.4/jquery-ui.js"></script>
-  <script src="meta/ajax.js"></script>
+  <script src="meta/ajax.js?v=2"></script>
   <link rel="stylesheet" href="meta/view.css">  
   <style>
+    .pref_submit {
+    position: relative;
+    margin: auto;
+    margin-top: 20px;
+    text-align: center;
+    width:7%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    }
+
+    .pref_submit input[type=submit] {
+    padding:5px 15px;
+    color:white;
+    background-color:green;
+    border:2px solid #336600;
+    cursor:pointer;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px; 
+    font-size: 2.02em;    
+    }
+
     .toggler {
     position: relative;
     margin: auto;
@@ -65,7 +87,7 @@
 </head>
 <body>
 
-<div id="centered_container">
+<div class="centered_container">
 <h2>Welcome to your Preference Page, <div class="firstname">Ramahniks!</div></h2>
 <h3>How to Make Your Choices:</h3>
 <ol>
@@ -74,13 +96,8 @@
 <li>Use your mouse to drag the right column into order of preference, from top
   to bottom.</li>
 <li>When you have arranged preferences for all your time periods, click the
-  <font color="red">Submit</font> button.</li>
+  <font color="green">Submit</font> button.</li>
 </ol>
-<form>
-<input type="submit" name="SubmitPrefs" id="SubmitPrefs" style="color:red;
-								width:60px; 
-								height:30px;" value="Submit" />
-</form>
 </div>
 <div class="toggler">
   <div id="results" class="ui-widget-content ui-corner-all" style="display:none">
@@ -91,4 +108,13 @@
   </div>
 </div>
 
- 
+<div class="pref_submit">
+<form>
+<input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit" />
+</form>
+</div>
+
+<div id="filltarget"></div>
+
+</body>
+</html>

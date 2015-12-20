@@ -21,7 +21,7 @@
 <body id="main_body" >
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Camper Home</a></h1>
 <h3>Welcome to ChugBot, campers and families!</h3>
@@ -30,7 +30,7 @@
 preferences for a camper, please click the "Add" button.</p>
 <p>To edit camper preferences that have already  been entered, please enter the email address associated with the camper and click "Edit".</p>
 
-<form id="choiceForm" class="appnitro" method="post" />
+<form class="appnitro" id="choiceForm" method="post" />
 <button type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
 <span>
 <input placeholder="Email associated with camper" id="email" name="email" class="element text" maxlength="255" size="50"

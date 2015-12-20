@@ -91,7 +91,7 @@
     ?>
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Add a Camper!</a></h1>
 <form id="form_1063605" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
@@ -115,7 +115,7 @@
 <li id="li_3" >
 <label class="description" for="email"><font color="red">*</font> Email</label>
 <div>
-<input placeholder="Email address"  id="email" name="email" class="element text medium" type="text" maxlength="255" value="<?php echo $email;?>"/>
+<input placeholder="Email address" id="email" name="email" class="element text medium" type="text" maxlength="255" value="<?php echo $email;?>"/>
 <span class="error"><?php echo $emailErr;?></span>
 </div>
 <p class="guidelines" id="guide_3"><small>Please include an email address (<b>you can use the same email for more than one camper</b>)</small></p>

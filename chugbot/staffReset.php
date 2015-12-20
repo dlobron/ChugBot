@@ -107,7 +107,7 @@
     ?>
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Change Admin Password and Email</a></h1>
 

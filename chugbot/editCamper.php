@@ -177,7 +177,7 @@
     ?>
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Edit Camper Info</a></h1>
 <form id="form_1063606" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">

@@ -71,7 +71,7 @@
 <body id="main_body" >
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Add Block</a></h1>
 <form id="form_1063608" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">

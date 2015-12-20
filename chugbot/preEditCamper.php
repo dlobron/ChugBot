@@ -16,7 +16,7 @@
 <body id="main_body" >
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Choose Camper to Edit</a></h1>
 <h3>Choose Camper to Edit</h3>

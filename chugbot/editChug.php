@@ -202,10 +202,10 @@
     ?>
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Edit Chug</a></h1>
-<form id="form_1063609" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<form id="form_1063613" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <div class="form_description">
 <h2>Edit Chug</h2>
 <p>Please edit chug below as needed (<font color="red">*</font> = required field).</p>
@@ -264,7 +264,7 @@
 </li>
 
 <li class="buttons">
-<input type="hidden" name="form_id" value="1063609" />
+<input type="hidden" name="form_id" value="1063614" />
 <input type="hidden" name="submitData" id="submitData" value="1" />
 <input type="hidden" name="chug_id" id="chug_id" value="<?php echo $chug_id;?>" />
 

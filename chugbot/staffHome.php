@@ -44,7 +44,7 @@
 
 <body id="main_body" >
 
-<div id="centered_container">
+<div class="centered_container">
 <h1>Admin Home</a></h1>
 <h2>Camp Staff Control Panel</h2>
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
@@ -52,23 +52,23 @@
 <p>Please hover your mouse over a menu for further help.<p>
 </div>
 
-<div id="multi_form_container">
+<div class="multi_form_container">
 <?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
 </div>
 
-<div id="multi_form_container">
+<div class="multi_form_container">
 <?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
 </div>
 
-<div id="multi_form_container">
+<div class="multi_form_container">
 <?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
 </div>
 
-<div id="multi_form_container">
+<div class="multi_form_container">
 <?php echo genPickListForm($groupId2Name, "group", "groups"); ?>
 </div>
 
-<div id="multi_form_container">
+<div class="multi_form_container">
 <?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
 </div>
 

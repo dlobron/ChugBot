@@ -7,7 +7,7 @@ body
 	text-align:center;
 }
 
-#chug_choice_container
+.chug_choice_container
 {
 	overflow: auto;
 	margin-top:20px;
@@ -22,7 +22,7 @@ body
     	-webkit-border-radius: 10px;
 }
 
-#error_box
+.error_box
 {
 	position: relative;
         margin-top: 5px;
@@ -40,7 +40,7 @@ body
         -webkit-border-radius: 10px;
 }
 
-#centered_container
+.centered_container
 {
 	position: relative;
         margin-top: 5px;
@@ -58,20 +58,20 @@ body
 	-webkit-border-radius: 10px;
 }
 
-#centered_container a {
+.centered_container a {
         text-decoration: none;
         border-bottom: 1px dotted #999999;
 }
 
-#centered_container ol {
+.centered_container ol {
         font-size: 1.2em; 	
 }
 
-#centered_container li {
+.centered_container li {
         margin: 0 0 10px 0;
 }
 
-#multi_form_container
+.multi_form_container
 {
 	position: relative;
 	margin-top:5px;
@@ -88,7 +88,7 @@ body
     	-webkit-border-radius: 10px;
 }
 
-#text_container
+.text_container
 {
 	position: relative;
 	margin-top:5px;
@@ -105,7 +105,7 @@ body
     	-webkit-border-radius: 10px;
 }
 
-#form_container
+.form_container
 {
 	background:#fff;	
 	margin:0 auto;

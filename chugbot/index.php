@@ -17,7 +17,7 @@
 <body id="main_body" >
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Welcome</a></h1>
 <h3>Welcome to ChugBot!</h3>

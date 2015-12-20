@@ -59,10 +59,10 @@
 <body id="main_body" >
 
 <img id="top" src="images/top.png" alt="">
-<div id="form_container">
+<div class="form_container">
 
 <h1><a>Add Edah</a></h1>
-<form id="form_1063607" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<form id="form_1063615" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <div class="form_description">
 <h2>Add Edah</h2>
 <p>Please enter your edah information (<font color="red">*</font> = required field)</p>
@@ -79,7 +79,6 @@
 </li>
 
 <li class="buttons">
-<input type="hidden" name="form_id" value="1063607" />
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
 <?php echo staffHomeAnchor("Cancel"); ?>
 </li>

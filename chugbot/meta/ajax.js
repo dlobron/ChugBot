@@ -23,15 +23,15 @@ $(function() {
 			    orderedList.push(value);
 			}
 		    }
-		    arrayOrderedLists.push(orderedList);
+		    arrayOrderedLists.push(orderedList);		    
 		}
 		$.ajax({
 			url: 'ajax.php',
 			    type: 'post',
 			    data:{submit_prefs: 1, pref_arrays: arrayOrderedLists},
 			    success: function(data) {
-			    $( "#results" ).text(function() {
-				    txt = $(this).text().replace("NAME", data.name);
+			    $( "#results" ).html(function() {
+				    txt = $(this).html().replace("NAME", data.name);
 				    return txt.replace("URL", data.homeUrl);
 				});
 			    $( "#results" ).show("slide", 500 );
@@ -81,7 +81,7 @@ $(function() {
 			      function(blockname, block2groupmap) {
 				  $.each(block2groupmap, function(groupname, chugName2DescList) {
 					  var destName = blockname + "||" + groupname;
-					  html += "<div id=\"chug_choice_container\" name=\"chug_choice_container\" >\n";
+					  html += "<div class=\"chug_choice_container\" name=\"chug_choice_container\" >\n";
 					  html += "<h3>" + blockname + " " + groupname + "</h3>\n";
 					  html += "<ul name=\"src\" id=\"sortable1\" class=\"connectedSortable\" >\n";
 					  $.each(chugName2DescList, function(index, chugName2Desc) {
@@ -100,7 +100,6 @@ $(function() {
 					  html += "</ul></div>\n";				  
 				      });
 			      });
-		       html += "</body></html>";
 		       $("body").append(html);
 		},
 		    error: function(xhr, desc, err) {
