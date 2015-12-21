@@ -20,10 +20,11 @@
     if (isset($_POST["submit_prefs"])) {
         $camper_id = getCamperId();
         $pref_arrays = $_POST["pref_arrays"];
-        // We have an array of arrays.  Each array is a list of preferred chugim,
+        // $pref_arrays is an array of arrays.  Each array is a list of preferred chugim,
         // in order, for a block/group tuple (for example, July 1, aleph).  The
         // first item in the array is a ||-separated tuple indicating these things,
         // for example: August 2||aleph.
+        
         // First, make an associative array mapping chug name to ID.
         $chugName2Id = array();
         $sql = "SELECT name, chug_id FROM chugim";
@@ -35,6 +36,36 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $chugName2Id[$row[0]] = $row[1];
         }
+        
+        // Next, get the first and last name, and email associated with this camper.
+        $first = "";
+        $last = "";
+        $email = "";
+        $sql = "SELECT email, first, last from campers where camper_id=$camper_id";
+        $result = $mysqli->query($sql);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => "Database error: can't get chug name->ID map")));
+        }
+	if ($result->num_rows > 0) {
+            $row = $result->fetch_row();
+            $email = $row[0]; // Might be NULL
+            $first = $row[1];
+            $last = $row[2];
+        }
+
+        $homeAnchor = homeAnchor();
+        $homeUrl = homeUrl();
+        $email_text = <<<END
+<html>
+<head>
+<title>Chug Ranking Confirmation</title>
+</head>
+<body>
+<p>Thank you for using ChugBot, <b>$first</b>!  Please review your choices to make sure they are correct.
+If anything is incorrect or missing, you can go back to ChugBot anytime to correct it by clicking ${homeAnchor},
+or by pasting this link into your browser: $homeUrl</p>
+END;
         foreach ($pref_arrays as $chuglist) {
             $group_id = -1;
             $block_id = -1;
@@ -50,6 +81,8 @@
                     $parts = explode("||", $chuglist[0]);
                     $block = $parts[0];
                     $group = $parts[1];
+                    $email_text .= "<h3>Choices for $block, group $group:</h3>\n";
+                    $email_text .= "<ol>\n";
                     $sql = "SELECT block_id FROM blocks WHERE name=\"$block\"";
                     $result = $mysqli->query($sql);
                     if ($result == FALSE) {
@@ -75,6 +108,7 @@
                     continue;
                 }
                 $chug = $chuglist[$i];
+                $email_text .= "<li>$chug</li>\n";
                 if (! isset($chugName2Id[$chug])) {
                     error_log("ajax: no ID found for chug $chug");
                     header('HTTP/1.1 500 Internal Server Error');
@@ -84,6 +118,7 @@
                 $toReplace = "CHOICE" . strval($i);
                 $insertSql = str_replace($toReplace, $chug_id, $insertSql);
             }
+            $email_text .= "</ol>\n";
             // Replace remaining CHOICE elements.
             $insertSql = preg_replace("/CHOICE\d/i", "NULL", $insertSql);
             
@@ -98,19 +133,36 @@
                 header('HTTP/1.1 500 Internal Server Error');
                 die(json_encode(array("error" => "Insert failed")));
             }
-            $sql = "SELECT first from campers where camper_id = $camper_id";
-            $result = $mysqli->query($sql);
-            $retVal = array();
-            if ($result != FALSE) {
-                $row = $result->fetch_row();
-                $retVal["name"] = $row[0];
-                $retVal["homeUrl"] = homeUrl();
+        }
+        
+        $email_text .= <<<EOM
+</body>
+</html>
+EOM;
+        
+        // If we have an email address, send a confirmation email listing the
+        // camper's choices.
+        if (! empty($email)) {
+            // TODO: Ask David what to put for From and Reply-To
+            $sentOk = mail($email, "Camp Ramah Chug Choice Confirmation for $first $last",
+                           $email_text, "From: info@campramahne.org");
+            if (! $sentOk) {
+                error_log("Failed to send email to $email");
             }
-            echo json_encode($retVal);
-            exit();
+        }
+        
+        // After doing the DB updates, grab the name and home URL, and return them.
+        $sql = "SELECT first from campers where camper_id = $camper_id";
+        $result = $mysqli->query($sql);
+        $retVal = array();
+        if ($result != FALSE) {
+            $row = $result->fetch_row();
+            $retVal["name"] = $row[0];
+            $retVal["homeUrl"] = homeUrl();
         }
         
         $mysqli->close();
+        echo json_encode($retVal);
         exit();
     }
     
