@@ -1,4 +1,26 @@
 var success = false;
+var existingChoicesMap = {};
+var blockGroupChugInUse = {};
+$(function() {
+	$.ajax({
+		url: 'ajax.php',
+		    type: 'post',
+		    data: {get_existing_choices: 1},
+		    success: function(json) {
+		    $.each(json, function(blockGroupKey, chuglist) {
+			    existingChoicesMap[blockGroupKey] = chuglist;
+			    $.each(chuglist, function(index, chug) {
+				var key = blockGroupKey + "||" + chug;
+				blockGroupChugInUse[key] = 1;
+				});
+			});
+		},
+		    error: function(xhr, desc, err) {
+		       console.log(xhr);
+		       console.log("Details: " + desc + "\nError:" + err);
+		}
+	    })
+	    });
 $(function() {
 	$("#SubmitPrefs").click(function(event) {
 		event.preventDefault();
@@ -83,9 +105,20 @@ $(function() {
 					  var destName = blockname + "||" + groupname;
 					  html += "<div class=\"chug_choice_container\" name=\"chug_choice_container\" >\n";
 					  html += "<h3>" + blockname + " " + groupname + "</h3>\n";
+					  html += "<div class=\"centered_invisible\"><img src=\"images/RightGreenArrow.png\" height=\"75\" width=\"150\"></div>";
 					  html += "<ul name=\"src\" id=\"sortable1\" class=\"connectedSortable\" >\n";
+					  var existingChoicesForThisDiv = {};
+					  if (destName in existingChoicesMap) {
+					      existingChoicesForThisDiv = existingChoicesMap[destName];
+					  }
 					  $.each(chugName2DescList, function(index, chugName2Desc) {
 						  $.each(chugName2Desc, function(chugName, chugDesc) {
+							  // Check to see if this chug is in use for this block/group.  If so, do
+							  // not write it, since we'll be putting it in the destination.
+							  var key = blockname + "||" + groupname + "||" + chugName;
+							  if (key in blockGroupChugInUse) {
+							      return true; // This is like "continue"
+							  }
 							  var titleText = "";
 							  if (chugDesc) {
 							      // If we have a chug description, write it as a tool tip.
@@ -97,6 +130,9 @@ $(function() {
 					      });
 					  html += "</ul>";
 					  html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">\n";
+					  $.each(existingChoicesForThisDiv, function(index, chugName) {
+						  html += "<li value=\"" + chugName + "\" class=\"ui-state-default\" >" + chugName + "</li>";
+					      });
 					  html += "</ul></div>\n";				  
 				      });
 			      });

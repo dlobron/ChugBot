@@ -17,6 +17,54 @@
     header('content-type: application/json; charset=UTF-8');
     $mysqli = connect_db();
     
+    // Get the current set of prefs for this camper (if any), so that
+    // the rank page can start with the current choices.
+    if (isset($_POST["get_existing_choices"])) {
+        $camper_id = getCamperId();
+        $sql =
+        "SELECT b.name blockname, g.name groupname, c.name chugname, 1 rank " .
+        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
+        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.first_choice_id=c.chug_id UNION ALL " .
+        "SELECT b.name blockname, g.name groupname, c.name, 2 rank " .
+        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
+        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.second_choice_id=c.chug_id UNION ALL " .
+        "SELECT b.name blockname, g.name groupname, c.name, 3 rank " .
+        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
+        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.third_choice_id=c.chug_id UNION ALL " .
+        "SELECT b.name blockname, g.name groupname, c.name, 4 rank " .
+        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
+        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fourth_choice_id=c.chug_id UNION ALL " .
+        "SELECT b.name blockname, g.name groupname, c.name, 5 rank " .
+        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
+        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fifth_choice_id=c.chug_id UNION ALL " .
+        "SELECT b.name blockname, g.name groupname, c.name, 6 rank " .
+        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
+        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.sixth_choice_id=c.chug_id " .
+        "order by blockname, groupname, rank";
+        error_log("DBG: $sql");
+        $result = $mysqli->query($sql);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => "Database Failure")));
+        }
+        $existingChoices = array();
+        while ($row = $result->fetch_row()) {
+            $blockname = $row[0];
+            $groupname = $row[1];
+            $chugname = $row[2];
+            // Make a key/value pair: block/group -> ordered list of chug choices.
+            $key = $blockname . "||" . $groupname;
+            if (! array_key_exists($key, $existingChoices)) {
+                $existingChoices[$key] = array();
+            }
+            array_push($existingChoices[$key], $chugname);
+        }
+        
+        $mysqli->close();
+        echo json_encode($existingChoices);
+        exit();
+    }
+    
     // Update preferences for a camper, and email them a confirmation of their
     // choices if they have an email.
     if (isset($_POST["submit_prefs"])) {
@@ -239,29 +287,6 @@ END;
             $chugName2Desc[$chugname] = $chugdesc;
             array_push($dataToJson[$blockname][$groupname], $chugName2Desc);
         }
-        // Next, get the current set of prefs for this camper (if any), so that
-        // the rank page can start with the current choices.
-        $sql =
-        "SELECT b.name blockname, g.name groupname, c.name chugname, 1 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
-        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.first_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 2 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
-        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.second_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 3 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
-        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.third_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 4 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
-        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fourth_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 5 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
-        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fifth_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 6 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
-        "b.block_id=p.block_id AND g.group_id=p.group_id AND p.sixth_choice_id=c.chug_id " .
-        "order by blockname,groupname,rank";
-        
 
         $mysqli->close();
         echo json_encode($dataToJson);

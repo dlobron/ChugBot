@@ -58,6 +58,14 @@ body
 	-webkit-border-radius: 10px;
 }
 
+.centered_invisible
+{
+	position: relative;	
+
+	text-align: center;
+	margin:0 auto;
+}
+
 .centered_container a {
         text-decoration: none;
         border-bottom: 1px dotted #999999;
