@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+  <meta charset="utf-8" />
+  <title>Preference Page</title>
+  <link rel="stylesheet"
+        href="jquery/ui/1.11.4/themes/smoothness/jquery-ui.css" />
+  <script src="jquery/jquery-1.11.3.min.js"></script>
+  <script src="jquery/ui/1.11.4/jquery-ui.js"></script>
+  <script src="meta/ajax.js?v=3"></script>
+  <link rel="stylesheet" href="meta/view.css" />
+  <style>
+    .control_buttons {
+    position: relative;
+    margin: auto;
+    margin-top: 20px;
+    text-align: center;
+    width:15%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    }
+    .control_buttons input[type=submit] {
+    padding:5px 15px;
+    color:white;
+    border:2px solid #336600;
+    cursor:pointer;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px; 
+    font-size: 2.02em;    
+    }
+    .groupholder {
+    border:2px solid #ccc;
+    position: relative;
+    margin: auto;
+    margin-top: 20px;
+    text-align: center;
+    width:85%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    }
+    .chugholder {
+    border: 2px dotted silver;
+    width: 90%;
+    min-height: 50px;
+    margin: 0;
+    padding: 5px 0 0 0;
+    float: left;
+    margin-right: 10px;
+    margin-left: 20px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+   }
+   .camperholder {
+    margin: 0 5px 5px 5px;
+    padding: 5px;
+    font-size: 1.2em;
+    width: 120px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    }
+  </style>
+  <script>
+    $(function() 
+    // A given camper holder should be draggable within a group, but not outside
+    // the group, to prevent duplicates.  For example, the staff should be able
+    // move Camper X from Swimming to Archery for aleph, but not from the aleph
+    // section to the gimel section, which would lead to a duplicate gimel
+    // assignment and no aleph assignment.
+    $( ".camperholder" ).draggable({ containment: ".groupholder", scroll: true
+    });    
+    $( ".camperholder" ).button();
+  });
+  </script>
+  </head>
+  <body>
+
+  <div class="centered_container">
+    <h2>Leveling Page for <div class="edahfill"></div>, for <div class="blockfill"></div></h2>
+    <p>To change a camper's assignment for a time period, simply drag the
+    camper's bubble from one activity to another in that time period.  To re-run the assignment
+    algorithm, click <font color="red">Reassign</font>.  To prevent a camper
+    from being moved when you re-run the assignment, click the checkbox in that
+    camper's bubble.</p>
+    <p>When you are ready to save your changes, click
+    the <font color="green">Save</font> button.  To exit the page without
+    making any changes, click <font color="blue">Cancel</font>.</p>
+  </div>
+  <div class="toggler">
+    <div id="results" class="ui-widget-content ui-corner-all"
+	 style="display:none">
+      <h3>Assignment submitted!</h3>  
+      <ul>
+	<li>Chugim under min: UNDERMIN</li>
+	<li>Chugim over max: OVERMAX</li>
+	<li>Percentages: PERCENTAGES</li>
+      </ul>
+      <p>You may make further changes below, or click <a href="URL">here</a> to return to the ChugBot home page.</p>
+    </div>
+  </div>
+
+  <div class="control_buttons">
+    <form>
+      <input type="submit" name="Save" id="Save" value="Save" background-color="green" />
+      <input type="submit" name="Reassign" id="Reassign" value="Reassign" background-color="red" />
+      <input type="submit" name="Cancel" id="Cancel" value="Cancel" background-color="blue" />
+    </form>
+  </div>
+  
+  <div id="filltarget"></div>
+  
+  </body>
+</html>

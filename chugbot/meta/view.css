@@ -7,6 +7,34 @@ body
 	text-align:center;
 }
 
+.toggler 
+{
+    position: relative;
+    margin: auto;
+    margin-top: 20px;
+    background:#fff;
+    text-align: center;
+    width:35%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    font-size: 1.2em;    
+ }
+
+.right_container
+{
+	position: absolute;
+	right: 10%;
+	margin-top: 10px;
+	width:30%;
+        font-size: 1.2em;
+        background:#fff;
+        padding-bottom: 1px;
+        border: 2px dotted silver;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+}
+
 .chug_choice_container
 {
 	overflow: auto;

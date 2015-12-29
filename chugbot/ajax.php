@@ -13,9 +13,17 @@
         return $camper_id;
     }
     
-    // We'll return all our data as JSON.
+    // Return login status.
     header('content-type: application/json; charset=UTF-8');
     $mysqli = connect_db();
+    if (isset($_POST["check_login"])) {
+        $retVals = array();
+        $retVals["loggedIn"] = isset($_SESSION['admin_logged_in']);
+        $retVals["loginUrl"] = urlIfy("staffLogin.php");
+        $mysqli->close();
+        echo json_encode($retVals);
+        exit();
+    }
     
     // Get the current set of prefs for this camper (if any), so that
     // the rank page can start with the current choices.

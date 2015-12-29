@@ -2,7 +2,8 @@
     session_start();
     include 'functions.php';
     bounceToLogin();
-    
+
+    $levelingUrl = urlIfy("levelHome.html");    
     $dbErr = "";
     $sessionId2Name = array();
     $blockId2Name = array();
@@ -50,6 +51,40 @@
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
 <p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>
 <p>Please hover your mouse over a menu for further help.<p>
+</div>
+
+<div class="right_container">
+<h3>Leveling</h3>
+<p>To level, choose a time block and edah from the drop-down lists, and click "Go."</p>
+<p>If you have an existing assignment, you will be able to edit it.  Nothing will be changed until you click
+the Save button.</p>
+<form id="leveling_choice_form" class="appnitro" method="post" action="<?php echo $levelingUrl;?>">
+<ul>
+<li>
+<label class="description" for="edah">Edah</label>
+<div>
+<select class="element select medium" id="edah" name="edah">
+<?php
+    echo genPickList($edahId2Name, "", "edah");
+    ?>
+</select>
+</div><p class="guidelines" id="guide_1"><small>Choose an Edah.</small></p>
+</li>
+<li>
+<label class="description" for="block">Block</label>
+<div>
+<select class="element select medium" id="block" name="block">
+<?php
+    echo genPickList($blockId2Name, "", "block");
+    ?>
+</select>
+</div><p class="guidelines" id="guide_2"><small>Choose a Block.</small></p>
+</li>
+<li>
+<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+</li>
+</ul>
+</form>
 </div>
 
 <div class="multi_form_container">
