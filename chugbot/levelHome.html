@@ -3,12 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
   <meta charset="utf-8" />
-  <title>Preference Page</title>
+  <title>Leveling Page</title>
   <link rel="stylesheet"
         href="jquery/ui/1.11.4/themes/smoothness/jquery-ui.css" />
   <script src="jquery/jquery-1.11.3.min.js"></script>
   <script src="jquery/ui/1.11.4/jquery-ui.js"></script>
-  <script src="meta/ajax.js?v=3"></script>
+  <script src="meta/leveling.js"></script>
   <link rel="stylesheet" href="meta/view.css" />
   <style>
     .control_buttons {
@@ -16,19 +16,20 @@
     margin: auto;
     margin-top: 20px;
     text-align: center;
-    width:15%;
+    width:35%;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     }
     .control_buttons input[type=submit] {
-    padding:5px 15px;
+    padding:5px 10px;
     color:white;
+    background-color:green;
     border:2px solid #336600;
     cursor:pointer;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px; 
-    font-size: 2.02em;    
+    font-size: 2.0em;    
     }
     .groupholder {
     border:2px solid #ccc;
@@ -66,14 +67,8 @@
     }
   </style>
   <script>
-    $(function() 
-    // A given camper holder should be draggable within a group, but not outside
-    // the group, to prevent duplicates.  For example, the staff should be able
-    // move Camper X from Swimming to Archery for aleph, but not from the aleph
-    // section to the gimel section, which would lead to a duplicate gimel
-    // assignment and no aleph assignment.
-    $( ".camperholder" ).draggable({ containment: ".groupholder", scroll: true
-    });    
+    $(function() {
+    $( ".camperholder" ).draggable({ containment: ".groupholder" });    
     $( ".camperholder" ).button();
   });
   </script>
@@ -81,15 +76,18 @@
   <body>
 
   <div class="centered_container">
-    <h2>Leveling Page for <div class="edahfill"></div>, for <div class="blockfill"></div></h2>
-    <p>To change a camper's assignment for a time period, simply drag the
-    camper's bubble from one activity to another in that time period.  To re-run the assignment
-    algorithm, click <font color="red">Reassign</font>.  To prevent a camper
-    from being moved when you re-run the assignment, click the checkbox in that
-    camper's bubble.</p>
+    <h2>Welcome to the Leveling Page!</h2>
+    <h2 class="edahfill">Edah: EDAH</h2>
+    <h2 class="blockfill">Time Block: BLOCK</h2>
+    <p>This page displays suggested chug assignments for one edah in a time
+    block.</p>
+    <p>To change a camper's assignment, drag the camper's bubble from one
+    activity to another.  To re-run the assignment algorithm,
+    click <b>Reassign</b>.  To prevent a camper from being
+    moved when you re-run the assignment, click the checkbox in that camper's bubble.</p>
     <p>When you are ready to save your changes, click
-    the <font color="green">Save</font> button.  To exit the page without
-    making any changes, click <font color="blue">Cancel</font>.</p>
+    <b>Save</b>.  To exit without making any changes,
+    click <b>Cancel</b>.</p> 
   </div>
   <div class="toggler">
     <div id="results" class="ui-widget-content ui-corner-all"
@@ -105,11 +103,9 @@
   </div>
 
   <div class="control_buttons">
-    <form>
-      <input type="submit" name="Save" id="Save" value="Save" background-color="green" />
-      <input type="submit" name="Reassign" id="Reassign" value="Reassign" background-color="red" />
-      <input type="submit" name="Cancel" id="Cancel" value="Cancel" background-color="blue" />
-    </form>
+    <input type="submit" name="Reassign" id="Reassign" value="Reassign" />
+    <input type="submit" name="Save" id="Save" value="Save" />
+    <input type="submit" name="Cancel" id="Cancel" value="Cancel" /> 
   </div>
   
   <div id="filltarget"></div>

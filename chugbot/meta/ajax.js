@@ -105,8 +105,7 @@ $(function() {
 					  var destName = blockname + "||" + groupname;
 					  html += "<div class=\"chug_choice_container\" name=\"chug_choice_container\" >\n";
 					  html += "<h3>" + blockname + " " + groupname + "</h3>\n";
-					  html += "<div class=\"centered_invisible\"><img src=\"images/RightGreenArrow.png\" height=\"75\" width=\"150\"></div>";
-					  html += "<ul name=\"src\" id=\"sortable1\" class=\"connectedSortable\" >\n";
+					  html += "<ul name=\"dragSrc\" id=\"sortable1\" class=\"connectedSortable\" >\n";
 					  var existingChoicesForThisDiv = {};
 					  if (destName in existingChoicesMap) {
 					      existingChoicesForThisDiv = existingChoicesMap[destName];
@@ -129,11 +128,14 @@ $(function() {
 						      });
 					      });
 					  html += "</ul>";
+					  html += "<div class=\"centered_invisible\"><img src=\"images/RightArrow.png\" height=\"35\" width=\"35\"></div>";
 					  html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">\n";
 					  $.each(existingChoicesForThisDiv, function(index, chugName) {
 						  html += "<li value=\"" + chugName + "\" class=\"ui-state-default\" >" + chugName + "</li>";
 					      });
-					  html += "</ul></div>\n";				  
+					  html += "</ul>";
+					  html += "<div class=\"right_invisible\"><img src=\"images/UpDownArrows.png\" height=\"65\" width=\"65\"></div>";
+					  html += "</div>";				  
 				      });
 			      });
 		       $("body").append(html);
@@ -148,4 +150,8 @@ $(function() {
 				connectWith: ".connectedSortable"
 				    }).disableSelection();
 		    }});
+    });
+
+$(function() {
+	$( "ul[name='dragSrc']" ).after( "<div class=\"centered_invisible\"><img src=\"images/RightGreenArrow.png\" height=\"50\" width=\"100\"></div>" );
     });

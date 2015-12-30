@@ -3,7 +3,7 @@
     include 'functions.php';
     bounceToLogin();
 
-    $levelingUrl = urlIfy("levelHome.html");    
+    $levelingUrl = urlIfy("levelHomeLaunch.php");    
     $dbErr = "";
     $sessionId2Name = array();
     $blockId2Name = array();

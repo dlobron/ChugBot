@@ -49,7 +49,6 @@
         "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.sixth_choice_id=c.chug_id " .
         "order by blockname, groupname, rank";
-        error_log("DBG: $sql");
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
@@ -247,7 +246,6 @@ END;
         }
         
         $mysqli->close();
-        $dbg  = json_encode($nameMap);
         echo json_encode($nameMap);
         exit();
     }

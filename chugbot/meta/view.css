@@ -37,17 +37,36 @@ body
 
 .chug_choice_container
 {
+	position: relative;
 	overflow: auto;
-	margin-top:20px;
+	margin-top: 20px;
 	margin-left: 10px;
-        width:30%;
+        width: 30%;
 	font-size: 1.2em;
-	background:#fff;
+	background: #fff;
 	padding-bottom: 1px;
 	border: 2px dotted silver;
 	border-radius: 10px;
     	-moz-border-radius: 10px;
     	-webkit-border-radius: 10px;
+}
+
+.centered_invisible
+{
+	position: absolute;
+	top: 150px;
+	left: 163px;
+	text-align: center;
+	margin: 0 auto;
+}
+
+.right_invisible
+{
+	position: absolute;
+	top: 130px;
+	left: 340px;
+	text-align: center;
+	margin: 0 auto;
 }
 
 .error_box
@@ -84,14 +103,6 @@ body
         border-radius: 10px;
         -moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
-}
-
-.centered_invisible
-{
-	position: relative;	
-
-	text-align: center;
-	margin:0 auto;
 }
 
 .centered_container a {
