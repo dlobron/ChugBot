@@ -134,7 +134,7 @@ $(function() {
 						  html += "<li value=\"" + chugName + "\" class=\"ui-state-default\" >" + chugName + "</li>";
 					      });
 					  html += "</ul>";
-					  html += "<div class=\"right_invisible\"><img src=\"images/UpDownArrows.png\" height=\"65\" width=\"65\"></div>";
+					  html += "<div class=\"right_invisible\"><img src=\"images/UpDownArrows.png\"></div>";
 					  html += "</div>";				  
 				      });
 			      });

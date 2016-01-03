@@ -2,7 +2,7 @@
     session_start();
     include 'functions.php';
     
-    header("content-type:application/json");
+    header("content-type:application/json");
 
     $mysqli = connect_db();
     if (isset($_POST["names_for_id"])) {
@@ -33,7 +33,7 @@
         $retVal = array(
                         'edahName' => $edah_name,
                         'blockName' => $block_name
-                        );
+                        );
         $mysqli->close();
         echo json_encode($retVal);
         exit();

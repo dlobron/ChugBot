@@ -5,6 +5,7 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+// Get the name for the current edah and block IDs.
 $(function() {
 	var edahId = getParameterByName('edah');
 	var blockId = getParameterByName('block');
@@ -35,6 +36,7 @@ $(function() {
             })
 	    });
 
+// Action for the Cancel button.
 $(function() {
         $("#Cancel").click(function(event) {
                 event.preventDefault();
@@ -42,5 +44,4 @@ $(function() {
 	    })
 	    });
 
-
-	   
+// 

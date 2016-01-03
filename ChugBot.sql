@@ -101,8 +101,7 @@ ON UPDATE CASCADE,
 max_size int NULL,
 min_size int NULL,
 description varchar(2048),
-chug_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-UNIQUE KEY uk_chugim(name))
+chug_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci;
 
 # A chug instance is a concrete offering of a chug in a block.
@@ -165,20 +164,49 @@ ON UPDATE CASCADE,
 PRIMARY KEY(camper_id, group_id, block_id))
 COLLATE utf8_unicode_ci;
 
-# This table matches registered campers to chug instances.
-# This table will be the source for the view/edit page.  The results of the assignment algorithm should
-# be insert-able into this table, after possibly editing.  Everything in this table is a foreign key.  Updates
-# and deletes cascade, because assignments depend on the camp structure.
+# Assignments are done at the edah/block/group level.  This table holds beta
+# about each assignment.  The actual matches are stored in the matches table.
 CREATE TABLE assignments(
+edah_id int NOT NULL,
+FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+block_id int NOT NULL,
+FOREIGN KEY fk_block_id(block_id) REFERENCES blocks(block_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+group_id int NOT NULL, # aleph, bet, or gimel
+FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+pct_first_choice float,
+pct_second_choice float,
+pct_third_choice float,
+pct_fourth_choice_plus float,
+PRIMARY KEY pk_assignments(edah_id, block_id, group_id))
+COLLATE utf8_unicode_ci;
+
+# This table holds matches of campers to chugim.  A match is for one
+# camper in a given block/group.
+CREATE TABLE matches(
 camper_id int NOT NULL,
 FOREIGN KEY fk_camper_id(camper_id) REFERENCES campers(camper_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-chug_instance_id int NOT NULL,
-FOREIGN KEY chug_instance_id_fk(chug_instance_id) REFERENCES chug_instances(chug_instance_id)
+block_id int NOT NULL,
+FOREIGN KEY fk_block_id(block_id) REFERENCES blocks(block_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-PRIMARY KEY(camper_id, chug_instance_id))
+group_id int NOT NULL, # We do not strict need this, because chug_id goes with a group.
+FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+chug_id int NOT NULL,
+FOREIGN KEY fk_chug_id(chug_id) REFERENCES chugim(chug_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+pegged bool DEFAULT 0,
+PRIMARY	KEY pk_matches(camper_id, block_id, group_id))
 COLLATE utf8_unicode_ci;
 
 # Insert starter data for testing.
@@ -212,15 +240,15 @@ INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Kit
 INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Skippyjon", "Jones", "dlobron@gmail.com");
 
 # aleph chugim
-INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Swimming", 1, 5, 10);
-INSERT INTO chugim (name, group_id, min_size, max_size)	VALUES ("Krav Maga", 1, 3, 15);
-INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Cooking", 1, 0, 0);
-INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Ropes", 1, 1, 5);
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Swimming", 1, 5, 10, "Playing in the water");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Krav Maga", 1, 3, 15, "Israeli martial art");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Cooking", 1, 0, 0, "Making food");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Ropes", 1, 1, 5, "Awesome climbs on fun rock");
 # bet chugim
-INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Boating", 2, 5, 10);
-INSERT INTO chugim (name, group_id, min_size, max_size)	VALUES ("Outdoor Cooking", 2, 3, 15);
-INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Israeli Dance", 2, 0, 0);
-INSERT INTO chugim (name, group_id, min_size, max_size) VALUES ("Canoeing", 2, 1, 5);
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Boating", 2, 5, 10, "SUP and kayaking");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Outdoor Cooking", 2, 3, 15, "Smores and such");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Israeli Dance", 2, 0, 0, "Also known as rikud");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Canoeing", 2, 1, 5, "Messing about in boats");
 
 INSERT INTO chug_instances(chug_id, block_id) VALUES (1, 1);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (2, 1);
