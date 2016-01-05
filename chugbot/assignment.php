@@ -54,13 +54,12 @@
     }
     
     // Reminder: if this camper has needs_first_choice set, then we can bump
-    // any camper except those who need their first choice or are pegged.  In this
+    // any camper except those who need their first choice.  In this
     // latter case, we return false, and the caller should assign the camper anyway
     // (the caller tries this function first, because if a bump can be found, it's
     // better than overflowing the chug).
     function findHappierCamper($camper, $candidateChug, $ourAssignments,
-                               $happiness, $chugim, $campers,
-                               $existingMatches, $group_id) {        $
+                               $happiness, $chugim, $campers, $group_id) {
         // First, get our happiness level and the space left in our next-choice
         // chug.
         $ourHappiness = 0;
@@ -76,7 +75,7 @@
         // this chug is happier than we are.  If we have a tie, return the camper
         // with the most free space in their next choice, since they are hurt least
         // by being bumped.
-        // Exceptions: campers with a pegged assignment or needs_first_choice cannot
+        // Exceptions: campers with needs_first_choice cannot
         // be bumped, so we skip them when searching for a happier camper (a happier
         // camper is a bump candidate).
         // Note that we call this function in a loop, making our algorithm n^2.  I think
@@ -90,18 +89,9 @@
             }
             $otherCamper = $campers[$otherCamperId];
             if ($otherCamper->needs_first_choice) {
+                // Campers who need their first choice should never be bumped.
                 continue;
             }
-            if (array_key_exists($otherCamperId, $existingMatches)) {
-                $existingMatchesForOtherCamper = $existingMatches[$otherCamperId];
-                if (array_key_exists($group_id, $existingMatchesForOtherCamper)) {
-                    $existingMatchForOtherCamper = $existingMatchesForOtherCamper[$group_id];
-                    if ($existingMatchForOtherCamper["pegged"]) {
-                        continue;
-                    }
-                }
-            }
-            
             $theirHappiness = 0;
             if (array_key_exists($otherCamperId, $happiness)) {
                 $theirHappiness = $happiness[$otherCamperId];
@@ -118,7 +108,7 @@
                 $maxNextSpace = $theirNextSpace;
             }
         }
-        // If we have a happiest camper, return their ID.  Otherwise, if we have
+        // If we have a happier camper, return their ID.  Otherwise, if we have
         // a camper with more free space, return their ID.  Otherwise, return NULL.
         // Note: it might be better to favor next-free-space over happiness: try
         // experimenting with both.
@@ -166,8 +156,9 @@
                     error_log("DBG: pref $i = " . $row[$i]);
                 }
             }
-            array_push($campers, $c);
-            array_push($camperIdsToAssign, $c->camper_id);
+            $camper_id = intval($row[0]);
+            $campers[$camper_id] = $c;
+            array_push($camperIdsToAssign, $camper_id);
         }
         
         // Grab the chugim in this group.
@@ -186,11 +177,11 @@
             error_log("DBG: Adding chug " . $row[0]);
         }
         
-        // Grab the other pref lists for this block.  We'll use this to compute each camper's
+        // Grab camper pref lists in this block, by group.  We'll use this to compute each camper's
         // current happiness level when we step through the existing matches in the step
         // after this one.
-        $prefs = array();
-        $sql = "SELECT camper_id,group_id, " .
+        $existingPrefs = array();
+        $sql = "SELECT camper_id, group_id, " .
         "IFNULL(-1,first_choice_id), IFNULL(-1,second_choice_id), IFNULL(-1,third_choice_id), " .
         "IFNULL(-1,fourth_choice_id), IFNULL(-1,fifth_choice_id), IFNULL(-1,sixth_choice_id) " .
         "FROM preferences WHERE block_id = $block_id";
@@ -203,21 +194,25 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $camper_id = intval($row[0]);
             $group_id = intval($row[1]);
-            $prefs[$camper_id][$group_id] = array(); // camper ID -> group ID -> array
+            $existingPrefs[$camper_id][$group_id] = array();
             for ($i = 2; $i < count($row); $i++) {
                 $chug_id = intval($row[$i]);
                 if ($chug_id >= 0) {
-                    $prefs[$camper_id][$group_id][$chug_id] = $i - 1; // map to 1-based pref level
+                    $existingPrefs[$camper_id][$group_id][$chug_id] = $i - 1; // map to 1-based pref level
                 }
             }
         }
         
-        // Grab existing matches for this block, and arrange them in a lookup table
-        // by camper ID.  We'll use this to prevent dups.  Also, if a match is pegged,
-        // then we'll always assign it the same way.
+        // Grab existing matches for this block, for *other* groups, and arrange them in a lookup table
+        // by camper ID.  We'll use this to prevent dups.  Note that when preventing
+        // dups, we compare chugim by name rather than ID, since Ropes aleph will have
+        // a different ID than Ropes bet.  (TODO: Verify with DO that this is right).
+        // We also compute existing happiness level here, by checking each match
+        // against the camper's pref list.
         $existingMatches = array();
-        $sql = "SELECT m.camper_id,m.group_id,m.chug_id,m.pegged,c.name FROM matches " .
-        "WHERE m.block_id = $block_id AND m.chug_id = c.chug_id";
+        $sql = "SELECT m.camper_id, m.group_id, c.name FROM matches m, chugim c " .
+        "WHERE m.block_id = $block_id AND m.chug_id = c.chug_id AND m.group_id != $group_id " .
+        "GROUP BY 1,2";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);
@@ -227,30 +222,35 @@
         $happiness = array();
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $camper_id = intval($row[0]);
-            $this_group_id = intval($row[1]);
-            $chug_id = intval($row[2]);
-            $pegged = intval($row[3]);
-            $chug_name = $row[4];
-            $existingMatches[$camper_id][$group_id] = array("chug_id" => $chug_id,
-                                                            "pegged" => $pegged,
-                                                            "chug_name" => $chug_name);
-            // Compute happiness level, based on this camper's prefs for this group.
-            // XX: This is complicated.  The user could be re-running any of the groups, so should
-            // we count the current one when we compute happiness level?  For now, only count
-            // the other groups.
-            if ($this_group_id == $group_id) {
-                continue; // Don't count this group's assignments toward happiness score.
+            $camper = NULL;
+            if (array_key_exists($camper_id, $campers)) {
+                $camper = $campers[$camper_id];
             }
-            if (array_key_exists($camper_id, $prefs)) {
-                $prefsByGid = $prefs[$camper_id];
-                if (array_key_exists($this_group_id, $prefsByGid)) {
-                    $prefsByChugId = $prefsByGid[$this_group_id];
+            $group_id = intval($row[1]);
+            $chug_name_lc = strtolower($row[2]);
+            $existingMatches[$camper_id][$chug_name_lc] = 1; // Note this match.
+            if (array_key_exists($camper_id, $existingPrefs)) {
+                // Compute the happiness level of this match.
+                $prefsByGid = $existingPrefs[$camper_id];
+                if (array_key_exists($group_id, $prefsByGid)) {
+                    $prefsByChugId = $prefsByGid[$group_id];
                     if (! array_key_exists($camper_id, $happiness)) {
-                        $happiness[$camper_id] = 0;
+                        $happiness[$camper_id] = 0; // Initialize
                     }
-                    // If we have an assignment for this camper, for this group,
-                    // increment the camper's happiness level accordingly.
+                    // Increment the camper's total happiness level according to their
+                    // preference for this existing match.
                     $happiness[$camper_id] += $prefsByChugId[$chug_id];
+                } else {
+                    error_log("WARNING: No prefs for group $group_id for camper ID $camper_id");
+                    if ($camper != NULL) {
+                        error_log("Camper name: " . $camper->name);
+                    }
+                }
+            } else {
+                // All campers should have a pref list.
+                error_log("ERROR: No preferences found for camper ID $camper_id");
+                if ($camper != NULL) {
+                    error_log("Camper name: " . $camper->name);
                 }
             }
         }
@@ -269,59 +269,47 @@
             $candidateChug = &($chugim[$candidateChugId]);
             // At this point, we check to see if this camper has already been assigned
             // to this chug in this block in a different group.  We're relying on names being
-            // consistent, apart from case.  Exceptions:
-            // - If the camper's existing assignment is pegged, we always keep it.
-            // - If needs_first_choice is set for a camper, then we allow dups.
-            // We check for the exceptions first.
+            // consistent, apart from case.
             if (array_key_exists($camper->camper_id, $existingMatches)) {
                 $matchesForThisCamper = $existingMatches[$camper_id];
-                if (array_key_exists($group_id, $matchesForThisCamper)) {
-                    $existingMatchId = $matchesForThisCamper[$group_id]["chug_id"];
-                    $existingMatchPegged = $matchesForThisCamper[$group_id]["pegged"];
-                    $existingMatchName = $matchesForThisCamper[$group_id]["chug_name"];
-                    $existingChug = &($chugim[$existingMatchId]);
-                    if ($existingMatchPegged) {
-                        // Existing choice is pegged: keep it.
-                        assign($camper, $assignments, $existingChug);
-                        error_log("DBG: Keeping existing pegged choice " . $existingChug->name);
-                        continue;
-                    }
+                // Check to see if this camper is already assigned to a chug with the
+                // same name.
+                $candidateChugLcName = strtolower($candidateChug->name);
+                if (array_key_exists($candidateChugLcName, $matchesForThisCamper)) {
                     // At this point, we want to reject duplicates, unless needs-first-choice
                     // is set.
-                    if (strtolower($candidateChug->name) == strtolower($existingMatchName) &&
-                        $camper->needs_first_choice == FALSE) {
+                    if ($camper->needs_first_choice == FALSE) {
                         array_push($camperIdsToAssign, $camper->camper_id);
-                        error_log("DBG: Skipping duplicate " . $existingChug->name);
+                        error_log("DBG: Skipping duplicate " . $candidateChugLcName);
                         continue;
                     }
                 }
             }
             // Now, try to assign this camper to this chug.
-            // - If space, or if first choice required, assign right away.
-            // - Otherwise: if this camper is less happy than one assigned to that chug, assign this
-            // camper, unassign the other camper, and put the other camper back into the
-            // camper array.
             if ($candidateChug->chugFree()) {
-                // If there is space in the chug, assign right away.
+                // If there is space in the chug, assign right away, and continue to the
+                // next camper.
                 error_log("DBG: Assigning to " . $candidateChug->name);
                 assign($camper, $assignments, $candidateChug);
                 continue;
             }
             error_log("DBG: Candidate chug " . $candidateChug->name . " is full - trying to bump");
+            // Try to find a happier camper who is assigned to this chug.
             $happierCamperId = findHappierCamper($camper, $candidateChug, $assignments,
-                                                 $happiness, $chugim,
-                                                 $existingMatches, $group_id);
+                                                 $happiness, $chugim, $group_id);
             
             if ($happierCamperId == NULL) {
-                // If no happier camper was found, then we will move to the next
-                // choice, unless the current camper needs their first choice.
+                // No happier camper was found.
                 error_log("DBG: No happier camper found");
                 if ($camper->needs_first_choice) {
-                    error_log("DBG: This camper needs first choice, so assigning anyway");
+                    // If this camper needs their first choice, we assign to this chug, even if it
+                    // causes overflow.
+                    error_log("DBG: This camper needs first choice, so assigning anyway: chug will overflow");
                     assign($camper, $assignments, $candidateChug);
                     continue;
                 }
-                error_log("DBG: Putting back in assign queue");
+                // Otherwise, we put this camper back in the queue- we'll try again with their next choice.
+                error_log("DBG: Putting this camper back in assign queue");
                 array_push($camperIdsToAssign, $camper->camper_id);
                 continue;
             }
@@ -333,8 +321,9 @@
             assign($camper, $assignments, $candidateChug);
             error_log("DBG: Unassigned happier camper " . $happierCamper->name . ", assigned " . $camper->name);
         }
+        error_log("DBG: Finished assignment loop");
     
-        // Now that we've done the assignment, we update the matches and assignments
+        // Now that we've done the assignment, we can insert/update the matches and assignments
         // tables.
         // TODO
         

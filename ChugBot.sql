@@ -91,7 +91,8 @@ COLLATE utf8_unicode_ci;
 # the group is consistent across all edot for the whole summer.  We assume for now
 # that all chugim are offered in all sessions to all edot, and that size limits are consistent for all
 # edot and sessions.  
-# The "active" bit indicates that this chug is active for the current summer.
+# To check: I think that chugim with the same name can exist in more than one group (for example, Swimming aleph,
+# Swimming bet).  
 CREATE TABLE chugim(
 name varchar(50) NOT NULL,
 group_id int,
@@ -101,6 +102,7 @@ ON UPDATE CASCADE,
 max_size int NULL,
 min_size int NULL,
 description varchar(2048),
+UNIQUE KEY uk_chugim(name, group_id),
 chug_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci;
 
@@ -205,7 +207,6 @@ chug_id int NOT NULL,
 FOREIGN KEY fk_chug_id(chug_id) REFERENCES chugim(chug_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-pegged bool DEFAULT 0,
 PRIMARY	KEY pk_matches(camper_id, block_id, group_id))
 COLLATE utf8_unicode_ci;
 
