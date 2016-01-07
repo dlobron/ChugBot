@@ -177,7 +177,9 @@ END;
                 $insertSql = str_replace($toReplace, $chug_id, $insertSql);
             }
             $email_text .= "</ol>\n";
-            // Replace remaining CHOICE elements with NULL, and insert.
+            // Replace remaining CHOICE elements with NULL, and insert.  Note that if the camper does
+            // not submit any prefs for a group/block tuple for which they are signed up, then the preferences
+            // table will have NULL for all prefs.
             $insertSql = preg_replace("/CHOICE\d/i", "NULL", $insertSql);
             $result = $mysqli->query($insertSql);
             if ($result == FALSE) {

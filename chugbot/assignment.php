@@ -7,13 +7,17 @@
             $this->max_size = intval($max_size);
             $this->min_size = intval($min_size);
             $this->chug_id = intval($chug_id);
+            // A max of 0 means no max: set to our "infinity" value.
+            if ($this->max_size == 0) {
+                $this->max_size = 10000;
+            }
         }
         function chugFree() {
             return ($max > $assigned_count);
         }
         public $name = "";
-        public $max = 0;
-        public $min = 0;
+        public $max_size = 0;
+        public $min_size = 0;
         public $chug_id = -1;
         public $assigned_count = 0;
     };
@@ -21,14 +25,14 @@
     class Camper {
         function __construct($camper_id, $first, $last, $needs_first_choice) {
             $this->camper_id = intval($camper_id);
-            $this->first = $first;
-            $this->last = $last;
+            $this->name = $first;
+            $this->name .= " " . $last;
             $this->needs_first_choice = intval($needs_first_choice);
         }
         public $camper_id = -1;
-        public $first = "";
-        public $last = "";
+        public $name = "";
         public $needs_first_choice = 0;
+        public $choice_level = 0;
         public $prefs = array();
     };
     
@@ -51,6 +55,23 @@
         $nextPrefChug = $chugim[$camper->prefs[0]]; // Look up by chug ID.
         $retVal = $nextPrefChug->max_size - $nextPrefChug->assigned_count;
         return ($retVal > 0) ? $retVal : 0; // The difference will be negative if oversubscribed.
+    }
+    
+    function &chugWithMostSpace(&$chugim) {
+        $maxFreeSpace = 0;
+        $maxFree = NULL;
+        foreach ($chugim as $chugId => $chug) {
+            if ($maxFree == NULL) {
+                $maxFree =& $chug;
+            }
+            if ($maxFree == NULL ||
+                $maxFreeSpace < ($chug->max_size - $chug->assigned_count)) {
+                $maxFreeSpace = $chug->max_size - $chug->assigned_count;
+                $maxFree =& $chug;
+            }
+        }
+        
+        return $maxFree;
     }
     
     // Reminder: if this camper has needs_first_choice set, then we can bump
@@ -132,8 +153,8 @@
         $campers = array();
         $camperIdsToAssign = array();
         $sql = "SELECT c.camper_id, c.first, c.last, c.needs_first_choice, " .
-        "IFNULL(-1,p.first_choice_id), IFNULL(-1,p.second_choice_id), IFNULL(-1,p.third_choice_id), " .
-        "IFNULL(-1,p.fourth_choice_id), IFNULL(-1,p.fifth_choice_id), IFNULL(-1,p.sixth_choice_id) " .
+        "IFNULL(p.first_choice_id,-1), IFNULL(p.second_choice_id,-1), IFNULL(p.third_choice_id,-1), " .
+        "IFNULL(p.fourth_choice_id,-1), IFNULL(p.fifth_choice_id,-1), IFNULL(p.sixth_choice_id,-1) " .
         "FROM campers c, block_instances b, preferences p " .
         "WHERE c.edah_id = $edah_id " .
         "AND c.session_id = b.session_id " .
@@ -141,6 +162,7 @@
         "AND p.camper_id = c.camper_id " .
         "AND p.group_id = $group_id " .
         "AND p.block_id = b.block_id";
+        error_log("DBG: camper sql = $sql");
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);
@@ -149,7 +171,7 @@
         }
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $c = new Camper($row[0], $row[1], $row[2], $row[3]);
-            error_log("DBG: Found camper " . $row[2]);
+            error_log("DBG: Found camper " . $c->name);
             for ($i = 4; $i < count($row); $i++) {
                 if ($row[$i] >= 0) {
                     array_push($c->prefs, $row[$i]);
@@ -261,12 +283,21 @@
         shuffle($campers);
         $assignments = array();
         while (($camperId = array_shift($camperIdsToAssign)) != NULL) {
-            $camper = &($campers[$camperId]);
+            $camper =& $campers[$camperId];
             error_log("DBG: Assigning " . $camper->name);
             // Try to assign this camper to the first chug in their preference list, and remove
             // that chug from their list.
             $candidateChugId = array_shift($camper->prefs);
-            $candidateChug = &($chugim[$candidateChugId]);
+            if ($candidateChugId == NULL) {
+                // If we run out of preferences, assign the camper to the chug with the most
+                // free space.
+                $maxFreeChug =& chugWithMostSpace($chugim);
+                error_log("DBG: Assigning to max free chug " . $maxFreeChug->name);
+                assign($camper, $assignments, $maxFreeChug);
+                continue;
+            }
+            $candidateChug =& $chugim[$candidateChugId];
+            $camper->choice_level++; // Increment the choice level (it starts at zero).
             // At this point, we check to see if this camper has already been assigned
             // to this chug in this block in a different group.  We're relying on names being
             // consistent, apart from case.
@@ -321,7 +352,33 @@
             assign($camper, $assignments, $candidateChug);
             error_log("DBG: Unassigned happier camper " . $happierCamper->name . ", assigned " . $camper->name);
         }
-        error_log("DBG: Finished assignment loop");
+        
+        $pctFirst = 0;
+        $pctSecond = 0;
+        $pctThird = 0;
+        $pctFourthOrWorse = 0;
+        $count = count($campers);
+        error_log("DBG: Finished assignment loop - results:");
+        foreach ($campers as $camperId => $camper) {
+            $assignedChugId = $assignments[$camperId];
+            $assignedChug = $chugim[$assignedChugId];
+            error_log("DBG: Assigned " . $camper->name . " to " . $assignedChug->name . ", choice " . $camper->choice_level);
+            if ($camper->choice_level == 1) {
+                $pctFirst++;
+            } else if ($camper->choice_level == 2) {
+                $pctSecond++;
+            } else if ($camper->choice_level == 3) {
+                $pctThird++;
+            } else {
+                $pctFourthOrWorse++;
+            }
+        }
+        if ($count > 0) {
+            $pctFirst = ($pctFirst * 100) / $count;
+            $pctSecond = ($pctSecond * 100) / $count;
+            $pctThird = ($pctThird * 100) / $count;
+            $pctFourthOrWorse = ($pctFourthOrWorse * 100) / $count;
+        }
     
         // Now that we've done the assignment, we can insert/update the matches and assignments
         // tables.
