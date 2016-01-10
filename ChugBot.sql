@@ -15,7 +15,8 @@ USE chugbot_db;
 # Create a table to hold admin data.
 CREATE TABLE admin_data(
 admin_email varchar(50) NOT NULL,
-admin_password varchar(255) NOT NULL)
+admin_password varchar(255) NOT NULL,
+confirmation_email_reply_to varchar(255))
 COLLATE utf8_unicode_ci;
 
 # This table holds sessions, e.g., "July", "August", "Full Summer", "Mini Bet", etc.
@@ -181,10 +182,10 @@ group_id int NOT NULL, # aleph, bet, or gimel
 FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-pct_first_choice float,
-pct_second_choice float,
-pct_third_choice float,
-pct_fourth_choice_plus float,
+first_choice_ct float,
+second_choice_ct float,
+third_choice_ct float,
+fourth_choice_or_worse_ct float,
 PRIMARY KEY pk_assignments(edah_id, block_id, group_id))
 COLLATE utf8_unicode_ci;
 
@@ -210,7 +211,7 @@ ON UPDATE CASCADE,
 PRIMARY	KEY pk_matches(camper_id, block_id, group_id))
 COLLATE utf8_unicode_ci;
 
-# Insert starter data for testing.
+# Insert starter data for testing.  For production use, make sure to remove or comment-out all lines after this one.
 INSERT INTO sessions (name) VALUES ("July");
 INSERT INTO sessions (name) VALUES ("August");
 INSERT INTO sessions (name) VALUES ("July and August");
@@ -238,36 +239,123 @@ INSERT INTO groups (name) VALUES ("gimel");
 
 INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (1, 1, "Elphaba", "Lobron", "dlobron@gmail.com");
 INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "KittyBoy", "Lobron", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Skippyjon", "Jones", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email, needs_first_choice) VALUES (2, 3, "Skippyjon", "Jones", "dlobron@gmail.com", 1);
+# Assign campers to the same session, so we can test assignment
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Rudolf", "Schenker", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Mattias", "Jabs", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Hermann", "Rarebell", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Klaus", "Meine", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Uli Jon", "Roth", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "James", "Kottak", "dlobron@gmail.com");
 
+# Insert some chugim.  Vary the case, to verify we compare case-insensitively
 # aleph chugim
-INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Swimming", 1, 5, 10, "Playing in the water");
-INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Krav Maga", 1, 3, 15, "Israeli martial art");
-INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Cooking", 1, 0, 0, "Making food");
-INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Ropes", 1, 1, 5, "Awesome climbs on fun rock");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Swimming", 1, 0, 2, "Playing in the water");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Krav Maga", 1, 2, 2, "Israeli martial art");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Cooking", 1, 2, 2, "Making food");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Boating", 1, 2, 0, "Kayaking and suchlike");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Ropes", 1, 1, 1, "Awesome climbs on fun rock");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Archery", 1, 3, 0, "Bow and arrow");
 # bet chugim
-INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Boating", 2, 5, 10, "SUP and kayaking");
-INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Outdoor Cooking", 2, 3, 15, "Smores and such");
-INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Israeli Dance", 2, 0, 0, "Also known as rikud");
-INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Canoeing", 2, 1, 5, "Messing about in boats");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("boatinG", 2, 1, 1, "SUP and kayaking");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Outdoor Cooking", 2, 1, 1, "Smores and such");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Israeli Dance", 2, 1, 2, "Also known as rikud");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Canoeing", 2, 3, 3, "Messing about in boats");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Archery", 2, 2, 3, "Bow and arrow");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Omanut", 2, 2, 2, "Art");
+# gimel chugim
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Jogging", 3, 2, 2, "Marathon training");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("outdoor cooking", 3, 2, 2, "Smores and such, with lowercase");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Israeli Dance", 3, 1, 2, "Also known as rikud");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Etgar", 3, 1, 2, "Avoid angering the bears");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Advanced Ivrit", 3, 2, 3, "Hu is he, hi is she");
+INSERT INTO chugim (name, group_id, min_size, max_size, description) VALUES ("Omanut", 3, 2, 2, "Art and sculpture");
 
 INSERT INTO chug_instances(chug_id, block_id) VALUES (1, 1);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (2, 1);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (3, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (4, 1);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (5, 1);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (6, 1);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (7, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (8, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (9, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (10, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (11, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (12, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (13, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (14, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (15, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (16, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (17, 1);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (18, 1);
 
+INSERT INTO chug_instances(chug_id, block_id) VALUES (1, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (2, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (3, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (4, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (5, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (6, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (7, 2);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (8, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (9, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (10, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (11, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (12, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (13, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (14, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (15, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (16, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (17, 2);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (18, 2);
 
+INSERT INTO chug_instances(chug_id, block_id) VALUES (1, 3);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (2, 3);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (3, 3);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (4, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (5, 3);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (6, 3);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (7, 3);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (8, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (9, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (10, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (11, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (12, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (13, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (14, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (15, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (16, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (17, 3);
+INSERT INTO chug_instances(chug_id, block_id) VALUES (18, 3);
+
+# Insert prefs for all campers for block 1, for each group.
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (1, 1, 1, 4, 2, 3, 1, 5, 6);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (2, 1, 1, 4, 2, 3, 1, 5, 6);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (3, 1, 1, 4, 1, 2, 3, 5, 6);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (4, 1, 1, 4, 5, 2, 6, NULL, NULL);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (5, 1, 1, 4, 1, 2, 6, NULL, NULL);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (6, 1, 1, 4, 2, 5, 3, 1, NULL);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (7, 1, 1, 4, 2, 5, 3, 1, NULL);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (8, 1, 1, 4, 2, 5, 3, 1, NULL);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (9, 1, 1, 4, 2, 5, 1, 6, NULL);
+
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (1, 2, 1, 7, 8, 9, 10, 11, 12);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (2, 2, 1, 7, 9, 8, 10, 11, 12);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (3, 2, 1, 7, 8, 9, 10, 11, NULL);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (4, 2, 1, 7, 9, 8, 10, 11, NULL);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (5, 2, 1, 7, 8, 9, 10, 11, NULL);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (6, 2, 1, 7, 9, 8, 10, 11, 12);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (7, 2, 1, 7, 8, 9, 10, 11, 12);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (8, 2, 1, 7, 9, 8, 10, 11, 12);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (9, 2, 1, 7, 8, 9, 10, 11, NULL);
+
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (1, 3, 1, 13, 14, 15, 16, 17, 18);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (2, 3, 1, 13, 14, 15, 16, 17, 18);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (3, 3, 1, 13, 14, 15, 16, 17, 18);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (4, 3, 1, 13, 14, 15, 16, 17, 18);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (5, 3, 1, 13, 14, 15, 16, 17, 18);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (6, 3, 1, 13, 14, 15, 16, 17, 18);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (7, 3, 1, 13, 14, 15, 16, 17, 18);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (8, 3, 1, 13, 14, 15, 16, 17, 18);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (9, 3, 1, 13, 14, 15, 16, 17, 18);
+
