@@ -3,7 +3,6 @@
     include 'assignment.php';
     bounceToLogin();
     $err = $dbErr = "";
-    $assignmentResults = array(); // Associative
     
     // We assume we got here from a POST.  If not, go to the home page.
     if (! $_SERVER["REQUEST_METHOD"] == "POST") {
@@ -20,6 +19,8 @@
     $result = $mysqli->query($sql);
     if ($result == FALSE) {
         $dbErr = dbErrorString($sql, $mysqli->error);
+        echo genErrorPage($dbErr);
+        exit;
     }
     if ($result->num_rows > 0) {
         // We have an existing assignment: redirect to the display/edit page.
@@ -33,6 +34,8 @@
     $result = $mysqli->query($sql);
     if ($result == FALSE) {
         $dbErr = dbErrorString($sql, $mysqli->error);
+        echo genErrorPage($dbErr);
+        exit;
     }
     // Do the actual assignments, recording results as we go.
     while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
@@ -40,12 +43,15 @@
         $group_name = $row[1];
         $err = "";
         $ok = do_assignment($edah_id, $block_id, $group_id, $err);
-        if ($ok) {
-            $assignmentResults[$group_name] = "OK";
-        } else {
-            $assignmentResults[$group_name] = $err;
+        if (! $ok) {
+            echo genErrorPage($err);
+            exit;
         }
     }
+    // Assignments done - redirect to the assignment page.
+    error_log("Assigned edah $edah_id, block $block_id OK");
+    header("Location: $levelHomeUrl");
+    exit;
     
     ?>
     

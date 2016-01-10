@@ -9,11 +9,11 @@
             $this->chug_id = intval($chug_id);
             // A max of 0 means no max: set to our "infinity" value.
             if ($this->max_size == 0) {
-                $this->max_size = 10000;
+                $this->max_size = MAX_SIZE_NUM;
             }
         }
         function chugFree() {
-            return ($max > $assigned_count);
+            return ($this->max_size > $this->assigned_count);
         }
         public $name = "";
         public $max_size = 0;
@@ -39,6 +39,7 @@
     function assign($camper, &$assignments, &$chugToAssign) {
         $assignments[$camper->camper_id] = $chugToAssign->chug_id;
         $chugToAssign->assigned_count++;
+        debugLog("Assigned camper ID " . $camper->camper_id . " to chug ID " . $chugToAssign->chug_id . ", name " . $chugToAssign->name);
     }
     
     function unassign($camper, &$assignments, &$chugToUnassign) {
@@ -71,6 +72,7 @@
             }
         }
         
+        debugLog("chugWithMostSpace: $maxFree->name");
         return $maxFree;
     }
     
@@ -80,9 +82,10 @@
     // (the caller tries this function first, because if a bump can be found, it's
     // better than overflowing the chug).
     function findHappierCamper($camper, $candidateChug, $ourAssignments,
-                               $happiness, $chugim, $campers, $group_id) {
+                               $happiness, $chugim, $campers) {
         // First, get our happiness level and the space left in our next-choice
         // chug.
+        debugLog("starting findHappierCamper for $camper->name");
         $ourHappiness = 0;
         if (array_key_exists($camper->camper_id, $happiness)) {
             $ourHappiness = $happiness[$camper->camper_id];
@@ -90,6 +93,7 @@
         $minHappiness = $ourHappiness;
         $ourNextSpace = spaceInNextPref($ourAssignments, $chugim, $camper);
         $maxNextSpace = $ourNextSpace;
+        debugLog("ourHappiness = $ourHappiness, ourNextSpace = $ourNextSpace");
         $happierCamperId = NULL;
         $mostFreeSpaceCamperId = NULL;
         // Loop through existing assignments, and see if any camper assigned to
@@ -109,6 +113,7 @@
                 continue;
             }
             $otherCamper = $campers[$otherCamperId];
+            debugLog("considering other camper assigned to this chug, $otherCamper->name");
             if ($otherCamper->needs_first_choice) {
                 // Campers who need their first choice should never be bumped.
                 continue;
@@ -117,16 +122,19 @@
             if (array_key_exists($otherCamperId, $happiness)) {
                 $theirHappiness = $happiness[$otherCamperId];
             }
+            debugLog("their happiness = $theirHappiness");
             if ($theirHappiness < $minHappiness) {
                 // We've found a camper with a lower (better) happiness level.
                 // Note this camper, and update the min.
                 $happierCamperId = $otherCamperId;
                 $minHappiness = $theirHappiness;
+                debugLog("found camper ID $otherCamperId with better (lower) happiness $theirHappiness - min is now $minHappiness");
             }
             $theirNextSpace = spaceInNextPref($ourAssignments, $chugim, $otherCamper);
             if ($theirNextSpace > $maxNextSpace) {
                 $mostFreeSpaceCamperId = $otherCamperId;
                 $maxNextSpace = $theirNextSpace;
+                debugLog("found camper ID $otherCamperId with more free space, $theirNextSpace");
             }
         }
         // If we have a happier camper, return their ID.  Otherwise, if we have
@@ -143,7 +151,7 @@
     }
     
     function do_assignment($edah_id, $block_id, $group_id, &$err) {
-        error_log("DBG: Making assignment for edah $edah_id, block $block_id, group $group_id");
+        debugLog("Making assignment for edah $edah_id, block $block_id, group $group_id");
         $mysqli = connect_db();
         
         // Grab the campers in this edah and block, and prefs for this group.  We determine the
@@ -162,7 +170,6 @@
         "AND p.camper_id = c.camper_id " .
         "AND p.group_id = $group_id " .
         "AND p.block_id = b.block_id";
-        error_log("DBG: camper sql = $sql");
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);
@@ -171,11 +178,9 @@
         }
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $c = new Camper($row[0], $row[1], $row[2], $row[3]);
-            error_log("DBG: Found camper " . $c->name);
             for ($i = 4; $i < count($row); $i++) {
                 if ($row[$i] >= 0) {
                     array_push($c->prefs, $row[$i]);
-                    error_log("DBG: pref $i = " . $row[$i]);
                 }
             }
             $camper_id = intval($row[0]);
@@ -196,7 +201,6 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $c = new Chug($row[0], $row[1], $row[2], $row[3]);
             $chugim[$c->chug_id] = $c;
-            error_log("DBG: Adding chug " . $row[0]);
         }
         
         // Grab camper pref lists in this block, by group.  We'll use this to compute each camper's
@@ -204,8 +208,8 @@
         // after this one.
         $existingPrefs = array();
         $sql = "SELECT camper_id, group_id, " .
-        "IFNULL(-1,first_choice_id), IFNULL(-1,second_choice_id), IFNULL(-1,third_choice_id), " .
-        "IFNULL(-1,fourth_choice_id), IFNULL(-1,fifth_choice_id), IFNULL(-1,sixth_choice_id) " .
+        "IFNULL(first_choice_id,-1), IFNULL(second_choice_id,-1), IFNULL(third_choice_id,-1), " .
+        "IFNULL(fourth_choice_id,-1), IFNULL(fifth_choice_id,-1), IFNULL(sixth_choice_id,-1) " .
         "FROM preferences WHERE block_id = $block_id";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
@@ -215,12 +219,12 @@
         }
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $camper_id = intval($row[0]);
-            $group_id = intval($row[1]);
-            $existingPrefs[$camper_id][$group_id] = array();
+            $gid = intval($row[1]);
+            $existingPrefs[$camper_id][$gid] = array();
             for ($i = 2; $i < count($row); $i++) {
                 $chug_id = intval($row[$i]);
                 if ($chug_id >= 0) {
-                    $existingPrefs[$camper_id][$group_id][$chug_id] = $i - 1; // map to 1-based pref level
+                    $existingPrefs[$camper_id][$gid][$chug_id] = $i - 1; // map to 1-based pref level
                 }
             }
         }
@@ -232,7 +236,7 @@
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
         $existingMatches = array();
-        $sql = "SELECT m.camper_id, m.group_id, c.name FROM matches m, chugim c " .
+        $sql = "SELECT m.camper_id, m.group_id, c.name, c.chug_id FROM matches m, chugim c " .
         "WHERE m.block_id = $block_id AND m.chug_id = c.chug_id AND m.group_id != $group_id " .
         "GROUP BY 1,2";
         $result = $mysqli->query($sql);
@@ -243,27 +247,34 @@
         }
         $happiness = array();
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
-            $camper_id = intval($row[0]);
-            $camper = NULL;
-            if (array_key_exists($camper_id, $campers)) {
-                $camper = $campers[$camper_id];
+            $cid = intval($row[0]);
+            if (! array_key_exists($cid, $campers)) {
+                error_log("ERROR: Unknown camper found in matches");
+                continue;
             }
-            $group_id = intval($row[1]);
-            $chug_name_lc = strtolower($row[2]);
-            $existingMatches[$camper_id][$chug_name_lc] = 1; // Note this match.
-            if (array_key_exists($camper_id, $existingPrefs)) {
+            $camper = $campers[$cid];
+            $gid = intval($row[1]);
+            $existingMatches[$camper->camper_id][strtolower($row[2])] = 1; // Note this match.
+            if (array_key_exists($camper->camper_id, $existingPrefs)) {
                 // Compute the happiness level of this match.
-                $prefsByGid = $existingPrefs[$camper_id];
-                if (array_key_exists($group_id, $prefsByGid)) {
-                    $prefsByChugId = $prefsByGid[$group_id];
-                    if (! array_key_exists($camper_id, $happiness)) {
-                        $happiness[$camper_id] = 0; // Initialize
+                $prefsByGid = $existingPrefs[$camper->camper_id];
+                if (array_key_exists($gid, $prefsByGid)) {
+                    $prefsByChugId = $prefsByGid[$gid];
+                    if (! array_key_exists($camper->camper_id, $happiness)) {
+                        $happiness[$camper->camper_id] = 0; // Initialize
                     }
                     // Increment the camper's total happiness level according to their
                     // preference for this existing match.
-                    $happiness[$camper_id] += $prefsByChugId[$chug_id];
+                    $chug_id = intval($row[3]);
+                    if (array_key_exists($chug_id, $prefsByChugId)) {
+                        $happiness[$camper->camper_id] += $prefsByChugId[$chug_id];
+                        debugLog("Incremented happiness of $camper->name by $prefsByChugId[$chug_id] (existing match to chug ID $chug_id");
+                    } else {
+                        // In general, there should be a preference for assigned chugim.
+                        error_log("WARNING: No preference for for $camper->name for assigned chug ID $chug_id");
+                    }
                 } else {
-                    error_log("WARNING: No prefs for group $group_id for camper ID $camper_id");
+                    error_log("WARNING: No prefs for group $gid for camper ID $camper_id");
                     if ($camper != NULL) {
                         error_log("Camper name: " . $camper->name);
                     }
@@ -280,11 +291,11 @@
         // Now, run the stable marriage algorithm.  We're assigning campers to chugim.  We try
         // to assign each camper to their first choice.  If a chug is full, we bump out the
         // camper with the best (lowest) current happiness score.
-        shuffle($campers);
+        shuffle($camperIdsToAssign);
         $assignments = array();
         while (($camperId = array_shift($camperIdsToAssign)) != NULL) {
             $camper =& $campers[$camperId];
-            error_log("DBG: Assigning " . $camper->name);
+            debugLog("Assigning " . $camper->name);
             // Try to assign this camper to the first chug in their preference list, and remove
             // that chug from their list.
             $candidateChugId = array_shift($camper->prefs);
@@ -292,7 +303,7 @@
                 // If we run out of preferences, assign the camper to the chug with the most
                 // free space.
                 $maxFreeChug =& chugWithMostSpace($chugim);
-                error_log("DBG: Assigning to max free chug " . $maxFreeChug->name);
+                debugLog("No more prefs: assigning to max free chug " . $maxFreeChug->name);
                 assign($camper, $assignments, $maxFreeChug);
                 continue;
             }
@@ -302,7 +313,8 @@
             // to this chug in this block in a different group.  We're relying on names being
             // consistent, apart from case.
             if (array_key_exists($camper->camper_id, $existingMatches)) {
-                $matchesForThisCamper = $existingMatches[$camper_id];
+                $matchesForThisCamper = $existingMatches[$camper->camper_id];
+                debugLog("Have " . count($matchesForThisCamper) . " existing match, trying to assign to $candidateChug->name");
                 // Check to see if this camper is already assigned to a chug with the
                 // same name.
                 $candidateChugLcName = strtolower($candidateChug->name);
@@ -311,7 +323,7 @@
                     // is set.
                     if ($camper->needs_first_choice == FALSE) {
                         array_push($camperIdsToAssign, $camper->camper_id);
-                        error_log("DBG: Skipping duplicate " . $candidateChugLcName);
+                        debugLog("Skipping duplicate " . $candidateChugLcName);
                         continue;
                     }
                 }
@@ -320,27 +332,27 @@
             if ($candidateChug->chugFree()) {
                 // If there is space in the chug, assign right away, and continue to the
                 // next camper.
-                error_log("DBG: Assigning to " . $candidateChug->name);
+                debugLog("Have space, assigning to chug: " . $candidateChug->name);
                 assign($camper, $assignments, $candidateChug);
                 continue;
             }
-            error_log("DBG: Candidate chug " . $candidateChug->name . " is full - trying to bump");
+            debugLog("Candidate chug " . $candidateChug->name . " is full - trying to bump");
             // Try to find a happier camper who is assigned to this chug.
             $happierCamperId = findHappierCamper($camper, $candidateChug, $assignments,
-                                                 $happiness, $chugim, $group_id);
+                                                 $happiness, $chugim, $campers);
             
             if ($happierCamperId == NULL) {
                 // No happier camper was found.
-                error_log("DBG: No happier camper found");
+                debugLog("No happier camper found");
                 if ($camper->needs_first_choice) {
                     // If this camper needs their first choice, we assign to this chug, even if it
                     // causes overflow.
-                    error_log("DBG: This camper needs first choice, so assigning anyway: chug will overflow");
+                    debugLog("This camper needs first choice, so assigning anyway: chug will overflow");
                     assign($camper, $assignments, $candidateChug);
                     continue;
                 }
                 // Otherwise, we put this camper back in the queue- we'll try again with their next choice.
-                error_log("DBG: Putting this camper back in assign queue");
+                debugLog("Putting this camper back in assign queue");
                 array_push($camperIdsToAssign, $camper->camper_id);
                 continue;
             }
@@ -350,39 +362,68 @@
             unassign($happierCamper, $assignments, $candidateChug);
             array_push($camperIdsToAssign, $happierCamper->camper_id);
             assign($camper, $assignments, $candidateChug);
-            error_log("DBG: Unassigned happier camper " . $happierCamper->name . ", assigned " . $camper->name);
+            debugLog("Unassigned happier camper " . $happierCamper->name . ", assigned " . $camper->name);
         }
         
-        $pctFirst = 0;
-        $pctSecond = 0;
-        $pctThird = 0;
-        $pctFourthOrWorse = 0;
-        $count = count($campers);
-        error_log("DBG: Finished assignment loop - results:");
-        foreach ($campers as $camperId => $camper) {
+        // Compile stats, and update the database.
+        $firstCt = 0;
+        $secondCt = 0;
+        $thirdCt = 0;
+        $fourthOrWorseCt = 0;
+        debugLog("Finished assignment loop - results:");
+        foreach ($campers as $camperId => $cdbg) {
             $assignedChugId = $assignments[$camperId];
             $assignedChug = $chugim[$assignedChugId];
-            error_log("DBG: Assigned " . $camper->name . " to " . $assignedChug->name . ", choice " . $camper->choice_level);
-            if ($camper->choice_level == 1) {
-                $pctFirst++;
-            } else if ($camper->choice_level == 2) {
-                $pctSecond++;
-            } else if ($camper->choice_level == 3) {
-                $pctThird++;
+            debugLog("Assigned " . $cdbg->name . ", cid " . $cdbg->camper_id . " to " . $assignedChug->name . ", choice " . $cdbg->choice_level);
+            if ($cdbg->choice_level == 1) {
+                $firstCt++;
+            } else if ($cdbg->choice_level == 2) {
+                $secondCt++;
+            } else if ($cdbg->choice_level == 3) {
+                $thirdCt++;
             } else {
-                $pctFourthOrWorse++;
+                $fourthOrWorseCt++;
+            }
+            // Update the matches table with each camper's assignment.
+            $sql = "DELETE FROM matches WHERE camper_id = $camperId AND block_id = $block_id AND " .
+            "group_id = $group_id";
+            $result = $mysqli->query($sql);
+            if ($result == FALSE) {
+                $err = dbErrorString($sql, $mysqli->error);
+                error_log($err);
+                $mysqli->close();
+                return FALSE;
+            }
+            $sql = "INSERT INTO matches (camper_id, block_id, group_id, chug_id) " .
+            "VALUES ($camperId, $block_id, $group_id, $assignedChugId)";
+            $result = $mysqli->query($sql);
+            if ($result == FALSE) {
+                $err = dbErrorString($sql, $mysqli->error);
+                error_log($err);
+                $mysqli->close();
+                return FALSE;
             }
         }
-        if ($count > 0) {
-            $pctFirst = ($pctFirst * 100) / $count;
-            $pctSecond = ($pctSecond * 100) / $count;
-            $pctThird = ($pctThird * 100) / $count;
-            $pctFourthOrWorse = ($pctFourthOrWorse * 100) / $count;
-        }
     
-        // Now that we've done the assignment, we can insert/update the matches and assignments
-        // tables.
-        // TODO
+        // Update the assignment table (metadata about this assignment) with our stats.
+        $sql = "DELETE FROM assignments WHERE edah_id = $edah_id AND " .
+        "block_id = $block_id AND group_id = $group_id";
+        $result = $mysqli->query($sql);
+        if ($result == FALSE) {
+            $err = dbErrorString($sql, $mysqli->error);
+            error_log($err);
+            $mysqli->close();
+            return FALSE;
+        }
+        $sql = "INSERT INTO assignments (edah_id, block_id, group_id, first_choice_ct, second_choice_ct, third_choice_ct, fourth_choice_or_worse_ct) " .
+        "VALUES ($edah_id, $block_id, $group_id, $firstCt, $secondCt, $thirdCt, $fourthOrWorseCt)";
+        $result = $mysqli->query($sql);
+        if ($result == FALSE) {
+            $err = dbErrorString($sql, $mysqli->error);
+            error_log($err);
+            $mysqli->close();
+            return FALSE;
+        }
         
         $mysqli->close();
         return TRUE;
