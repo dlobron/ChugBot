@@ -371,8 +371,14 @@
         $thirdCt = 0;
         $fourthOrWorseCt = 0;
         debugLog("Finished assignment loop - results:");
+        $chug2AssignCount = array();
         foreach ($campers as $camperId => $cdbg) {
             $assignedChugId = $assignments[$camperId];
+            if (! array_key_exists($assignedChugId, $chug2AssignCount)) {
+                $chug2AssignCount[$assignedChugId] = 1;
+            } else {
+                $chug2AssignCount[$assignedChugId]++;
+            }
             $assignedChug = $chugim[$assignedChugId];
             debugLog("Assigned " . $cdbg->name . ", cid " . $cdbg->camper_id . " to " . $assignedChug->name . ", choice " . $cdbg->choice_level);
             if ($cdbg->choice_level == 1) {
@@ -404,6 +410,28 @@
                 return FALSE;
             }
         }
+        $underMin = "";
+        $overMax = "";
+        foreach ($chug2AssignCount as $chugId => $count) {
+            $c = $chugim[$chugId];
+            debugLog("Assigned $count campers to $c->name");
+            if ($count < $c->min_size) {
+                if (empty($underMin)) {
+                    $underMin = $c->name;
+                } else {
+                    $underMin .= ", $c->name";
+                }
+                debugLog("Under min $c->min_size");
+            }
+            if ($count > $c->max_size) {
+                if (empty($overMax)) {
+                    $overMax = $c->name;
+                } else {
+                    $overMax .= ", $c->name";
+                }
+                debugLog("Over max $c->max_size");
+            }
+        }
     
         // Update the assignment table (metadata about this assignment) with our stats.
         $sql = "DELETE FROM assignments WHERE edah_id = $edah_id AND " .
@@ -415,8 +443,9 @@
             $mysqli->close();
             return FALSE;
         }
-        $sql = "INSERT INTO assignments (edah_id, block_id, group_id, first_choice_ct, second_choice_ct, third_choice_ct, fourth_choice_or_worse_ct) " .
-        "VALUES ($edah_id, $block_id, $group_id, $firstCt, $secondCt, $thirdCt, $fourthOrWorseCt)";
+        $sql = "INSERT INTO assignments (edah_id, block_id, group_id, first_choice_ct, second_choice_ct, third_choice_ct, " .
+        "fourth_choice_or_worse_ct, under_min_list, over_max_list) " .
+        "VALUES ($edah_id, $block_id, $group_id, $firstCt, $secondCt, $thirdCt, $fourthOrWorseCt, \"$underMin\", \"$overMax\")";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);

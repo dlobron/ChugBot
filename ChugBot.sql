@@ -182,10 +182,12 @@ group_id int NOT NULL, # aleph, bet, or gimel
 FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-first_choice_ct float,
-second_choice_ct float,
-third_choice_ct float,
-fourth_choice_or_worse_ct float,
+first_choice_ct float DEFAULT 0,
+second_choice_ct float DEFAULT 0,
+third_choice_ct float DEFAULT 0,
+fourth_choice_or_worse_ct float DEFAULT 0,
+under_min_list varchar(512) DEFAULT "",
+over_max_list varchar(512) DEFAULT "",
 PRIMARY KEY pk_assignments(edah_id, block_id, group_id))
 COLLATE utf8_unicode_ci;
 

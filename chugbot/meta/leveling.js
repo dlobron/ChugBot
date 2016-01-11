@@ -44,4 +44,28 @@ $(function() {
 	    })
 	    });
 
-// 
+// Action for the Reassign button.
+$(function() {
+	var edah = getParameterByName("edah");
+	var block = getParameterByName("block");
+        $("#Reassign").click(function(event) {
+                event.preventDefault();
+		$.ajax({
+                        url: 'levelingAjax.php',
+			    type: 'post',
+			    data:{reassign: 1, edah: edah, block: block},
+			    success: function(data) {
+                            $( "#results" ).html(function() {
+                                    txt = $(this).html().replace("UNDERMIN", data.undermin);
+				    txt = txt.replace("OVERMAX", data.overmax);
+                                    return txt.replace("STATS", data.stats);
+                                });
+                            $( "#results" ).show("slide", 500 );
+                        },
+                            error: function() {
+                            $( "#results" ).text("Oops! The system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator.  Error: data.err");			    
+                            $( "#results" ).show("slide", 250 );
+                        }
+                    });
+            })
+	    });

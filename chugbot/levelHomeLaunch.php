@@ -51,6 +51,7 @@
     // Assignments done - redirect to the assignment page.
     error_log("Assigned edah $edah_id, block $block_id OK");
     header("Location: $levelHomeUrl");
+    
     exit;
     
     ?>
