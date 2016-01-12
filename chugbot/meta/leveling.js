@@ -55,15 +55,18 @@ $(function() {
 			    type: 'post',
 			    data:{reassign: 1, edah: edah, block: block},
 			    success: function(data) {
+			    // Fade and then reload with new data (for multiple clicks).
+			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
                             $( "#results" ).html(function() {
-                                    txt = $(this).html().replace("UNDERMIN", data.undermin);
-				    txt = txt.replace("OVERMAX", data.overmax);
-                                    return txt.replace("STATS", data.stats);
+                                    txt = $(this).html().replace("UNDERMIN", data.under_min_list);
+				    txt = txt.replace("OVERMAX", data.over_max_list);
+                                    return txt.replace("STATS", data.statstxt);
                                 });
-                            $( "#results" ).show("slide", 500 );
+                            $( "#results" ).show("slide", 500);
+			    $( "#results" ).attr('disabled', false);
                         },
                             error: function() {
-                            $( "#results" ).text("Oops! The system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator.  Error: data.err");			    
+                            $( "#results" ).text("Oops! The system was unable to reassign.  Please hit Submit again.  If the problem persists, please contact the administrator.  Error: data.err");			    
                             $( "#results" ).show("slide", 250 );
                         }
                     });
