@@ -40,7 +40,8 @@ $(function() {
 $(function() {
         $("#Cancel").click(function(event) {
                 event.preventDefault();
-		window.location.replace("staffHome.php");
+		// Simulate clicking a link, so this page goes in the browser history.
+		window.location.href("staffHome.php");
 	    })
 	    });
 
@@ -48,6 +49,8 @@ $(function() {
 $(function() {
 	var edah = getParameterByName("edah");
 	var block = getParameterByName("block");
+	var curUrl = window.location.href;
+	var homeUrl = curUrl.replace("levelHome.html", "staffHome.php");
         $("#Reassign").click(function(event) {
                 event.preventDefault();
 		$.ajax({
@@ -58,9 +61,20 @@ $(function() {
 			    // Fade and then reload with new data (for multiple clicks).
 			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
                             $( "#results" ).html(function() {
-                                    txt = $(this).html().replace("UNDERMIN", data.under_min_list);
-				    txt = txt.replace("OVERMAX", data.over_max_list);
-                                    return txt.replace("STATS", data.statstxt);
+				    txt = "<h3>Assignment saved!</h3>";
+				    txt += "<ul>";
+				    txt += "<li>Chugim under min: ";
+				    txt += data.under_min_list;
+				    txt += "</li>";
+				    txt += "<li>Chugim over max: ";
+				    txt += data.over_max_list;
+				    txt += "</li>";
+				    txt += "<li>Stats: ";
+				    txt += data.statstxt;
+				    txt += "</ul><p>You may make further changes below, or click <a href=\"";
+				    txt += homeUrl;
+				    txt += "\">here</a> to return to the staff home page.";
+				    return txt;
                                 });
                             $( "#results" ).show("slide", 500);
 			    $( "#results" ).attr('disabled', false);

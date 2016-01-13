@@ -62,6 +62,10 @@
         $maxFreeSpace = 0;
         $maxFree = NULL;
         foreach ($chugim as $chugId => $chug) {
+            // Always return a chug: if all chugim have the same free space, then
+            // we'll return the first one in the list.  It's crucial that we always
+            // return a chug, because it guarantees that the assignment loop will
+            // finish.
             if ($maxFree == NULL) {
                 $maxFree =& $chug;
             }
@@ -298,10 +302,14 @@
             debugLog("Assigning " . $camper->name);
             // Try to assign this camper to the first chug in their preference list, and remove
             // that chug from their list.
-            $candidateChugId = array_shift($camper->prefs);
+            $candidateChugId = NULL;
+            if (count($camper->prefs) > 0) {
+                $candidateChugId = array_shift($camper->prefs);
+            }
             if ($candidateChugId == NULL) {
                 // If we run out of preferences, assign the camper to the chug with the most
-                // free space.
+                // free space.  Note that chugWithMostSpace is guaranteed to return a chug, so
+                // we know that this loop must terminate.
                 $maxFreeChug =& chugWithMostSpace($chugim);
                 debugLog("No more prefs: assigning to max free chug " . $maxFreeChug->name);
                 assign($camper, $assignments, $maxFreeChug);
