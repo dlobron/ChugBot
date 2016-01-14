@@ -188,6 +188,7 @@ third_choice_ct float DEFAULT 0,
 fourth_choice_or_worse_ct float DEFAULT 0,
 under_min_list varchar(512) DEFAULT "",
 over_max_list varchar(512) DEFAULT "",
+ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY pk_assignments(edah_id, block_id, group_id))
 COLLATE utf8_unicode_ci;
 

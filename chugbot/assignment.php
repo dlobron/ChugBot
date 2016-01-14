@@ -253,7 +253,8 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $cid = intval($row[0]);
             if (! array_key_exists($cid, $campers)) {
-                error_log("ERROR: Unknown camper found in matches");
+                // Not an error: we expect other campers to be in this block/chug/group.
+                // We continue here because we're not assigning those campers in this round.
                 continue;
             }
             $camper = $campers[$cid];

@@ -5,6 +5,49 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+function doAssignmentAjax(action, title, errText,
+			  edah, block) {    
+    var values = {};
+    values[action] = 1;
+    values["edah"] = edah;
+    values["block"] = block;
+    	$.ajax({
+                url: 'levelingAjax.php',
+                    type: 'post',
+                    data: values,
+                    success: function(data) {
+		    if (action == "reassign") {
+			// Fade and then reload with new data (for multiple clicks).
+			$( "#results:visible" ).removeAttr( "style" ).fadeOut();
+		    }
+		    $( "#results" ).html(function() {
+				    txt = "<h3>" + title + "</h3>";
+				    txt += "<ul>";
+				    txt += "<li>Chugim under min: ";
+				    txt += data.under_min_list;
+				    txt += "</li>";
+				    txt += "<li>Chugim over max: ";
+				    txt += data.over_max_list;
+				    txt += "</li>";
+				    txt += "<li>Assignment Stats:<br>";
+				    txt += data.statstxt;
+				    txt += "</li></ul>";
+				    return txt;
+			});
+		    $( "#results" ).show("slide", 500);
+		    $( "#results" ).attr('disabled', false);
+		},
+		    error: function(xhr, desc, err) {
+		    errMsg = "The system was unable to ";
+		    errMsg += errText;
+		    errMsg += ". If the problem persists, please contact the administrator.  Error: ";
+		    errMsg += err;
+		    $( "#results" ).text(errMsg);
+		    $( "#results" ).show("slide", 250 );
+		}
+	    });
+}
+
 // Get the name for the current edah and block IDs.
 $(function() {
 	var edahId = getParameterByName('edah');
@@ -45,6 +88,13 @@ $(function() {
 	    })
 	    });
 
+$(function() {
+	var edah = getParameterByName("edah");
+	var block = getParameterByName("block");
+	doAssignmentAjax("get_current_stats", "Current Stats", "fetch current assignment stats",
+			 edah, block);
+    });
+
 // Action for the Reassign button.
 $(function() {
 	var edah = getParameterByName("edah");
@@ -53,36 +103,7 @@ $(function() {
 	var homeUrl = curUrl.replace("levelHome.html", "staffHome.php");
         $("#Reassign").click(function(event) {
                 event.preventDefault();
-		$.ajax({
-                        url: 'levelingAjax.php',
-			    type: 'post',
-			    data:{reassign: 1, edah: edah, block: block},
-			    success: function(data) {
-			    // Fade and then reload with new data (for multiple clicks).
-			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
-                            $( "#results" ).html(function() {
-				    txt = "<h3>Assignment saved!</h3>";
-				    txt += "<ul>";
-				    txt += "<li>Chugim under min: ";
-				    txt += data.under_min_list;
-				    txt += "</li>";
-				    txt += "<li>Chugim over max: ";
-				    txt += data.over_max_list;
-				    txt += "</li>";
-				    txt += "<li>Stats: ";
-				    txt += data.statstxt;
-				    txt += "</ul><p>You may make further changes below, or click <a href=\"";
-				    txt += homeUrl;
-				    txt += "\">here</a> to return to the staff home page.";
-				    return txt;
-                                });
-                            $( "#results" ).show("slide", 500);
-			    $( "#results" ).attr('disabled', false);
-                        },
-                            error: function() {
-                            $( "#results" ).text("Oops! The system was unable to reassign.  Please hit Submit again.  If the problem persists, please contact the administrator.  Error: data.err");			    
-                            $( "#results" ).show("slide", 250 );
-                        }
-                    });
-            })
-	    });
+		doAssignmentAjax("reassign", "Assignment saved!", "reassign",
+				 edah, block);
+            });
+    });
