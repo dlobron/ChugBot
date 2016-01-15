@@ -20,6 +20,9 @@
         }
         $name = test_input($_POST["name"]);
         $edah_id = test_input($_POST["edah_id"]);
+        $rosh_name = test_input($_POST["rosh_name"]);
+        $rosh_phone = test_input($_POST["rosh_phone"]);
+        $comments = test_input($_POST["comments"]);
         if (empty($name)) {
             $nameErr = errorString("Name is required");
         }
@@ -48,7 +51,8 @@
                 // Insert edited data.
                 $edahIdNum = intval($edah_id);
                 $sql =
-                "UPDATE edot SET name = \"$name\" " .
+                "UPDATE edot SET name = \"$name\", rosh_name = \"$rosh_name\", " .
+                "rosh_phone = \"$rosh_phone\", comments = \"$comments\" " .
                 "WHERE edah_id = $edahIdNum";
                 $submitOk = $mysqli->query($sql);
                 if ($submitOk == FALSE) {
@@ -109,6 +113,30 @@
 <input id="name" name="name" class="element text medium" type="text" maxlength="255" value="<?php echo $name;?>"/>
 <span class="error"><?php echo $nameErr;?></span>
 <p class="guidelines" id="guide_1"><small>Choose your edah name (Kochavim, Ilanot 1, etc.)</small></p>
+</div>
+</li>
+
+<li id="li_2" >
+<label class="description" for="name">Rosh Edah (head counselor) Name</label>
+<div>
+<input id="rosh_name" name="rosh_name" class="element text medium" type="text" maxlength="255" value="<?php echo $rosh_name;?>"/>
+<p class="guidelines" id="guide_2"><small>Enter the head counselor name (optional)</small></p>
+</div>
+</li>
+
+<li id="li_3" >
+<label class="description" for="name">Rosh Edah Phone</label>
+<div>
+<input id="rosh_phone" name="rosh_phone" class="element text medium" type="text" maxlength="255" value="<?php echo $rosh_phone;?>"/>
+<p class="guidelines" id="guide_3"><small>Phone number for the head counselor (optional)</small></p>
+</div>
+</li>
+
+<li id="li_4" >
+<label class="description" for="name">Comments</label>
+<div>
+<textarea id="comments" name="comments" class="element textarea medium" ><?php echo $comments;?></textarea>
+<p class="guidelines" id="guide_4"><small>Comments about this Edah (optional)</small></p>
 </div>
 </li>
 

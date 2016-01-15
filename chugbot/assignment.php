@@ -80,6 +80,22 @@
         return $maxFree;
     }
     
+    function isDuplicate($candidateChug, $matchesForThisCamper) {
+        $retVal = FALSE;
+        $candidateChugLcName = strtolower($candidateChug->name);
+        if (array_key_exists($candidateChugLcName, $matchesForThisCamper)) {
+            $retVal = TRUE; // Exact match
+        }
+        // Special case: don't allow duplicate cooking assignments.
+        $existingCooking = preg_grep("/cooking/i", $matchesForThisCamper);
+        if (count($existingCooking) &&
+            preg_match("/cooking/i", $candidateChugLcName)) {
+            $retVal = TRUE;
+        }
+        
+        return $retVal;
+    }
+    
     // Reminder: if this camper has needs_first_choice set, then we can bump
     // any camper except those who need their first choice.  In this
     // latter case, we return false, and the caller should assign the camper anyway
@@ -324,16 +340,15 @@
             if (array_key_exists($camper->camper_id, $existingMatches)) {
                 $matchesForThisCamper = $existingMatches[$camper->camper_id];
                 debugLog("Have " . count($matchesForThisCamper) . " existing match, trying to assign to $candidateChug->name");
-                // Check to see if this camper is already assigned to a chug with the
-                // same name.
-                $candidateChugLcName = strtolower($candidateChug->name);
-                if (array_key_exists($candidateChugLcName, $matchesForThisCamper)) {
-                    // At this point, we want to reject duplicates, unless needs-first-choice
-                    // is set.
+                // Check for duplicate assignment, and skip dups, unless needs_first_choice
+                // is set.
+                if (isDuplicate($candidateChug, $matchesForThisCamper)) {
                     if ($camper->needs_first_choice == FALSE) {
                         array_push($camperIdsToAssign, $camper->camper_id);
                         debugLog("Skipping duplicate " . $candidateChugLcName);
                         continue;
+                    } else {
+                        debugLog("Skipping duplicate " . $candidateChugLcName . ", needs first choice");
                     }
                 }
             }

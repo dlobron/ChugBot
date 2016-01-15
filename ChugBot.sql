@@ -57,6 +57,9 @@ COLLATE utf8_unicode_ci;
 CREATE TABLE edot(
 edah_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
+rosh_name varchar(100) DEFAULT "",
+rosh_phone varchar(20) DEFAULT "",
+comments varchar(512) DEFAULT "",
 UNIQUE KEY uk_edot(name))
 COLLATE utf8_unicode_ci;
 

@@ -48,6 +48,35 @@ function doAssignmentAjax(action, title, errText,
 	    });
 }
 
+// Get the current match and chug info for this edah/block, and display it by group.  This is the main
+// engine for the page.
+$(function() {
+        var edah = getParameterByName("edah");
+        var block = getParameterByName("block");
+	$.ajax({
+                url: 'levelingAjax.php',
+                    type: 'post',
+                    data:{ matches_and_prefs: 1,
+			edah_id: edah, 
+			block_id: block },
+                    success: function(json) {
+		    console.log(JSON.stringify(json)); // DBG
+		},
+		    error: function(xhr, desc, err) {
+                    console.log(xhr);
+                    console.log("Details: " + desc + "\nError:" + err);
+                }
+	    })
+	    });
+
+// Get the current assignment stats for this edah/block.
+$(function() {
+	var edah = getParameterByName("edah");
+	var block = getParameterByName("block");
+	doAssignmentAjax("get_current_stats", "Current Stats", "fetch current assignment stats",
+			 edah, block);
+    });
+
 // Get the name for the current edah and block IDs.
 $(function() {
 	var edahId = getParameterByName('edah');
@@ -88,13 +117,6 @@ $(function() {
 	    })
 	    });
 
-$(function() {
-	var edah = getParameterByName("edah");
-	var block = getParameterByName("block");
-	doAssignmentAjax("get_current_stats", "Current Stats", "fetch current assignment stats",
-			 edah, block);
-    });
-
 // Action for the Reassign button.
 $(function() {
 	var edah = getParameterByName("edah");
@@ -107,3 +129,8 @@ $(function() {
 				 edah, block);
             });
     });
+
+// Action for the Save button
+// Collect the current assignments and send them to the ajax page to be
+// saved in the DB.
+// TODO

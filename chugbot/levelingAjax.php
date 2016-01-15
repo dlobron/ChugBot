@@ -1,31 +1,123 @@
 <?php
     session_start();
     include 'assignment.php';
-    
     header("content-type:application/json");
-
-    $mysqli = connect_db();
+    
+    function getDbResult($sql) {
+        $mysqli = connect_db();
+        $result = $mysqli->query($sql);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => "Database error")));
+        }
+        $mysqli->close();
+        return $result;
+    }
+    
+    // Grab match, chug, and preference info, for display on the main leveling
+    // page.
+    if (isset($_POST["matches_and_prefs"])) {
+        $edah_id = $_POST["edah_id"];
+        $block_id = $_POST["block_id"];
+        
+        // Grab the campers in this edah.
+        $camperId2Name = array();
+        $result = getDbResult("SELECT camper_id, first, last FROM campers WHERE edah_id = $edah_id");
+        $camperInString = "(";
+        $rc = mysqli_num_rows($result);
+        $i = 0;
+        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+            // Map camper ID to full name (remember that the latter might not
+            // be unique).
+            $camperId2Name[intval($row[0])] = $row[1] . " " . $row[2];
+            // Build a parenthesized CSV of camper IDs to pass to the preferences
+            // query, below.
+            $camperInString .= $row[0];
+            if (++$i < $rc) {
+                $camperInString .= ",";
+            }
+        }
+        $camperInString .= ")";
+        
+        // Get preferences (as strings) for these campers.
+        // First, map chug ID to name, by group.  We'll use this in a few places
+        // below.
+        $groupId2ChugId2Name = array();
+        $result = getDbResult("SELECT group_id, chug_id, name FROM chugim");
+        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+            $group_id = intval($row[0]);
+            $chug_id = intval($row[1]);
+            if (! array_key_exists($group_id, $groupId2ChugId2Name)) {
+                $groupId2ChugId2Name[$group_id] = array();
+            }
+            $groupId2ChugId2Name[$group_id][$chug_id] = $row[2]; // {group ID -> (chug ID -> name, ...), ...}
+        }
+        
+        // Next, map camper ID to an ordered list of preferred chugim, by
+        // group Id.
+        $camperId2Group2PrefList = array();
+        $keylist = array("first_choice_id", "second_choice_id", "third_choice_id", "fourth_choice_id", "fifth_choice_id", "sixth_choice_id");
+        $result = getDbResult("SELECT * FROM preferences WHERE block_id = $block_id AND camper_id IN $camperInString ORDER BY group_id");
+        while ($row = $result->fetch_assoc()) {
+            $group_id = intval($row["group_id"]);
+            $camper_id = intval($row["camper_id"]);
+            if (! array_key_exists($camper_id, $camperId2Group2PrefList)) {
+                $camperId2Group2PrefList[$camper_id] = array();
+            }
+            if (! array_key_exists($group_id, $camperId2Group2PrefList[$camper_id])) {
+                $camperId2Group2PrefList[$camper_id][$group_id] = array();
+            }
+            foreach ($keylist as $colKey) {
+                if ($row[$colKey] == "NULL") {
+                    continue;
+                }
+                // {camper ID -> {group ID -> (ordered list of preferred chug names)}}
+                array_push($camperId2Group2PrefList[$camper_id][$group_id], intval($row[$colKey]));
+            }
+        }
+        // Loop through groups, fetching matches as we go.
+        $result = getDbResult("SELECT group_id, name FROM groups");
+        $groupId2Name = array();
+        $groupId2ChugId2MatchedCampers = array();
+        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+            $group_id = intval($row[0]);
+            $group_name = $row[1];
+            $groupId2Name[$group_id] = $group_name;
+            if (! array_key_exists($group_id, $groupId2ChugId2MatchedCampers)) {
+                $groupId2ChugId2MatchedCampers[$group_id] = array();
+            }
+            $result2 = getDbResult("SELECT camper_id, chug_id FROM matches WHERE block_id = $block_id and group_id = $group_id");
+            while ($row2 = mysqli_fetch_array($result2, MYSQL_NUM)) {
+                $camper_id = intval($row2[0]);
+                $chug_id = intval($row2[1]);
+                if (! array_key_exists($chug_id, $groupId2ChugId2MatchedCampers[$group_id])) {
+                    $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
+                }
+                array_push($groupId2ChugId2MatchedCampers[$group_id][$chug_id], $camper_id);
+            }
+        }
+        $retVal = array();
+        $retVal["groupId2ChugId2Name"] = $groupId2ChugId2Name;
+        $retVal["camperId2Group2PrefList"] = $camperId2Group2PrefList;
+        $retVal["groupId2ChugId2MatchedCampers"] = $groupId2ChugId2MatchedCampers;
+        $retVal["groupId2Name"] = $groupId2Name;
+        
+        echo json_encode($retVal);
+        exit();
+    }
+    
+    // Get the names for an edah and block.
     if (isset($_POST["names_for_id"])) {
         $edah_id = $_POST["edah_id"];
         $block_id = $_POST["block_id"];
         $edah_name = "";
         $block_name = "";
-        $sql = "SELECT name FROM edot where edah_id=$edah_id";
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => "Database error: can't connect to DB")));
-        }
+        $result = getDbResult("SELECT name FROM edot where edah_id=$edah_id");
         if ($result->num_rows > 0) {
             $row = $result->fetch_row();
             $edah_name = $row[0];
         }
-        $sql = "SELECT name FROM blocks where block_id=$block_id";
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => "Database error: can't connect to DB")));
-        }
+        $result = getDbResult("SELECT name FROM blocks where block_id=$block_id");
         if ($result->num_rows > 0) {
             $row = $result->fetch_row();
             $block_name = $row[0];
@@ -34,23 +126,18 @@
                         'edahName' => $edah_name,
                         'blockName' => $block_name
                         );
-        $mysqli->close();
         echo json_encode($retVal);
         exit();
     }
     
+    // Get the assignment stats, first running the assignment algorithm if
+    // requested.
     if (isset($_POST["reassign"]) ||
         isset($_POST["get_current_stats"])) {
         $edah_id = $_POST["edah"];
         $block_id = $_POST["block"];
     
-        $sql = "SELECT group_id, name FROM groups";
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            $dbErr = dbErrorString($sql, $mysqli->error);
-            echo genErrorPage($dbErr);
-            exit;
-        }
+        $result = getDbResult("SELECT group_id, name FROM groups");
         // Loop through groups.  Do each assignment (if requested), and grab assignment
         // stats.
         $err = "";
@@ -68,13 +155,7 @@
                     die(json_encode(array("error" => $err)));
                 }
             }
-            $sql = "SELECT * FROM assignments WHERE edah_id = $edah_id AND " .
-            "group_id = $group_id AND block_id = $block_id";
-            $result2 = $mysqli->query($sql);
-            if ($result2 == FALSE) {
-                header('HTTP/1.1 500 Internal Server Error');
-                die(json_encode(array("error" => "Database error: can't connect to DB")));
-            }
+            $result2 = getDbResult("SELECT * FROM assignments WHERE edah_id = $edah_id AND group_id = $group_id AND block_id = $block_id");
             $row = mysqli_fetch_assoc($result2);
             // Increment choice counts
             foreach ($choiceKeys as $choiceKey) {
@@ -113,7 +194,7 @@
         }
         $stats["statstxt"] = $statstxt;
         
-        $mysqli->close();
+        
         echo json_encode($stats);
         
         exit;
