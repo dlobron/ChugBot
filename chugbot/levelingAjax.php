@@ -40,17 +40,11 @@
         $camperInString .= ")";
         
         // Get preferences (as strings) for these campers.
-        // First, map chug ID to name, by group.  We'll use this in a few places
-        // below.
-        $groupId2ChugId2Name = array();
-        $result = getDbResult("SELECT group_id, chug_id, name FROM chugim");
+        // First, map chug ID to name.
+        $chugId2Name = array();
+        $result = getDbResult("SELECT chug_id, name FROM chugim");
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
-            $group_id = intval($row[0]);
-            $chug_id = intval($row[1]);
-            if (! array_key_exists($group_id, $groupId2ChugId2Name)) {
-                $groupId2ChugId2Name[$group_id] = array();
-            }
-            $groupId2ChugId2Name[$group_id][$chug_id] = $row[2]; // {group ID -> (chug ID -> name, ...), ...}
+            $chugId2Name[intval($row[0])] = $row[1];
         }
         
         // Next, map camper ID to an ordered list of preferred chugim, by
@@ -68,10 +62,11 @@
                 $camperId2Group2PrefList[$camper_id][$group_id] = array();
             }
             foreach ($keylist as $colKey) {
-                if ($row[$colKey] == "NULL") {
-                    continue;
+                if (! array_key_exists($colKey, $row) ||
+                    $row[$colKey] == "NULL") {
+                    continue; // No preference.
                 }
-                // {camper ID -> {group ID -> (ordered list of preferred chug names)}}
+                // {camper ID -> {group ID -> (ordered list of preferred chug IDs)}}
                 array_push($camperId2Group2PrefList[$camper_id][$group_id], intval($row[$colKey]));
             }
         }
@@ -97,10 +92,11 @@
             }
         }
         $retVal = array();
-        $retVal["groupId2ChugId2Name"] = $groupId2ChugId2Name;
-        $retVal["camperId2Group2PrefList"] = $camperId2Group2PrefList;
-        $retVal["groupId2ChugId2MatchedCampers"] = $groupId2ChugId2MatchedCampers;
-        $retVal["groupId2Name"] = $groupId2Name;
+        $retVal["camperId2Group2PrefList"] = $camperId2Group2PrefList; // {Camper ID -> {Group ID->(Chug ID pref list)}}
+        $retVal["groupId2ChugId2MatchedCampers"] = $groupId2ChugId2MatchedCampers; // {Group ID->{Chug ID->(Matched camper ID list)}}
+        $retVal["groupId2Name"] = $groupId2Name; // {Group ID -> Group Name}
+        $retVal["camperId2Name"] = $camperId2Name; // {Camper ID -> Camper Name}
+        $retVal["chugId2Name"] = $chugId2Name;   // {Chug ID -> Chug Name}
         
         echo json_encode($retVal);
         exit();

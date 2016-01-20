@@ -345,10 +345,10 @@
                 if (isDuplicate($candidateChug, $matchesForThisCamper)) {
                     if ($camper->needs_first_choice == FALSE) {
                         array_push($camperIdsToAssign, $camper->camper_id);
-                        debugLog("Skipping duplicate " . $candidateChugLcName);
+                        debugLog("Skipping duplicate " . $candidateChug->name);
                         continue;
                     } else {
-                        debugLog("Skipping duplicate " . $candidateChugLcName . ", needs first choice");
+                        debugLog("Skipping duplicate " . $candidateChug->name . ", needs first choice");
                     }
                 }
             }

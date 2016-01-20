@@ -33,46 +33,48 @@
     font-size: 1.5em;    
     }
     .groupholder {
-    border:2px solid #ccc;
-    position: relative;
-    margin: auto;
-    margin-top: 20px;
+    margin: 10px;
+    border:4px solid #ccc;
+    padding: 2px 5px 5px 5px;
     text-align: center;
-    width:85%;
+    width:75%;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     }
     .chugholder {
+    background-color: white;
     border: 2px dotted silver;
-    width: 90%;
-    min-height: 50px;
+    width: 65%;
+    min-height: 30px;
     margin: 0;
-    padding: 5px 0 0 0;
-    float: left;
-    margin-right: 10px;
+    padding: 2px 2px 2px 2px;
     margin-left: 20px;
     margin-top: 5px;
     margin-bottom: 10px;
     border-radius: 5px;
     -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
+    -webkit-border-radius: 5px;    
    }
-   .camperholder {
-    margin: 0 5px 5px 5px;
-    padding: 5px;
+   .chugholder.custom-state-active { 
+    background: #eee; 
+    }
+   .gallery li {
+    float: left; 
+    width: 96px; 
+    padding: 0.2em; 
+    margin: 0 0.4em 0.4em 0
+    text-align: center;
     font-size: 1.2em;
-    width: 120px;
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     }
+    .chugholder li h5 { 
+    margin: 0 0 0.4em; 
+    cursor: move; 
+    }
   </style>
-  <script>
-    $(function() {
-    $( ".camperholder" ).draggable({ containment: ".groupholder" });    
-    $( ".camperholder" ).button();
-  });
-  </script>
+
   </head>
   <body>
 
@@ -103,6 +105,8 @@
   </div>
   
   <div id="filltarget"></div>
+
+  <div id="fillmatches"></div>
   
   </body>
 </html>

@@ -48,11 +48,11 @@ function doAssignmentAjax(action, title, errText,
 	    });
 }
 
-// Get the current match and chug info for this edah/block, and display it by group.  This is the main
-// engine for the page.
-$(function() {
+// Get the current match and chug info for this edah/block, and display it by group. 
+function getAndDisplayCurrentMatches() {
         var edah = getParameterByName("edah");
         var block = getParameterByName("block");
+	var succeeded = false;
 	$.ajax({
                 url: 'levelingAjax.php',
                     type: 'post',
@@ -60,14 +60,104 @@ $(function() {
 			edah_id: edah, 
 			block_id: block },
                     success: function(json) {
-		    console.log(JSON.stringify(json)); // DBG
-		},
-		    error: function(xhr, desc, err) {
-                    console.log(xhr);
-                    console.log("Details: " + desc + "\nError:" + err);
+		    succeeded = true;
+		    // Goal: display a field for each chug.  The chug fields should be grouped
+		    // by group (aleph, bet, gimel).  Each field should contain camper containers,
+		    // according to how campers are currently matched.
+		    // Camper containers should be labeled with the camper's name, and colored according
+		    // to the pref level of the assignment.  They should be draggable between chug fields,
+		    // but only within the enclosing group (i.e., when changing the aleph assignment for
+		    // a camper, it should be possible to move within aleph choices only).  Also, the tooltip
+		    // for the camper boxes should show an ordered list of chugim, top to bottom.  
+		    // "B-zhe moi.  This, I know from nothing!" - N. Lobachevsky.
+		    var html = "";
+		    var groupId2Name = json["groupId2Name"];
+		    var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
+		    var camperId2Group2PrefList = json["camperId2Group2PrefList"];
+		    var chugId2Name = json["chugId2Name"];
+		    var camperId2Name = json["camperId2Name"];
+		    var prefColors = ["green", "yellow", "orange", "red"];
+		    $.each(groupId2ChugId2MatchedCampers,
+			   function(groupId, chugId2MatchedCampers) {
+			       // Add a holder for each group (aleph, bet, gimel).
+			       var groupName = groupId2Name[groupId];
+			       html += "<div class=\"groupholder\" name=\"" + groupId + "\" >\n";
+			       html += "<h3>" + groupName + " assignments</h3>\n";
+			       // Within each group, add a holder for campers, and then populate with
+			       // campers.
+			       $.each(chugId2MatchedCampers,
+				      function(chugId, matchedCampers) {
+					  // Add a chug holder, and put camper holders inside it.
+					  var chugName = chugId2Name[chugId];					  
+					  html += "<div name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
+					  html += "<h4>" + chugName + "</h4>";
+					  html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
+					  $.each(matchedCampers,
+						 function(index, camperId) {
+						     var camperName = camperId2Name[camperId];
+						     var prefListText = "";
+						     var prefColor = "";
+						     if (camperId in camperId2Group2PrefList) {
+							 var group2PrefList = camperId2Group2PrefList[camperId];
+							 if (groupId in group2PrefList) {
+							     var prefList = group2PrefList[groupId];
+							     $.each(prefList, function(index, prefChugId) {
+								     var listNum = index + 1;
+								     if (prefListText == "") {
+									 prefListText += "Preferences:\n";
+								     }
+								     prefListText += listNum + ". " + chugId2Name[prefChugId] + "\n";
+								     if (prefChugId == chugId) {
+									 if (index < prefColors.length) {
+									     prefColor = prefColors[index];
+									 } else {
+									     prefColor = prefColors[prefColors.length - 1];
+									 }
+								     }
+								 });
+							 }
+						     }
+						     if (prefListText) {
+							 // If we have a pref list, write it as a tool tip.
+							 titleText = "title=\"" + prefListText + "\"";
+						     }
+						     html += "<li value=\"" + camperId + "\" class=\"ui-widget-content\" color=\"" + 
+							 prefColor + "\"" + titleText + " ><h5 class=\"ui-widget-header\">" + 
+							 camperName + "</h5></li>\n";
+						 });
+					  html += "</ul><br style=\"clear: both\"></div>\n";
+				      });
+			   html += "</div>\n";
+			   });;
+		    $("#fillmatches").html(html);
+                },
+                    error: function(xhr, desc, err) {
+		    console.log(xhr);
+		    console.log("Details: " + desc + "\nError:" + err);
                 }
-	    })
-	    });
+            }).then(function(){
+                    if (succeeded) {
+			$("ul.gallery li").draggable({
+				scroll: false,
+				    revert: "invalid", // when not dropped, the item will revert back
+				    cursor: "move"
+				    });
+			$('ul.gallery li').each(function(){
+				var $el = $(this);
+				$el.draggable({containment:$el.closest('.groupholder')    });
+			    });
+			// Let chug holders be droppable.
+			$(".chugholder").droppable({
+				accept: "ul.gallery li",
+				    activeClass: "ui-state-active",
+				    hoverClass: "ui-state-hover",
+				    drop: function( event, ui ) {
+				    $( this ).toggleClass( "ui-state-highlight" );
+				}
+			    });
+		    }
+		});                    
+}
 
 // Get the current assignment stats for this edah/block.
 $(function() {
@@ -77,7 +167,7 @@ $(function() {
 			 edah, block);
     });
 
-// Get the name for the current edah and block IDs.
+// Get the name for the current edah and block IDs, and fill them.
 $(function() {
 	var edahId = getParameterByName('edah');
 	var blockId = getParameterByName('block');
@@ -108,12 +198,19 @@ $(function() {
             })
 	    });
 
+// Display current matches.
+$(function() {
+	getAndDisplayCurrentMatches();
+    });
+
 // Action for the Cancel button.
 $(function() {
         $("#Cancel").click(function(event) {
                 event.preventDefault();
 		// Simulate clicking a link, so this page goes in the browser history.
-		window.location.href("staffHome.php");
+		var curUrl = window.location.href;
+		var homeUrl = curUrl.replace("levelHome.html", "staffHome.php");
+		window.location.href = homeUrl;
 	    })
 	    });
 
@@ -121,16 +218,34 @@ $(function() {
 $(function() {
 	var edah = getParameterByName("edah");
 	var block = getParameterByName("block");
-	var curUrl = window.location.href;
-	var homeUrl = curUrl.replace("levelHome.html", "staffHome.php");
         $("#Reassign").click(function(event) {
                 event.preventDefault();
 		doAssignmentAjax("reassign", "Assignment saved!", "reassign",
 				 edah, block);
+		getAndDisplayCurrentMatches();
             });
     });
 
 // Action for the Save button
 // Collect the current assignments and send them to the ajax page to be
 // saved in the DB.
-// TODO
+$(function() {
+	var edah = getParameterByName("edah");
+	var block = getParameterByName("block");
+        $("#Reassign").click(function(event) {
+                event.preventDefault();
+		// Loop through the groups, and then loop through the 
+		// chugim within each group.
+		var arrayOrderedLists = [];
+                var groupDivs = document.getElementsByName("groupholder");
+                for (var i = 0; i < groupDivs.length; i++){
+                    var groupElement = groupDivs[i];
+		    var groupId = groupElement.getAttribute("name");
+		    var chugDivs = groupElement.getElementsByName("chugholder");
+                    for (var j = 0; j < chugDivs.length; j++) {
+			var ulElement = ulList[j];
+			var listName = ulElement.getAttribute("name");
+		    }
+		}
+	    });
+    });
