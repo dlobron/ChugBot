@@ -144,7 +144,7 @@ function getAndDisplayCurrentMatches() {
 				    });
 			$('ul.gallery li').each(function(){
 				var $el = $(this);
-				$el.draggable({containment:$el.closest('.groupholder')    });
+				$el.draggable({containment:$el.closest('.groupholder')});
 			    });
 			// Let chug holders be droppable.
 			$(".chugholder").droppable({
@@ -152,7 +152,7 @@ function getAndDisplayCurrentMatches() {
 				    activeClass: "ui-state-active",
 				    hoverClass: "ui-state-hover",
 				    drop: function( event, ui ) {
-				    $( this ).toggleClass( "ui-state-highlight" );
+				    $( this ).addClass( "ui-state-highlight" );
 				}
 			    });
 		    }
@@ -232,19 +232,32 @@ $(function() {
 $(function() {
 	var edah = getParameterByName("edah");
 	var block = getParameterByName("block");
-        $("#Reassign").click(function(event) {
+        $("#Save").click(function(event) {
                 event.preventDefault();
 		// Loop through the groups, and then loop through the 
 		// chugim within each group.
-		var arrayOrderedLists = [];
-                var groupDivs = document.getElementsByName("groupholder");
+		var assignments = new Object(); // Associative array
+		console.log("DBG: Starting loop");
+                var groupDivs = $(document).find(".groupholder");
                 for (var i = 0; i < groupDivs.length; i++){
                     var groupElement = groupDivs[i];
 		    var groupId = groupElement.getAttribute("name");
-		    var chugDivs = groupElement.getElementsByName("chugholder");
+		    var chugDivs = $(groupElement).find(".chugholder");
+		    assignments[groupId] = new Object();// Associative array 
+		    console.log("DBG: Group ID " + groupId);
                     for (var j = 0; j < chugDivs.length; j++) {
-			var ulElement = ulList[j];
-			var listName = ulElement.getAttribute("name");
+			var chugDiv = chugDivs[j];
+			var chugId = chugDiv.getAttribute("name");
+			var ulElement = $(chugDiv).find("ul");
+			var camperElements = $(ulElement).find("li");
+			console.log("DBG: Chug ID " + chugId);
+			assignments[groupId][chugId] = [];
+			for (var k = 0; k < camperElements.length; k++) {
+			    var camperElement = camperElements[k];
+			    var camperId = camperElement.getAttribute("value");
+			    console.log("DBG: Camper ID " + camperId + " is here!");
+			    assignments[groupId][chugId].push(camperId);
+			}
 		    }
 		}
 	    });
