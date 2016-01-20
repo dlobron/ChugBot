@@ -1,6 +1,9 @@
 # To load this file:
 # source <path-to-file>
 # Remember to remove test data from the end of this file before loading for production use.
+# TODO: We might need a "bunks" table, with a foreign key from campers, for report generation.
+# We might also want a "counselors" table, similar to campers.  A counselor can be assigned to
+# a bunk, and campers are also assigned to a bunk.  A bunk has a name and an ID.
 
 # Create the database
 CREATE DATABASE IF NOT EXISTS chugbot_db COLLATE utf8_unicode_ci;
