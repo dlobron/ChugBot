@@ -69,7 +69,7 @@ function getAndDisplayCurrentMatches() {
 		    // but only within the enclosing group (i.e., when changing the aleph assignment for
 		    // a camper, it should be possible to move within aleph choices only).  Also, the tooltip
 		    // for the camper boxes should show an ordered list of chugim, top to bottom.  
-		    // "B-zhe moi.  This, I know from nothing!" - N. Lobachevsky.
+		    // "B-zhe moi!  This, I know from nothing!" - N. Lobachevsky.
 		    var html = "";
 		    var groupId2Name = json["groupId2Name"];
 		    var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
@@ -146,17 +146,23 @@ function getAndDisplayCurrentMatches() {
 				var $el = $(this);
 				$el.draggable({containment:$el.closest('.groupholder')});
 			    });
-			// Let chug holders be droppable.
-			$(".chugholder").droppable({
-				accept: "ul.gallery li",
-				    activeClass: "ui-state-active",
-				    hoverClass: "ui-state-hover",
-				    drop: function( event, ui ) {
-				    $( this ).addClass( "ui-state-highlight" );
-				}
+			// Let chug holders be droppable.  When a camper holder is dragged, move from
+			// old chug to new, and highlight the camper.
+			$('.chugholder').each(function(){
+				var $el = $(this);
+				$el.droppable({accept: "ul.gallery li",
+					    activeClass: "ui-state-active",
+					    hoverClass: "ui-state-hover",
+					    drop: function(event, ui) {
+					    var droppedOn = $(this).find(".gallery").addBack(".gallery");
+					    var dropped = ui.draggable;
+					    $(dropped).addClass("ui-state-highlight");
+					    $(dropped).detach().css({top:0,left:0}).appendTo(droppedOn);
+					}
+				    });
 			    });
-		    }
-		});                    
+		    } // End if succeeded	      
+		});
 }
 
 // Get the current assignment stats for this edah/block.
