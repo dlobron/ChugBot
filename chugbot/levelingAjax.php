@@ -14,6 +14,27 @@
         return $result;
     }
     
+    // Save changes to the DB.  The "assignments" object is an associative array
+    // of the form:
+    // assignments[groupId][chugId] = (list of matched camper IDs)
+    // We will delete and then insert into the matches table.  We'l also update
+    // the assignments table, based on the pref list for each camper, and the
+    // min/max for each chug.
+    if (isset($_POST["save_changes"])) {
+        $edah_id = $_POST["edah"];
+        $block_id = $_POST["block"];
+        $assignments = $_POST["assignments"];
+        foreach ($pref_arrays as $groupId => $chugId2MatchList) {
+            foreach ($chugId2MatchList as $chugId => $matchList) {
+                foreach ($matchList as $camperId) {
+                    
+        
+        
+        $retVal["ok"] = 1;
+        echo json_encode($retVal);
+        exit;
+    }
+    
     // Grab match, chug, and preference info, for display on the main leveling
     // page.
     if (isset($_POST["matches_and_prefs"])) {

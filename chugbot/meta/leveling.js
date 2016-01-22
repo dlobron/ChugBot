@@ -106,7 +106,9 @@ function getAndDisplayCurrentMatches() {
 								     if (prefListText == "") {
 									 prefListText += "Preferences:\n";
 								     }
-								     prefListText += listNum + ". " + chugId2Name[prefChugId] + "\n";
+								     if (prefChugId in chugId2Name) {
+									 prefListText += listNum + ". " + chugId2Name[prefChugId] + "\n";
+								     }
 								     if (prefChugId == chugId) {
 									 if (index < prefColors.length) {
 									     prefColor = prefColors[index];
@@ -226,6 +228,10 @@ $(function() {
 	var block = getParameterByName("block");
         $("#Reassign").click(function(event) {
                 event.preventDefault();
+		var r = confirm("Reassign campers on page? Please click OK to confirm.");
+		if (r != true) {
+		    return;
+		}
 		doAssignmentAjax("reassign", "Assignment saved!", "reassign",
 				 edah, block);
 		getAndDisplayCurrentMatches();
@@ -240,31 +246,49 @@ $(function() {
 	var block = getParameterByName("block");
         $("#Save").click(function(event) {
                 event.preventDefault();
+		var r = confirm("Save changes? Please click OK to confirm.");
+		if (r != true) {
+		    return;
+		}
 		// Loop through the groups, and then loop through the 
 		// chugim within each group.
 		var assignments = new Object(); // Associative array
-		console.log("DBG: Starting loop");
                 var groupDivs = $(document).find(".groupholder");
-                for (var i = 0; i < groupDivs.length; i++){
+                for (var i = 0; i < groupDivs.length; i++) {
                     var groupElement = groupDivs[i];
 		    var groupId = groupElement.getAttribute("name");
 		    var chugDivs = $(groupElement).find(".chugholder");
 		    assignments[groupId] = new Object();// Associative array 
-		    console.log("DBG: Group ID " + groupId);
                     for (var j = 0; j < chugDivs.length; j++) {
 			var chugDiv = chugDivs[j];
 			var chugId = chugDiv.getAttribute("name");
 			var ulElement = $(chugDiv).find("ul");
 			var camperElements = $(ulElement).find("li");
-			console.log("DBG: Chug ID " + chugId);
 			assignments[groupId][chugId] = [];
 			for (var k = 0; k < camperElements.length; k++) {
 			    var camperElement = camperElements[k];
 			    var camperId = camperElement.getAttribute("value");
-			    console.log("DBG: Camper ID " + camperId + " is here!");
 			    assignments[groupId][chugId].push(camperId);
 			}
 		    }
 		}
+		var values = {};
+		values["save_changes"] = 1;
+		values["assignments"] = assignments;
+		values["edah"] = edah;
+		values["block"] = block;
+		$.ajax({
+			url: 'levelingAjax.php',
+			    type: 'post',
+			    data: values,
+			    success: function(json) {
+			    doAssignmentAjax("get_current_stats", "Changes Saved! Stats:", "save your changes",
+					     edah, block);
+			},
+			    error: function(xhr, desc, err) {
+			    console.log(xhr);
+			    console.log("Details: " + desc + "\nError:" + err);
+			}
+		    });
 	    });
     });
