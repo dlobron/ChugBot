@@ -338,7 +338,7 @@ INSERT INTO chug_instances(chug_id, block_id) VALUES (17, 3);
 INSERT INTO chug_instances(chug_id, block_id) VALUES (18, 3);
 
 # Insert prefs for all campers for block 1, for each group.
-INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (1, 1, 1, 4, 2, 3, 1, 5, 6);
+INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (1, 1, 1, NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (2, 1, 1, 4, 2, 3, 1, 5, 6);
 INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (3, 1, 1, 4, 1, 2, 3, 5, 6);
 INSERT INTO preferences (camper_id, group_id, block_id, first_choice_id, second_choice_id, third_choice_id, fourth_choice_id, fifth_choice_id, sixth_choice_id) VALUES (4, 1, 1, 4, 5, 2, 6, NULL, NULL);

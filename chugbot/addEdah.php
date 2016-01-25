@@ -4,7 +4,7 @@
     bounceToLogin();
     
     // define variables and set to empty values
-    $name = "";
+    $name = $rosh_name = $rosh_phone = $comments = "";
     $nameErr = $dbErr = "";
     $fromStaffHomePage = FALSE;
     

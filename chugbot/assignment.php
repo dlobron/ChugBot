@@ -187,6 +187,7 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $c = new Chug($row[0], $row[1], $row[2], $row[3]);
             $chugim[$c->chug_id] = $c;
+            error_log("DBG: made chugim entry for ID " . $c->chug_id);
         }
         
         // Grab camper pref lists in this block, by group.  We'll use this to compute each camper's
@@ -298,7 +299,13 @@
                 assign($camper, $assignments, $maxFreeChug);
                 continue;
             }
+            if (! array_key_exists($candidateChugId, $chugim)) {
+                error_log("ERROR: Preferred chug ID " . $candidateChugId . " not found in input set");
+                $err = "Chug choices for " . $camper->name . " contains illegal chug ID " . $candidateChugId;
+                return false;
+            }
             $candidateChug =& $chugim[$candidateChugId];
+            
             $camper->choice_level++; // Increment the choice level (it starts at zero).
             // At this point, we check to see if this camper has already been assigned
             // to this chug in this block in a different group.  We're relying on names being

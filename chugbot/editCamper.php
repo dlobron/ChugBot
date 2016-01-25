@@ -97,8 +97,6 @@
                 $activeNum = 0;
             }
             
-            $homeAnchor = homeAnchor();
-            
             if ($submitData == TRUE) {
                 // Insert edited data.
                 $sql =
@@ -121,10 +119,10 @@
                     header("Location: $rankUrl");
                     exit;
                 } else {
-                    $successMessage = "<h3>$first $last updated!  Please edit below if needed, or return $homeAnchor.</h3>";
+                    $successMessage = "<h3>$first $last updated!  Please edit below if needed, then click \"Submit and Continue\".</h3>";
                 }
             } else if ($fromAddPage) {
-                $successMessage = "<h3>$first $last added successfully!  Please edit below if needed, or return $homeAnchor.</h3>";
+                $successMessage = "<h3>$first $last added successfully!  Please edit below if needed, then click \"Submit and Continue\".</h3>";
             }
         }
     } else {

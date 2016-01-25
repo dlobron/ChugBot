@@ -4,7 +4,7 @@
     bounceToLogin();
     
     // define variables and set to empty values
-    $name = $edah_id = "";
+    $name = $edah_id = $rosh_name = $rosh_phone = $comments = "";
     $nameErr = $dbErr = $addedStr = "";
     $submitData = FALSE;
     $fromAddPage = FALSE;
@@ -31,7 +31,7 @@
             // Get the ID (primary key) for the name that was edited.  The database
             // enforces name uniqueness.
             if (empty($edah_id)) {
-                $sql = "SELECT edah_id FROM edot WHERE name=\"$name\"";
+                $sql = "SELECT edah_id,rosh_name,rosh_phone,comments FROM edot WHERE name=\"$name\"";
                 $result = $mysqli->query($sql);
                 if ($result == FALSE) {
                     $dbErr = dbErrorString($sql, $mysqli->error);
@@ -40,6 +40,9 @@
                 } else {
                     $row = $result->fetch_array(MYSQLI_NUM);
                     $edah_id = $row[0];
+                    $rosh_name = $row[1];
+                    $rosh_phone = $row[2];
+                    $comments = $row[3];
                 }
                 mysqli_free_result($result);
             }

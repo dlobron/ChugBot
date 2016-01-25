@@ -44,6 +44,9 @@
         $err = "";
         $ok = do_assignment($edah_id, $block_id, $group_id, $err);
         if (! $ok) {
+            if (empty($err)) {
+                $err = "Unknown assignment error";
+            }
             echo genErrorPage($err);
             exit;
         }

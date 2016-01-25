@@ -99,7 +99,7 @@ function getAndDisplayCurrentMatches() {
 						 function(index, camperId) {
 						     var camperName = camperId2Name[camperId];
 						     var prefListText = "";
-						     var prefClass = "";
+						     var prefClass = prefClasses[prefClasses.length - 1];
 						     if (camperId in camperId2Group2PrefList) {
 							 var group2PrefList = camperId2Group2PrefList[camperId];
 							 if (groupId in group2PrefList) {
