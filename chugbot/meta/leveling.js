@@ -23,13 +23,13 @@ function doAssignmentAjax(action, title, errText,
 		    $( "#results" ).html(function() {
 				    txt = "<h3>" + title + "</h3>";
 				    txt += "<ul>";
-				    txt += "<li>Chugim under min: ";
+				    txt += "<li><b>Chugim under min</b>: ";
 				    txt += data.under_min_list;
 				    txt += "</li>";
-				    txt += "<li>Chugim over max: ";
+				    txt += "<li><b>Chugim over max</b>: ";
 				    txt += data.over_max_list;
 				    txt += "</li>";
-				    txt += "<li>Assignment Stats:<br>";
+				    txt += "<li><b>Assignment Stats</b>:<br>";
 				    txt += data.statstxt;
 				    txt += "</li></ul>";
 				    return txt;
@@ -49,6 +49,8 @@ function doAssignmentAjax(action, title, errText,
 }
 
 // Get the current match and chug info for this edah/block, and display it by group. 
+// Also, display chugim with no matches, because the user needs the ability to drag
+// to them.
 function getAndDisplayCurrentMatches() {
         var edah = getParameterByName("edah");
         var block = getParameterByName("block");
@@ -61,7 +63,7 @@ function getAndDisplayCurrentMatches() {
 			block_id: block },
                     success: function(json) {
 		    succeeded = true;
-		    // Goal: display a field for each chug.  The chug fields should be grouped
+		    // Display a field for each chug.  The chug fields should be grouped
 		    // by group (aleph, bet, gimel).  Each field should contain camper containers,
 		    // according to how campers are currently matched.
 		    // Camper containers should be labeled with the camper's name, and colored according
@@ -76,7 +78,7 @@ function getAndDisplayCurrentMatches() {
 		    var camperId2Group2PrefList = json["camperId2Group2PrefList"];
 		    var chugId2Name = json["chugId2Name"];
 		    var camperId2Name = json["camperId2Name"];
-		    var prefColors = ["green", "yellow", "orange", "red"];
+		    var prefClasses = ["li_first_choice", "li_second_choice", "li_third_choice", "li_fourth_choice"];
 		    $.each(groupId2ChugId2MatchedCampers,
 			   function(groupId, chugId2MatchedCampers) {
 			       // Add a holder for each group (aleph, bet, gimel).
@@ -96,7 +98,7 @@ function getAndDisplayCurrentMatches() {
 						 function(index, camperId) {
 						     var camperName = camperId2Name[camperId];
 						     var prefListText = "";
-						     var prefColor = "";
+						     var prefClass = "";
 						     if (camperId in camperId2Group2PrefList) {
 							 var group2PrefList = camperId2Group2PrefList[camperId];
 							 if (groupId in group2PrefList) {
@@ -110,10 +112,10 @@ function getAndDisplayCurrentMatches() {
 									 prefListText += listNum + ". " + chugId2Name[prefChugId] + "\n";
 								     }
 								     if (prefChugId == chugId) {
-									 if (index < prefColors.length) {
-									     prefColor = prefColors[index];
+									 if (index < prefClasses.length) {
+									     prefClass = prefClasses[index];
 									 } else {
-									     prefColor = prefColors[prefColors.length - 1];
+									     prefClass = prefClasses[prefClasses.length - 1];
 									 }
 								     }
 								 });
@@ -123,9 +125,8 @@ function getAndDisplayCurrentMatches() {
 							 // If we have a pref list, write it as a tool tip.
 							 titleText = "title=\"" + prefListText + "\"";
 						     }
-						     html += "<li value=\"" + camperId + "\" class=\"ui-widget-content\" color=\"" + 
-							 prefColor + "\"" + titleText + " ><h5 class=\"ui-widget-header\">" + 
-							 camperName + "</h5></li>\n";
+						     html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" "  + titleText;
+						     html += "><h5 class=\"ui-widget-header\">" + camperName + "</h5></li>\n";
 						 });
 					  html += "</ul><br style=\"clear: both\"></div>\n";
 				      });
@@ -158,7 +159,9 @@ function getAndDisplayCurrentMatches() {
 					    drop: function(event, ui) {
 					    var droppedOn = $(this).find(".gallery").addBack(".gallery");
 					    var dropped = ui.draggable;
-					    $(dropped).addClass("ui-state-highlight");
+					    //$(dropped).addClass("ui-state-highlight");
+					    var camperId = $(dropped).attr("value");
+					    console.log("DBG: dropped camper ID = " + camperId);
 					    $(dropped).detach().css({top:0,left:0}).appendTo(droppedOn);
 					}
 				    });

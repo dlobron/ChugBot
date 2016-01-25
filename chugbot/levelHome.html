@@ -73,6 +73,18 @@
     margin: 0 0 0.4em; 
     cursor: move; 
     }
+    .li_first_choice {
+    background: #1aff1a;
+    }
+    .li_second_choice {
+    background: #ffff80;
+    }
+    .li_third_choice {
+    background: #ffa500;
+    }
+    .li_fourth_choice {
+    background: #ff3333;
+    }
   </style>
 
   </head>
@@ -83,7 +95,10 @@
     <h2 class="edahfill">Edah: EDAH</h2>
     <h2 class="blockfill">Time Block: BLOCK</h2>
     <p>This page displays suggested chug assignments for one edah in a time
-    block.</p>
+    block.  Assignments are highlighted according to the camper's preference:
+    <span class="li_first_choice">first</span>, <span class="li_second_choice">second</span>, 
+    <span class="li_third_choice">third</span>, <span class="li_fourth_choice">fourth or worse</span>.
+    </p>
     <ul>
     <li>To change a camper's assignment, drag the camper's bubble from one
     activity to another.  When you are ready to save your changes, click

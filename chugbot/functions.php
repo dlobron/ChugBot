@@ -7,7 +7,30 @@
         }
     }
     
-    function genSuccessMessage ($message) {
+    function overUnder($chugim, &$underMin, &$overMax) {
+        foreach ($chugim as $chug) {
+            if ($chug->assigned_count < $chug->min_size) {
+                $amtUnder = $chug->min_size - $chug->assigned_count;
+                if (empty($underMin)) {
+                    $underMin = $chug->name;
+                } else {
+                    $underMin .= ", $chug->name";
+                }
+                $underMin .= " (-" . strval($amtUnder) . ")";
+            }
+            if ($chug->assigned_count > $chug->max_size) {
+                $amtOver = $chug->assigned_count - $chug->max_size;
+                if (empty($overMax)) {
+                    $overMax = $chug->name;
+                } else {
+                    $overMax .= ", $chug->name";
+                }
+                $overMax .= " (+" . strval($amtOver) . ")";
+            }
+        }
+    }
+    
+    function genSuccessMessage($message) {
         if (empty($message)) {
             return "";
         }
@@ -218,8 +241,8 @@ EOM;
             while ($row = $result->fetch_array(MYSQLI_NUM)) {
                 $id2Name[$row[0]] = $row[1];
             }
+            mysqli_free_result($result);
         }
-        mysqli_free_result($result);
     }
     
     function test_input($data, $nosplit = FALSE) {

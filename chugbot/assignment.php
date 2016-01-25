@@ -1,40 +1,6 @@
 <?php
-    include 'functions.php';
-    
-    class Chug {
-        function __construct($name, $max_size, $min_size, $chug_id) {
-            $this->name = $name;
-            $this->max_size = intval($max_size);
-            $this->min_size = intval($min_size);
-            $this->chug_id = intval($chug_id);
-            // A max of 0 means no max: set to our "infinity" value.
-            if ($this->max_size == 0) {
-                $this->max_size = MAX_SIZE_NUM;
-            }
-        }
-        function chugFree() {
-            return ($this->max_size > $this->assigned_count);
-        }
-        public $name = "";
-        public $max_size = 0;
-        public $min_size = 0;
-        public $chug_id = -1;
-        public $assigned_count = 0;
-    };
-    
-    class Camper {
-        function __construct($camper_id, $first, $last, $needs_first_choice) {
-            $this->camper_id = intval($camper_id);
-            $this->name = $first;
-            $this->name .= " " . $last;
-            $this->needs_first_choice = intval($needs_first_choice);
-        }
-        public $camper_id = -1;
-        public $name = "";
-        public $needs_first_choice = 0;
-        public $choice_level = 0;
-        public $prefs = array();
-    };
+    include_once 'functions.php';
+    include_once 'classes.php';
     
     function assign($camper, &$assignments, &$chugToAssign) {
         $assignments[$camper->camper_id] = $chugToAssign->chug_id;
@@ -395,14 +361,8 @@
         $thirdCt = 0;
         $fourthOrWorseCt = 0;
         debugLog("Finished assignment loop - results:");
-        $chug2AssignCount = array();
         foreach ($campers as $camperId => $cdbg) {
             $assignedChugId = $assignments[$camperId];
-            if (! array_key_exists($assignedChugId, $chug2AssignCount)) {
-                $chug2AssignCount[$assignedChugId] = 1;
-            } else {
-                $chug2AssignCount[$assignedChugId]++;
-            }
             $assignedChug = $chugim[$assignedChugId];
             debugLog("Assigned " . $cdbg->name . ", cid " . $cdbg->camper_id . " to " . $assignedChug->name . ", choice " . $cdbg->choice_level);
             if ($cdbg->choice_level == 1) {
@@ -436,27 +396,8 @@
         }
         $underMin = "";
         $overMax = "";
-        foreach ($chug2AssignCount as $chugId => $count) {
-            $c = $chugim[$chugId];
-            debugLog("Assigned $count campers to $c->name");
-            if ($count < $c->min_size) {
-                if (empty($underMin)) {
-                    $underMin = $c->name;
-                } else {
-                    $underMin .= ", $c->name";
-                }
-                debugLog("Under min $c->min_size");
-            }
-            if ($count > $c->max_size) {
-                if (empty($overMax)) {
-                    $overMax = $c->name;
-                } else {
-                    $overMax .= ", $c->name";
-                }
-                debugLog("Over max $c->max_size");
-            }
-        }
-    
+        overUnder($chugim, $underMin, $overMax);
+        
         // Update the assignment table (metadata about this assignment) with our stats.
         $sql = "DELETE FROM assignments WHERE edah_id = $edah_id AND " .
         "block_id = $block_id AND group_id = $group_id";
