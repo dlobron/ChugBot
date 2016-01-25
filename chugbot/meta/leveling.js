@@ -55,6 +55,8 @@ function getAndDisplayCurrentMatches() {
         var edah = getParameterByName("edah");
         var block = getParameterByName("block");
 	var succeeded = false;
+	var camperId2Group2PrefList;
+	var prefClasses = ["li_first_choice", "li_second_choice", "li_third_choice", "li_fourth_choice"];
 	$.ajax({
                 url: 'levelingAjax.php',
                     type: 'post',
@@ -75,10 +77,9 @@ function getAndDisplayCurrentMatches() {
 		    var html = "";
 		    var groupId2Name = json["groupId2Name"];
 		    var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
-		    var camperId2Group2PrefList = json["camperId2Group2PrefList"];
+		    camperId2Group2PrefList = json["camperId2Group2PrefList"];
 		    var chugId2Name = json["chugId2Name"];
 		    var camperId2Name = json["camperId2Name"];
-		    var prefClasses = ["li_first_choice", "li_second_choice", "li_third_choice", "li_fourth_choice"];
 		    $.each(groupId2ChugId2MatchedCampers,
 			   function(groupId, chugId2MatchedCampers) {
 			       // Add a holder for each group (aleph, bet, gimel).
@@ -150,7 +151,7 @@ function getAndDisplayCurrentMatches() {
 				$el.draggable({containment:$el.closest('.groupholder')});
 			    });
 			// Let chug holders be droppable.  When a camper holder is dragged, move from
-			// old chug to new, and highlight the camper.
+			// old chug to new, and update the preference color.
 			$('.chugholder').each(function(){
 				var $el = $(this);
 				$el.droppable({accept: "ul.gallery li",
@@ -158,10 +159,35 @@ function getAndDisplayCurrentMatches() {
 					    hoverClass: "ui-state-hover",
 					    drop: function(event, ui) {
 					    var droppedOn = $(this).find(".gallery").addBack(".gallery");
+					    var droppedChugId = $(droppedOn).parent().attr("name");
 					    var dropped = ui.draggable;
 					    //$(dropped).addClass("ui-state-highlight");
+					    // Change the color of the dropped item according to the camper's
+					    // preference for the dropped-on chug.
 					    var camperId = $(dropped).attr("value");
-					    console.log("DBG: dropped camper ID = " + camperId);
+					    var groupId = $(this).parent().attr("name");
+					    var prefClass = "";
+					    if (camperId in camperId2Group2PrefList) {
+						var group2PrefList = camperId2Group2PrefList[camperId];
+						if (groupId in group2PrefList) {
+						    var prefList = group2PrefList[groupId];
+						    $.each(prefList, function(index, prefChugId) {
+							    if (prefChugId == droppedChugId) {
+								var idx = (index < prefClasses.length) ? index : prefClasses.length - 1;
+								prefClass = prefClasses[idx];
+								return false; // break
+							    }
+							});
+						}
+					    }
+					    if (prefClass) {
+						$.each(prefClasses, function(index, prefClassToRemove) {
+							// Remove old color class.
+							$(dropped).removeClass(prefClassToRemove);
+						    });
+						// Add new color class.
+						$(dropped).addClass(prefClass);
+					    }
 					    $(dropped).detach().css({top:0,left:0}).appendTo(droppedOn);
 					}
 				    });
