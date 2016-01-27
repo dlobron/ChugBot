@@ -66,6 +66,27 @@ comments varchar(512) DEFAULT "",
 UNIQUE KEY uk_edot(name))
 COLLATE utf8_unicode_ci;
 
+# Create a table of bunks.  Campers are optionally assigned to one bunk
+# for the summer, which can be changed as needed on the edit camper page.
+CREATE TABLE bunks(
+bunk_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+name varchar(50) NOT NULL,
+UNIQUE KEY uk_bunks(name))
+COLLATE utf8_unicode_ci;
+
+# A bunk instance is an assignment of bunk to edah.
+CREATE TABLE bunk_instances(
+bunk_id int NOT NULL,
+FOREIGN KEY fk_bunk_id(bunk_id) REFERENCES bunks(bunk_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+edah_id int NOT NULL,
+FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+PRIMARY KEY pk_bunk_instances(bunk_id, edah_id))
+COLLATE utf8_unicode_ci;
+
 # This table stores camper registration for the summer.  Each 
 # camper signs up for one edah in a summer, and they choose
 # a session.

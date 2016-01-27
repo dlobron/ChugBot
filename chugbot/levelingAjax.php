@@ -193,7 +193,10 @@
                 $chug_id = intval($row2[0]);
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
             }
-            $result3 = getDbResult("SELECT camper_id, chug_id FROM matches WHERE block_id = $block_id and group_id = $group_id");
+            $sql = "SELECT m.camper_id, m.chug_id FROM matches m, campers c " .
+            "WHERE m.block_id = $block_id AND m.group_id = $group_id " .
+            "AND m.camper_id = c.camper_id AND c.edah_id = $edah_id";
+            $result3 = getDbResult($sql);
             while ($row3 = mysqli_fetch_array($result3, MYSQL_NUM)) {
                 $camper_id = intval($row3[0]);
                 $chug_id = intval($row3[1]);
@@ -257,6 +260,7 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $group_id = intval($row[0]);
             $group_name = $row[1];
+            error_log("DBG: on loop with group " . $group_name);
             if (isset($_POST["reassign"])) {
                 $ok = do_assignment($edah_id, $block_id, $group_id, $err);
                 if (! $ok) {
@@ -264,6 +268,7 @@
                     die(json_encode(array("error" => $err)));
                 }
             }
+            error_log("DBG: did asgmt");
             $result2 = getDbResult("SELECT * FROM assignments WHERE edah_id = $edah_id AND group_id = $group_id AND block_id = $block_id");
             $row = mysqli_fetch_assoc($result2);
             // Increment choice counts
@@ -278,7 +283,8 @@
             }
             // Note under-min and over-max chugim.
             foreach ($sKeys as $key) {
-                if (! empty($row[$key])) {
+                if (array_key_exists($key, $row) &&
+                    (! empty($row[$key]))) {
                     $stats[$key] .= "<br>" . $group_name . ": " . $row[$key];
                 }
             }

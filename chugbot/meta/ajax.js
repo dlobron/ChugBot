@@ -9,8 +9,8 @@ $(function() {
 		    success: function(json) {
 		    $.each(json, function(blockGroupKey, chuglist) {
 			    existingChoicesMap[blockGroupKey] = chuglist;
-			    $.each(chuglist, function(index, chug) {
-				var key = blockGroupKey + "||" + chug;
+			    $.each(chuglist, function(index, chugNameAndId) {
+				var key = blockGroupKey + "||" + chugNameAndId;
 				blockGroupChugInUse[key] = 1;
 				});
 			});
@@ -56,6 +56,7 @@ $(function() {
 				    txt = $(this).html().replace("NAME", data.name);
 				    return txt.replace("URL", data.homeUrl);
 				});
+			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
 			    $( "#results" ).show("slide", 500 );
 			},
 			    error: function() {
@@ -101,7 +102,7 @@ $(function() {
 		       var baseName = "sortedSource";
 		       $.each(json, 
 			      function(blockname, block2groupmap) {
-				  $.each(block2groupmap, function(groupname, chugName2DescList) {
+				  $.each(block2groupmap, function(groupname, chugNameAndId2DescList) {
 					  var destName = blockname + "||" + groupname;
 					  html += "<div class=\"chug_choice_container\" name=\"chug_choice_container\" >\n";
 					  html += "<h3>" + blockname + " " + groupname + "</h3>\n";
@@ -110,11 +111,14 @@ $(function() {
 					  if (destName in existingChoicesMap) {
 					      existingChoicesForThisDiv = existingChoicesMap[destName];
 					  }
-					  $.each(chugName2DescList, function(index, chugName2Desc) {
-						  $.each(chugName2Desc, function(chugName, chugDesc) {
+					  $.each(chugNameAndId2DescList, function(index, chugNameAndId2Desc) {
+						  $.each(chugNameAndId2Desc, function(chugNameAndId, chugDesc) {
 							  // Check to see if this chug is in use for this block/group.  If so, do
 							  // not write it, since we'll be putting it in the destination.
-							  var key = blockname + "||" + groupname + "||" + chugName;
+							  var key = blockname + "||" + groupname + "||" + chugNameAndId;
+							  var p = chugNameAndId.split("||");
+							  var chugName = p[0];
+							  var chugId = p[1];
 							  if (key in blockGroupChugInUse) {
 							      return true; // This is like "continue"
 							  }
@@ -123,19 +127,23 @@ $(function() {
 							      // If we have a chug description, write it as a tool tip.
 							      titleText = "title=\"" + chugName + ": " + chugDesc + "\"";
 							  }
-							  html += "<li value=\"" + chugName + "\" class=\"ui-state-default\" " + 
+							  html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " + 
 							      titleText + " >" + chugName + "</li>";
 						      });
 					      });
 					  html += "</ul>";
 					  html += "<div class=\"centered_invisible\"><img src=\"images/RightArrow.png\" height=\"35\" width=\"35\"></div>";
 					  html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">\n";
-					  $.each(existingChoicesForThisDiv, function(index, chugName) {
-						  html += "<li value=\"" + chugName + "\" class=\"ui-state-default\" >" + chugName + "</li>";
+					  $.each(existingChoicesForThisDiv, function(index, chugNameAndId) {
+						  var p = chugNameAndId.split("||");
+						  var chugName = p[0];
+						  var chugId = p[1];
+						  html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" >" + chugName + "</li>";
 					      });
 					  html += "</ul>";
 					  html += "<div class=\"right_invisible\"><img src=\"images/UpDownArrows.png\"></div>";
 					  html += "</div>";				  
+					  console.log("DBG: html = " + html);
 				      });
 			      });
 		       $("body").append(html);

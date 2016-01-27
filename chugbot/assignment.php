@@ -187,7 +187,6 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $c = new Chug($row[0], $row[1], $row[2], $row[3]);
             $chugim[$c->chug_id] = $c;
-            error_log("DBG: made chugim entry for ID " . $c->chug_id);
         }
         
         // Grab camper pref lists in this block, by group.  We'll use this to compute each camper's
@@ -207,6 +206,9 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $camper_id = intval($row[0]);
             $gid = intval($row[1]);
+            if (! array_key_exists($camper_id, $existingPrefs)) {
+                $existingPrefs[$camper_id] = array();
+            }
             $existingPrefs[$camper_id][$gid] = array();
             for ($i = 2; $i < count($row); $i++) {
                 $chug_id = intval($row[$i]);
@@ -219,13 +221,13 @@
         // Grab existing matches for this block, for *other* groups, and arrange them in a lookup table
         // by camper ID.  We'll use this to prevent dups.  Note that when preventing
         // dups, we compare chugim by name rather than ID, since Ropes aleph will have
-        // a different ID than Ropes bet.  (TODO: Verify with DO that this is right).
+        // a different ID than Ropes bet.
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
         $existingMatches = array();
-        $sql = "SELECT m.camper_id, m.group_id, c.name, c.chug_id FROM matches m, chugim c " .
+        $sql = "SELECT m.camper_id, m.group_id, c.name, c.chug_id FROM matches m, chugim c, campers ca " .
         "WHERE m.block_id = $block_id AND m.chug_id = c.chug_id AND m.group_id != $group_id " .
-        "GROUP BY 1,2";
+        "AND m.camper_id = ca.camper_id AND ca.edah_id = $edah_id GROUP BY 1,2";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);

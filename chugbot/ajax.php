@@ -1,6 +1,6 @@
 <?php
     session_start();
-    include 'functions.php';
+    include_once 'functions.php';
     
     require 'PHPMailer/PHPMailerAutoload.php';
     
@@ -30,22 +30,22 @@
     if (isset($_POST["get_existing_choices"])) {
         $camper_id = getCamperId();
         $sql =
-        "SELECT b.name blockname, g.name groupname, c.name chugname, 1 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 1 rank " .
         "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.first_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 2 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 2 rank " .
         "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.second_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 3 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 3 rank " .
         "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.third_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 4 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 4 rank " .
         "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fourth_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 5 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 5 rank " .
         "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fifth_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name, 6 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 6 rank " .
         "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id=$camper_id AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.sixth_choice_id=c.chug_id " .
         "order by blockname, groupname, rank";
@@ -59,12 +59,14 @@
             $blockname = $row[0];
             $groupname = $row[1];
             $chugname = $row[2];
+            $chug_id = $row[3];
             // Make a key/value pair: block/group -> ordered list of chug choices.
             $key = $blockname . "||" . $groupname;
             if (! array_key_exists($key, $existingChoices)) {
                 $existingChoices[$key] = array();
             }
-            array_push($existingChoices[$key], $chugname);
+            $val = $chugname . "||" . $chug_id;
+            array_push($existingChoices[$key], $val);
         }
         
         $mysqli->close();
@@ -82,16 +84,16 @@
         // first item in the array is a ||-separated tuple indicating these things,
         // for example: August 2||aleph.
         
-        // First, make an associative array mapping chug name to ID.
-        $chugName2Id = array();
-        $sql = "SELECT name, chug_id FROM chugim";
+        // First, make an associative array mapping chug ID to name (for email).
+        $chugId2Name = array();
+        $sql = "SELECT chug_id, name FROM chugim";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
             die(json_encode(array("error" => "Database error: can't get chug name->ID map")));
         }
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
-            $chugName2Id[$row[0]] = $row[1];
+            $chugId2Name[$row[0]] = $row[1];
         }
         
         // Next, get the first and last name, and email associated with this camper.
@@ -165,14 +167,14 @@ END;
                     "VALUES ($camper_id, $group_id, $block_id, CHOICE1, CHOICE2, CHOICE3, CHOICE4, CHOICE5, CHOICE6)";
                     continue;
                 }
-                $chug = $chuglist[$i];
-                $email_text .= "<li>$chug</li>\n";
-                if (! isset($chugName2Id[$chug])) {
-                    error_log("ajax: no ID found for chug $chug");
+                $chug_id = $chuglist[$i];
+                if (! isset($chugId2Name[$chug_id])) {
+                    error_log("ajax: no name found for chug ID $chug_id");
                     header('HTTP/1.1 500 Internal Server Error');
-                    die(json_encode(array("error" => "Database error: chug choice $chug has no ID in the database")));
+                    die(json_encode(array("error" => "Database error: chug choice $chug_id has no name in the database")));
                 }
-                $chug_id = $chugName2Id[$chug];
+                $chugName = $chugName2Id[$chug_id];
+                $email_text .= "<li>$chugName</li>\n";
                 $toReplace = "CHOICE" . strval($i);
                 $insertSql = str_replace($toReplace, $chug_id, $insertSql);
             }
@@ -256,7 +258,7 @@ END;
     // July ahead of August.
     if (isset($_POST["get_chug_info"])) {
         $camper_id = $camper_id = getCamperId();
-        $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.description chugdesc " .
+        $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
         "FROM " .
         "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g " .
         "WHERE " .
@@ -284,16 +286,18 @@ END;
             $blockname = $row[0];
             $groupname = $row[1];
             $chugname = $row[2];
-            $chugdesc = $row[3]; // May be empty
+            $chug_id = $row[3];
+            $chugdesc = $row[4]; // May be empty
             if (! array_key_exists($blockname, $dataToJson)) {
                 $dataToJson[$blockname] = array();
             }
             if (! array_key_exists($groupname, $dataToJson[$blockname])) {
                 $dataToJson[$blockname][$groupname] = array();
             }
-            $chugName2Desc = array();
-            $chugName2Desc[$chugname] = $chugdesc;
-            array_push($dataToJson[$blockname][$groupname], $chugName2Desc);
+            $chugNameAndId2Desc = array();
+            $key = $chugname . "||" . $chug_id;
+            $chugNameAndId2Desc[$key] = $chugdesc;
+            array_push($dataToJson[$blockname][$groupname], $chugNameAndId2Desc);
         }
 
         $mysqli->close();
