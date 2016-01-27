@@ -23,23 +23,15 @@
         if (empty($name)) {
             $nameErr = errorString("Name is required");
         }
-        if (empty($nameErr)) {
-            // Get the ID (primary key) for the name that was edited.  The database
-            // enforces name uniqueness.
-            if (empty($session_id)) {
-                $sql = "SELECT session_id FROM sessions WHERE name=\"$name\"";
-                $result = $mysqli->query($sql);
-                if ($result == FALSE) {
-                    $dbErr = dbErrorString($sql, $mysqli->error);
-                } else if ($result->num_rows == 0) {
-                    $dbErr = dbErrorString($sql, "Error: session $name not found");
-                } else {
-                    $row = $result->fetch_array(MYSQLI_NUM);
-                    $session_id = intval($row[0]);
-                }
-                mysqli_free_result($result);
-            }
-            
+        if (isset($_POST["fromStaffHomePage"])) {
+            getIdAndNameFromHomeString($name, $session_id, $name,
+                                       $mysqli, $dbErr);
+        }
+        if (empty($session_id)) {
+            $nameErr = errorString("ID is required");
+        }
+        
+        if (empty($nameErr)) {            
             $mysqli = connect_db();
             $homeAnchor = staffHomeAnchor();
             $addAnother = urlBaseText() . "/addSession.php";
@@ -78,7 +70,7 @@
 </head>
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();

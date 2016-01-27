@@ -23,28 +23,19 @@
         if (empty($name)) {
             $nameErr = errorString("Name is required");
         }
+        // If coming from staff home page, parse name and ID.
+        if (isset($_POST["fromStaffHomePage"])) {
+            getIdAndNameFromHomeString($name, $group_id, $name,
+                                       $mysqli, $dbErr);
+        }
+        if (empty($group_id)) {
+            $nameErr = errorString("ID is required");
+        }
         
         if (empty($nameErr)) {
-            // Get the ID (primary key) for the name that was edited.  The database
-            // enforces name uniqueness.
-            if (empty($group_id)) {
-                $sql = "SELECT group_id FROM groups WHERE name=\"$name\"";
-                $result = $mysqli->query($sql);
-                if ($result == FALSE) {
-                    $dbErr = dbErrorString($sql, $mysqli->error);
-                } else if ($result->num_rows == 0) {
-                    $dbErr = dbErrorString($sql, "Error: group $name not found");
-                } else {
-                    $row = $result->fetch_array(MYSQLI_NUM);
-                    $group_id = $row[0];
-                }
-                mysqli_free_result($result);
-            }
             $homeAnchor = staffHomeAnchor();
             $addAnother = urlBaseText() . "/addGroup.php";
-            if (empty($group_id)) {
-                $dbErr = dbErrorString($sql, "Failed to add/update group $name: could not find in database.");
-            } else if ($submitData == TRUE) {
+            if ($submitData == TRUE) {
                 // Insert edited data.
                 $groupIdNum = intval($group_id);
                 $sql =
@@ -80,7 +71,7 @@
 </head>
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();

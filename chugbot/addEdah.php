@@ -36,6 +36,7 @@
             if ($submitOk == FALSE) {
                 $dbErr = dbErrorString($sql, $mysqli->error);
             }
+            $edah_id = $mysqli->insert_id;
             if ($submitOk == TRUE) {
                 $paramHash = array("name" => $name,
                                    "edah_id" => $edah_id,

@@ -27,6 +27,15 @@
             $submitData = TRUE;
         }
         $block_id = test_input($_POST["block_id"]);
+        // If coming from staff home page, parse name and ID.
+        if (isset($_POST["fromStaffHomePage"])) {
+            getIdAndNameFromHomeString($name, $block_id, $name,
+                                       $mysqli, $dbErr);
+        }
+        if (empty($block_id)) {
+            $nameErr = errorString("Block ID is required");
+        }
+        
         if (! empty($_POST['session_ids'])) {
             foreach ($_POST['session_ids'] as $session_id) {
                 $sessionId = test_input($session_id);
@@ -36,22 +45,8 @@
                 $sessionIdsForBlock[$sessionId] = 1;
             }
         }
+        
         if (empty($nameErr) && empty($dbErr)) {
-            // Get the ID (primary key) for the name that was edited.  The database
-            // enforces name uniqueness.
-            if (empty($block_id)) {
-                $sql = "SELECT block_id FROM blocks WHERE name=\"$name\"";
-                $result = $mysqli->query($sql);
-                if ($result == FALSE) {
-                    $dbErr = dbErrorString($sql, $mysqli->error);
-                } else if ($result->num_rows == 0) {
-                    $dbErr = dbErrorString($sql, "Error: block $name not found in database.");
-                } else {
-                    $row = $result->fetch_array(MYSQLI_NUM);
-                    $block_id = $row[0];
-                }
-                mysqli_free_result($result);
-            }
             if (empty($_POST['session_ids'])) {
                 // If no active session IDs were submitted, we need to get the active
                 // sessions IDs from the database.
@@ -77,16 +72,15 @@
                 if ($submitOk == FALSE) {
                     $dbErr = dbErrorString($sql, $mysqli->error);
                 }
-                // Update the instances of this block: we need to insert
-                // new instances and delete ones that no longer exist.
-                // For now, we do this by deleting all instances of the block, and inserting
-                // all the incoming ones.
-                updateBlockInstances($mysqli,
-                                     $sessionIdsForBlock,
-                                     $submitOk,
-                                     $dbErr,
-                                     $blockIdNum,
-                                     array());
+                // Update the instances of this block.
+                updateActiveInstances($mysqli,
+                                      $sessionIdsForBlock,
+                                      $submitOk,
+                                      $dbErr,
+                                      "block_id",
+                                      $blockIdNum,
+                                      "session_id",
+                                      "block_instances");
                 if ($submitOk) {
                     $addedStr =
                     "<h3>$name updated!  Please edit below if needed, or return $homeAnchor.  " .
@@ -114,7 +108,7 @@
 </head>
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();

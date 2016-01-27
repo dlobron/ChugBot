@@ -89,7 +89,7 @@
                 }
             }
             if (empty($dbErr)) {
-                $paramHash = array("chug_id" => strval($chugIdNum),
+                $paramHash = array("chug_id" => $chugIdNum,
                                    "active_blocks[]" => $blockIds);
                 echo(genPassToEditPageForm("editChug.php", $paramHash));
             }

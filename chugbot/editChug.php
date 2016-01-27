@@ -29,30 +29,17 @@
         }
         $chug_id = test_input($_POST["chug_id"]);
         $name = test_input($_POST["name"]);
-        
-        $chugIdNum = -1;
+
+        // If coming from staff home page, parse name and ID.
+        if (isset($_POST["fromStaffHomePage"])) {
+            getIdAndNameFromHomeString($name, $chug_id, $name,
+                                       $mysqli, $dbErr);
+        }
         if (empty($chug_id)) {
-            if ($fromHome && (! empty($name))) {
-                // If we're coming from the staff home page, we might have a
-                // name instead of an ID.  In this case, translate the name to
-                // an ID (names are guaranteed unique by the database).
-                $sql = "SELECT chug_id from chugim where name=\"$name\"";
-                $result = $mysqli->query($sql);
-                if ($result == FALSE) {
-                    $dbErr = dbErrorString($sql, $mysqli->error);
-                } else if ($result->num_rows != 1) {
-                    $chugIdErr = dbErrorString($sql, "chug name $name not found in database");
-                } else {
-                    $row = $result->fetch_array(MYSQLI_NUM);
-                    $chug_id = $row[0];
-                }
-            } else {
-                $chugIdErr = errorString("The edit page requires a chug ID");
-            }
+            $chugIdErr = errorString("The edit page requires a chug ID");
         }
-        if (! empty($chug_id)) {
-            $chugIdNum = intval($chug_id);
-        }
+        $chugIdNum = intval($chug_id);
+
         $maxSizeNum = MAX_SIZE_NUM; // Default "no max" value.
         $minSizeNum = MIN_SIZE_NUM; // Default "no min" value.
         $group_id = test_input($_POST["group_id"]);
@@ -74,8 +61,8 @@
                 $activeBlockIds[$blockId] = 1; // Use a hash, so we can check membership quickly below.
             }
         }
-        // If we're coming from the add or home page, we get all parameters
-        // from the ID.  We grab the chug itself first, and then instances.
+        // If we're coming from the add or home page, we get all other parameters
+        // from the DB, using the ID.
         if (($fromAddPage || $fromHome) &&
             empty($chugIdErr)) {
             $sql = "select * from chugim where chug_id = $chugIdNum";
@@ -191,7 +178,7 @@
 <body id="main_body" >
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr, $chugIdErr));
+    $errText = genFatalErrorReport(array($dbErr, $chugIdErr, $nameErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();

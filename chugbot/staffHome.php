@@ -10,6 +10,7 @@
     $groupId2Name = array();
     $edahId2Name = array();
     $chugId2Name = array();
+    $bunkId2Name = array();
     
     $mysqli = connect_db();
     fillId2Name($mysqli, $chugId2Name, $dbErr,
@@ -22,6 +23,8 @@
                 "group_id", "groups");
     fillId2Name($mysqli, $edahId2Name, $dbErr,
                 "edah_id", "edot");
+    fillId2Name($mysqli, $bunkId2Name, $dbErr,
+                "bunk_id", "bunks");
     
     ?>
 
@@ -105,6 +108,10 @@ the Save button.</p>
 
 <div class="multi_form_container">
 <?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
+</div>
+
+<div class="multi_form_container">
+<?php echo genPickListForm($bunkId2Name, "bunk", "bunks"); ?>
 </div>
 
 <div id="footer">

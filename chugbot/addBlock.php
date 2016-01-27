@@ -31,16 +31,21 @@
             $submitOk = $mysqli->query($sql);
             if ($submitOk == FALSE) {
                 $dbErr = dbErrorString($sql, $mysqli->error);
+            } else {
+                $blockIdNum = $mysqli->insert_id;
+                updateActiveInstances($mysqli,
+                                      $sessionIdsForBlock,
+                                      $submitOk,
+                                      $dbErr,
+                                      "block_id",
+                                      $blockIdNum,
+                                      "session_id",
+                                      "block_instances");
             }
-            $blockIdNum = $mysqli->insert_id;
-            updateBlockInstances($mysqli,
-                                 $sessionIdsForBlock,
-                                 $submitOk,
-                                 $dbErr,
-                                 $blockIdNum);
             if ($submitOk == TRUE) {
                 // Note that we need to use the name, not the ID here.
                 $paramHash = array("name" => $name,
+                                   "block_id" => $blockIdNum,
                                    "session_ids[]" => array_keys($sessionIdsForBlock));
                 echo(genPassToEditPageForm("editBlock.php", $paramHash));
             }

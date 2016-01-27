@@ -24,8 +24,10 @@
             if ($submitOk == FALSE) {
                 $dbErr = dbErrorString($sql, $mysqli->error);
             }
+            $session_id = $mysqli->insert_id;
             if ($submitOk == TRUE) {
-                $paramHash = array("name" => $name);
+                $paramHash = array("session_id" => $session_id,
+                                   "name" => $name);
                 echo(genPassToEditPageForm("editSession.php", $paramHash));
             }
         }

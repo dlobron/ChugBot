@@ -8,6 +8,7 @@
     $nameErr = $dbErr = $addedStr = "";
     $submitData = FALSE;
     $fromAddPage = FALSE;
+    $fromStaffHomePage = FALSE;
     
     $mysqli = connect_db();
     
@@ -18,6 +19,9 @@
         if (! empty($_POST["submitData"])) {
             $submitData = TRUE;
         }
+        if (isset($_POST["fromStaffHomePage"])) {
+            $fromStaffHomePage = TRUE;
+        }
         $name = test_input($_POST["name"]);
         $edah_id = test_input($_POST["edah_id"]);
         $rosh_name = test_input($_POST["rosh_name"]);
@@ -25,13 +29,19 @@
         $comments = test_input($_POST["comments"]);
         if (empty($name)) {
             $nameErr = errorString("Name is required");
+        }        
+        if ($fromStaffHomePage) {
+            getIdAndNameFromHomeString($name, $edah_id, $name,
+                                       $mysqli, $dbErr);
+        }
+        if (empty($edah_id)) {
+            $nameErr = errorString("ID is required");
         }
         
         if (empty($nameErr)) {
-            // Get the ID (primary key) for the name that was edited.  The database
-            // enforces name uniqueness.
-            if (empty($edah_id)) {
-                $sql = "SELECT edah_id,rosh_name,rosh_phone,comments FROM edot WHERE name=\"$name\"";
+            // Get edah details, if we're coming from an outside page.
+            if ($fromAddPage || $fromStaffHomePage) {
+                $sql = "SELECT rosh_name, rosh_phone, comments FROM edot WHERE edah_id = $edah_id";
                 $result = $mysqli->query($sql);
                 if ($result == FALSE) {
                     $dbErr = dbErrorString($sql, $mysqli->error);
@@ -39,24 +49,20 @@
                     $dbErr = dbErrorString($sql, "Error: edah $name not found");
                 } else {
                     $row = $result->fetch_array(MYSQLI_NUM);
-                    $edah_id = $row[0];
-                    $rosh_name = $row[1];
-                    $rosh_phone = $row[2];
-                    $comments = $row[3];
+                    $rosh_name = $row[0];
+                    $rosh_phone = $row[1];
+                    $comments = $row[2];
+                    mysqli_free_result($result);
                 }
-                mysqli_free_result($result);
             }
             $homeAnchor = staffHomeAnchor();
             $addAnother = urlBaseText() . "/addEdah.php";
-            if (empty($edah_id)) {
-                $dbErr = dbErrorString($sql, "Failed to add/update edah $name: could not find in database.");
-            } else if ($submitData == TRUE) {
+            if ($submitData == TRUE) {
                 // Insert edited data.
-                $edahIdNum = intval($edah_id);
                 $sql =
                 "UPDATE edot SET name = \"$name\", rosh_name = \"$rosh_name\", " .
                 "rosh_phone = \"$rosh_phone\", comments = \"$comments\" " .
-                "WHERE edah_id = $edahIdNum";
+                "WHERE edah_id = $edah_id";
                 $submitOk = $mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $dbErr = dbErrorString($sql, $mysqli->error);
@@ -87,7 +93,7 @@
 </head>
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();

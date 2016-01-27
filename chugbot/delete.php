@@ -3,33 +3,38 @@
     include 'functions.php';
     bounceToLogin();
     
-    $dbErr = $tableNameErr  = $itemNameErr = "";
-    $comma_sep = $table_name = $item_name = "";
+    $dbErr = $tableNameErr = $itemIdErr = $idColErr = "";
+    $comma_sep = $table_name = $item_id = $id_col = "";
     $deletedOk = FALSE;
     $mysqli = connect_db();
     
     $mysqli = connect_db();
     
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $vals = csv_input($_POST["name"]);
-        if (count($vals) != 2) {
-            $tableNameErr = errorString("Could not parse table name from input (bad CSV)");
-            $itemNameErr = errorString("Could not parse item name from input (bad CSV)");
+        $vals = split_input($_POST["name"], '||');
+        if (count($vals) != 3) {
+            $tableNameErr = errorString("Could not parse table name from input");
+            $itemIdErr = errorString("Could not parse item ID from input");
+            $idColErr = errorString("Could not parse ID column from input");
         } else {
-            $item_name = $vals[0];
-            $table_name = $vals[1];
+            $item_id = $vals[0];
+            $id_col = $vals[1];
+            $table_name = $vals[2];
             if (empty($table_name)) {
                 $tableNameErr = errorString("Missing table");
             }
-            if (empty($item_name)) {
-                $itemNameErr = errorString("Missing name of item to be deleted");
+            if (empty($item_id)) {
+                $itemIdErr = errorString("Missing ID of item to be deleted");
+            }
+            if (empty($id_col)) {
+                $idColErr = errorString("Missing ID column");
             }
         }
-        if (empty($idErr) &&
+        if (empty($itemIdErr) &&
             empty($tableNameErr) &&
-            empty($tableNameErr)) {
+            empty($idColErr)) {
             // Do the deletion if we have all parameters.
-            $sql = "DELETE FROM $table_name where name = \"$item_name\"";
+            $sql = "DELETE FROM $table_name where $id_col = \"$item_id\"";
             $submitOk = $mysqli->query($sql);
             if ($submitOk == FALSE) {
                 $dbErr = dbErrorString($sql, $mysqli->error);

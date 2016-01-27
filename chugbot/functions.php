@@ -121,22 +121,25 @@ EOM;
         }
     }
     
-    function updateBlockInstances(&$mysqli,
-                                  $sessionIdsForBlock,
-                                  &$submitOk,
-                                  &$dbErr,
-                                  $blockIdNum) {
-        $sql = "DELETE FROM block_instances WHERE block_id = $blockIdNum";
+    function updateActiveInstances(&$mysqli,
+                                   $activeIdsMap,
+                                   &$submitOk,
+                                   &$dbErr,
+                                   $keyCol,
+                                   $keyVal,
+                                   $valCol,
+                                   $table) {
+        $sql = "DELETE FROM $table WHERE $keyCol = $keyVal";
         $submitOk = $mysqli->query($sql);
         if ($submitOk == FALSE) {
             $dbErr = dbErrorString($sql, $mysqli->error);
         }
-        foreach ($sessionIdsForBlock as $sessionId => $active) {
+        foreach ($activeIdsMap as $activeId => $active) {
             if (! empty($dbErr)) {
                 break;
             }
-            $sessionIdNum = intval($sessionId);
-            $sql = "INSERT INTO block_instances (block_id, session_id) VALUES ($blockIdNum, $sessionIdNum)";
+            $activeIdNum = intval($activeId);
+            $sql = "INSERT INTO $table ($keyCol, $valCol) VALUES ($keyVal, $activeIdNum)";
             $submitOk = $mysqli->query($sql);
             if ($submitOk == FALSE) {
                 $dbErr = dbErrorString($sql, $mysqli->error);
@@ -144,12 +147,10 @@ EOM;
         }
     }
     
-    function genPickListForm(&$id2Name, $name, $plural = "") {
-        if (empty($plural)) {
-            $plural = $name . "s";
-        }
+    function genPickListForm(&$id2Name, $name, $plural) {
         $ucName = ucfirst($name);
         $ucPlural = ucfirst($plural);
+        $idcol = $name . "_id";
         $formName = "form_" . $name;
         $editUrl = urlIfy("edit" . $ucName . ".php");
         $addUrl = urlIfy("add" . $ucName . ".php");
@@ -172,7 +173,7 @@ EOM;
 <option value="" disabled=disabled selected>---</option>
 EOM;
         foreach ($id2Name as $itemId => $itemName) {
-            $csVal = "$itemName,$plural"; # Table name is plural.
+            $csVal = "$itemId||$idcol||$plural"; # Table name is plural.
             $retVal  = $retVal . "<option value=\"$csVal\">$itemName</option>";
         }
         $formEnd = <<<EOM
@@ -263,13 +264,33 @@ EOM;
         return $data;
     }
     
-    function csv_input($data) {
+    function split_input($data, $sep) {
         $tested = test_input($data, TRUE); // Test, but don't split yet.
         if (empty($tested)) {
             return array();
         }
         
-        return explode(',', $tested);
+        return explode($sep, $tested);
+    }
+    
+    function getIdAndNameFromHomeString($homeString, &$idToFill, &$nameToFill,
+                                        $mysqli, &$dbErr) {
+        $vals = split_input($homeString, '||');
+        if (empty($idToFill)) {
+            $idToFill = $vals[0];
+        }
+        $id_col = $vals[1];
+        $table = $vals[2];
+        $sql = "SELECT name from $table where $id_col = $idToFill";
+        $result = $mysqli->query($sql);
+        if ($result == FALSE) {
+            $dbErr = dbErrorString($sql, $mysqli->error);
+        } else if ($result->num_rows != 1) {
+            $dbErr = dbErrorString($sql, "ID $idToFill not found in col $id_col in $table");
+        } else {
+            $row = $result->fetch_array(MYSQLI_NUM);
+            $nameToFill = $row[0];
+        }
     }
     
     function urlBaseText() {

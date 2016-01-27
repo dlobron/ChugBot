@@ -21,8 +21,10 @@
             if ($submitOk == FALSE) {
                 $dbErr = dbErrorString($sql, $mysqli->error);
             }
+            $group_id = $mysqli->insert_id;
             if ($submitOk == TRUE) {
-                $paramHash = array("name" => $name);
+                $paramHash = array("group_id" => $group_id,
+                                   "name" => $name);
                 echo(genPassToEditPageForm("editGroup.php", $paramHash));
             }
         }
