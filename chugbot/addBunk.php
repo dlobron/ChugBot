@@ -1,10 +1,10 @@
 <?php
     session_start();
-    include 'functions.php';
+    include_once 'functions.php';
     bounceToLogin();
     
     // define variables and set to empty values
-    $name = $session_id = "";
+    $name = "";
     $nameErr = $dbErr = "";
     $edahIdsForBunk = array();
     $edahId2Name = array();
@@ -65,7 +65,7 @@
 </head>
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();

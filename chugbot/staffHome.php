@@ -14,7 +14,8 @@
     
     $mysqli = connect_db();
     fillId2Name($mysqli, $chugId2Name, $dbErr,
-                "chug_id", "chugim");
+                "chug_id", "chugim", "group_id",
+                "groups");
     fillId2Name($mysqli, $sessionId2Name, $dbErr,
                 "session_id", "sessions");
     fillId2Name($mysqli, $blockId2Name, $dbErr,

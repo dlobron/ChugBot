@@ -41,8 +41,6 @@
                                       $blockIdNum,
                                       "session_id",
                                       "block_instances");
-            }
-            if ($submitOk == TRUE) {
                 // Note that we need to use the name, not the ID here.
                 $paramHash = array("name" => $name,
                                    "block_id" => $blockIdNum,
@@ -66,7 +64,7 @@
 </head>
 
 <?php
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $nameErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();

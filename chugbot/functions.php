@@ -147,7 +147,7 @@ EOM;
         }
     }
     
-    function genPickListForm(&$id2Name, $name, $plural) {
+    function genPickListForm($id2Name, $name, $plural) {
         $ucName = ucfirst($name);
         $ucPlural = ucfirst($plural);
         $idcol = $name . "_id";
@@ -233,14 +233,37 @@ EOM;
     }
     
     function fillId2Name(&$mysqli, &$id2Name, &$dbErr,
-                         $idColumn, $table) {
-        $sql = "SELECT $idColumn, name FROM $table";
+                         $idColumn, $table, $secondIdColumn = NULL,
+                         $secondTable = NULL) {
+        $sql = "";
+        if ($secondIdColumn) {
+            $sql = "SELECT $idColumn, $secondIdColumn, name FROM $table";
+        } else {
+            $sql = "SELECT $idColumn, name FROM $table";
+        }
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $dbErr = dbErrorString($sql, $mysqli->error);
         } else {
+            $secondId2Name = array();
+            if ($secondTable) {
+                $sql = "SELECT $secondIdColumn, name from $secondTable";
+                $result2 = $mysqli->query($sql);
+                if ($result2 == FALSE) {
+                    $dbErr = dbErrorString($sql, $mysqli->error);
+                } else {
+                    while ($row = $result2->fetch_array(MYSQLI_NUM)) {
+                        $secondId2Name[$row[0]] = $row[1];
+                    }
+                    mysqli_free_result($result2);
+                }
+            }
             while ($row = $result->fetch_array(MYSQLI_NUM)) {
-                $id2Name[$row[0]] = $row[1];
+                if ($secondIdColumn) {
+                    $id2Name[$row[0]] = $row[2] . " - " . $secondId2Name[$row[1]];
+                } else {
+                    $id2Name[$row[0]] = $row[1];
+                }
             }
             mysqli_free_result($result);
         }
