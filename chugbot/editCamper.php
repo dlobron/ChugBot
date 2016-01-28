@@ -119,10 +119,10 @@
                     header("Location: $rankUrl");
                     exit;
                 } else {
-                    $successMessage = "<h3>$first $last updated!  Please edit below if needed, then click \"Submit and Continue\".</h3>";
+                    $successMessage = "<h3>$first $last updated!  Please edit below if needed, then click \"Continue\".</h3>";
                 }
             } else if ($fromAddPage) {
-                $successMessage = "<h3>$first $last added successfully!  Please edit below if needed, then click \"Submit and Continue\".</h3>";
+                $successMessage = "<h3>$first $last added successfully!  Please edit below if needed, then click \"Continue\".</h3>";
             }
         }
     } else {
@@ -182,7 +182,7 @@
 <div class="form_description">
 <h2>Edit Camper Info</h2>
 <p>Please edit your camper information below, and click Submit to update (<font color="red">*</font> = required field).  When
-you are finished editing, click Submit & Continue.</p>
+you are finished editing, click Continue.</p>
 </div>
 <ul>
 
@@ -274,7 +274,7 @@ HERE;
 <input type="hidden" name="form_id" value="1063606" />
 
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
-<input id="saveAndContinue" class="button_text" type="submit" name="submitAndContinue" value="Submit & Continue" />
+<input id="saveAndContinue" class="button_text" type="submit" name="submitAndContinue" value="Continue" />
 <?php echo homeAnchor("Cancel"); ?>
 </li>
 </ul>

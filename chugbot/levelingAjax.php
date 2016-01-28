@@ -162,11 +162,14 @@
         $block_id = $_POST["block_id"];
         
         // Get preferences (as strings) for these campers.
-        // First, map chug ID to name.
-        $chugId2Name = array();
-        $result = getDbResult("SELECT chug_id, name FROM chugim");
+        // First, map chug ID to name and min/max.
+        $chugId2Beta = array();
+        $result = getDbResult("SELECT chug_id, name, min_size, max_size FROM chugim");
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
-            $chugId2Name[intval($row[0])] = $row[1];
+            $chugId2Beta[intval($row[0])] = array();
+            $chugId2Beta[intval($row[0])]["name"] = $row[1];
+            $chugId2Beta[intval($row[0])]["min_size"] = $row[2];
+            $chugId2Beta[intval($row[0])]["max_size"] = $row[3];
         }
         
         // Next, map camper ID to an ordered list of preferred chugim, by
@@ -212,7 +215,7 @@
         $retVal["groupId2ChugId2MatchedCampers"] = $groupId2ChugId2MatchedCampers; // {Group ID->{Chug ID->(Matched camper ID list - might be empty)}}
         $retVal["groupId2Name"] = $groupId2Name; // {Group ID -> Group Name}
         $retVal["camperId2Name"] = $camperId2Name; // {Camper ID -> Camper Name}
-        $retVal["chugId2Name"] = $chugId2Name;   // {Chug ID -> Chug Name}
+        $retVal["chugId2Beta"] = $chugId2Beta;   // {Chug ID -> Chug Name, Min and Max}
         
         echo json_encode($retVal);
         exit();

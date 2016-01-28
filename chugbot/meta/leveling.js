@@ -78,7 +78,7 @@ function getAndDisplayCurrentMatches() {
 		    var groupId2Name = json["groupId2Name"];
 		    var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
 		    camperId2Group2PrefList = json["camperId2Group2PrefList"];
-		    var chugId2Name = json["chugId2Name"];
+		    var chugId2Beta = json["chugId2Beta"];
 		    var camperId2Name = json["camperId2Name"];
 		    $.each(groupId2ChugId2MatchedCampers,
 			   function(groupId, chugId2MatchedCampers) {
@@ -91,9 +91,11 @@ function getAndDisplayCurrentMatches() {
 			       $.each(chugId2MatchedCampers,
 				      function(chugId, matchedCampers) {
 					  // Add a chug holder, and put camper holders inside it.
-					  var chugName = chugId2Name[chugId];					  
+					  var chugName = chugId2Beta[chugId]["name"];
+					  var chugMin = chugId2Beta[chugId]["min_size"];
+					  var chugMax = chugId2Beta[chugId]["max_size"];
 					  html += "<div name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
-					  html += "<h4>" + chugName + "</h4>";
+					  html += "<h4>" + chugName + " (min = " + chugMin + ", max = " + chugMax + ")</h4>";
 					  html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
 					  $.each(matchedCampers,
 						 function(index, camperId) {
@@ -109,8 +111,8 @@ function getAndDisplayCurrentMatches() {
 								     if (prefListText == "") {
 									 prefListText += "Preferences:\n";
 								     }
-								     if (prefChugId in chugId2Name) {
-									 prefListText += listNum + ". " + chugId2Name[prefChugId] + "\n";
+								     if (prefChugId in chugId2Beta) {
+									 prefListText += listNum + ". " + chugId2Beta[prefChugId]["name"] + "\n";
 								     }
 								     if (prefChugId == chugId) {
 									 if (index < prefClasses.length) {
