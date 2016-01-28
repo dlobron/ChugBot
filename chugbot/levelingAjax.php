@@ -260,7 +260,6 @@
         while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
             $group_id = intval($row[0]);
             $group_name = $row[1];
-            error_log("DBG: on loop with group " . $group_name);
             if (isset($_POST["reassign"])) {
                 $ok = do_assignment($edah_id, $block_id, $group_id, $err);
                 if (! $ok) {
@@ -268,7 +267,6 @@
                     die(json_encode(array("error" => $err)));
                 }
             }
-            error_log("DBG: did asgmt");
             $result2 = getDbResult("SELECT * FROM assignments WHERE edah_id = $edah_id AND group_id = $group_id AND block_id = $block_id");
             $row = mysqli_fetch_assoc($result2);
             // Increment choice counts
