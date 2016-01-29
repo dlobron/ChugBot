@@ -29,17 +29,9 @@
     
     ?>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Staff Home</title>
-<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
-<script type="text/javascript" src="meta/view.js"></script>
-
-</head>
-
 <?php
+    echo headerText("Staff Home");
+    
     $errText = genFatalErrorReport(array($dbErr));
     if (! is_null($errText)) {
         echo $errText;
@@ -47,10 +39,8 @@
     }
     ?>
 
-<body id="main_body" >
-
 <div class="centered_container">
-<h1>Admin Home</a></h1>
+<h1>Admin Home</h1>
 <h2>Camp Staff Control Panel</h2>
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
 <p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>

@@ -3,7 +3,7 @@
     include 'functions.php';
     bounceToLogin();
     
-    $name = "";
+    $name = $edahName = "";
     $dbErr = $nameErr = "";
     $camperId2Name = array();
     $mysqli = connect_db();
@@ -12,8 +12,10 @@
         if (empty($name)) {
             $nameErr = errorString("Edah name is required in order to find campers in edah.");
         }
+	$parts = split_input($name, "||");
+	$edah_id = $parts[0];
         // Grab the camper IDs in this edah.
-        $sql = "SELECT c.camper_id camper_id, c.first first, c.last last FROM campers c, edot e WHERE c.edah_id = e.edah_id and e.name=\"$name\"";
+        $sql = "SELECT c.camper_id camper_id, c.first first, c.last last, e.name FROM campers c, edot e WHERE c.edah_id = e.edah_id and e.edah_id=\"$edah_id\"";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $dbErr = dbErrorString($sql, $mysqli->error);
@@ -22,6 +24,7 @@
                 $camperId = $row[0];
                 $last = $row[2];
                 $first = $row[1];
+		$edahName = $row[3];
                 $camperId2Name[$camperId] = "$last, $first";
             }
         }
@@ -30,17 +33,9 @@
     $mysqli->close();
     ?>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Campers for <?php echo $name; ?></title>
-<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
-<script type="text/javascript" src="meta/view.js"></script>
-
-</head>
-
 <?php
+    echo headerText("View Campers");
+    
     $errText = genFatalErrorReport(array($dbErr, $nameErr));
     if (! is_null($errText)) {
         echo $errText;
@@ -48,12 +43,10 @@
     }
     ?>
 
-<body id="main_body" >
-
 <div class="centered_container">
 <h1>View Campers</a></h1>
-<h2>Campers for <?php echo $name; ?></h2>
-<p>This page lists the <?php echo $name; ?> campers who have entered preferences in this system.  To update
+<h2>Campers for <?php echo $edahName; ?></h2>
+<p>This page lists the <?php echo $edaName; ?> campers who have entered preferences in this system.  To update
 information or settings for a camper, click the Edit button next to the camper's name.  To return to the staff admin
 page, please click <?php echo staffHomeAnchor(); ?>.</p>
 </div>

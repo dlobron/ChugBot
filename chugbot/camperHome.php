@@ -1,24 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Camper/Family Home</title>
-<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
-<script type="text/javascript" src="meta/view.js"></script>
-
-</head>
-
-<?php include 'functions.php';?>
-
 <?php
+    include 'functions.php';
     session_start();
+    
+    echo headerText("Camper/Family Home");
 ?>
 
 <script type="text/javascript" src="jquery/jquery-1.11.3.min.js"></script>
-<script type="text/javascript" src="meta/tooltip.js">
-</script>
-
-<body id="main_body" >
+<script type="text/javascript" src="meta/tooltip.js"></script>
 
 <img id="top" src="images/top.png" alt="">
 <div class="form_container">
