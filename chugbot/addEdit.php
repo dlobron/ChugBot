@@ -28,7 +28,7 @@
         protected $mysqli;
     }
     
-    abstract class SingletonPage extends FormPage {
+    abstract class AddEditBase extends FormPage {
         function __construct($title, $firstParagraph, $mainTable, $idCol) {
             parent::__construct($title, $firstParagraph);
             $this->mainTable = $mainTable;
@@ -71,9 +71,10 @@ EOM;
             $footerText = footerText();
             $fromEditText = "";
             if ($fromEdit) {
+                $val = $this->col2Val[$this->idCol];
                 $fromEditText = "<input type=\"hidden\" name=\"submitData\" value=\"1\">";
                 $fromEditText .= "<input type=\"hidden\" name=\"$this->idCol\" " .
-                "id=\"$this->idCol\" value=\"$this->idVal\"/>";
+                "id=\"$this->idCol\" value=\"$val\"/>";
             }
             $html .= <<<EOM
 <li class="buttons">
@@ -96,11 +97,11 @@ EOM;
         }
         
         public $mainTable;
-        protected $idCol;
-        protected $idVal;
+        protected $idCol; // The ID column name of $this->mainTable
+        protected $col2Val = array(); // Column name -> value
     }
     
-    class EditSingletonPage extends SingletonPage {
+    class EditPage extends AddEditBase {
         function __construct($title, $firstParagraph, $mainTable, $idCol) {
             parent::__construct($title, $firstParagraph, $mainTable, $idCol);
         }
@@ -119,52 +120,55 @@ EOM;
             if (! empty($_POST["fromStaffHomePage"])) {
                 // If we're coming from the staff home page, we need to get the name from the
                 // ID value.  Also, the ID will have a generic name.
-                $this->idVal = test_input($_POST["itemId"]);
-                $sql = "SELECT name FROM $this->mainTable WHERE $this->idCol = $this->idVal";
+                $this->col2Val[$this->idCol] = test_input($_POST["itemId"]);
+                $val = $this->col2Val[$this->idCol];
+                $sql = "SELECT name FROM $this->mainTable WHERE $this->idCol = $val";
                 $result = $this->mysqli->query($sql);
                 if ($result == FALSE) {
-                    $dbErr = dbErrorString($sql, $this->mysqli->error);
+                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                    return;
                 } else {
                     $row =  $result->fetch_array(MYSQLI_NUM);
                     $this->name = $row[0];
                 }
             } else {
                 // From other sources (our add or edit page), we expect to have a name and ID column.
-                $this->idVal = test_input($_POST[$this->idCol]);
+                $this->col2Val[$this->idCol] = test_input($_POST[$this->idCol]);
                 $this->name = test_input($_POST["name"]);
             }
             
             // At this point, we should have a name and ID.
             if (empty($this->name)) {
-                $nameErr = errorString("Name is required");
+                $this->nameErr = errorString("Name is required");
+                return;
             }
-            if (empty($this->idVal)) {
-                $nameErr = errorString("ID is required");
+            if (! array_key_exists($this->idCol, $this->col2Val)) {
+                $this->nameErr = errorString("ID is required");
+                return;
             }
             
-            if (empty($nameErr)) {
-                $homeAnchor = staffHomeAnchor();
-                $addPage = preg_replace('/^Edit /', "add", $this->title);
-                $thingAdded = preg_replace('/^Edit /', "", $this->title);
-                $addPage .= ".php";
-                $addAnother = urlBaseText() . "/$addPage";
-                if ($this->submitData) {
-                    $sql =
-                    "UPDATE $this->mainTable SET name = \"$this->name\" " .
-                    "WHERE $this->idCol = $this->idVal";
-                    $submitOk = $this->mysqli->query($sql);
-                    if ($submitOk == FALSE) {
-                        $dbErr = dbErrorString($sql, $mysqli->error);
-                    } else {
-                        $this->resultStr =
-                        "<h3>$this->name updated!  Please edit below if needed, or return $homeAnchor.  " .
-                        "To add another $thingAdded, please click <a href=\"$addAnother\">here</a>.</h3>";
-                    }
-                } else if ($fromAddPage) {
+            $homeAnchor = staffHomeAnchor();
+            $addPage = preg_replace('/^Edit /', "add", $this->title);
+            $thingAdded = preg_replace('/^Edit /', "", $this->title);
+            $addPage .= ".php";
+            $addAnother = urlBaseText() . "/$addPage";
+            $idVal = $this->col2Val[$this->idCol];
+            if ($this->submitData) {
+                $sql =
+                "UPDATE $this->mainTable SET name = \"$this->name\" " .
+                "WHERE $this->idCol = $idVal";
+                $submitOk = $this->mysqli->query($sql);
+                if ($submitOk == FALSE) {
+                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                } else {
                     $this->resultStr =
-                    "<h3>$name added successfully!  Please edit below if needed, or return $homeAnchor.  " .
+                    "<h3>$this->name updated!  Please edit below if needed, or return $homeAnchor.  " .
                     "To add another $thingAdded, please click <a href=\"$addAnother\">here</a>.</h3>";
                 }
+            } else if ($this->fromAddPage) {
+                $this->resultStr =
+                "<h3>$this->name added successfully!  Please edit below if needed, or return $homeAnchor.  " .
+                "To add another $thingAdded, please click <a href=\"$addAnother\">here</a>.</h3>";
             }
         }
         
@@ -172,7 +176,7 @@ EOM;
         public $submitData = FALSE;
     }
 
-    class AddSingletonPage extends SingletonPage {
+    class AddPage extends AddEditBase {
         function __construct($title, $firstParagraph, $mainTable, $idCol) {
             parent::__construct($title, $firstParagraph, $mainTable, $idCol);
         }
@@ -184,22 +188,20 @@ EOM;
             $this->name = test_input($_POST["name"]);
             if (empty($this->name)) {
                 $this->nameErr = errorString("Name is required");
+                return;
             }
-            if (empty($this->nameErr)) {
-                $sql = "INSERT INTO $this->mainTable (name) VALUES (\"$this->name\");";
-                $submitOk = $this->mysqli->query($sql);
-                if ($submitOk == FALSE) {
-                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
-                }
-                $this->idVal = $this->mysqli->insert_id;
-                if ($submitOk == TRUE) {
-                    $paramHash = array($this->idCol => $this->idVal,
-                                       "name" => $this->name);
-                    $editPage = preg_replace('/^\w+ /', "edit", $this->title); // e.g., "Add Group" -> "editGroup"
-                    $editPage .= ".php";
-                    echo(genPassToEditPageForm($editPage, $paramHash));
-                }
+            $sql = "INSERT INTO $this->mainTable (name) VALUES (\"$this->name\");";
+            $submitOk = $this->mysqli->query($sql);
+            if ($submitOk == FALSE) {
+                $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                return;
             }
+            $this->col2Val[$this->idCol] = $this->mysqli->insert_id;
+            $paramHash = array($this->idCol => $this->col2Val[$this->idCol],
+                               "name" => $this->name);
+            $editPage = preg_replace('/^\w+ /', "edit", $this->title); // e.g., "Add Group" -> "editGroup"
+            $editPage .= ".php";
+            echo(genPassToEditPageForm($editPage, $paramHash));
         }
     }
     

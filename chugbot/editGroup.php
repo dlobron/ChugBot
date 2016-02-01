@@ -4,8 +4,8 @@
     include_once 'formItem.php';
     bounceToLogin();
     
-    $editGroupPage = new EditSingletonPage("Edit Group", "Please update group information as needed",
-                                           "groups", "group_id");
+    $editGroupPage = new EditPage("Edit Group", "Please update group information as needed",
+                                  "groups", "group_id");
     
     $editGroupPage->handlePost();
     
@@ -14,8 +14,7 @@
     $nameField->setInputMaxLength(255);
     $nameField->setInputValue($editGroupPage->name);
     $nameField->setError($editGroupPage->nameErr);
-    $nameField->setGuideText("Choose a group name (e.g., aleph or bet)");
-    
+    $nameField->setGuideText("Choose a group name (e.g., aleph or bet)");    
     $editGroupPage->addFormItem($nameField);
     
     $editGroupPage->renderForm(TRUE);
