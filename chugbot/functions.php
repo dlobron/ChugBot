@@ -30,16 +30,6 @@
         }
     }
     
-    function genSuccessMessage($message) {
-        if (empty($message)) {
-            return "";
-        }
-        $retVal = "<div id=\"centered_container\">";
-        $retVal = $retVal . $message;
-        $retVal = $retVal . "</div>";
-        return $retVal;
-    }
-    
     function getCamperRowForId(&$mysqli, $camper_id, &$dbErr, &$idErr) {
         $camperIdNum = intval($camper_id);
         $sql = "select * from campers where camper_id = $camperIdNum";
@@ -131,14 +121,14 @@ EOM;
         }
     }
     
-    function genPickListForm($id2Name, $name, $plural) {
+    function genPickListForm($id2Name, $name, $tableName) {
         $ucName = ucfirst($name);
-        $ucPlural = ucfirst($plural);
+        $ucPlural = ucfirst($tableName);
         $idcol = $name . "_id";
         $formName = "form_" . $name;
         $editUrl = urlIfy("edit" . $ucName . ".php");
         $addUrl = urlIfy("add" . $ucName . ".php");
-        $deleteUrl = urlIfy("delete.php");
+        $deleteUrl = urlIfy("delete.php?idCol=$idcol&tableName=$tableName");
         $article = "a";
         if (preg_match('/^[aeiou]/i', $name)) {
             $article = "an";
@@ -153,12 +143,11 @@ EOM;
 <h3>$ucPlural</h3></div>
 <ul><li>
 <div>
-<select class="element select medium" id="name" name="name">
+<select class="element select medium" id="itemId" name="itemId">
 <option value="" disabled=disabled selected>---</option>
 EOM;
         foreach ($id2Name as $itemId => $itemName) {
-            $csVal = "$itemId||$idcol||$plural"; # Table name is plural.
-            $retVal  = $retVal . "<option value=\"$csVal\">$itemName</option>";
+            $retVal  = $retVal . "<option value=\"$itemId\">$itemName</option>";
         }
         $formEnd = <<<EOM
 </select>
@@ -269,35 +258,6 @@ EOM;
         $data = stripslashes($data);
         $data = htmlspecialchars($data);
         return $data;
-    }
-    
-    function split_input($data, $sep) {
-        $tested = test_input($data, TRUE); // Test, but don't split yet.
-        if (empty($tested)) {
-            return array();
-        }
-        
-        return explode($sep, $tested);
-    }
-    
-    function getIdAndNameFromHomeString($homeString, &$idToFill, &$nameToFill,
-                                        $mysqli, &$dbErr) {
-        $vals = split_input($homeString, '||');
-        if (empty($idToFill)) {
-            $idToFill = $vals[0];
-        }
-        $id_col = $vals[1];
-        $table = $vals[2];
-        $sql = "SELECT name from $table where $id_col = $idToFill";
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            $dbErr = dbErrorString($sql, $mysqli->error);
-        } else if ($result->num_rows != 1) {
-            $dbErr = dbErrorString($sql, "ID $idToFill not found in col $id_col in $table");
-        } else {
-            $row = $result->fetch_array(MYSQLI_NUM);
-            $nameToFill = $row[0];
-        }
     }
     
     function urlBaseText() {

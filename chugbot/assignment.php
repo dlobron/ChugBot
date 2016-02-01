@@ -1,6 +1,6 @@
 <?php
     include_once 'functions.php';
-    include_once 'classes.php';
+    include_once 'assignmentClasses.php';
     
     function assign($camper, &$assignments, &$chugToAssign) {
         $assignments[$camper->camper_id] = $chugToAssign->chug_id;

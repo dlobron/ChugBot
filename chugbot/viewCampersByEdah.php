@@ -8,12 +8,10 @@
     $camperId2Name = array();
     $mysqli = connect_db();
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $name = test_input($_POST["name"]);
-        if (empty($name)) {
-            $nameErr = errorString("Edah name is required in order to find campers in edah.");
+        $edah_id = test_input($_POST["name"]);
+        if (empty($edah_id)) {
+            $nameErr = errorString("Edah ID is required in order to find campers in edah.");
         }
-	$parts = split_input($name, "||");
-	$edah_id = $parts[0];
         // Grab the camper IDs in this edah.
         $sql = "SELECT c.camper_id camper_id, c.first first, c.last last, e.name FROM campers c, edot e WHERE c.edah_id = e.edah_id and e.edah_id=\"$edah_id\"";
         $result = $mysqli->query($sql);

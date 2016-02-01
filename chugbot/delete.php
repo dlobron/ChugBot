@@ -3,36 +3,38 @@
     include 'functions.php';
     bounceToLogin();
     
-    $dbErr = $tableNameErr = $itemIdErr = $idColErr = "";
+    $dbErr = $itemIdErr = $qsErr = "";
     $comma_sep = $table_name = $item_id = $id_col = "";
     $deletedOk = FALSE;
     $mysqli = connect_db();
     
-    $mysqli = connect_db();
+    $parts = explode("&", $_SERVER['QUERY_STRING']); // Expect: idCol=$idcol&tableName=$tableName
+    if (count($parts) != 2) {
+        $qsErr = errorString("Bad query string");
+    }
+    foreach ($parts as $part) {
+        $cparts = explode("=", $part);
+        if (count($cparts) != 2) {
+            $qsErr = errorString("Bad query string");
+            break;
+        }
+        if ($cparts[0] == "idCol") {
+            $id_col = $cparts[1];
+        } else if ($cparts[0] == "tableName") {
+            $table_name = $cparts[1];
+        } else {
+            $qsErr = errorString("Bad query string");
+            break;
+        }
+    }
     
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $vals = split_input($_POST["name"], '||');
-        if (count($vals) != 3) {
-            $tableNameErr = errorString("Could not parse table name from input");
+        $item_id = test_input($_POST["name"]);
+        if (empty($item_id)) {
             $itemIdErr = errorString("Could not parse item ID from input");
-            $idColErr = errorString("Could not parse ID column from input");
-        } else {
-            $item_id = $vals[0];
-            $id_col = $vals[1];
-            $table_name = $vals[2];
-            if (empty($table_name)) {
-                $tableNameErr = errorString("Missing table");
-            }
-            if (empty($item_id)) {
-                $itemIdErr = errorString("Missing ID of item to be deleted");
-            }
-            if (empty($id_col)) {
-                $idColErr = errorString("Missing ID column");
-            }
         }
         if (empty($itemIdErr) &&
-            empty($tableNameErr) &&
-            empty($idColErr)) {
+            empty($qsErr)) {
             // Do the deletion if we have all parameters.
             $sql = "DELETE FROM $table_name where $id_col = \"$item_id\"";
             $submitOk = $mysqli->query($sql);
@@ -43,6 +45,7 @@
             }
         }
     }
+    
     $mysqli->close();
     
     ?>
@@ -50,7 +53,7 @@
 <?php
     echo headerText("Delete Item");
     
-    $errText = genFatalErrorReport(array($dbErr, $tableNameErr, $itemNameErr));
+    $errText = genFatalErrorReport(array($dbErr, $qsErr, $itemIdErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();
