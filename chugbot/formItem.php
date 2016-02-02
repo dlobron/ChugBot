@@ -27,6 +27,9 @@
         }
         
         public function setInputValue($val) {
+            if ($val == NULL) {
+                return;
+            }
             $this->inputValue = $val;
         }
         

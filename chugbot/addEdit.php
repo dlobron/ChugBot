@@ -1,6 +1,28 @@
 <?php
     include_once 'formItem.php';
     
+    abstract class ColumnType
+    {
+        const CT_STR =  0;
+        const CT_INT =  1;
+        const CR_DATE = 2;
+    }
+    
+    class Column {
+        function __construct($name, $type = ColumnType::CT_STR,
+                             $required = TRUE, $defaultValue = NULL) {
+            $this->name = $name;
+            $this->type = $type;
+            $this->required = $required;
+            $this->defaultValue = $defaultValue; // May be NULL.
+        }
+        
+        public $name;
+        public $type;
+        public $required;
+        public $defaultValue;
+    }
+    
     abstract class FormPage {
         function __construct($title, $firstParagraph) {
             $this->title = $title;
@@ -19,7 +41,6 @@
         abstract protected function renderForm();
         
         public $title;
-        public $name;
         public $dbErr = "";
         public $nameErr = "";
         protected $resultStr = "";
@@ -36,6 +57,19 @@
         }
         
         abstract protected function handlePost();
+        
+        public function addColumn($name, $type = ColumnType::CT_STR,
+                                  $required = TRUE) {
+            $col = new Column($name, $type, $required);
+            array_push($this->columns, $col);
+        }
+        
+        public function columnValue($column) {
+            if (! array_key_exists($column, $this->col2Val)) {
+                return NULL;
+            }
+            return $this->col2Val[$column];
+        }
         
         public function renderForm($fromEdit = FALSE) {
             echo headerText($this->title);
@@ -98,7 +132,8 @@ EOM;
         
         public $mainTable;
         protected $idCol; // The ID column name of $this->mainTable
-        protected $col2Val = array(); // Column name -> value
+        protected $col2Val = array(); // Column name -> value (filled by us)
+        protected $columns = array(); // Column names (filled by the caller)
     }
     
     class EditPage extends AddEditBase {
@@ -110,7 +145,6 @@ EOM;
             if ($_SERVER["REQUEST_METHOD"] != "POST") {
                 return;
             }
-            
             if (! empty($_POST["fromAddPage"])) {
                 $this->fromAddPage = TRUE;
             }
@@ -118,29 +152,45 @@ EOM;
                 $this->submitData = TRUE;
             }
             if (! empty($_POST["fromStaffHomePage"])) {
-                // If we're coming from the staff home page, we need to get the name from the
-                // ID value.  Also, the ID will have a generic name.
+                // If we're coming from the staff home page, we need to get our
+                // column values from the DB.
                 $this->col2Val[$this->idCol] = test_input($_POST["itemId"]);
-                $val = $this->col2Val[$this->idCol];
-                $sql = "SELECT name FROM $this->mainTable WHERE $this->idCol = $val";
+                $idVal = $this->col2Val[$this->idCol];
+                $sql = "SELECT * FROM $this->mainTable WHERE $this->idCol = $idVal";
                 $result = $this->mysqli->query($sql);
                 if ($result == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                     return;
-                } else {
-                    $row =  $result->fetch_array(MYSQLI_NUM);
-                    $this->name = $row[0];
+                }
+                $this->col2Val = $result->fetch_array(MYSQLI_ASSOC);
+                // If a DB column has a default, set it to the empty string
+                // for display.
+                foreach ($this->columns as $col) {
+                    if ($col->defaultValue == NULL) {
+                        continue;
+                    }
+                    if (! array_key_exists($col->name, $this->col2Val)) {
+                        continue;
+                    }
+                    if ($this->col2Val[$col->name] == $col->defaultValue) {
+                        $this->col2Val[$col->name] = "";
+                    }
                 }
             } else {
-                // From other sources (our add or edit page), we expect to have a name and ID column.
+                // From other sources (our add or edit page), column values should
+                // be in the POST data.
                 $this->col2Val[$this->idCol] = test_input($_POST[$this->idCol]);
-                $this->name = test_input($_POST["name"]);
-            }
-            
-            // At this point, we should have a name and ID.
-            if (empty($this->name)) {
-                $this->nameErr = errorString("Name is required");
-                return;
+                foreach ($this->columns as $col) {
+                    $val = test_input($_POST[$col->name]);
+                    if ($val == NULL || empty($val)) {
+                        if ($col->required) {
+                            $this->nameErr = errorString("Missing required column " . $col->name);
+                            return;
+                        }
+                        continue;
+                    }
+                    $this->col2Val[$col->name] = $val;
+                }
             }
             if (! array_key_exists($this->idCol, $this->col2Val)) {
                 $this->nameErr = errorString("ID is required");
@@ -153,21 +203,31 @@ EOM;
             $addPage .= ".php";
             $addAnother = urlBaseText() . "/$addPage";
             $idVal = $this->col2Val[$this->idCol];
+            $name = $this->col2Val["name"];
             if ($this->submitData) {
-                $sql =
-                "UPDATE $this->mainTable SET name = \"$this->name\" " .
-                "WHERE $this->idCol = $idVal";
+                $sql = "UPDATE $this->mainTable SET "; // Common start to SQL
+                for ($i = 0; $i < count($this->columns); $i++) {
+                    $col = $this->columns[$i];
+                    if (array_key_exists($col->name, $this->col2Val)) {
+                        $val = $this->col2Val[$col->name];
+                        $sql .= "$col->name = \"$val\"";
+                        if ($i < (count($this->columns) - 1)) {
+                            $sql .= ", ";
+                        }
+                    }
+                }
+                $sql .=" WHERE $this->idCol = $idVal";
                 $submitOk = $this->mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                 } else {
                     $this->resultStr =
-                    "<h3>$this->name updated!  Please edit below if needed, or return $homeAnchor.  " .
+                    "<h3>$name updated!  Please edit below if needed, or return $homeAnchor.  " .
                     "To add another $thingAdded, please click <a href=\"$addAnother\">here</a>.</h3>";
                 }
             } else if ($this->fromAddPage) {
                 $this->resultStr =
-                "<h3>$this->name added successfully!  Please edit below if needed, or return $homeAnchor.  " .
+                "<h3>$name added successfully!  Please edit below if needed, or return $homeAnchor.  " .
                 "To add another $thingAdded, please click <a href=\"$addAnother\">here</a>.</h3>";
             }
         }
@@ -185,12 +245,37 @@ EOM;
             if ($_SERVER["REQUEST_METHOD"] != "POST") {
                 return;
             }
-            $this->name = test_input($_POST["name"]);
-            if (empty($this->name)) {
-                $this->nameErr = errorString("Name is required");
-                return;
+            // Grab the column values.
+            foreach ($this->columns as $col) {
+                $val = test_input($_POST[$col->name]);
+                if (empty($val)) {
+                    if ($col->required) {
+                        $this->nameErr = errorString("Missing value for required column " . $col->name);
+                        return;
+                    }
+                    continue;
+                }
+                $this->col2Val[$col->name] = $val;
             }
-            $sql = "INSERT INTO $this->mainTable (name) VALUES (\"$this->name\");";
+            $sql = "INSERT INTO $this->mainTable (";
+            $insertOrderCols = array();
+            foreach ($this->col2Val as $colName => $colVal) {
+                $sql .= "$colName";
+                array_push($insertOrderCols, $colName);
+                if (count($insertOrderCols) < (count($this->col2Val))) {
+                    $sql .= ", ";
+                }
+            }
+            $sql .= ") VALUES (";
+            for ($i = 0; $i < count($insertOrderCols); $i++) {
+                $colName = $insertOrderCols[$i];
+                $colVal = $this->col2Val[$colName];
+                $sql .= "\"$colVal\"";
+                if ($i < (count($insertOrderCols) - 1)) {
+                    $sql .= ", ";
+                }
+            }
+            $sql .= ")";
             $submitOk = $this->mysqli->query($sql);
             if ($submitOk == FALSE) {
                 $this->dbErr = dbErrorString($sql, $this->mysqli->error);
@@ -198,7 +283,7 @@ EOM;
             }
             $this->col2Val[$this->idCol] = $this->mysqli->insert_id;
             $paramHash = array($this->idCol => $this->col2Val[$this->idCol],
-                               "name" => $this->name);
+                               "name" => $this->col2Val["name"]);
             $editPage = preg_replace('/^\w+ /', "edit", $this->title); // e.g., "Add Group" -> "editGroup"
             $editPage .= ".php";
             echo(genPassToEditPageForm($editPage, $paramHash));
