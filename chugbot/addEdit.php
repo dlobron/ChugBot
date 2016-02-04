@@ -50,6 +50,9 @@
         protected $mysqli;
     }
     
+    // This class handles most of the work for the add and edit pages.  The
+    // subclasses each implement a custom handlePost function, since those are
+    // substantially different for add and edit actions.
     abstract class AddEditBase extends FormPage {
         function __construct($title, $firstParagraph, $mainTable, $idCol) {
             parent::__construct($title, $firstParagraph);
@@ -153,33 +156,35 @@ EOM;
         
         protected function populateInstanceActionIds() {
             // If we have active instance IDs, grab them.
-            if ((! empty($this->instanceIdsIdentifier)) &&
-                (! empty($_POST[$this->instanceIdsIdentifier]))) {
-                foreach ($_POST[$this->instanceIdsIdentifier] as $instance_id) {
-                    $instanceId = test_input($instance_id);
-                    if (empty($instanceId)) {
-                        continue;
-                    }
-                    $this->instanceActiveIdHash[$instanceId] = 1;
+            if (empty($this->instanceIdsIdentifier) ||
+                empty($_POST[$this->instanceIdsIdentifier])) {
+                return; // No instances.
+            }
+            foreach ($_POST[$this->instanceIdsIdentifier] as $instance_id) {
+                $instanceId = test_input($instance_id);
+                if (empty($instanceId)) {
+                    continue;
                 }
+                $this->instanceActiveIdHash[$instanceId] = 1;
             }
         }
         
         protected function updateActiveInstances($idVal) {
-            if (count($this->instanceActiveIdHash) > 0) {
-                $sql = "DELETE FROM $this->instanceTable WHERE $this->idCol = $idVal";
+            if (empty($this->instanceIdsIdentifier)) {
+                return; // No instances.
+            }
+            $sql = "DELETE FROM $this->instanceTable WHERE $this->idCol = $idVal";
+            $submitOk = $this->mysqli->query($sql);
+            if ($submitOk == FALSE) {
+                $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                return FALSE;
+            }
+            foreach ($this->instanceActiveIdHash as $instanceId => $active) {
+                $sql = "INSERT INTO $this->instanceTable ($this->idCol, $this->instanceIdCol) VALUES ($idVal, $instanceId)";
                 $submitOk = $this->mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                     return FALSE;
-                }
-                foreach ($this->instanceActiveIdHash as $instanceId => $active) {
-                    $sql = "INSERT INTO $this->instanceTable ($this->idCol, $this->instanceIdCol) VALUES ($idVal, $instanceId)";
-                    $submitOk = $this->mysqli->query($sql);
-                    if ($submitOk == FALSE) {
-                        $this->dbErr = dbErrorString($sql, $this->mysqli->error);
-                        return FALSE;
-                    }
                 }
             }
             
