@@ -45,6 +45,7 @@
         public $nameErr = "";
         protected $resultStr = "";
         protected $firstParagraph;
+        protected $secondParagraph;
         protected $formItems = array();
         protected $mysqli;
     }
@@ -57,6 +58,14 @@
         }
         
         abstract protected function handlePost();
+        
+        public function addSecondParagraph($p) {
+            $this->secondParagraph = $p;
+        }
+        
+        public function addInstanceTable($it) {
+            $this->instanceTable = $it;
+        }
         
         public function addColumn($name, $type = ColumnType::CT_STR,
                                   $required = TRUE) {
@@ -71,7 +80,14 @@
             return $this->col2Val[$column];
         }
         
-        public function renderForm($fromEdit = FALSE) {
+        public function fillInstanceId2Name($instanceIdCol, $instanceTable) {
+            fillId2Name($this->mysqli, $this->instanceId2Name, $this->dbErr,
+                        $instanceIdCol, $instanceTable);
+            $this->instanceIdCol = $instanceIdCol;
+            $this->instanceIdsIdentifier = $instanceIdCol . "s";
+        }
+        
+        public function renderForm() {
             echo headerText($this->title);
             $errText = genFatalErrorReport(array($this->dbErr, $this->nameErr));
             if (! is_null($errText)) {
@@ -84,6 +100,10 @@
             if ($this->resultStr) {
                 $html .= "<div id=\"centered_container\">$this->resultStr</div>";
             }
+            $secondParagraphHtml = "";
+            if ($this->secondParagraph) {
+                $secondParagraphHtml = "<p>$this->secondParagraph</p>";
+            }
             $html .= <<<EOM
 <img id="top" src="images/top.png" alt="">
 <div class="form_container">
@@ -93,6 +113,7 @@
 <div class="form_description">
 <h2>$this->title</h2>
 <p>$this->firstParagraph (<font color="red">*</font> = required field)</p>
+$secondParagraphHtml
 </div>
 <ul>
             
@@ -104,7 +125,7 @@ EOM;
             $cancelText = staffHomeAnchor("Cancel");
             $footerText = footerText();
             $fromEditText = "";
-            if ($fromEdit) {
+            if ($this->editPage) {
                 $val = $this->col2Val[$this->idCol];
                 $fromEditText = "<input type=\"hidden\" name=\"submitData\" value=\"1\">";
                 $fromEditText .= "<input type=\"hidden\" name=\"$this->idCol\" " .
@@ -130,15 +151,59 @@ EOM;
             echo $html;
         }
         
+        protected function populateInstanceActionIds() {
+            // If we have active instance IDs, grab them.
+            if ((! empty($this->instanceIdsIdentifier)) &&
+                (! empty($_POST[$this->instanceIdsIdentifier]))) {
+                foreach ($_POST[$this->instanceIdsIdentifier] as $instance_id) {
+                    $instanceId = test_input($instance_id);
+                    if (empty($instanceId)) {
+                        continue;
+                    }
+                    $this->instanceActiveIdHash[$instanceId] = 1;
+                }
+            }
+        }
+        
+        protected function updateActiveInstances($idVal) {
+            if (count($this->instanceActiveIdHash) > 0) {
+                $sql = "DELETE FROM $this->instanceTable WHERE $this->idCol = $idVal";
+                $submitOk = $this->mysqli->query($sql);
+                if ($submitOk == FALSE) {
+                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                    return FALSE;
+                }
+                foreach ($this->instanceActiveIdHash as $instanceId => $active) {
+                    $sql = "INSERT INTO $this->instanceTable ($this->idCol, $this->instanceIdCol) VALUES ($idVal, $instanceId)";
+                    $submitOk = $this->mysqli->query($sql);
+                    if ($submitOk == FALSE) {
+                        $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                        return FALSE;
+                    }
+                }
+            }
+            
+            return TRUE;
+        }
+        
         public $mainTable;
         protected $idCol; // The ID column name of $this->mainTable
         protected $col2Val = array(); // Column name -> value (filled by us)
         protected $columns = array(); // Column names (filled by the caller)
+        protected $editPage = FALSE;
+        // The next columns pertain to items with per-item instances.
+        // We make them public so users can grab them directly.
+        public $instanceTable = "";
+        public $instanceId2Name = array();
+        public $instanceActiveIdHash = array();
+        public $instanceIdsIdentifier = "";
+        public $instanceIdCol = "";
     }
     
     class EditPage extends AddEditBase {
         function __construct($title, $firstParagraph, $mainTable, $idCol) {
             parent::__construct($title, $firstParagraph, $mainTable, $idCol);
+            $this->editPage = TRUE;
         }
         
         public function handlePost() {
@@ -176,8 +241,21 @@ EOM;
                         $this->col2Val[$col->name] = "";
                     }
                 }
+                // Populate active instance IDs, if configured.
+                if (! empty($this->instanceIdsIdentifier)) {
+                    $sql = "SELECT $this->instanceIdCol from $this->instanceTable where $this->idCol = $idVal";
+                    $result = $this->mysqli->query($sql);
+                    if ($result == FALSE) {
+                        $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                        return;
+                    }
+                    while ($row = $result->fetch_array(MYSQLI_NUM)) {
+                        $this->instanceActiveIdHash[$row[0]] = 1;
+                    }
+                    mysqli_free_result($result);
+                }
             } else {
-                // From other sources (our add or edit page), column values should
+                // From other sources (our add page or this page), column values should
                 // be in the POST data.
                 $this->col2Val[$this->idCol] = test_input($_POST[$this->idCol]);
                 foreach ($this->columns as $col) {
@@ -191,6 +269,8 @@ EOM;
                     }
                     $this->col2Val[$col->name] = $val;
                 }
+                // If we have active instance IDs, grab them.
+                $this->populateInstanceActionIds();
             }
             if (! array_key_exists($this->idCol, $this->col2Val)) {
                 $this->nameErr = errorString("ID is required");
@@ -220,11 +300,16 @@ EOM;
                 $submitOk = $this->mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);
-                } else {
-                    $this->resultStr =
+                    return;
+                }
+                // Update instances, if we have them.
+                $instanceUpdateOk = $this->updateActiveInstances($idVal);
+                if (! $instanceUpdateOk) {
+                    return;
+                }
+                $this->resultStr =
                     "<h3>$name updated!  Please edit below if needed, or return $homeAnchor.  " .
                     "To add another $thingAdded, please click <a href=\"$addAnother\">here</a>.</h3>";
-                }
             } else if ($this->fromAddPage) {
                 $this->resultStr =
                 "<h3>$name added successfully!  Please edit below if needed, or return $homeAnchor.  " .
@@ -257,6 +342,10 @@ EOM;
                 }
                 $this->col2Val[$col->name] = $val;
             }
+            
+            // If we have active instance IDs, grab them.
+            $this->populateInstanceActionIds();
+            
             $sql = "INSERT INTO $this->mainTable (";
             $insertOrderCols = array();
             foreach ($this->col2Val as $colName => $colVal) {
@@ -281,9 +370,23 @@ EOM;
                 $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                 return;
             }
-            $this->col2Val[$this->idCol] = $this->mysqli->insert_id;
-            $paramHash = array($this->idCol => $this->col2Val[$this->idCol],
+            
+            // If we have instances, update those.
+            $mainTableInsertId = $this->mysqli->insert_id;
+            $instanceUpdateOk = $this->updateActiveInstances($mainTableInsertId);
+            if (! $instanceUpdateOk) {
+                return;
+            }
+            
+            $this->col2Val[$this->idCol] = $mainTableInsertId;
+            $paramHash = array($this->idCol => $mainTableInsertId,
                                "name" => $this->col2Val["name"]);
+            // Add instance info, if we have it.
+            if (count($this->instanceActiveIdHash) > 0) {
+                $key = $this->instanceIdsIdentifier . "[]";
+                $paramHash[$key] = array_keys($this->instanceActiveIdHash);
+            }
+            
             $editPage = preg_replace('/^\w+ /', "edit", $this->title); // e.g., "Add Group" -> "editGroup"
             $editPage .= ".php";
             echo(genPassToEditPageForm($editPage, $paramHash));

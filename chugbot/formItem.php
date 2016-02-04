@@ -4,13 +4,10 @@
     abstract class FormItem {
         abstract protected function renderHtml();
         
-        function __construct($desc, $req, $inputName, $inputClass,
-                             $inputType, $liNum) {
+        function __construct($desc, $req, $inputName, $liNum) {
             $this->description = $desc;
             $this->required = $req;
             $this->inputName = $inputName;
-            $this->inputClass = $inputClass;
-            $this->inputType = $inputType;
             $this->liNum = $liNum;
             
             // Initialize HTML with text that is common to all subclasses.
@@ -24,6 +21,14 @@
         
         public function setInputMaxLength($maxLen) {
             $this->inputMaxLength = $maxLen;
+        }
+        
+        public function setInputType($it) {
+            $this->inputType = $it;
+        }
+        
+        public function setInputClass($ic) {
+            $this->inputClass = $ic;
         }
         
         public function setInputValue($val) {
@@ -73,6 +78,34 @@
             return $this->html;
         }
     }
+    
+    class FormItemInstanceChooser extends FormItem {
+        public function renderHtml() {
+            $this->html .= "<div>\n";
+            $this->html .= genCheckBox($this->id2Name, $this->activeIdHash, $this->inputName);
+            if ($this->guideText) {
+                $guideId = "guide_" . $this->liNum;
+                $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>\n";
+            }
+            $this->html .= "</div></li>\n";
+            
+            return $this->html;
+        }
+        
+        public function setId2Name($id2Name) {
+            $this->id2Name = $id2Name;
+        }
+        
+        public function setActiveIdHash($activeIdHash) {
+            $this->activeIdHash = $activeIdHash;
+        }
+        
+        private $id2Name = array();
+        private $activeIdHash = array();
+    }
+    
+        
+        
     
     
 

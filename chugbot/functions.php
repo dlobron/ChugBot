@@ -76,51 +76,6 @@ EOM;
         return $retVal;
     }
     
-    function populateActiveInstances(&$mysqli,
-                                     &$activeIdMap,
-                                     &$dbErr,
-                                     $keyCol,
-                                     $keyVal,
-                                     $valCol,
-                                     $table) {
-        $sql = "SELECT $valCol from $table where $keyCol = $keyVal";
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            $dbErr = dbErrorString($sql, $mysqli->error);
-        } else {
-            while ($row = $result->fetch_array(MYSQLI_NUM)) {
-                $activeIdMap[$row[0]] = 1;
-            }
-            mysqli_free_result($result);
-        }
-    }
-    
-    function updateActiveInstances(&$mysqli,
-                                   $activeIdsMap,
-                                   &$submitOk,
-                                   &$dbErr,
-                                   $keyCol,
-                                   $keyVal,
-                                   $valCol,
-                                   $table) {
-        $sql = "DELETE FROM $table WHERE $keyCol = $keyVal";
-        $submitOk = $mysqli->query($sql);
-        if ($submitOk == FALSE) {
-            $dbErr = dbErrorString($sql, $mysqli->error);
-        }
-        foreach ($activeIdsMap as $activeId => $active) {
-            if (! empty($dbErr)) {
-                break;
-            }
-            $activeIdNum = intval($activeId);
-            $sql = "INSERT INTO $table ($keyCol, $valCol) VALUES ($keyVal, $activeIdNum)";
-            $submitOk = $mysqli->query($sql);
-            if ($submitOk == FALSE) {
-                $dbErr = dbErrorString($sql, $mysqli->error);
-            }
-        }
-    }
-    
     function genPickListForm($id2Name, $name, $tableName) {
         $ucName = ucfirst($name);
         $ucPlural = ucfirst($tableName);

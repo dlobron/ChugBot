@@ -10,8 +10,9 @@
     $addSessionPage->addColumn("name");
     $addSessionPage->handlePost();
     
-    $nameField = new FormItemSingleTextField("Session Name", TRUE, "name",
-                                             "element text medium", "text", 0);
+    $nameField = new FormItemSingleTextField("Session Name", TRUE, "name", 0);
+    $nameField->setInputType("element text medium");
+    $nameField->setInputClass("text");
     $nameField->setInputMaxLength(255);
     $nameField->setInputValue($addSessionPage->columnValue("name"));
     $nameField->setError($addSessionPage->nameErr);

@@ -10,8 +10,9 @@
     $addGroupPage->addColumn("name");
     $addGroupPage->handlePost();
     
-    $nameField = new FormItemSingleTextField("Group Name", TRUE, "name",
-                                             "element text medium", "text", 0);
+    $nameField = new FormItemSingleTextField("Group Name", TRUE, "name", 0);
+    $nameField->setInputType("element text medium");
+    $nameField->setInputClass("text");
     $nameField->setInputMaxLength(255);
     $nameField->setInputValue($addGroupPage->columnValue("name"));
     $nameField->setError($addGroupPage->nameErr);
