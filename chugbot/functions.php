@@ -98,7 +98,7 @@ EOM;
 <h3>$ucPlural</h3></div>
 <ul><li>
 <div>
-<select class="element select medium" id="itemId" name="itemId">
+<select class="element select medium" id="$idcol" name="$idcol">
 <option value="" disabled=disabled selected>---</option>
 EOM;
         foreach ($id2Name as $itemId => $itemName) {

@@ -1,159 +1,48 @@
 <?php
     session_start();
-    include 'functions.php';
+    include_once 'addEdit.php';
+    include_once 'formItem.php';
     bounceToLogin();
+
+    $editEdahPage = new EditPage("Edit Edah",
+                                 "Please update edah information as needed",
+                                 "edot", "edah_id");
+    $editEdahPage->addColumn("name");
+    $editEdahPage->addColumn("rosh_name", FALSE);
+    $editEdahPage->addColumn("rosh_phone", FALSE);
+    $editEdahPage->addColumn("comments", FALSE);
+    $editEdahPage->handlePost();
     
-    // define variables and set to empty values
-    $name = $edah_id = $rosh_name = $rosh_phone = $comments = "";
-    $nameErr = $dbErr = $addedStr = "";
-    $submitData = FALSE;
-    $fromAddPage = FALSE;
-    $fromStaffHomePage = FALSE;
+    $nameField = new FormItemSingleTextField("Edah Name", TRUE, "name", 0);
+    $nameField->setInputClass("element text medium");
+    $nameField->setInputType("text");
+    $nameField->setInputMaxLength(255);
+    $nameField->setInputValue($editEdahPage->columnValue("name"));
+    $nameField->setError($editEdahPage->nameErr);
+    $nameField->setGuideText("Choose your edah name (Kochavim, Ilanot 1, etc.)");
+    $editEdahPage->addFormItem($nameField);
+   
+    $roshField = new FormItemSingleTextField("Rosh Edah (head counselor) Name", FALSE, "rosh_name", 1);
+    $roshField->setInputClass("element text medium");
+    $roshField->setInputType("text");
+    $roshField->setInputMaxLength(255);
+    $roshField->setInputValue($editEdahPage->columnValue("rosh_name"));
+    $roshField->setGuideText("Enter the head counselor name (optional)");
+    $editEdahPage->addFormItem($roshField);
     
-    $mysqli = connect_db();
+    $roshPhoneField = new FormItemSingleTextField("Rosh Edah Phone", FALSE, "rosh_phone", 2);
+    $roshPhoneField->setInputType("element text medium");
+    $roshPhoneField->setInputClass("text");
+    $roshPhoneField->setInputMaxLength(255);
+    $roshPhoneField->setInputValue($editEdahPage->columnValue("rosh_phone"));
+    $roshPhoneField->setGuideText("Phone number for the head counselor (optional)");
+    $editEdahPage->addFormItem($roshPhoneField);
     
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if (! empty($_POST["fromAddPage"])) {
-            $fromAddPage = TRUE;
-        }
-        if (! empty($_POST["submitData"])) {
-            $submitData = TRUE;
-        }
-        if (isset($_POST["fromStaffHomePage"])) {
-            $fromStaffHomePage = TRUE;
-        }
-        $name = test_input($_POST["name"]);
-        $edah_id = test_input($_POST["edah_id"]);
-        $rosh_name = test_input($_POST["rosh_name"]);
-        $rosh_phone = test_input($_POST["rosh_phone"]);
-        $comments = test_input($_POST["comments"]);
-        if (empty($name)) {
-            $nameErr = errorString("Name is required");
-        }        
-        if ($fromStaffHomePage) {
-            getIdAndNameFromHomeString($name, $edah_id, $name,
-                                       $mysqli, $dbErr);
-        }
-        if (empty($edah_id)) {
-            $nameErr = errorString("ID is required");
-        }
-        
-        if (empty($nameErr)) {
-            // Get edah details, if we're coming from an outside page.
-            if ($fromAddPage || $fromStaffHomePage) {
-                $sql = "SELECT rosh_name, rosh_phone, comments FROM edot WHERE edah_id = $edah_id";
-                $result = $mysqli->query($sql);
-                if ($result == FALSE) {
-                    $dbErr = dbErrorString($sql, $mysqli->error);
-                } else if ($result->num_rows == 0) {
-                    $dbErr = dbErrorString($sql, "Error: edah $name not found");
-                } else {
-                    $row = $result->fetch_array(MYSQLI_NUM);
-                    $rosh_name = $row[0];
-                    $rosh_phone = $row[1];
-                    $comments = $row[2];
-                    mysqli_free_result($result);
-                }
-            }
-            $homeAnchor = staffHomeAnchor();
-            $addAnother = urlBaseText() . "/addEdah.php";
-            if ($submitData == TRUE) {
-                // Insert edited data.
-                $sql =
-                "UPDATE edot SET name = \"$name\", rosh_name = \"$rosh_name\", " .
-                "rosh_phone = \"$rosh_phone\", comments = \"$comments\" " .
-                "WHERE edah_id = $edah_id";
-                $submitOk = $mysqli->query($sql);
-                if ($submitOk == FALSE) {
-                    $dbErr = dbErrorString($sql, $mysqli->error);
-                } else {
-                    $addedStr =
-                    "<h3>$name updated!  Please edit below if needed, or return $homeAnchor.  " .
-                    "To add another edah, please click <a href=\"$addAnother\">here</a>.</h3>";
-                }
-            } else if ($fromAddPage) {
-                $addedStr =
-                "<h3>$name added successfully!  Please edit below if needed, or return $homeAnchor.  " .
-                "To add another edah, please click <a href=\"$addAnother\">here</a>.</h3>";
-            }
-        }
-    }
-    
-    $mysqli->close();
+    $commentsField = new FormItemTextArea("Comments", FALSE, "comments", 3);
+    $commentsField->setInputClass("element textarea medium");
+    $commentsField->setInputValue($editEdahPage->columnValue("comments"));
+    $commentsField->setGuideText("Comments about this Edah (optional)");
+    $editEdahPage->addFormItem($commentsField);
+
+    $editEdahPage->renderForm();
 ?>
-
-<?php
-    echo headerText("Edit Edah");
-    
-    $errText = genFatalErrorReport(array($dbErr, $nameErr));
-    if (! is_null($errText)) {
-        echo $errText;
-        exit();
-    }
-    ?>
-<?php
-    echo genSuccessMessage($addedStr);
-    ?>
-
-<img id="top" src="images/top.png" alt="">
-<div class="form_container">
-
-<h1><a>Edit Edah</a></h1>
-<form id="form_1063607" class="appnitro" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-<div class="form_description">
-<h2>Edit Edah</h2>
-<p>Please update edah information as needed (<font color="red">*</font> = required field)</p>
-</div>
-<ul >
-
-<li id="li_1" >
-<label class="description" for="name">Edah Name</label>
-<div>
-<input id="name" name="name" class="element text medium" type="text" maxlength="255" value="<?php echo $name;?>"/>
-<span class="error"><?php echo $nameErr;?></span>
-<p class="guidelines" id="guide_1"><small>Choose your edah name (Kochavim, Ilanot 1, etc.)</small></p>
-</div>
-</li>
-
-<li id="li_2" >
-<label class="description" for="name">Rosh Edah (head counselor) Name</label>
-<div>
-<input id="rosh_name" name="rosh_name" class="element text medium" type="text" maxlength="255" value="<?php echo $rosh_name;?>"/>
-<p class="guidelines" id="guide_2"><small>Enter the head counselor name (optional)</small></p>
-</div>
-</li>
-
-<li id="li_3" >
-<label class="description" for="name">Rosh Edah Phone</label>
-<div>
-<input id="rosh_phone" name="rosh_phone" class="element text medium" type="text" maxlength="255" value="<?php echo $rosh_phone;?>"/>
-<p class="guidelines" id="guide_3"><small>Phone number for the head counselor (optional)</small></p>
-</div>
-</li>
-
-<li id="li_4" >
-<label class="description" for="name">Comments</label>
-<div>
-<textarea id="comments" name="comments" class="element textarea medium" ><?php echo $comments;?></textarea>
-<p class="guidelines" id="guide_4"><small>Comments about this Edah (optional)</small></p>
-</div>
-</li>
-
-<li class="buttons">
-<input type="hidden" name="form_id" value="1063607" />
-<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
-<?php echo staffHomeAnchor("Cancel"); ?>
-</li>
-</ul>
-<input type="hidden" name="edah_id" id="edah_id" value="<?php echo $edah_id;?>"/>
-<input type="hidden" name="submitData" value="1">
-</form>
-<div id="footer">
-<?php
-    echo footerText();
-    ?>
-</div>
-</div>
-<img id="bottom" src="images/bottom.png" alt="">
-</body>
-</html>

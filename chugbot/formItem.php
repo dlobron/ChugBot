@@ -20,7 +20,7 @@
         }
         
         public function setInputMaxLength($maxLen) {
-            $this->inputMaxLength = $maxLen;
+            $this->inputMaxLengthHtml = "maxlength=$maxLen";
         }
         
         public function setInputType($it) {
@@ -53,7 +53,7 @@
         protected $inputType;
         protected $formItemType;
         protected $liNum;
-        protected $inputMaxLength = 255;
+        protected $inputMaxLengthHtml = "";
         protected $inputValue = "";
         protected $error = "";
         protected $guideText = "";
@@ -64,8 +64,26 @@
         public function renderHtml() {
             $this->html .= "<div>\n";
             $this->html .= "<input id=\"$this->inputName\" name=\"$this->inputName\" " .
-            "class=\"$this->inputClass\" type=\"$this->inputType\" maxlength=\"$this->inputMaxLength\" " .
+            "class=\"$this->inputClass\" type=\"$this->inputType\" $this->inputMaxLengthHtml " .
             "value=\"$this->inputValue\"/>\n";
+            if ($this->error) {
+                $this->html .= "<span class=\"error\">$this->error</span>\n";
+            }
+            if ($this->guideText) {
+                $guideId = "guide_" . $this->liNum;
+                $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>\n";
+            }
+            $this->html .= "</div></li>\n";
+            
+            return $this->html;
+        }
+    }
+    
+    class FormItemTextArea extends FormItem {
+        public function renderHtml() {
+            $this->html .= "<div>\n";
+            $this->html .= "<textarea id=\"$this->inputName\" name=\"$this->inputName\" " .
+            "class=\"$this->inputClass\" $this->inputMaxLengthHtml >$this->inputValue</textarea>\n";
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>\n";
             }

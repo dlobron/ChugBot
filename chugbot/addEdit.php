@@ -70,8 +70,8 @@
             $this->instanceTable = $it;
         }
         
-        public function addColumn($name, $type = ColumnType::CT_STR,
-                                  $required = TRUE) {
+        public function addColumn($name, $required = TRUE,
+                                  $type = ColumnType::CT_STR) {
             $col = new Column($name, $type, $required);
             array_push($this->columns, $col);
         }
@@ -171,7 +171,7 @@ EOM;
         
         protected function updateActiveInstances($idVal) {
             if (empty($this->instanceIdsIdentifier)) {
-                return; // No instances.
+                return TRUE; // No instances: not an error.
             }
             $sql = "DELETE FROM $this->instanceTable WHERE $this->idCol = $idVal";
             $submitOk = $this->mysqli->query($sql);
@@ -221,11 +221,16 @@ EOM;
             if (! empty($_POST["submitData"])) {
                 $this->submitData = TRUE;
             }
+            // Get the ID of the item to be edited: this is required.
+            $idVal = test_input($_POST[$this->idCol]);
+            if (! $idVal) {
+                $this->nameErr = errorString("No $this->idCol was chosen to edit: please select one");
+                return;
+            }
+            $this->col2Val[$this->idCol] = $idVal;
             if (! empty($_POST["fromStaffHomePage"])) {
                 // If we're coming from the staff home page, we need to get our
                 // column values from the DB.
-                $this->col2Val[$this->idCol] = test_input($_POST["itemId"]);
-                $idVal = $this->col2Val[$this->idCol];
                 $sql = "SELECT * FROM $this->mainTable WHERE $this->idCol = $idVal";
                 $result = $this->mysqli->query($sql);
                 if ($result == FALSE) {
@@ -262,7 +267,6 @@ EOM;
             } else {
                 // From other sources (our add page or this page), column values should
                 // be in the POST data.
-                $this->col2Val[$this->idCol] = test_input($_POST[$this->idCol]);
                 foreach ($this->columns as $col) {
                     $val = test_input($_POST[$col->name]);
                     if ($val == NULL || empty($val)) {
@@ -312,6 +316,7 @@ EOM;
                 if (! $instanceUpdateOk) {
                     return;
                 }
+                error_log("DBG: Setting res str");
                 $this->resultStr =
                     "<h3>$name updated!  Please edit below if needed, or return $homeAnchor.  " .
                     "To add another $thingAdded, please click <a href=\"$addAnother\">here</a>.</h3>";
