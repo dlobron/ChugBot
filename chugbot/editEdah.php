@@ -18,7 +18,7 @@
     $nameField->setInputType("text");
     $nameField->setInputMaxLength(255);
     $nameField->setInputValue($editEdahPage->columnValue("name"));
-    $nameField->setError($editEdahPage->nameErr);
+    $nameField->setError($editEdahPage->errForColName("name"));
     $nameField->setGuideText("Choose your edah name (Kochavim, Ilanot 1, etc.)");
     $editEdahPage->addFormItem($nameField);
    
@@ -31,8 +31,8 @@
     $editEdahPage->addFormItem($roshField);
     
     $roshPhoneField = new FormItemSingleTextField("Rosh Edah Phone", FALSE, "rosh_phone", 2);
-    $roshPhoneField->setInputType("element text medium");
-    $roshPhoneField->setInputClass("text");
+    $roshPhoneField->setInputType("text");
+    $roshPhoneField->setInputClass("element text medium");
     $roshPhoneField->setInputMaxLength(255);
     $roshPhoneField->setInputValue($editEdahPage->columnValue("rosh_phone"));
     $roshPhoneField->setGuideText("Phone number for the head counselor (optional)");

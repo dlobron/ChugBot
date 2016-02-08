@@ -18,7 +18,7 @@
     $nameField = new FormItemSingleTextField("Bunk Name", TRUE, "name", 0);
     $nameField->setInputMaxLength(255);
     $nameField->setInputValue($addBunkPage->columnValue("name"));
-    $nameField->setError($addBunkPage->nameErr);
+    $nameField->setError($addBunkPage->errForColName("name"));
     $nameField->setGuideText("Choose a name or number for this bunk (\"1\", \"Tikvah Village\", etc.)");
     $addBunkPage->addFormItem($nameField);
 

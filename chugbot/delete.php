@@ -29,7 +29,7 @@
     }
     
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $item_id = test_input($_POST["name"]);
+        $item_id = test_input($_POST["del_id"]);
         if (empty($item_id)) {
             $itemIdErr = errorString("Could not parse item ID from input");
         }
@@ -68,7 +68,7 @@
         echo "<p>You have successfully deleted $item_name.  Please click <a href=\"$homeUrl\">here</a> to go back, or wait to be redirected.<p>";
         echo "</div>";
         echo "<script type=\"text/javascript\">";
-        echo "setTimeout(function () { window.location.href= '$homeUrl'; },2000);";
+        echo "setTimeout(function () { window.location.href= '$homeUrl'; },1000);";
         echo "</script>";
     }
     ?>

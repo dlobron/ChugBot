@@ -54,8 +54,12 @@
             if (empty($errorText)) {
                 continue;
             }
-            $errorHtml = $errorHtml . $errorText;
-            $ec = $ec + 1;
+            if ($ec > 0) {
+                $errorHtml .= $errorHtml . ", " . $errorText;
+            } else {
+                $errorHtml = $errorText;
+            }
+            $ec++;
         }
         $desc = "Errors";
         if ($ec == 0) {
@@ -79,11 +83,11 @@ EOM;
     function genPickListForm($id2Name, $name, $tableName) {
         $ucName = ucfirst($name);
         $ucPlural = ucfirst($tableName);
-        $idcol = $name . "_id";
         $formName = "form_" . $name;
+        $idCol = $name . "_id";
         $editUrl = urlIfy("edit" . $ucName . ".php");
         $addUrl = urlIfy("add" . $ucName . ".php");
-        $deleteUrl = urlIfy("delete.php?idCol=$idcol&tableName=$tableName");
+        $deleteUrl = urlIfy("delete.php?tableName=$tableName&idCol=$idCol");
         $article = "a";
         if (preg_match('/^[aeiou]/i', $name)) {
             $article = "an";
@@ -98,7 +102,7 @@ EOM;
 <h3>$ucPlural</h3></div>
 <ul><li>
 <div>
-<select class="element select medium" id="$idcol" name="$idcol">
+<select class="element select medium" id="del_id" name="del_id">
 <option value="" disabled=disabled selected>---</option>
 EOM;
         foreach ($id2Name as $itemId => $itemName) {

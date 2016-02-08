@@ -38,16 +38,23 @@
             array_push($this->formItems, $fi);
         }
         
+        public function errForColName($colName) {
+            if (! array_key_exists($colName, $this->colName2Error)) {
+                return "";
+            }
+            return $this->colName2Error[$colName];
+        }
+        
         abstract protected function renderForm();
         
         public $title;
         public $dbErr = "";
-        public $nameErr = "";
+        public $colName2Error = array();
+        public $mysqli;
         protected $resultStr = "";
         protected $firstParagraph;
         protected $secondParagraph;
         protected $formItems = array();
-        protected $mysqli;
     }
     
     // This class handles most of the work for the add and edit pages.  The
@@ -74,6 +81,7 @@
                                   $type = ColumnType::CT_STR) {
             $col = new Column($name, $type, $required);
             array_push($this->columns, $col);
+            $this->colName2Error[$name] = "";
         }
         
         public function columnValue($column) {
@@ -92,7 +100,8 @@
         
         public function renderForm() {
             echo headerText($this->title);
-            $errText = genFatalErrorReport(array($this->dbErr, $this->nameErr));
+            $allErrors = array_merge(array($this->dbErr), array_values($this->colName2Error));
+            $errText = genFatalErrorReport($allErrors);
             if (! is_null($errText)) {
                 echo $errText;
                 exit();
@@ -224,7 +233,7 @@ EOM;
             // Get the ID of the item to be edited: this is required.
             $idVal = test_input($_POST[$this->idCol]);
             if (! $idVal) {
-                $this->nameErr = errorString("No $this->idCol was chosen to edit: please select one");
+                $this->colName2Error[$this->idCol] = errorString("No $this->idCol was chosen to edit: please select one");
                 return;
             }
             $this->col2Val[$this->idCol] = $idVal;
@@ -271,7 +280,7 @@ EOM;
                     $val = test_input($_POST[$col->name]);
                     if ($val == NULL || empty($val)) {
                         if ($col->required) {
-                            $this->nameErr = errorString("Missing required column " . $col->name);
+                            $this->colName2Error[$col->name] = errorString("Missing required column " . $col->name);
                             return;
                         }
                         continue;
@@ -282,7 +291,7 @@ EOM;
                 $this->populateInstanceActionIds();
             }
             if (! array_key_exists($this->idCol, $this->col2Val)) {
-                $this->nameErr = errorString("ID is required");
+                $this->colName2Error[$this->idCol] = errorString("ID is required");
                 return;
             }
             
@@ -316,7 +325,6 @@ EOM;
                 if (! $instanceUpdateOk) {
                     return;
                 }
-                error_log("DBG: Setting res str");
                 $this->resultStr =
                     "<h3>$name updated!  Please edit below if needed, or return $homeAnchor.  " .
                     "To add another $thingAdded, please click <a href=\"$addAnother\">here</a>.</h3>";
@@ -345,7 +353,7 @@ EOM;
                 $val = test_input($_POST[$col->name]);
                 if (empty($val)) {
                     if ($col->required) {
-                        $this->nameErr = errorString("Missing value for required column " . $col->name);
+                        $this->colName2Error[$col->name] = errorString("Missing value for required column " . $col->name);
                         return;
                     }
                     continue;

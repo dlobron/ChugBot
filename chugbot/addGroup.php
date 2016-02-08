@@ -11,11 +11,11 @@
     $addGroupPage->handlePost();
     
     $nameField = new FormItemSingleTextField("Group Name", TRUE, "name", 0);
-    $nameField->setInputType("element text medium");
-    $nameField->setInputClass("text");
+    $nameField->setInputType("text");
+    $nameField->setInputClass("element text medium");
     $nameField->setInputMaxLength(255);
     $nameField->setInputValue($addGroupPage->columnValue("name"));
-    $nameField->setError($addGroupPage->nameErr);
+    $nameField->setError($addGroupPage->errForColName("name"));
     $nameField->setGuideText("Choose a group name (e.g., aleph or bet)");                                             
     $addGroupPage->addFormItem($nameField);
 

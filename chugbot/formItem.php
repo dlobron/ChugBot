@@ -46,6 +46,10 @@
             $this->guideText = $gt;
         }
         
+        public function setPlaceHolder($ph) {
+            $this->placeHolder = $ph;
+        }
+        
         protected $description;
         protected $required;
         protected $inputName;
@@ -58,12 +62,14 @@
         protected $error = "";
         protected $guideText = "";
         protected $html = "";
+        protected $placeHolder = "";
     }
 
     class FormItemSingleTextField extends FormItem {
         public function renderHtml() {
+            $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
-            $this->html .= "<input id=\"$this->inputName\" name=\"$this->inputName\" " .
+            $this->html .= "<input id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\" " .
             "class=\"$this->inputClass\" type=\"$this->inputType\" $this->inputMaxLengthHtml " .
             "value=\"$this->inputValue\"/>\n";
             if ($this->error) {
@@ -81,8 +87,9 @@
     
     class FormItemTextArea extends FormItem {
         public function renderHtml() {
+            $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
-            $this->html .= "<textarea id=\"$this->inputName\" name=\"$this->inputName\" " .
+            $this->html .= "<textarea id=\"$this->inputName\" name=\"$this->inputName\" \"$this->inputName\" placeholder=\"$ph\" " .
             "class=\"$this->inputClass\" $this->inputMaxLengthHtml >$this->inputValue</textarea>\n";
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>\n";
@@ -122,8 +129,45 @@
         private $activeIdHash = array();
     }
     
+    class FormItemDropDown extends FormItem {
+        public function renderHtml() {
+            $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
+            $this->html .= "<div>\n";
+            $this->html .= "<select class=\"$this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\"> placeholder=\"$ph\"";
+            $this->html .= genPickList($this->id2Name, $colVal, $inputSingular); // $inputSinglular = e.g., "group"
+            $this->html .= "</select>";
+            if ($this->error) {
+                $this->html .= "<span class=\"error\">$this->error</span>";
+            }
+            $this->html .= "</div";
+            if ($this->guideText) {
+                $guideId = "guide_" . $this->liNum;
+                $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>";
+            }
+            $this->html .= "</li>";
+            
+            return $this->html;
+        }
         
+        public function fillDropDownId2Name($mysqli, &$dbErr, $idCol, $table) {
+            fillId2Name($mysqli, $this->id2Name, $dbErr,
+                        $idCol, $table);
+        }
         
+        public function setInputSingular($is) {
+            $this->inputSingular = $is;
+        }
+        
+        public function setColVal($cv) {
+            if ($cv != NULL) {
+                $this->colVal = $cv;
+            }
+        }
+        
+        private $id2Name = array();
+        private $inputSingular = "";
+        private $colVal = "";
+    }
     
     
 

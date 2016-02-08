@@ -11,11 +11,11 @@
     $addSessionPage->handlePost();
     
     $nameField = new FormItemSingleTextField("Session Name", TRUE, "name", 0);
-    $nameField->setInputType("element text medium");
-    $nameField->setInputClass("text");
+    $nameField->setInputType("text");
+    $nameField->setInputClass("element text medium");
     $nameField->setInputMaxLength(255);
     $nameField->setInputValue($addSessionPage->columnValue("name"));
-    $nameField->setError($addSessionPage->nameErr);
+    $nameField->setError($addSessionPage->errForColName("name"));
     $nameField->setGuideText("Choose a session name (e.g., (e.g., \"July\", \"August\", \"Full Summer\")");                                             
     $addSessionPage->addFormItem($nameField);        
 

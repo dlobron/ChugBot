@@ -20,7 +20,7 @@ EOM;
     $nameField = new FormItemSingleTextField("Block Name", TRUE, "name", 0);
     $nameField->setInputMaxLength(255);
     $nameField->setInputValue($editBlockPage->columnValue("name"));
-    $nameField->setError($editBlockPage->nameErr);
+    $nameField->setError($editBlockPage->errForColName("name"));
     $nameField->setGuideText("Choose a name for this block (e.g., \"July Week 1\", \"Mini Session Aleph\", etc.)");
     $editBlockPage->addFormItem($nameField);
 
