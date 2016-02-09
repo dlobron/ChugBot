@@ -40,6 +40,10 @@
             return $this->colName2Error[$colName];
         }
         
+        public function setSubmitAndContinueTarget($sact) {
+            $this->submitAndContinueTarget = $sact;
+        }
+        
         abstract protected function renderForm();
         
         public $title;
@@ -50,6 +54,7 @@
         protected $firstParagraph;
         protected $secondParagraph;
         protected $formItems = array();
+        protected $submitAndContinueTarget = NULL;
     }
     
     // This class handles most of the work for the add and edit pages.  The
@@ -130,9 +135,15 @@ EOM;
                 $html .= $formItem->renderHtml();
             }
             
-            $cancelText = staffHomeAnchor("Cancel");
+            $cancelUrl = $_SERVER['HTTP_REFERER'];
+            $cancelText = "<a href=\"$cancelUrl\">Cancel</a>";
             $footerText = footerText();
             $fromText = "";
+            $submitAndContinueText = "";
+            if (! is_null($this->submitAndContinueTarget)) {
+                $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"button_text\" type=\"submit\" name=\"submitAndContinue\" value=\"Continue\" />";
+                error_log("DBG: set $submitAndContinueText");
+            }
             if ($this->editPage) {
                 $val = $this->col2Val[$this->idCol];
                 $fromText = "<input type=\"hidden\" name=\"submitData\" value=\"1\">";
@@ -145,6 +156,7 @@ EOM;
 <li class="buttons">
 <input type="hidden" name="form_id" value="$formId" />
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+$submitAndContinueText
 $fromText
 $cancelText
 </li>
@@ -234,6 +246,10 @@ EOM;
             if ((! empty($_POST["fromHome"])) ||
                 (! empty($_POST["fromStaffHomePage"]))) {
                 $this->fromHomePage = TRUE;
+            }
+            $submitAndContinue = FALSE;
+            if (! empty($_POST["submitAndContinue"])) {
+                $submitAndContinue = TRUE;
             }
             // Get the ID of the item to be edited: this is required.
             $idVal = test_input($_POST[$this->idCol]);
@@ -330,6 +346,14 @@ EOM;
                 if (! $instanceUpdateOk) {
                     return;
                 }
+                // If we've been asked to continue, do so here.  Set the ID
+                // field in the _SESSION hash, so JQuery can grab it via an Ajax call.
+                if ($submitAndContinue) {
+                    $_SESSION["$this->idCol"] = $idVal;
+                    $submitAndContinueUrl = urlIfy($this->submitAndContinueTarget);
+                    header("Location: $submitAndContinueUrl");
+                    exit;
+                }
                 $this->resultStr =
                     "<h3>$name updated!  Please edit below if needed, or return $homeAnchor.  " .
                     "To add another $name, please click <a href=\"$addAnother\">here</a>.</h3>";
@@ -354,7 +378,7 @@ EOM;
             }
         }
         
-
+        
     }
 
     class AddPage extends AddEditBase {

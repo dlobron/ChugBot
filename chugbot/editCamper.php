@@ -3,8 +3,10 @@
     include_once 'addEdit.php';
     include_once 'formItem.php';
     
-    $editCamperPage = new EditPage("Edit Camper", "Please enter camper information here",
-                                  "campers", "camper_id");
+    $editCamperPage = new EditPage("Edit Camper",
+                                   "Please edit your camper information below, and click Submit to update.",
+                                   "campers", "camper_id");
+    $editCamperPage->addSecondParagraph("When you are finished editing, click Continue to go to the preference ranking page");
     $editCamperPage->addColumn("first");
     $editCamperPage->addColumn("last");
     $editCamperPage->addColumn("email");
@@ -12,6 +14,7 @@
     $editCamperPage->addColumn("edah_id");
     $editCamperPage->addColumn("needs_first_choice", FALSE, 0, TRUE);
     $editCamperPage->addColumn("inactive", FALSE, 0, TRUE);
+    $editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html");
 
     $editCamperPage->handlePost();
 

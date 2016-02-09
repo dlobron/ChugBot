@@ -173,7 +173,7 @@ END;
                     header('HTTP/1.1 500 Internal Server Error');
                     die(json_encode(array("error" => "Database error: chug choice $chug_id has no name in the database")));
                 }
-                $chugName = $chugName2Id[$chug_id];
+                $chugName = $chugId2Name[$chug_id];
                 $email_text .= "<li>$chugName</li>\n";
                 $toReplace = "CHOICE" . strval($i);
                 $insertSql = str_replace($toReplace, $chug_id, $insertSql);
