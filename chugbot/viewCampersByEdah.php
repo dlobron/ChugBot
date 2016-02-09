@@ -8,7 +8,7 @@
     $camperId2Name = array();
     $mysqli = connect_db();
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $edah_id = test_input($_POST["name"]);
+        $edah_id = test_input($_POST["edah_id"]);
         if (empty($edah_id)) {
             $nameErr = errorString("Edah ID is required in order to find campers in edah.");
         }

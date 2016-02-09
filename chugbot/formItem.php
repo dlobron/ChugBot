@@ -50,6 +50,17 @@
             $this->placeHolder = $ph;
         }
         
+        public function setStaffOnly($so) {
+            $this->staffOnly = $so;
+        }
+        
+        public function staffOnlyOk() {
+            if (! $this->staffOnly) {
+                return TRUE;
+            }
+            return isset($_SESSION['admin_logged_in']);
+        }
+        
         protected $description;
         protected $required;
         protected $inputName;
@@ -63,10 +74,39 @@
         protected $guideText = "";
         protected $html = "";
         protected $placeHolder = "";
+        protected $staffOnly = FALSE;
+    }
+    
+    class FormItemCheckBox extends FormItem {
+        public function renderHtml() {
+            if (! $this->staffOnlyOk()) {
+                return;
+            }
+            $this->html .= "<div>\n";
+            $this->html .= "<input id=\"$this->inputName\" name=\"$this->inputName\" type=\"checkbox\"";
+            if ($this->inputValue) {
+                $this->html .= " checked=\"checked\"";
+            }
+            $this->html .= ">";
+            if ($this->error) {
+                $this->html .= "<span class=\"error\">$this->error</span>\n";
+            }
+            $this->html .= "</div>";
+            if ($this->guideText) {
+                $guideId = "guide_" . $this->liNum;
+                $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>\n";
+            }
+            $this->html .= "</li>\n";
+            
+            return $this->html;
+        }
     }
 
     class FormItemSingleTextField extends FormItem {
         public function renderHtml() {
+            if (! $this->staffOnlyOk()) {
+                return;
+            }
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
             $this->html .= "<input id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\" " .
@@ -75,11 +115,12 @@
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>\n";
             }
+            $this->html .= "</div>";
             if ($this->guideText) {
                 $guideId = "guide_" . $this->liNum;
                 $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>\n";
             }
-            $this->html .= "</div></li>\n";
+            $this->html .= "</li>\n";
             
             return $this->html;
         }
@@ -87,6 +128,9 @@
     
     class FormItemTextArea extends FormItem {
         public function renderHtml() {
+            if (! $this->staffOnlyOk()) {
+                return;
+            }
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
             $this->html .= "<textarea id=\"$this->inputName\" name=\"$this->inputName\" \"$this->inputName\" placeholder=\"$ph\" " .
@@ -94,11 +138,12 @@
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>\n";
             }
+            $this->html .= "</div>";
             if ($this->guideText) {
                 $guideId = "guide_" . $this->liNum;
                 $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>\n";
             }
-            $this->html .= "</div></li>\n";
+            $this->html .= "</li>\n";
             
             return $this->html;
         }
@@ -106,13 +151,17 @@
     
     class FormItemInstanceChooser extends FormItem {
         public function renderHtml() {
+            if (! $this->staffOnlyOk()) {
+                return;
+            }
             $this->html .= "<div>\n";
             $this->html .= genCheckBox($this->id2Name, $this->activeIdHash, $this->inputName);
+            $this->html .= "</div>";
             if ($this->guideText) {
                 $guideId = "guide_" . $this->liNum;
                 $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>\n";
             }
-            $this->html .= "</div></li>\n";
+            $this->html .= "</li>\n";
             
             return $this->html;
         }
@@ -131,15 +180,18 @@
     
     class FormItemDropDown extends FormItem {
         public function renderHtml() {
+            if (! $this->staffOnlyOk()) {
+                return;
+            }
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
-            $this->html .= "<select class=\"$this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\"> placeholder=\"$ph\"";
-            $this->html .= genPickList($this->id2Name, $colVal, $inputSingular); // $inputSinglular = e.g., "group"
+            $this->html .= "<select class=\"$this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\"> placeholder=\"$ph\">";
+            $this->html .= genPickList($this->id2Name, $this->colVal, $this->inputSingular); // $inputSingular = e.g., "group"
             $this->html .= "</select>";
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>";
             }
-            $this->html .= "</div";
+            $this->html .= "</div>";
             if ($this->guideText) {
                 $guideId = "guide_" . $this->liNum;
                 $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>";

@@ -102,7 +102,7 @@ EOM;
 <h3>$ucPlural</h3></div>
 <ul><li>
 <div>
-<select class="element select medium" id="del_id" name="del_id">
+<select class="element select medium" id="$idCol" name="$idCol">
 <option value="" disabled=disabled selected>---</option>
 EOM;
         foreach ($id2Name as $itemId => $itemName) {
@@ -201,18 +201,10 @@ EOM;
         }
     }
     
-    function test_input($data, $nosplit = FALSE) {
+    function test_input($data) {
         if (empty($data)) {
-            return $data;
-        }
-        
-        // If the data is comma-separated, use only the first value, unless $nosplit
-        // is set.
-        if (! $nosplit) {
-            $arr = explode(',', $data);
-            $data = $arr[0];
-        }
-        
+            return NULL;
+        }        
         $data = trim($data);
         $data = stripslashes($data);
         $data = htmlspecialchars($data);

@@ -155,7 +155,8 @@
         "AND b.block_id = $block_id " .
         "AND p.camper_id = c.camper_id " .
         "AND p.group_id = $group_id " .
-        "AND p.block_id = b.block_id";
+        "AND p.block_id = b.block_id " .
+        "AND c.inactive = 0";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);

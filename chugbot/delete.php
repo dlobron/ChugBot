@@ -29,7 +29,7 @@
     }
     
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $item_id = test_input($_POST["del_id"]);
+        $item_id = test_input($_POST["$id_col"]);
         if (empty($item_id)) {
             $itemIdErr = errorString("Could not parse item ID from input");
         }
@@ -63,7 +63,7 @@
 <?php
     if ($deletedOk) {
         $homeUrl = urlIfy("staffHome.php");
-        echo "<div id=\"centered_container\">";
+        echo "<div class=\"centered_container\">";
         echo "<h3>Deletion Successsful!</h3>";
         echo "<p>You have successfully deleted $item_name.  Please click <a href=\"$homeUrl\">here</a> to go back, or wait to be redirected.<p>";
         echo "</div>";

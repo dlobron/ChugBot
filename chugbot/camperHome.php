@@ -14,9 +14,8 @@
 <h1><a>Camper Home</a></h1>
 <h3>Welcome to ChugBot, campers and families!</h3>
 <p>ChugBot is an online system where campers and families can order their chug (activity) preferences for the summer.</p>
-<p>To add
-preferences for a camper, please click the "Add" button.</p>
-<p>To edit camper preferences that have already  been entered, please enter the email address associated with the camper and click "Edit".</p>
+<p>To add a camper to the system, please click the "Add" button.</p>
+<p>To edit camper information that has already been entered, please enter the email address associated with that camper and click "Edit".</p>
 
 <form class="appnitro" id="choiceForm" method="post" />
 <button type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>

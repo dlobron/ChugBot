@@ -104,7 +104,7 @@ first varchar(50) NOT NULL,
 last varchar(50) NOT NULL,
 email varchar(50) NOT NULL,
 needs_first_choice bool DEFAULT 0,
-active bool NOT NULL DEFAULT 1)
+inactive bool NOT NULL DEFAULT 0)
 COLLATE utf8_unicode_ci;
 
 # Each chug instance is assigned to a group for the whole summer.
