@@ -7,6 +7,7 @@
         $mysqli = connect_db();
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
+            error_log("ERROR: failed to execute SQL: $sql");
             header('HTTP/1.1 500 Internal Server Error');
             die(json_encode(array("error" => "Database error")));
         }
@@ -18,7 +19,10 @@
         $result = getDbResult("SELECT camper_id, first, last FROM campers WHERE edah_id = $edah_id");
         $camperInString = "(";
         $rc = mysqli_num_rows($result);
-        $i = 0;
+        if ($rc == 0) {
+            // No campers in this edah.
+            return;
+        }
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             // Map camper ID to full name (remember that the latter might not
             // be unique).
@@ -158,6 +162,7 @@
     // Grab match, chug, and preference info, for display on the main leveling
     // page.
     if (isset($_POST["matches_and_prefs"])) {
+        error_log("DBG: starting matches and prefs");
         $edah_id = $_POST["edah_id"];
         $block_id = $_POST["block_id"];
         
@@ -172,10 +177,14 @@
             $chugId2Beta[intval($row[0])]["max_size"] = $row[3];
         }
         
+        error_log("DBG: got chug beta");
+        
         // Next, map camper ID to an ordered list of preferred chugim, by
         // group ID.  Also, map camper ID to name.
         $camperId2Name = array();
         $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name);
+        
+        error_log("DBG: got prefs");
         
         // Loop through groups, fetching matches as we go.
         $result = getDbResult("SELECT group_id, name FROM groups");
@@ -217,6 +226,7 @@
         $retVal["camperId2Name"] = $camperId2Name; // {Camper ID -> Camper Name}
         $retVal["chugId2Beta"] = $chugId2Beta;   // {Chug ID -> Chug Name, Min and Max}
         
+        error_log("DBG: returning from matches and prefs");
         echo json_encode($retVal);
         exit();
     }

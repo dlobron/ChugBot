@@ -135,7 +135,12 @@ EOM;
                 $html .= $formItem->renderHtml();
             }
             
-            $cancelUrl = $_SERVER['HTTP_REFERER'];
+            $cancelUrl = "";
+            if (isset($_SESSION['admin_logged_in'])) {
+                $cancelUrl = urlIfy("staffHome.php");
+            } else {
+                $cancelUrl = urlIfy("index.php");
+            }
             $cancelText = "<a href=\"$cancelUrl\">Cancel</a>";
             $footerText = footerText();
             $fromText = "";

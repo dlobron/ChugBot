@@ -63,7 +63,7 @@
     $edahDropDown->setError($editCamperPage->errForColName("edah_id"));
     $edahDropDown->setInputSingular("edah");
     $edahDropDown->setInputClass("element select medium");
-    $edahDropDown->setColVal($sessionIdVal);
+    $edahDropDown->setColVal($edahIdVal);
     $edahDropDown->fillDropDownId2Name($editCamperPage->mysqli, $editCamperPage->dbErr,
                                        "edah_id", "edot");
     $editCamperPage->addFormItem($edahDropDown);
