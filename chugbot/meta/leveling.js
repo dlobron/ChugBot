@@ -73,7 +73,7 @@ function getAndDisplayCurrentMatches() {
 		    // but only within the enclosing group (i.e., when changing the aleph assignment for
 		    // a camper, it should be possible to move within aleph choices only).  Also, the tooltip
 		    // for the camper boxes should show an ordered list of chugim, top to bottom.  
-		    // "B-zhe moi!  This, I know from nothing!" - N. Lobachevsky.
+		    // "This, I know from nothing!" - N. Lobachevsky.
 		    var html = "";
 		    var groupId2Name = json["groupId2Name"];
 		    var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
@@ -240,7 +240,7 @@ $(function() {
             })
 	    });
 
-// Display current matches.
+// Display current matches when the page loads.
 $(function() {
 	getAndDisplayCurrentMatches();
     });

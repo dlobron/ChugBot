@@ -142,7 +142,6 @@ EOM;
             $submitAndContinueText = "";
             if (! is_null($this->submitAndContinueTarget)) {
                 $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"button_text\" type=\"submit\" name=\"submitAndContinue\" value=\"Continue\" />";
-                error_log("DBG: set $submitAndContinueText");
             }
             if ($this->editPage) {
                 $val = $this->col2Val[$this->idCol];
@@ -335,7 +334,6 @@ EOM;
                     $i++;
                 }
                 $sql .=" WHERE $this->idCol = $idVal";
-                error_log("DBG: sql = $sql");
                 $submitOk = $this->mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);

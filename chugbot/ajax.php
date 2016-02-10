@@ -92,7 +92,7 @@
             header('HTTP/1.1 500 Internal Server Error');
             die(json_encode(array("error" => "Database error: can't get chug name->ID map")));
         }
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_row($result)) {
             $chugId2Name[$row[0]] = $row[1];
         }
         

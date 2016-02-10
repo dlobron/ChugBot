@@ -163,7 +163,7 @@
             $mysqli->close();
             return FALSE;
         }
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $c = new Camper($row[0], $row[1], $row[2], $row[3]);
             for ($i = 4; $i < count($row); $i++) {
                 if ($row[$i] >= 0) {
@@ -185,7 +185,7 @@
             $mysqli->close();
             return FALSE;
         }
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $c = new Chug($row[0], $row[1], $row[2], $row[3]);
             $chugim[$c->chug_id] = $c;
         }
@@ -204,7 +204,7 @@
             $mysqli->close();
             return FALSE;
         }
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $camper_id = intval($row[0]);
             $gid = intval($row[1]);
             if (! array_key_exists($camper_id, $existingPrefs)) {
@@ -236,7 +236,7 @@
             return FALSE;
         }
         $happiness = array();
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $cid = intval($row[0]);
             if (! array_key_exists($cid, $campers)) {
                 // Not an error: we expect other campers to be in this block/chug/group.
@@ -385,7 +385,7 @@
                 $fourthOrWorseCt++;
             }
             // Update the matches table with each camper's assignment.
-            $sql = "DELETE FROM matches WHERE camper_id = $camperId AND block_id = $block_id AND " .
+            $sql = "DELETE FROM matches WHERE camper_id = $cdbg->camper_id AND block_id = $block_id AND " .
             "group_id = $group_id";
             $result = $mysqli->query($sql);
             if ($result == FALSE) {
@@ -395,7 +395,7 @@
                 return FALSE;
             }
             $sql = "INSERT INTO matches (camper_id, block_id, group_id, chug_id) " .
-            "VALUES ($camperId, $block_id, $group_id, $assignedChugId)";
+            "VALUES ($cdbg->camper_id, $block_id, $group_id, $assignedChugId)";
             $result = $mysqli->query($sql);
             if ($result == FALSE) {
                 $err = dbErrorString($sql, $mysqli->error);

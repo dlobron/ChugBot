@@ -19,7 +19,7 @@
         $camperInString = "(";
         $rc = mysqli_num_rows($result);
         $i = 0;
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             // Map camper ID to full name (remember that the latter might not
             // be unique).
             $camperId2Name[intval($row[0])] = $row[1] . " " . $row[2];
@@ -165,7 +165,7 @@
         // First, map chug ID to name and min/max.
         $chugId2Beta = array();
         $result = getDbResult("SELECT chug_id, name, min_size, max_size FROM chugim");
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $chugId2Beta[intval($row[0])] = array();
             $chugId2Beta[intval($row[0])]["name"] = $row[1];
             $chugId2Beta[intval($row[0])]["min_size"] = $row[2];
@@ -181,7 +181,7 @@
         $result = getDbResult("SELECT group_id, name FROM groups");
         $groupId2Name = array();
         $groupId2ChugId2MatchedCampers = array();
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $group_id = intval($row[0]);
             $group_name = $row[1];
             $groupId2Name[$group_id] = $group_name;
@@ -192,7 +192,7 @@
             // table for this, because we need entries for chugim with no matches (so that the user
             // can drag assignments to such chugim).
             $result2 = getDbResult("SELECT chug_id FROM chugim WHERE group_id = $group_id");
-            while ($row2 = mysqli_fetch_array($result2, MYSQL_NUM)) {
+            while ($row2 = mysqli_fetch_row($result2)) {
                 $chug_id = intval($row2[0]);
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
             }
@@ -200,7 +200,7 @@
             "WHERE m.block_id = $block_id AND m.group_id = $group_id " .
             "AND m.camper_id = c.camper_id AND c.edah_id = $edah_id";
             $result3 = getDbResult($sql);
-            while ($row3 = mysqli_fetch_array($result3, MYSQL_NUM)) {
+            while ($row3 = mysqli_fetch_row($result3)) {
                 $camper_id = intval($row3[0]);
                 $chug_id = intval($row3[1]);
                 if (! array_key_exists($chug_id, $groupId2ChugId2MatchedCampers[$group_id])) {
@@ -260,7 +260,7 @@
         $stats = array();
         $sKeys = array("under_min_list", "over_max_list");
         $choiceKeys = array("first_choice_ct", "second_choice_ct", "third_choice_ct", "fourth_choice_or_worse_ct");
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $group_id = intval($row[0]);
             $group_name = $row[1];
             if (isset($_POST["reassign"])) {

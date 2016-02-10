@@ -143,7 +143,6 @@ $(function() {
 					  html += "</ul>";
 					  html += "<div class=\"right_invisible\"><img src=\"images/UpDownArrows.png\"></div>";
 					  html += "</div>";				  
-					  console.log("DBG: html = " + html);
 				      });
 			      });
 		       $("body").append(html);

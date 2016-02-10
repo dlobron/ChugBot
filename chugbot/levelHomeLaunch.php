@@ -38,7 +38,7 @@
         exit;
     }
     // Do the actual assignments, recording results as we go.
-    while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
         $group_id = intval($row[0]);
         $group_name = $row[1];
         $err = "";

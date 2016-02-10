@@ -18,7 +18,7 @@
         if ($result == FALSE) {
             $dbErr = dbErrorString($sql, $mysqli->error);
         } else {
-            while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+            while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
                 $camperId = $row[0];
                 $last = $row[2];
                 $first = $row[1];
