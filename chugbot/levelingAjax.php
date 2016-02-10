@@ -23,6 +23,7 @@
             // No campers in this edah.
             return;
         }
+        $i = 0;
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             // Map camper ID to full name (remember that the latter might not
             // be unique).
