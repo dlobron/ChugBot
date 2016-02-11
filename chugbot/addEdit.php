@@ -321,7 +321,7 @@ EOM;
                 return;
             }
             
-            $homeAnchor = staffHomeAnchor();
+            $homeAnchor = homeAnchor();
             $thisPage = basename($_SERVER['PHP_SELF']);
             $addPage = preg_replace('/^edit/', "add", $thisPage);
             $name = preg_replace('/^edit/', "", $thisPage);

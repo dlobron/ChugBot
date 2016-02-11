@@ -98,7 +98,11 @@ function getAndDisplayCurrentMatches() {
 					      chugMax = "no limit";
 					  }
 					  html += "<div name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
-					  html += "<h4>" + chugName + " (min = " + chugMin + ", max = " + chugMax + ")</h4>";
+					  if (chugName == "Not Assigned Yet") {
+					      html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
+					  } else {
+					      html += "<h4>" + chugName + " (min = " + chugMin + ", max = " + chugMax + ")</h4>";
+					  }
 					  html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
 					  $.each(matchedCampers,
 						 function(index, camperId) {

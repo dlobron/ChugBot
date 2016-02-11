@@ -163,12 +163,13 @@
     // Grab match, chug, and preference info, for display on the main leveling
     // page.
     if (isset($_POST["matches_and_prefs"])) {
-        error_log("DBG: starting matches and prefs");
         $edah_id = $_POST["edah_id"];
         $block_id = $_POST["block_id"];
         
         // Get preferences (as strings) for these campers.
-        // First, map chug ID to name and min/max.
+        // First, map chug ID to name and min/max.  Also, define an "unassigned"
+        // chug, which we will use to flag campers still needing assignment.
+        $maxIndex = 0;
         $chugId2Beta = array();
         $result = getDbResult("SELECT chug_id, name, min_size, max_size FROM chugim");
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
@@ -176,22 +177,26 @@
             $chugId2Beta[intval($row[0])]["name"] = $row[1];
             $chugId2Beta[intval($row[0])]["min_size"] = $row[2];
             $chugId2Beta[intval($row[0])]["max_size"] = $row[3];
+            if (intval($row[0]) > $maxIndex) {
+                $maxIndex = intval($row[0]);
+            }
         }
-        
-        error_log("DBG: got chug beta");
-        
+        $unAssignedIndex = $maxIndex + 1;
+        $chugId2Beta[$unAssignedIndex]["name"] = "Not Assigned Yet";
+        $chugId2Beta[$unAssignedIndex]["min_size"] = 0;
+        $chugId2Beta[$unAssignedIndex]["max_size"] = 0;
+
         // Next, map camper ID to an ordered list of preferred chugim, by
         // group ID.  Also, map camper ID to name.
         $camperId2Name = array();
         $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name);
-        
-        error_log("DBG: got prefs");
-        
+
         // Loop through groups, fetching matches as we go.
         $result = getDbResult("SELECT group_id, name FROM groups");
         $groupId2Name = array();
         $groupId2ChugId2MatchedCampers = array();
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+            $unAssignedCampersInThisGroup = $camperId2Name; // Make a copy
             $group_id = intval($row[0]);
             $group_name = $row[1];
             $groupId2Name[$group_id] = $group_name;
@@ -206,6 +211,7 @@
                 $chug_id = intval($row2[0]);
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
             }
+            $groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex] =  array();
             $sql = "SELECT m.camper_id, m.chug_id FROM matches m, campers c " .
             "WHERE m.block_id = $block_id AND m.group_id = $group_id " .
             "AND m.camper_id = c.camper_id AND c.edah_id = $edah_id";
@@ -214,10 +220,23 @@
                 $camper_id = intval($row3[0]);
                 $chug_id = intval($row3[1]);
                 if (! array_key_exists($chug_id, $groupId2ChugId2MatchedCampers[$group_id])) {
-                    error_log("ERROR: Found camper match to chug ID $chug_id, not in group $group_id");
+                    // This can happen, e.g., if we assign a chug to a different group.  It's important
+                    // not to reassign chugim once campers have started selecting (need to figure out which
+                    // changes we can handle).
+                    error_log("WARNING: Found camper match to chug ID $chug_id, not in group $group_id");
                     continue;
                 }
                 array_push($groupId2ChugId2MatchedCampers[$group_id][$chug_id], $camper_id);
+                unset($unAssignedCampersInThisGroup[$camper_id]); // Remove from unassigned list.
+            }
+            // If any campers are in the unassigned list, add them in the unassigned grouping.
+            foreach ($unAssignedCampersInThisGroup as $unAssignedId => $unAssignedName) {
+                error_log("No match found for $unAssignedName for $group_name - flagging as unassigned");
+                array_push($groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex], $unAssignedId);
+            }
+            if (count($groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex]) == 0) {
+                // Don't display the unassigned chug unless we have at least one of them.
+                unset($groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex]);
             }
         }
         $retVal = array();
@@ -227,7 +246,6 @@
         $retVal["camperId2Name"] = $camperId2Name; // {Camper ID -> Camper Name}
         $retVal["chugId2Beta"] = $chugId2Beta;   // {Chug ID -> Chug Name, Min and Max}
         
-        error_log("DBG: returning from matches and prefs");
         echo json_encode($retVal);
         exit();
     }

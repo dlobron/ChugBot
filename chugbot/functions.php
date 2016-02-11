@@ -224,7 +224,11 @@ EOM;
     }
     
     function homeUrl() {
-        return urlIfy("index.php");
+        if (isset($_SESSION['admin_logged_in'])) {
+            return urlIfy("staffHome.php");
+        } else {
+            return urlIfy("index.php");
+        }
     }
     
     function homeAnchor($text = "home") {
