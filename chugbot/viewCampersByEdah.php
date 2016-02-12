@@ -44,7 +44,7 @@
 <div class="centered_container">
 <h1>View Campers</a></h1>
 <h2>Campers for <?php echo $edahName; ?></h2>
-<p>This page lists the <?php echo $edaName; ?> campers who have entered preferences in this system.  To update
+<p>This page lists the <?php echo $edahName; ?> campers who have entered preferences in this system.  To update
 information or settings for a camper, click the Edit button next to the camper's name.  To return to the staff admin
 page, please click <?php echo staffHomeAnchor(); ?>.</p>
 </div>

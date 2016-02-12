@@ -150,6 +150,10 @@ EOM;
             }
             if ($this->editPage) {
                 $val = $this->col2Val[$this->idCol];
+                if ((! $val) &&
+                    (! is_null($this->constantIdValue))) {
+                    $val = $this->constantIdValue;
+                }
                 $fromText = "<input type=\"hidden\" name=\"submitData\" value=\"1\">";
                 $fromText .= "<input type=\"hidden\" name=\"$this->idCol\" " .
                 "id=\"$this->idCol\" value=\"$val\"/>";
@@ -214,11 +218,18 @@ EOM;
             return TRUE;
         }
         
+        public function setConstantIdValue($civ) {
+            $this->constantIdValue = $civ;
+        }
+        
         public $mainTable;
+        
         protected $idCol; // The ID column name of $this->mainTable
         protected $col2Val = array(); // Column name -> value (filled by us)
         protected $columns = array(); // Column names (filled by the caller)
         protected $editPage = FALSE;
+        protected $constantIdValue = NULL;
+        
         // The next columns pertain to items with per-item instances.
         // We make them public so users can grab them directly.
         public $instanceTable = "";
@@ -226,6 +237,7 @@ EOM;
         public $instanceActiveIdHash = array();
         public $instanceIdsIdentifier = "";
         public $instanceIdCol = "";
+        
         public $fromAddPage = FALSE;
         public $submitData = FALSE;
         public $fromHomePage = FALSE;
@@ -255,11 +267,16 @@ EOM;
             if (! empty($_POST["submitAndContinue"])) {
                 $submitAndContinue = TRUE;
             }
-            // Get the ID of the item to be edited: this is required.
+            // Get the ID of the item to be edited: this is required to either
+            // exist in the POST or be set as a constant.
             $idVal = test_input($_POST[$this->idCol]);
             if (! $idVal) {
-                $this->colName2Error[$this->idCol] = errorString("No $this->idCol was chosen to edit: please select one");
-                return;
+                if (! is_null($self->constantIdValue)) {
+                    $idVal = $self->constantIdValue;
+                } else {
+                    $this->colName2Error[$this->idCol] = errorString("No $this->idCol was chosen to edit: please select one");
+                    return;
+                }
             }
             $this->col2Val[$this->idCol] = $idVal;
             if ($this->fromHomePage) {
@@ -326,8 +343,14 @@ EOM;
             $addPage = preg_replace('/^edit/', "add", $thisPage);
             $name = preg_replace('/^edit/', "", $thisPage);
             $name = preg_replace('/.php$/', "", $name);
-            $addAnother = urlBaseText() . "/$addPage";
             $idVal = $this->col2Val[$this->idCol];
+            $addAnotherText = "";
+            if (is_null($this->constantIdValue)) {
+                // Only display an "add another" link for tables that allow multiple
+                // rows.
+                $addAnother = urlBaseText() . "/$addPage";
+                $addAnotherText = "To add another $name, please click <a href=\"$addAnother\">here</a>.";
+            }
             if ($this->submitData) {
                 $i = 0;
                 $sql = "UPDATE $this->mainTable SET "; // Common start to SQL
@@ -358,12 +381,10 @@ EOM;
                     exit;
                 }
                 $this->resultStr =
-                    "<h3>$name updated!  Please edit below if needed, or return $homeAnchor.  " .
-                    "To add another $name, please click <a href=\"$addAnother\">here</a>.</h3>";
+                    "<h3>$name updated!  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
             } else if ($this->fromAddPage) {
                 $this->resultStr =
-                "<h3>$name added successfully!  Please edit below if needed, or return $homeAnchor.  " .
-                "To add another $name, please click <a href=\"$addAnother\">here</a>.</h3>";
+                "<h3>$name added successfully!  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
             }
             
             // If a column is set to its default, set it to the empty string

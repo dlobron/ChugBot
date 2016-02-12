@@ -3,6 +3,7 @@
     include 'functions.php';
     bounceToLogin();
 
+    $resetUrl = urlIfy("staffReset.php");
     $levelingUrl = urlIfy("levelHomeLaunch.php");    
     $dbErr = "";
     $sessionId2Name = array();
@@ -26,7 +27,6 @@
                 "edah_id", "edot");
     fillId2Name($mysqli, $bunkId2Name, $dbErr,
                 "bunk_id", "bunks");
-    
     ?>
 
 <?php
@@ -40,12 +40,15 @@
     ?>
 
 <div class="centered_container">
-<h1>Admin Home</h1>
+<!-- This empty div makes the display cleaner. -->
+</div>
+
+<div class="centered_container">
 <h2>Camp Staff Control Panel</h2>
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
 <p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>
 <p>Please hover your mouse over a menu for further help.<p>
-</div>
+<p>To edit your administrative settings, please click <a href="<?php echo $resetUrl; ?>">here</a>. </div>
 
 <div class="right_container">
 <h3>Leveling</h3>
