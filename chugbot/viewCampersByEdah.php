@@ -42,6 +42,8 @@
     ?>
 
 <div class="centered_container">
+</div>
+<div class="centered_container">
 <h1>View Campers</a></h1>
 <h2>Campers for <?php echo $edahName; ?></h2>
 <p>This page lists the <?php echo $edahName; ?> campers who have entered preferences in this system.  To update

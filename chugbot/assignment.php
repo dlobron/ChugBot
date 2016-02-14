@@ -226,9 +226,11 @@
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
         $existingMatches = array();
-        $sql = "SELECT m.camper_id, m.group_id, c.name, c.chug_id FROM matches m, chugim c, campers ca " .
+        $sql = "SELECT m.camper_id, m.group_id, c.name, c.chug_id FROM matches m, chugim c, campers ca, block_instances b " .
         "WHERE m.block_id = $block_id AND m.chug_id = c.chug_id AND m.group_id != $group_id " .
-        "AND m.camper_id = ca.camper_id AND ca.edah_id = $edah_id GROUP BY 1,2";
+        "AND m.camper_id = ca.camper_id AND ca.edah_id = $edah_id AND b.block_id = $block_id " .
+        "AND b.session_id = ca.session_id " .
+        "GROUP BY 1,2";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);
@@ -262,7 +264,7 @@
                         debugLog("Incremented happiness of $camper->name by $prefsByChugId[$chug_id] (existing match to chug ID $chug_id");
                     } else {
                         // In general, there should be a preference for assigned chugim.
-                        error_log("WARNING: No preference for for $camper->name for assigned chug ID $chug_id");
+                        error_log("WARNING: No preference found for $camper->name for assigned chug ID $chug_id");
                     }
                 } else {
                     error_log("WARNING: No prefs for group $gid for camper ID $camper_id");
@@ -271,8 +273,8 @@
                     }
                 }
             } else {
-                // All campers should have a pref list.
-                error_log("ERROR: No preferences found for camper ID $camper_id");
+                // Campers should have a pref list.
+                error_log("WARNING: No preferences found for camper ID $camper_id");
                 if ($camper != NULL) {
                     error_log("Camper name: " . $camper->name);
                 }

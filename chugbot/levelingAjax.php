@@ -16,7 +16,9 @@
     }
     
     function getPrefListsForCampersByGroup($edah_id, $block_id, &$camperId2Name) {
-        $result = getDbResult("SELECT camper_id, first, last FROM campers WHERE edah_id = $edah_id");
+        $sql = "SELECT camper_id, first, last FROM campers c, block_instances b WHERE c.edah_id = $edah_id AND " .
+        "c.session_id = b.session_id and b.block_id = $block_id";
+        $result = getDbResult($sql);
         $camperInString = "(";
         $rc = mysqli_num_rows($result);
         if ($rc == 0) {
@@ -212,9 +214,10 @@
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
             }
             $groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex] =  array();
-            $sql = "SELECT m.camper_id, m.chug_id FROM matches m, campers c " .
+            $sql = "SELECT m.camper_id, m.chug_id FROM matches m, campers c, block_instances b " .
             "WHERE m.block_id = $block_id AND m.group_id = $group_id " .
-            "AND m.camper_id = c.camper_id AND c.edah_id = $edah_id";
+            "AND m.camper_id = c.camper_id AND c.edah_id = $edah_id " .
+            "AND b.block_id = $block_id AND b.session_id = c.session_id";
             $result3 = getDbResult($sql);
             while ($row3 = mysqli_fetch_row($result3)) {
                 $camper_id = intval($row3[0]);

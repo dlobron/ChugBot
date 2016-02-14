@@ -76,7 +76,6 @@
                 }
                 $sql .= ", admin_email = \"$admin_email\"";
             }
-            error_log("DBG sql = $sql");
             if (empty($staffEmailErr) &&
                 empty($staffPasswordErr) &&
                 empty($staffPasswordErr2) &&

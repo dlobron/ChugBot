@@ -222,7 +222,11 @@ EOM;
     function urlIfy($localLink) {
         return urlBaseText() . $localLink;
     }
-    
+
+    function chugBotInitialPageUrl() {
+        return urlIfy("index.php");
+    }
+
     function homeUrl() {
         if (isset($_SESSION['admin_logged_in'])) {
             return urlIfy("staffHome.php");
@@ -297,7 +301,7 @@ EOM;
     }
     
     function footerText() {
-        $homeUrl = homeUrl();
+        $homeUrl = chugBotInitialPageUrl();
         return
             "<a href=\"http://www.campramahne.org/\">CRNE home</a><br><a href=\"$homeUrl\">ChugBot home</a>";
     }
