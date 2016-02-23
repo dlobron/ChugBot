@@ -206,6 +206,10 @@
                         $idCol, $table);
         }
         
+        public function setId2Name($id2Name) {
+            $this->id2Name = $id2Name;
+        }
+        
         public function setInputSingular($is) {
             $this->inputSingular = $is;
         }

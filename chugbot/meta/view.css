@@ -35,6 +35,24 @@ body
         -webkit-border-radius: 10px;
 }
 
+.top_container
+{
+	position: relative;
+        margin-top: 5px;
+	top: 2px;
+        background:#fff;
+        margin:0 auto;
+        text-align: left;
+	width:15%;
+        padding-bottom: 3px;
+	padding-left: 5px;
+	padding-right: 5px;
+	border: 1px solid silver;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+}	
+
 .chug_choice_container
 {
 	position: relative;

@@ -116,9 +116,8 @@
         $homeAnchor = homeAnchor();
         $homeUrl = homeUrl();
         $email_text = <<<END
-<p>Thank you for using ChugBot, <b>$first</b>!  Please review your choices to make sure they are correct.
-If anything is incorrect or missing, you can go back to ChugBot anytime to correct it by clicking ${homeAnchor},
-or by pasting this link into your browser: $homeUrl</p>
+<p>We have received your chug preferences, <b>$first</b>!  Please review your choices to make sure they are correct.
+If anything is incorrect or missing, you can go back to correct it by clicking ${homeAnchor}, or by pasting this link into your browser: $homeUrl</p>
 END;
         // Delete existing selections, and insert the new ones.
         $deleteSql =
@@ -192,24 +191,32 @@ END;
         
         // If we have an email address, send a confirmation email listing the
         // camper's choices.
-        if (! empty($email)) {
-            // TODO: Ask for host mail parameters.  They can live in the database
-            // with the other staff info.  The parameters we need can be found here:
+        if ($email) {
+            $sql = "SELECT * FROM admin_data";
+            $result = $mysqli->query($sql);
+            if ($result == FALSE) {
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => "Database Failure")));
+            }
+            $row = $result->fetch_assoc();
+            
+            // An example of the possible parameters for PHPMailer can be found here:
             // https://github.com/Synchro/PHPMailer/blob/master/examples/gmail.phps
-            // For now, we can test locally with GMail SMTP, but make sure not to check
-            // in a hard-coded password to GitHub!
-            // I think we need: mail server host, mail server port, encryption (none/ssl/tls),
-            // SMTP auth (yes/no), username, password, from address, reply-to address (if not
-            // the same).  We only need username and password if SMTP auth is true.
-            // Hm- maybe it's better to have no auth, since we can't store the password
-            // in hashed form (no way to retrieve it).
+            // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
+            // of 2016.
             $mail = new PHPMailer;
-            $mail->Subject = "Camp Ramah Chug Choice Confirmation for $first $last";
-            $mail->Body = $email_text;
             $mail->addAddress($email);
+            $mail->isSMTP();
+            $mail->Host = 'localhost';
+            $mail->Port = 25;
+            $mail->SMTPAuth = true;
+            $mail->Username = $row["admin_email_username"];
+            $mail->Password = $row["admin_email_password"];
+            $mail->setFrom($row["admin_email"], "Camp Ramah");
+            
+            $mail->Subject = "Camp Ramah chug preferences for $first $last";
             $mail->isHTML(true);
-            // $mail->addReplyTo(TODO);
-            // $mail->setFrom(TODO);
+            $mail->Body = $email_text;
             if (! $mail->send()) {
                 error_log("Failed to send email to $email");
                 error_log("Mailer error: " . $mail->ErrorInfo);
