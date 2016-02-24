@@ -183,17 +183,7 @@ EOM;
         
         protected function populateInstanceActionIds() {
             // If we have active instance IDs, grab them.
-            if (empty($this->instanceIdsIdentifier) ||
-                empty($_POST[$this->instanceIdsIdentifier])) {
-                return; // No instances.
-            }
-            foreach ($_POST[$this->instanceIdsIdentifier] as $instance_id) {
-                $instanceId = test_input($instance_id);
-                if ($instanceId == NULL) {
-                    continue;
-                }
-                $this->instanceActiveIdHash[$instanceId] = 1;
-            }
+            populateActiveIds($this->instanceActiveIdHash, $this->instanceIdsIdentifier);
         }
         
         protected function updateActiveInstances($idVal) {

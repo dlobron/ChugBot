@@ -17,14 +17,12 @@ USE chugbot_db;
 
 # Create a table to hold admin data.  The ISP for CRNE tells us to create an email account in cPanel
 # use the full email as the username and the email account password as the password.
-# The admin_data_id column lets use the regular addEdit interface to edit these values.
-# For now, the admin password is separate from the admin email account password - we can merge them
-# if this turns out to be confusing.
 CREATE TABLE admin_data(
 admin_email varchar(50) NOT NULL,
 admin_password varchar(255) NOT NULL,
 admin_email_username varchar(50),
-admin_email_password varchar(255))
+admin_email_password varchar(255),
+regular_user_token varchar(255))
 COLLATE utf8_unicode_ci;
 
 # This table holds sessions, e.g., "July", "August", "Full Summer", "Mini Bet", etc.

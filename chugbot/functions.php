@@ -7,6 +7,21 @@
         }
     }
     
+    function populateActiveIds(&$idHash, $key) {
+        // If we have active instance IDs, grab them.
+        if (empty($key) ||
+            empty($_POST[$key])) {
+            return; // No instances.
+        }
+        foreach ($_POST[$key] as $instance_id) {
+            $instanceId = test_input($instance_id);
+            if ($instanceId == NULL) {
+                continue;
+            }
+            $idHash[$instanceId] = 1;
+        }
+    }
+    
     function overUnder($chugim, &$underMin, &$overMax) {
         foreach ($chugim as $chug) {
             if ($chug->assigned_count < $chug->min_size) {
@@ -216,14 +231,19 @@ EOM;
         if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
             $scheme = "https";
         }
-        return $scheme . "://" . $_SERVER['HTTP_HOST'] . "/chugbot/";
+        $localUrl = "/";
+        $penSlashPos = strrpos($_SERVER["REQUEST_URI"], "/");
+        if ($penSlashPos != FALSE) {
+            $localUrl = substr($_SERVER["REQUEST_URI"], 0, $penSlashPos+1);
+        }
+        return $scheme . "://" . $_SERVER['HTTP_HOST'] . $localUrl;
     }
     
     function urlIfy($localLink) {
         return urlBaseText() . $localLink;
     }
 
-    function chugBotInitialPageUrl() {
+    function initialPageUrl() {
         return urlIfy("index.php");
     }
 
@@ -301,9 +321,9 @@ EOM;
     }
     
     function footerText() {
-        $homeUrl = chugBotInitialPageUrl();
+        $homeUrl = initialPageUrl();
         return
-            "<a href=\"http://www.campramahne.org/\">CRNE home</a><br><a href=\"$homeUrl\">ChugBot home</a>";
+            "<a href=\"http://www.campramahne.org/\">CRNE home</a><br><a href=\"$homeUrl\">Leveling home</a>";
     }
     
     function headerText($title) {
