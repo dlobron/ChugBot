@@ -1,6 +1,7 @@
 <?php
     session_start();
-    include 'functions.php';
+    include_once 'functions.php';
+    include_once 'formItem.php';
     // If the user is already logged in, redirect.
     bouncePastIfLoggedIn("staffHome.php");
     
@@ -97,7 +98,7 @@
                 if (! password_verify($staff_password, $existingPasswordHashed)) {
                     $staffPasswordErr = errorString("Password does not match - please try again.") .
                     "<p>If you forgot the password, please click <a href=\"$resetUrl\">here</a> to reset it.</p>";
-                    usleep(500000); // Sleep for 0.5 sec, to slow a dictionary attack.
+                    usleep(250000); // Sleep for 0.25 sec, to slow a dictionary attack.
                 } else {
                     // New password entered OK: redirect.
                     $_SESSION['admin_logged_in'] = TRUE;
@@ -142,41 +143,34 @@
 <ul>
 
 <?php
+    $liNum = 0;
     if (empty($existingPasswordHashed)) {
-        $emailSection = <<<HERE
-<li>
-<div>
-<input id="staff_email" name="staff_email" class="element text medium" maxlength=20 value="$staff_email" type="text">
-<label for="staff_email">Staff email</label>
-<span class="error">$staffEmailErr</span>
-<p class="guidelines" id="email_guide"><small>Please enter an email for password change/retrieval.</small></p>
-</div>
-</li>
-HERE;
-        echo $emailSection;
+        $emailField = new FormItemSingleTextField("Staff Email Address", TRUE, "staff_email", $liNum++);
+        $emailField->setInputValue($staff_email);
+        $emailField->setInputType("text");
+        $emailField->setInputClass("element text medium");
+        $emailField->setInputMaxLength(20);
+        $emailField->setPlaceHolder("leveling@campramahne.org");
+        $emailField->setGuideText("Please enter an email for password change/retrieval. The person at this address should also be able to answer leveling questions from campers.");
+        $emailField->setError($staffEmailErr);
+        echo $emailField->renderHtml();
     }
-?>
-
-<li>
-<div>
-<input id="staff_password" name="staff_password" class="element text medium" maxlength=50 type="password">
-<label for="staff_password">Admin password</label>
-<span class="error"><?php echo $staffPasswordErr; ?></span>
-</div>
-</li>
-
-<?php
+    
+    $staffPasswordField = new FormItemSingleTextField("Staff Password", TRUE, "staff_password", $liNum++);
+    $staffPasswordField->setInputType("password");
+    $staffPasswordField->setInputClass("element text medium");
+    $staffPasswordField->setInputMaxLength(50);
+    $staffPasswordField->setPlaceHolder(" ");
+    $staffPasswordField->setGuideText("Enter a staff password.  This password protects the staff-only parts of the page, and should not be shared with campers.");
+    echo $staffPasswordField->renderHtml();
+    
     if (empty($existingPasswordHashed)) {
-        $existingPasswordSection = <<<HERE
-<li>
-<div>
-<input id="staff_password2" name="staff_password2" class="element text medium" maxlength=50 type="password">
-<label for="staff_password2">Retype admin password</label>
-<span class="error">$staffPasswordErr2</span>
-</div>
-</li>
-HERE;
-        echo $existingPasswordSection;
+        $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", TRUE, "staff_password2", $liNum++);
+        $staffPasswordField2->setInputType("password");
+        $staffPasswordField2->setInputClass("element text medium");
+        $staffPasswordField2->setInputMaxLength(50);
+        $staffPasswordField2->setPlaceHolder(" ");
+        echo $staffPasswordField2->renderHtml();
     }
 ?>
 
