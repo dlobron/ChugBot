@@ -1,6 +1,7 @@
 <?php
     session_start();
-    include 'functions.php';
+    include_once 'functions.php';
+    include_once 'formItem.php';
     bounceToLogin();
     
     // Grab the existing admin email from the database.  This is presumed to exist, since
@@ -117,65 +118,65 @@
 <div class="form_description">
 <h2>Edit Admin Data</h2>
 <p>Please update the staff admin data as needed. For more information about a field, hover over that field.<br>
-After updating successfully, you will be directed to the camp staff home page.
+After updating successfully, you will be directed to the camp staff home page.<br>
+Required values are marked with a <font color="red">*</font>.
 </p>
 </div>
 <ul>
 
 <?php
-    $updateFieldSection = <<<HERE
-<li>
-<div>
-<input id="admin_email" name="admin_email" class="element text medium" maxlength=20 value="$admin_email" type="text">
-<label for="admin_email">Staff email</label>
-<span class="error">$staffEmailErr</span>
-<p class="guidelines" id="email_guide"><small>Please enter or update the admin email address.</small></p>
-</div>
-</li>
-
-<li>
-<div>
-<input id="admin_email_username" name="admin_email_username" class="element text medium" maxlength=50 value="$admin_email_username" type="text">
-<label for="admin_email_username">Admin Email Account User Name</label>
-<p class="guidelines" id="admin_email_guide"><small>Enter the username for the staff email account (this is often the same as the address).</small></p>
-</div>
-</li>
-
-<li>
-<div>
-<input id="admin_email_password" name="admin_email_password" class="element text medium" maxlength=20 value="$admin_email_password" type="text">
-<label for="admin_email_password">Admin Email Account Password</label>
-<p class="guidelines" id="admin_email_pw_guide"><small>Enter the password of the staff email account (this is <b>not</b> the same as the admin password for this site).</small></p>
-</div>
-</li>
+    $adminEmailField = new FormItemSingleTextField("Admin Email Address", TRUE, "admin_email", 0);
+    $adminEmailField->setInputValue($admin_email);
+    $adminEmailField->setInputType("text");
+    $adminEmailField->setInputClass("element text medium");
+    $adminEmailField->setInputMaxLength(20);
+    $adminEmailField->setPlaceHolder("leveling@campramahne.org");
+    $adminEmailField->setGuideText("Enter the address of a person who can answer leveling questions.");
+    $adminEmailField->setError($staffEmailErr);
+    echo $adminEmailField->renderHtml();
     
-<li>
-<div>
-<input id="regular_user_token" name="regular_user_token" class="element text medium" maxlength=50 value="$regular_user_token" type="text">
-<label for="regular_user_token">Camper Access Token</label>
-<p class="guidelines" id="regular_user_token_guide"><small>The camper access token is used by non-admin users to confirm their login.  It can be any easy-to-remember string.  This value is not a password, just a token, so it should be something simple, e.g., "RamahKayitz".</small></p>
-</div>
-</li>
+    $adminEmailUserNameField = new FormItemSingleTextField("Admin Email User Name", FALSE, "admin_email_username", 1);
+    $adminEmailUserNameField->setInputValue($admin_email_username);
+    $adminEmailUserNameField->setInputType("text");
+    $adminEmailUserNameField->setInputClass("element text medium");
+    $adminEmailUserNameField->setInputMaxLength(50);
+    $adminEmailUserNameField->setPlaceHolder("leveling@campramahne.org");
+    $adminEmailUserNameField->setGuideText("Enter the username for the staff email account (this is often the same as the admin email address).");
+    echo $adminEmailUserNameField->renderHtml();
     
-<li>
-<div>
-<input id="staff_password" name="staff_password" class="element text medium" maxlength=50 type="password">
-<label for="staff_password">New admin password (you may <b>leave this field blank to keep it the same</b>.)</label>
-<span class="error">$staffPasswordErr</span>
-<p class="guidelines" id="staff_pw_guide">Leave this field and the next one blank if you do not wish to change the admin password.<small>
-</div>
-</li>
-
-<li>
-<div>
-<input id="staff_password2" name="staff_password2" class="element text medium" maxlength=50 type="password">
-<label for="staff_password2">Retype new admin password</label>
-<span class="error">$staffPasswordErr2</span>
-</div>
-</li>
-HERE;
-    echo $updateFieldSection;
-?>
+    $adminEmailPasswordField = new FormItemSingleTextField("Admin Email Password", FALSE, "admin_email_password", 2);
+    $adminEmailPasswordField->setInputValue($admin_email_password);
+    $adminEmailPasswordField->setInputType("text");
+    $adminEmailPasswordField->setInputClass("element text medium");
+    $adminEmailPasswordField->setInputMaxLength(20);
+    $adminEmailPasswordField->setPlaceHolder("Non-valuable password here");
+    $adminEmailPasswordField->setGuideText("Enter the password of the staff email account (this is <b>not</b> the same as the admin password for this site).  Please do not use a valuable password, since this is not stored securely and is only used for sending email.");
+    echo $adminEmailPasswordField->renderHtml();
+    
+    $regularUserTokenField = new FormItemSingleTextField("Camper Access Token", FALSE, "regular_user_token", 3);
+    $regularUserTokenField->setInputValue($regular_user_token);
+    $regularUserTokenField->setInputType("text");
+    $regularUserTokenField->setInputClass("element text medium");
+    $regularUserTokenField->setInputMaxLength(50);
+    $regularUserTokenField->setPlaceHolder("e.g., RamahKayitz");
+    $regularUserTokenField->setGuideText("The camper access token is used by non-admin users to confirm their login.  It can be any easy-to-remember string.  This value is not a password, just a token, so it should be something simple, e.g., \"RamahKayitz\".");
+    echo $regularUserTokenField->renderHtml();
+    
+    $staffPasswordField = new FormItemSingleTextField("Staff Password (<b>leave this field blank to keep it the same</b>.)", FALSE, "staff_password", 4);
+    $staffPasswordField->setInputType("password");
+    $staffPasswordField->setInputClass("element text medium");
+    $staffPasswordField->setInputMaxLength(50);
+    $staffPasswordField->setPlaceHolder(" ");
+    $staffPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
+    echo $staffPasswordField->renderHtml();
+    
+    $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", FALSE, "staff_password2", 5);
+    $staffPasswordField2->setInputType("password");
+    $staffPasswordField2->setInputClass("element text medium");
+    $staffPasswordField2->setInputMaxLength(50);
+    $staffPasswordField2->setPlaceHolder(" ");
+    echo $staffPasswordField2->renderHtml();
+    ?>
 
 <li class="buttons">
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
