@@ -249,6 +249,17 @@ $(function() {
 	getAndDisplayCurrentMatches();
     });
 
+// Action for the Report button.
+$(function() {
+        $("#Report").click(function(event) {
+                event.preventDefault();
+                // Simulate clicking a link, so this page goes in the browser history.
+                var curUrl = window.location.href;
+                var homeUrl = curUrl.replace("levelHome.html", "report.php");
+                window.location.href = homeUrl;
+            })
+            });
+
 // Action for the Cancel button.
 $(function() {
         $("#Cancel").click(function(event) {

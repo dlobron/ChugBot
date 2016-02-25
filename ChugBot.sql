@@ -1,9 +1,6 @@
 # To load this file:
 # source <path-to-file>
 # Remember to remove test data from the end of this file before loading for production use.
-# TODO: We might need a "bunks" table, with a foreign key from campers, for report generation.
-# We might also want a "counselors" table, similar to campers.  A counselor can be assigned to
-# a bunk, and campers are also assigned to a bunk.  A bunk has a name and an ID.
 
 # Create the database
 CREATE DATABASE IF NOT EXISTS chugbot_db COLLATE utf8_unicode_ci;
@@ -101,6 +98,10 @@ ON DELETE SET NULL
 ON UPDATE CASCADE,
 session_id int,
 FOREIGN KEY fk_session_id(session_id) REFERENCES sessions(session_id)
+ON DELETE SET NULL
+ON UPDATE CASCADE,
+bunk_id int,
+FOREIGN KEY fk_bunk_id(bunk_id) REFERENCES bunks(bunk_id)
 ON DELETE SET NULL
 ON UPDATE CASCADE,
 first varchar(50) NOT NULL,
@@ -270,17 +271,22 @@ INSERT INTO groups (name) VALUES ("aleph");
 INSERT INTO groups (name) VALUES ("bet");
 INSERT INTO groups (name) VALUES ("gimel");
 
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (1, 1, "Wolfgang Amadeus", "Mozart", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Ludwig van", "Beethoven", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email, needs_first_choice) VALUES (2, 3, "Johann Sebastian", "Bach", "dlobron@gmail.com", 1);
+INSERT INTO bunks (name) VALUES ("1");
+INSERT INTO bunks (name) VALUES	("2");
+INSERT INTO bunks (name) VALUES	("3.14159");
+INSERT INTO bunks (name) VALUES	("h bar");
+
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (1, 1, "Wolfgang Amadeus", "Mozart", "dlobron@gmail.com", 1);
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (2, 3, "Ludwig van", "Beethoven", "dlobron@gmail.com", 1);
+INSERT INTO campers (edah_id, session_id, first, last, email, needs_first_choice, bunk_id) VALUES (2, 3, "Johann Sebastian", "Bach", "dlobron@gmail.com", 1, 2);
 # Assign campers to the same session, so we can test assignment
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Hector", "Berlioz", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Carl", "Nielsen", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Guiseppe", "Verdi", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Franz", "Schubert", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Robert", "Schumann", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (2, 3, "Clara", "Schumann", "dlobron@gmail.com");
-INSERT INTO campers (edah_id, session_id, first, last, email) VALUES (3, 2, "Johannes", "Brahms", "dlobron@gmail.com");
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (2, 3, "Hector", "Berlioz", "dlobron@gmail.com", 2);
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (2, 3, "Carl", "Nielsen", "dlobron@gmail.com", 2);
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (2, 3, "Guiseppe", "Verdi", "dlobron@gmail.com", 2);
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (2, 3, "Franz", "Schubert", "dlobron@gmail.com", 3);
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (2, 3, "Robert", "Schumann", "dlobron@gmail.com", 3);
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (2, 3, "Clara", "Schumann", "MyFavoriteMartian@trex.com", 4);
+INSERT INTO campers (edah_id, session_id, first, last, email, bunk_id) VALUES (3, 2, "Johannes", "Brahms", "MyFavoriteMartian@trex.com", 4);
 
 # Insert some chugim.  Vary the case, to verify we compare case-insensitively
 # aleph chugim

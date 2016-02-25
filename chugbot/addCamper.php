@@ -10,6 +10,7 @@
     $addCamperPage->addColumn("email");
     $addCamperPage->addColumn("session_id");
     $addCamperPage->addColumn("edah_id");
+    $addCamperPage->addColumn("bunk_id");
 
     $addCamperPage->handlePost();
 
@@ -62,6 +63,16 @@
     $edahDropDown->fillDropDownId2Name($addCamperPage->mysqli, $addCamperPage->dbErr,
                                        "edah_id", "edot");
     $addCamperPage->addFormItem($edahDropDown);
+    
+    $bunkIdVal = $addCamperPage->columnValue("bunk_id"); // May be NULL.
+    $bunkDropDown = new FormItemDropDown("Bunk/Tzrif", FALSE, "bunk_id", 5);
+    $bunkDropDown->setGuideText("Choose your bunk (you can leave this blank if you do not know your bunk.");
+    $bunkDropDown->setInputSingular("bunk");
+    $bunkDropDown->setInputClass("element select medium");
+    $bunkDropDown->setColVal($bunkIdVal);
+    $bunkDropDown->fillDropDownId2Name($addCamperPage->mysqli, $addCamperPage->dbErr,
+                                       "bunk_id", "bunks");
+    $addCamperPage->addFormItem($bunkDropDown);
     
     $addCamperPage->renderForm();
     

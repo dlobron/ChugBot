@@ -844,7 +844,44 @@ ul.password{
 	
 }
 
+/*** Zebra table **********************/
+div.zebra { position: relative; }
 
+.zebra table {
+  width: 95%;
+  text-align: left;
+  border-collapse: collapse;
+  margin: 0 0 1em 0;
+  caption-side: top;
+}
+
+.zebra caption {
+  font-size: 1.5em;
+  padding: 0.3em;
+}
+
+.zebra th, td {
+  padding: 0.3em;
+  border-bottom: 1px solid #000;
+  border-right: 1px solid #000;
+}
+
+.zebradarkstripe {
+  background-color: #eee;
+}
+
+.zebra th:last-child, td:last-child {
+  border-right: 0;
+}
+
+.zebra tfoot th, tfoot td {
+  border-bottom: 0;
+  text-align: center;
+}
+
+.zebra th {
+  width: 25%;
+}
 
 /*** Calendar **********************/
 div.calendar { position: relative; }

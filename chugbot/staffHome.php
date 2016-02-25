@@ -4,7 +4,8 @@
     bounceToLogin();
 
     $resetUrl = urlIfy("staffReset.php");
-    $levelingUrl = urlIfy("levelHomeLaunch.php");    
+    $levelingUrl = urlIfy("levelHomeLaunch.php");
+    $reportUrl = urlIfy("report.php");
     $dbErr = "";
     $sessionId2Name = array();
     $blockId2Name = array();
@@ -48,7 +49,8 @@
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
 <p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>
 <p>Please hover your mouse over a menu for further help.<p>
-<p>To edit your administrative settings, please click <a href="<?php echo $resetUrl; ?>">here</a>. </div>
+<p>To edit your administrative settings, please click <a href="<?php echo $resetUrl; ?>">here</a>, and to print out matches, please click <a href="<?php echo $$reportUrl; ?>">here</a>.
+</div>
 
 <div class="right_container">
 <h3>Leveling</h3>
