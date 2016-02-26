@@ -134,11 +134,25 @@
                             $fourthOrWorseCt++;
                         }
                     }
+                    // First, delete the existing match for this block and group for this camper, if any.
+                    $sql = "SELECT m.chug_instance_id existing_instance_id from matches m, chug_instances i, chugim c WHERE " .
+                    "i.chug_instance_id = m.chug_instance_id AND i.block_id = $block_id AND m.camper_id = $camperId " .
+                    "AND c.chug_id = i.chug_id AND c.group_id = $groupId";
+                    $result = getDbResult($sql);
+                    $row = $result->fetch_assoc();
+                    $existingChugInstanceId = $row["existing_instance_id"];
                     $sql = "DELETE FROM matches WHERE camper_id = $camperId AND " .
-                    "block_id = $block_id AND group_id = $groupId";
+                    "chug_instance_id = $existingChugInstanceId";
                     getDbResult($sql);
-                    $sql = "INSERT INTO matches (camper_id, block_id, group_id, chug_id) " .
-                    "VALUES ($camperId, $block_id, $groupId, $chugId)";
+                    // Next, get the instance ID for this chug in this block and group.
+                    $sql = "SELECT i.chug_instance_id new_instance_id from chug_instances i, chugim c WHERE " .
+                    "i.chug_id = c.chug_id AND c.chug_id = $chugId AND i.block_id = $block_id AND c.group_id = $groupId";
+                    $result = getDbResult($sql);
+                    $row = $result->fetch_assoc();
+                    $newInstanceId = $row["new_instance_id"];
+                    // Finally, insert the new instance into the matches table.
+                    $sql = "INSERT INTO matches (camper_id, chug_instance_id) " .
+                    "VALUES ($camperId, $newInstanceId)";
                     getDbResult($sql);
                 }
             }
@@ -205,17 +219,17 @@
             if (! array_key_exists($group_id, $groupId2ChugId2MatchedCampers)) {
                 $groupId2ChugId2MatchedCampers[$group_id] = array();
             }
-            // Get all chugim for the group, and make an array entry.  We can't use the matches
-            // table for this, because we need entries for chugim with no matches (so that the user
-            // can drag assignments to such chugim).
+            // Get all chugim for the group, and make an array entry.
             $result2 = getDbResult("SELECT chug_id FROM chugim WHERE group_id = $group_id");
             while ($row2 = mysqli_fetch_row($result2)) {
                 $chug_id = intval($row2[0]);
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
             }
             $groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex] =  array();
-            $sql = "SELECT m.camper_id, m.chug_id FROM matches m, campers c, block_instances b " .
-            "WHERE m.block_id = $block_id AND m.group_id = $group_id " .
+            // Get matches for this group/block/edah/session.
+            $sql = "SELECT m.camper_id, ch.chug_id FROM matches m, campers c, block_instances b, chugim ch, chug_instances i " .
+            "WHERE i.block_id = b.block_id AND ch.chug_id = i.chug_id " .
+            "AND ch.group_id = $group_id AND m.chug_instance_id = i.chug_instance_id " .
             "AND m.camper_id = c.camper_id AND c.edah_id = $edah_id " .
             "AND b.block_id = $block_id AND b.session_id = c.session_id";
             $result3 = getDbResult($sql);

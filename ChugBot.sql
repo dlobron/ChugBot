@@ -225,25 +225,20 @@ PRIMARY KEY pk_assignments(edah_id, block_id, group_id))
 COLLATE utf8_unicode_ci;
 
 # This table holds matches of campers to chugim.  A match is for one
-# camper in a given block/group.
+# camper to an instance of a chug.  Chugim are associated with groups,
+# and instances have a chug and a block, so a match associates a camper
+# with an activity for a group and block.  For example, a match could
+# be: Shira -> Climbing, aleph, July 1.
 CREATE TABLE matches(
 camper_id int NOT NULL,
 FOREIGN KEY fk_camper_id(camper_id) REFERENCES campers(camper_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-block_id int NOT NULL,
-FOREIGN KEY fk_block_id(block_id) REFERENCES blocks(block_id)
+chug_instance_id int NOT NULL,
+FOREIGN KEY fk_chug_instance_id(chug_instance_id) REFERENCES chug_instances(chug_instance_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-group_id int NOT NULL, # We do not strict need this, because chug_id goes with a group.
-FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-chug_id int NOT NULL,
-FOREIGN KEY fk_chug_id(chug_id) REFERENCES chugim(chug_id)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-PRIMARY	KEY pk_matches(camper_id, block_id, group_id))
+PRIMARY	KEY pk_matches(camper_id, chug_instance_id))
 COLLATE utf8_unicode_ci;
 
 # Insert starter data for testing.  For production use, make sure to remove or comment-out all lines after this one.

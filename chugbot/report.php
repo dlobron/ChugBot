@@ -97,10 +97,7 @@
                     }
                     $html .= "<tr>";
                     
-                    // Use the column keys as table headers.  Don't re-display the
-                    // new-table column, since it's in the table header.  Also, do not
-                    // display the ID columns.
-                    $i = 0;
+                    // Use the column keys as table headers.
                     $colKeys = array_keys($row);
                     foreach ($colKeys as $tableHeader) {
                         if ($this->shouldSkipColumn($tableHeader)) {
@@ -118,10 +115,9 @@
                         // a constant.
                         $newTableColumnValue = 1;
                     }
-                    $rowIndex = 0; // Reset row index.
-                    continue;
+                    $rowIndex = 0; // Reset row index, so each table gets its own zebra striping.
                 }
-                // Regular table data.
+                // Compute stripe color, and add table data.
                 $oddText = "";
                 if ($rowIndex++ % 2 != 0) {
                     $oddText = "class=zebradarkstripe";
@@ -361,10 +357,12 @@ EOM;
         // type.
         if ($reportMethod == ReportTypes::ByEdah) {
             // Per-edah report.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, g.name group_name, ch.name assignment, " .
-            "c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, ch.chug_id chug_id, bl.block_id block_id " .
-            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g " .
-            "WHERE c.bunk_id = b.bunk_id AND m.block_id = bl.block_id AND m.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = m.group_id ";
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
+            "ch.chug_id chug_id, bl.block_id block_id " .
+            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g, chug_instances i " .
+            "WHERE c.bunk_id = b.bunk_id AND m.chug_instance_id = i.chug_instance_id AND i.block_id = bl.block_id AND i.block_id = bl.block_id " .
+            "AND i.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = ch.group_id ";
             if (count($activeBlockIds) > 0) {
                 $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
             }
@@ -372,6 +370,7 @@ EOM;
                 $sql .= "AND c.edah_id = $edahId ";
             }
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
+            error_log("DBG: sql = $sql");
             
             // Create and display the report.
             $edahReport = new ZebraReport($sql);
@@ -388,10 +387,12 @@ EOM;
         } else if ($reportMethod == ReportTypes::ByBunk) {
             // Per-bunk report.  This the same as the per-edah report, except
             // organized by bunk.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, g.name group_name, ch.name assignment, " .
-            "c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, ch.chug_id chug_id, bl.block_id block_id " .
-            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g " .
-            "WHERE c.bunk_id = b.bunk_id AND m.block_id = bl.block_id AND m.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = m.group_id ";
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
+            "ch.chug_id chug_id, bl.block_id block_id " .
+            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g, chug_instances i " .
+            "WHERE c.bunk_id = b.bunk_id AND m.chug_instance_id = i.chug_instance_id AND i.block_id = bl.block_id AND i.block_id = bl.block_id " .
+            "AND i.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = ch.group_id ";
             if (count($activeBlockIds) > 0) {
                 $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
             }

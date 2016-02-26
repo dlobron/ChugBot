@@ -53,6 +53,7 @@
             $retVal = TRUE; // Exact match
         }
         // Special case: don't allow duplicate cooking assignments.
+        // TODO: Replace this with a generalized dedup table.
         $existingCooking = preg_grep("/cooking/i", $matchesForThisCamper);
         if (count($existingCooking) &&
             preg_match("/cooking/i", $candidateChugLcName)) {
@@ -226,8 +227,9 @@
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
         $existingMatches = array();
-        $sql = "SELECT m.camper_id, m.group_id, c.name, c.chug_id FROM matches m, chugim c, campers ca, block_instances b " .
-        "WHERE m.block_id = $block_id AND m.chug_id = c.chug_id AND m.group_id != $group_id " .
+        $sql = "SELECT m.camper_id, c.group_id, c.name, c.chug_id FROM matches m, chugim c, campers ca, block_instances b, chug_instances i " .
+        "WHERE i.block_id = $block_id AND m.chug_instance_id = i.chug_instance_id " .
+        "AND i.chug_id = c.chug_id AND c.group_id != $group_id " .
         "AND m.camper_id = ca.camper_id AND ca.edah_id = $edah_id AND b.block_id = $block_id " .
         "AND b.session_id = ca.session_id " .
         "GROUP BY 1,2";
@@ -387,8 +389,9 @@
                 $fourthOrWorseCt++;
             }
             // Update the matches table with each camper's assignment.
-            $sql = "DELETE FROM matches WHERE camper_id = $cdbg->camper_id AND block_id = $block_id AND " .
-            "group_id = $group_id";
+            $sql = "DELETE FROM matches WHERE camper_id = $cdbg->camper_id AND chug_instance_id IN " .
+            "(SELECT chug_instance_id FROM chug_instances i, chugim c WHERE i.block_id = $block_id " .
+            "AND i.chug_id = c.chug_id AND c.group_id = $group_id)";
             $result = $mysqli->query($sql);
             if ($result == FALSE) {
                 $err = dbErrorString($sql, $mysqli->error);
@@ -396,8 +399,19 @@
                 $mysqli->close();
                 return FALSE;
             }
-            $sql = "INSERT INTO matches (camper_id, block_id, group_id, chug_id) " .
-            "VALUES ($cdbg->camper_id, $block_id, $group_id, $assignedChugId)";
+            $sql = "SELECT chug_instance_id from chug_instances i WHERE " .
+            "i.chug_id = $assignedChugId AND i.block_id = $block_id";
+            $result = $mysqli->query($sql);
+            if ($result == FALSE) {
+                $err = dbErrorString($sql, $mysqli->error);
+                error_log($err);
+                $mysqli->close();
+                return FALSE;
+            }
+            $row = $result->fetch_assoc();
+            $chugInstanceId = $row["chug_instance_id"];
+            $sql = "INSERT INTO matches (camper_id, chug_instance_id) " .
+            "VALUES ($cdbg->camper_id, $chugInstanceId)";
             $result = $mysqli->query($sql);
             if ($result == FALSE) {
                 $err = dbErrorString($sql, $mysqli->error);
