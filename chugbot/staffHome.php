@@ -49,7 +49,7 @@
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
 <p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>
 <p>Please hover your mouse over a menu for further help.<p>
-<p>To edit your administrative settings, please click <a href="<?php echo $resetUrl; ?>">here</a>, and to print out matches, please click <a href="<?php echo $$reportUrl; ?>">here</a>.
+<p>To edit your administrative settings, please click <a href="<?php echo $resetUrl; ?>">here</a>, and to print out matches, please click <a href="<?php echo $reportUrl; ?>">here</a>.
 </div>
 
 <div class="right_container">

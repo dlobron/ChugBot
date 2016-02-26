@@ -42,12 +42,12 @@
             if ($result->num_rows == 0) {
                 echo "<h3>No matching assignments were found.</h3>";
                 return;
-            }
+            }
             // Step through the results, build the table, and display it.  We
             // start with a header, and then display zebra-striped rows.  If we
             // have a $newDivColumn, we create a new table section each
             // time that column's value changes.
-            $html = "<div class=zebra>";
+            $html = "";
             $newTableColumnValue = NULL;
             $rowIndex = 0;
             while ($row = $result->fetch_assoc()) {
@@ -55,23 +55,29 @@
                     ($this->newTableColumn != NULL &&
                      $row[$this->newTableColumn] != $newTableColumnValue))
                 {
-                    if ($newTableColumnValue == NULL) {
-                        // If this is our first table, start with a new table
-                        // stanza.
-                        $html .= "<table>";
-                        if ($this->caption) {
-                            $captionText = $this->caption;
-                            if ($this->newTableColumn) {
-                                $captionText .= " for " . $row[$this->newTableColumn];
-                            }
-                            $html .= "<caption>$captionText</caption>";
-                        }
-                        $html .= "<tr>";
-                    } else {
-                        // If we have a changed new table value, close the
+                    if ($newTableColumnValue != NULL) {
+                        // If we have a changed new table value, close the div and
                         // previous table before starting this one.
-                        $html .= "</table><table><tr>";
+                        $html .= "</div></table>";
                     }
+                    $html .= "<div class=zebra><table>";
+                    if ($this->caption) {
+                        $captionText = $this->caption;
+                        if ($this->newTableColumn) {
+                            $itemText = $row[$this->newTableColumn];
+                            if (array_key_exists($this->newTableColumn, $this->valCol2IdCol)) {
+                                $idCol = $this->valCol2IdCol[$this->newTableColumn];
+                                $idVal = $row[$idCol];
+                                $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
+                                $d = $row[$this->newTableColumn];
+                                $itemText = "<a href=\"$editUrl\">$d</a>";
+                            }
+                            $captionText .= " for " . $itemText;
+                        }
+                        $html .= "<caption>$captionText</caption>";
+                    }
+                    $html .= "<tr>";
+                    
                     // Use the column keys as table headers.  Don't re-display the
                     // new-table column, since it's in the table header.  Also, do not
                     // display the ID columns.
