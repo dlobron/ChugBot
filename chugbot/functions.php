@@ -246,6 +246,10 @@ EOM;
     function initialPageUrl() {
         return urlIfy("index.php");
     }
+    
+    function adminLoggedIn() {
+        return isset($_SESSION['admin_logged_in']);
+    }
 
     function homeUrl() {
         if (isset($_SESSION['admin_logged_in'])) {

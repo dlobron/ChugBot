@@ -164,6 +164,7 @@ EOM;
 <li class="buttons">
 <input type="hidden" name="form_id" value="$formId" />
 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<button onclick="history.go(-1);">Back </button>
 $submitAndContinueText
 $fromText
 $cancelText
@@ -241,31 +242,58 @@ EOM;
         
         public function handlePost() {
             if ($_SERVER["REQUEST_METHOD"] != "POST") {
-                return;
-            }
-            if (! empty($_POST["fromAddPage"])) {
-                $this->fromAddPage = TRUE;
-            }
-            if (! empty($_POST["submitData"])) {
-                $this->submitData = TRUE;
-            }
-            if ((! empty($_POST["fromHome"])) ||
-                (! empty($_POST["fromStaffHomePage"]))) {
-                $this->fromHomePage = TRUE;
-            }
-            $submitAndContinue = FALSE;
-            if (! empty($_POST["submitAndContinue"])) {
-                $submitAndContinue = TRUE;
-            }
-            // Get the ID of the item to be edited: this is required to either
-            // exist in the POST or be set as a constant.
-            $idVal = test_input($_POST[$this->idCol]);
-            if (! $idVal) {
-                if (! is_null($self->constantIdValue)) {
-                    $idVal = $self->constantIdValue;
-                } else {
-                    $this->colName2Error[$this->idCol] = errorString("No $this->idCol was chosen to edit: please select one");
+                // If the page was not POSTed, we might have arrived here via
+                // a link.  In this case, we expect the ID value to be in the query
+                // string, as eid=foo.
+                // For security, we only do this if the user is logged in as an
+                // administrator (otherwise, a camper could put eid=SomeOtherCamperId, and
+                // edit that other camper's data).
+                $parts = array();
+                if (adminLoggedIn()) {
+                    $parts = explode("&", $_SERVER['QUERY_STRING']);
+                }
+                foreach ($parts as $part) {
+                    $cparts = explode("=", $part);
+                    if (count($cparts) != 2) {
+                        continue;
+                    }
+                    if ($cparts[0] == "eid") {
+                        // Set idVal and mark as coming from a home page.
+                        $idVal = $cparts[1];
+                        $this->fromHomePage = TRUE;
+                    }
+                }
+                if (! $this->fromHomePage) {
+                    // If we did not get an item ID from the query string, return
+                    // here.
                     return;
+                }
+            } else {
+                // We have POST data: extract expected values.
+                if (! empty($_POST["fromAddPage"])) {
+                    $this->fromAddPage = TRUE;
+                }
+                if (! empty($_POST["submitData"])) {
+                    $this->submitData = TRUE;
+                }
+                if ((! empty($_POST["fromHome"])) ||
+                    (! empty($_POST["fromStaffHomePage"]))) {
+                    $this->fromHomePage = TRUE;
+                }
+                $submitAndContinue = FALSE;
+                if (! empty($_POST["submitAndContinue"])) {
+                    $submitAndContinue = TRUE;
+                }
+                // Get the ID of the item to be edited: this is required to either
+                // exist in the POST or be set as a constant.
+                $idVal = test_input($_POST[$this->idCol]);
+                if (! $idVal) {
+                    if (! is_null($self->constantIdValue)) {
+                        $idVal = $self->constantIdValue;
+                    } else {
+                        $this->colName2Error[$this->idCol] = errorString("No $this->idCol was chosen to edit: please select one");
+                        return;
+                    }
                 }
             }
             $this->col2Val[$this->idCol] = $idVal;

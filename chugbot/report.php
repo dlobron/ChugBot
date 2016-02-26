@@ -23,6 +23,11 @@
             $this->caption = $c;
         }
         
+        public function setIdCol2EditPage($idCol, $editPage, $valCol) {
+            $this->idCol2EditUrl[$idCol] = urlIfy($editPage);
+            $this->valCol2IdCol[$valCol] = $idCol;
+        }
+        
         public function renderTable() {
             if ($this->sql == NULL) {
                 echo genFatalErrorReport(array("No table query was specified"));
@@ -44,7 +49,6 @@
             // time that column's value changes.
             $html = "<div class=zebra>";
             $newTableColumnValue = NULL;
-            $colKeyIndex = -1;
             $rowIndex = 0;
             while ($row = $result->fetch_assoc()) {
                 if ($newTableColumnValue == NULL ||
@@ -68,17 +72,20 @@
                         // previous table before starting this one.
                         $html .= "</table><table><tr>";
                     }
-                    // Use the column keys as table headers.
+                    // Use the column keys as table headers.  Don't re-display the
+                    // new-table column, since it's in the table header.  Also, do not
+                    // display the ID columns.
                     $i = 0;
                     $colKeys = array_keys($row);
                     foreach ($colKeys as $tableHeader) {
                         if ($this->newTableColumn &&
                             $this->newTableColumn == $tableHeader) {
-                            $colKeyIndex = $i;
                             continue; // Don't re-display the new table column.
                         }
+                        if (array_key_exists($tableHeader, $this->idCol2EditUrl)) {
+                            continue; // Don't display ID columns.
+                        }
                         $html .= "<th>$tableHeader</th>";
-                        $i++;
                     }
                     $html .= "</tr>";
                     
@@ -101,10 +108,25 @@
                 $html .= "<tr $oddText>";
                 $i = 0;
                 foreach ($colKeys as $tableDataKey) {
-                    if ($i++ == $colKeyIndex) {
-                        continue;
+                    if ($this->newTableColumn &&
+                        $this->newTableColumn == $tableDataKey) {
+                        continue; // Don't re-display the new table column.
                     }
-                    $tableData = $row[$tableDataKey];
+                    if (array_key_exists($tableDataKey, $this->idCol2EditUrl)) {
+                        continue; // Don't display ID columns.
+                    }
+                    // If we have an ID value corresponding to this table key,
+                    // display the table data as a link to the edit page.
+                    $tableData = "";
+                    if (array_key_exists($tableDataKey, $this->valCol2IdCol)) {
+                        $idCol = $this->valCol2IdCol[$tableDataKey];
+                        $idVal = $row[$idCol];
+                        $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
+                        $d = $row[$tableDataKey];
+                        $tableData = "<a href=\"$editUrl\">$d</a>";
+                    } else {
+                        $tableData = $row[$tableDataKey];
+                    }
                     $html .= "<td>$tableData</td>";
                 }
                 $html .= "</tr>";
@@ -114,6 +136,8 @@
             echo $html;
         }
         
+        private $idCol2EditUrl = array();
+        private $valCol2IdCol = array();
         private $mysqli;
         private $sql = NULL;
         private $caption = NULL;
@@ -304,7 +328,8 @@ EOM;
         // Prepare and display the report, setting the SQL according to the report
         // type.
         if ($reportMethod == ReportTypes::ByEdah) {
-            $sql = "SELECT c.first first, c.last last, b.name bunk, bl.name block, e.name edah, g.name group_name, ch.name assignment " .
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, g.name group_name, ch.name assignment, " .
+            "c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, ch.chug_id chug_id, bl.block_id block_id " .
             "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g " .
             "WHERE c.bunk_id = b.bunk_id AND m.block_id = bl.block_id AND m.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = m.group_id ";
             if (count($activeBlockIds) > 0) {
@@ -313,12 +338,18 @@ EOM;
             if ($edahId) {
                 $sql .= "AND c.edah_id = $edahId ";
             }
-            $sql .= "ORDER BY edah, last, first, block, group_name";
+            $sql .= "ORDER BY edah, name, block, group_name";
             
             // Create and display the report.
             $edahReport = new ZebraReport($sql);
             $edahReport->setNewTableColumn("edah");
-            $edahReport->setCaption("Edah chug match report");
+            $edahReport->setCaption("Chug Matches");
+            $edahReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
+            $edahReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
+            $edahReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+            $edahReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
+            $edahReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
+            $edahReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
             $edahReport->renderTable();
         }
     }
