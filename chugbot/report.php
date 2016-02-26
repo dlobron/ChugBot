@@ -15,6 +15,10 @@
             $this->mysqli->close();
         }
         
+        public function setIgnoreColumn($ic) {
+            $this->ignoreCols[$ic] = 1;
+        }
+        
         public function setNewTableColumn($ntc) {
             $this->newTableColumn = $ntc;
         }
@@ -26,6 +30,21 @@
         public function setIdCol2EditPage($idCol, $editPage, $valCol) {
             $this->idCol2EditUrl[$idCol] = urlIfy($editPage);
             $this->valCol2IdCol[$valCol] = $idCol;
+        }
+        
+        private function shouldSkipColumn($col) {
+            if ($this->newTableColumn &&
+                $this->newTableColumn == $col) {
+                return TRUE; // Don't re-display the new table column.
+            }
+            if (array_key_exists($col, $this->idCol2EditUrl)) {
+                return TRUE; // Don't display ID columns.
+            }
+            if (array_key_exists($col, $this->ignoreCols)) {
+                return TRUE;
+            }
+            
+            return FALSE;
         }
         
         public function renderTable() {
@@ -84,12 +103,8 @@
                     $i = 0;
                     $colKeys = array_keys($row);
                     foreach ($colKeys as $tableHeader) {
-                        if ($this->newTableColumn &&
-                            $this->newTableColumn == $tableHeader) {
-                            continue; // Don't re-display the new table column.
-                        }
-                        if (array_key_exists($tableHeader, $this->idCol2EditUrl)) {
-                            continue; // Don't display ID columns.
+                        if ($this->shouldSkipColumn($tableHeader)) {
+                            continue;
                         }
                         $html .= "<th>$tableHeader</th>";
                     }
@@ -114,12 +129,8 @@
                 $html .= "<tr $oddText>";
                 $i = 0;
                 foreach ($colKeys as $tableDataKey) {
-                    if ($this->newTableColumn &&
-                        $this->newTableColumn == $tableDataKey) {
-                        continue; // Don't re-display the new table column.
-                    }
-                    if (array_key_exists($tableDataKey, $this->idCol2EditUrl)) {
-                        continue; // Don't display ID columns.
+                    if ($this->shouldSkipColumn($tableDataKey)) {
+                        continue;
                     }
                     // If we have an ID value corresponding to this table key,
                     // display the table data as a link to the edit page.
@@ -142,6 +153,7 @@
             echo $html;
         }
         
+        private $ignoreCols = array();
         private $idCol2EditUrl = array();
         private $valCol2IdCol = array();
         private $mysqli;
@@ -168,10 +180,10 @@
     $chugId2Name = array();
     $bunkId2Name = array();
     $reportMethodId2Name = array(
-                                 ReportTypes::ByEdah    => "Yoetzet/Rosh (by edah)",
+                                 ReportTypes::ByEdah    => "Yoetzet/Rosh Edah (by edah)",
                                  ReportTypes::ByBunk    => "Madrich (by bunk)",
                                  ReportTypes::ByChug    => "Chug Leader (by chug)",
-                                 ReportTypes::Everybody => "Director (everybody)"
+                                 ReportTypes::Everybody => "Director (whole camp, sorted by edah)"
                                 );
     
     $mysqli = connect_db();
@@ -314,6 +326,15 @@ EOM;
         $edahChooser->setColVal($edahId);
         $edahChooser->setId2Name($edahId2Name);
         echo $edahChooser->renderHtml();
+    } else if ($reportMethod == ReportTypes::ByBunk) {
+        // Same as edah, but with a bunk filter.
+        $bunkChooser = new FormItemDropDown("Bunk", FALSE, "bunk_id", $liNumCounter++);
+        $bunkChooser->setGuideText("Step 3: Choose a bunk/tzrif, or leave empty to see all bunks");
+        $bunkChooser->setInputClass("element select medium");
+        $bunkChooser->setInputSingular("bunk");
+        $bunkChooser->setColVal($bunkId);
+        $bunkChooser->setId2Name($bunkId2Name);
+        echo $bunkChooser->renderHtml();
     }
     
     $cancelUrl = "";
@@ -323,8 +344,13 @@ EOM;
         $cancelUrl = urlIfy("index.php");
     }
     
+    $buttonText = "Go";
+    if ($reportMethod) {
+        $buttonText = "Display";
+    }
+    
     echo "<li class=\"buttons\">";
-    echo "<input id=\"submitFormButton\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
+    echo "<input id=\"submitFormButton\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
     echo "<input id=\"resetFormButton\" class=\"button_text\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
     echo "<button onclick=\"history.go(-1);\">Back </button>";
     echo "<a href=\"$cancelUrl\">Home</a>";
@@ -334,7 +360,8 @@ EOM;
         // Prepare and display the report, setting the SQL according to the report
         // type.
         if ($reportMethod == ReportTypes::ByEdah) {
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, g.name group_name, ch.name assignment, " .
+            // Per-edah report.
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, g.name group_name, ch.name assignment, " .
             "c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, ch.chug_id chug_id, bl.block_id block_id " .
             "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g " .
             "WHERE c.bunk_id = b.bunk_id AND m.block_id = bl.block_id AND m.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = m.group_id ";
@@ -344,12 +371,13 @@ EOM;
             if ($edahId) {
                 $sql .= "AND c.edah_id = $edahId ";
             }
-            $sql .= "ORDER BY edah, name, block, group_name";
+            $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
             
             // Create and display the report.
             $edahReport = new ZebraReport($sql);
             $edahReport->setNewTableColumn("edah");
-            $edahReport->setCaption("Chug Matches");
+            $edahReport->setCaption("Chug Assignments by Edah");
+            $edahReport->setIgnoreColumn("edah_sort_order");
             $edahReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
             $edahReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
             $edahReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
@@ -357,6 +385,33 @@ EOM;
             $edahReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
             $edahReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
             $edahReport->renderTable();
+        } else if ($reportMethod == ReportTypes::ByBunk) {
+            // Per-bunk report.  This the same as the per-edah report, except
+            // organized by bunk.
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, g.name group_name, ch.name assignment, " .
+            "c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, ch.chug_id chug_id, bl.block_id block_id " .
+            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g " .
+            "WHERE c.bunk_id = b.bunk_id AND m.block_id = bl.block_id AND m.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = m.group_id ";
+            if (count($activeBlockIds) > 0) {
+                $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+            }
+            if ($bunkId) {
+                $sql .= "AND b.bunk_id = $bunkId ";
+            }
+            $sql .= "ORDER BY bunk, name, edah_sort_order, edah, group_name";
+            
+            // Create and display the report.
+            $bunkReport = new ZebraReport($sql);
+            $bunkReport->setNewTableColumn("bunk");
+            $bunkReport->setCaption("Chug Assignments by Bunk");
+            $bunkReport->setIgnoreColumn("edah_sort_order");
+            $bunkReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
+            $bunkReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
+            $bunkReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+            $bunkReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
+            $bunkReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
+            $bunkReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
+            $bunkReport->renderTable();
         }
     }
     

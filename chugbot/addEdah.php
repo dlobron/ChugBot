@@ -11,6 +11,7 @@
     $addEdahPage->addColumn("rosh_name", FALSE);
     $addEdahPage->addColumn("rosh_phone", FALSE);
     $addEdahPage->addColumn("comments", FALSE);
+    $addEdahPage->addColumn("sort_order", FALSE);
     $addEdahPage->handlePost();
     
     $nameField = new FormItemSingleTextField("Edah Name", TRUE, "name", 0);
@@ -43,6 +44,13 @@
     $commentsField->setInputValue($addEdahPage->columnValue("comments"));
     $commentsField->setGuideText("Comments about this Edah (optional)");
     $addEdahPage->addFormItem($commentsField);
+    
+    $sortOrderField = new FormItemSingleTextField("Sort Order", FALSE, "sort_order", 4);
+    $sortOrderField->setInputType("number");
+    $sortOrderField->setInputMaxLength(3);
+    $sortOrderField->setInputValue($addEdahPage->columnValue("sort_order"));
+    $sortOrderField->setGuideText("Indicate where this edah should appear when all edot are sorted, with lower appearing earlier.  For example, if this is the youngest and that group should be listed first, enter 1.  If this group should appear third, enter 3.  If no choices are made for this box, edot will be listed alphabetically.");
+    $addEdahPage->addFormItem($sortOrderField);
 
     $addEdahPage->renderForm();
 ?>
