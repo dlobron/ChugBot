@@ -296,6 +296,7 @@ EOM;
     echo "<li class=\"buttons\">";
     echo "<input id=\"submitFormButton\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
     echo "<input id=\"resetFormButton\" class=\"button_text\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
+    echo "<button onclick=\"history.go(-1);\">Back </button>";
     echo "<a href=\"$cancelUrl\">Home</a>";
     echo "</li></ul></form>";
     

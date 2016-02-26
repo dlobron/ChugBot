@@ -480,6 +480,12 @@ input.button_text
 	width:auto;
 }
 
+.buttons button
+{
+	font-size:100%;
+	margin-right:5px;
+}
+
 .buttons input
 {
 	font-size:120%;
