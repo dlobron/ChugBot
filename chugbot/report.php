@@ -15,7 +15,7 @@
             $this->mysqli->close();
         }
         
-        public function setIgnoreColumn($ic) {
+        public function addIgnoreColumn($ic) {
             $this->ignoreCols[$ic] = 1;
         }
         
@@ -25,6 +25,11 @@
         
         public function setCaption($c) {
             $this->caption = $c;
+        }
+        
+        public function addCaptionReplaceColKey($key, $column, $default) {
+            $this->captionReplaceColKeys[$key] = $column;
+            $this->captionReplaceColDefault[$key] = $default;
         }
         
         public function setIdCol2EditPage($idCol, $editPage, $valCol) {
@@ -83,15 +88,26 @@
                     if ($this->caption) {
                         $captionText = $this->caption;
                         if ($this->newTableColumn) {
-                            $itemText = $row[$this->newTableColumn];
+                            // If we have a new table column, create an edit link if requested.
                             if (array_key_exists($this->newTableColumn, $this->valCol2IdCol)) {
                                 $idCol = $this->valCol2IdCol[$this->newTableColumn];
                                 $idVal = $row[$idCol];
                                 $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
                                 $d = $row[$this->newTableColumn];
-                                $itemText = "<a href=\"$editUrl\">$d</a>";
+                                $linkText = "<a href=\"$editUrl\">$d</a>";
+                                $captionText = str_replace("LINK", $linkText, $captionText);
                             }
-                            $captionText .= " for " . $itemText;
+                        }
+                        // Loop through the caption text words, and check for
+                        // any that appear in captionReplaceColKeys.  For any
+                        // such values, replace the string with the corresponding
+                        // value of $row.  If we did not get a value back, use the default.
+                        foreach ($this->captionReplaceColKeys as $key => $column) {
+                            $replaceText = $row[$column];
+                            if (! $replaceText) {
+                                $replaceText = $this->captionReplaceColDefault[$column];
+                            }
+                            $captionText = str_replace($key, $replaceText, $captionText);
                         }
                         $html .= "<caption>$captionText</caption>";
                     }
@@ -149,6 +165,8 @@
             echo $html;
         }
         
+        private $captionReplaceColKeys = array();
+        private $captionReplaceColDefault = array();
         private $ignoreCols = array();
         private $idCol2EditUrl = array();
         private $valCol2IdCol = array();
@@ -165,7 +183,7 @@
         const ByEdah = 1;
         const ByChug = 2;
         const ByBunk = 3;
-        const Everybody = 4;
+        const Director = 4;
     }
 
     $dbErr = "";
@@ -179,7 +197,7 @@
                                  ReportTypes::ByEdah    => "Yoetzet/Rosh Edah (by edah)",
                                  ReportTypes::ByBunk    => "Madrich (by bunk)",
                                  ReportTypes::ByChug    => "Chug Leader (by chug)",
-                                 ReportTypes::Everybody => "Director (whole camp, sorted by edah)"
+                                 ReportTypes::Director  => "Director (whole camp, sorted by edah)"
                                 );
     
     $mysqli = connect_db();
@@ -250,6 +268,8 @@
                 continue;
             }
             $lhs = strtolower($cparts[0]);
+            
+            // By-edah report.
             if ($lhs == "edah") {
                 $reportMethod = ReportTypes::ByEdah;
                 $edahId = $cparts[1];
@@ -258,9 +278,16 @@
                 $activeBlockIds[$cparts[1]] = 1;
             }
             
-            // Add more as needed.
+            // Add more of these as needed.
             
         }
+    }
+    
+    // Per-chug report requires a chug ID to display.
+    if ($reportMethod == ReportTypes::ByChug &&
+        $doReport &&
+        $chugId == NULL) {
+        array_push($errors, errorString("Please choose a chug for this report"));
     }
     
     // Display errors and exit, if needed.
@@ -331,6 +358,20 @@ EOM;
         $bunkChooser->setColVal($bunkId);
         $bunkChooser->setId2Name($bunkId2Name);
         echo $bunkChooser->renderHtml();
+    } else if ($reportMethod == ReportTypes::ByChug) {
+        // Similar to the above, but the filter is by chug.  Also, in this case, the
+        // input is required.
+        $chugChooser = new FormItemDropDown("Chug", TRUE, "chug_id", $liNumCounter++);
+        $chugChooser->setGuideText("Step 3: Choose a chug for this report.");
+        $chugChooser->setInputClass("element select medium");
+        $chugChooser->setInputSingular("chug");
+        $chugChooser->setColVal($chugId);
+        $chugChooser->setId2Name($chugId2Name);
+        echo $chugChooser->renderHtml();
+    } else if ($reportMethod == ReportTypes::Director) {
+        // The director report shows all options, so there are no filter fields
+        // except time block.
+        
     }
     
     $cancelUrl = "";
@@ -370,13 +411,12 @@ EOM;
                 $sql .= "AND c.edah_id = $edahId ";
             }
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
-            error_log("DBG: sql = $sql");
             
             // Create and display the report.
             $edahReport = new ZebraReport($sql);
             $edahReport->setNewTableColumn("edah");
-            $edahReport->setCaption("Chug Assignments by Edah");
-            $edahReport->setIgnoreColumn("edah_sort_order");
+            $edahReport->setCaption("Chug Assignments by Edah for LINK");
+            $edahReport->addIgnoreColumn("edah_sort_order");
             $edahReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
             $edahReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
             $edahReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
@@ -404,8 +444,8 @@ EOM;
             // Create and display the report.
             $bunkReport = new ZebraReport($sql);
             $bunkReport->setNewTableColumn("bunk");
-            $bunkReport->setCaption("Chug Assignments by Bunk");
-            $bunkReport->setIgnoreColumn("edah_sort_order");
+            $bunkReport->setCaption("Chug Assignments by Bunk for LINK");
+            $bunkReport->addIgnoreColumn("edah_sort_order");
             $bunkReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
             $bunkReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
             $bunkReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
@@ -413,6 +453,64 @@ EOM;
             $bunkReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
             $bunkReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
             $bunkReport->renderTable();
+        } else if ($reportMethod == ReportTypes::ByChug) {
+            // The chug report is meant for chug leaders.  The leaders need a separate sheet
+            // for each edah that comes to the chug.  For each edah, the sheet should have:
+            // - Rosh name and phone at the top, together with the edah name.
+            // - List of campers in the edah: name and bunk.
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS camper, e.name edah, e.sort_order edah_sort_order, " .
+            "e.rosh_name rosh, e.rosh_phone roshphone, ch.name chug_name, b.name bunk, bl.name block, " .
+            "ch.chug_id chug_id, bl.block_id block_id, b.bunk_id bunk_id, e.edah_id edah_id, c.camper_id " .
+            "FROM edot e, campers c, matches m, chug_instances i, chugim ch, bunks b, blocks bl " .
+            "WHERE e.edah_id = c.edah_id AND c.camper_id = m.camper_id AND m.chug_instance_id = i.chug_instance_id AND " .
+            "i.chug_id = ch.chug_id AND i.block_id = bl.block_id AND ch.chug_id = $chugId AND c.bunk_id = b.bunk_id ";
+            if (count($activeBlockIds) > 0) {
+                $sql .= "AND i.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+            }
+            $sql .= "ORDER BY edah, edah_sort_order, block, camper, bunk";
+            
+            $chugReport = new ZebraReport($sql);
+            $chugReport->setNewTableColumn("edah");
+            $chugReport->addIgnoreColumn("edah_sort_order");
+            $chugReport->addIgnoreColumn("rosh");
+            $chugReport->addIgnoreColumn("roshphone");
+            $chugReport->addIgnoreColumn("chug_name");
+            $chugReport->addIgnoreColumn("block");
+            $chugReport->setIdCol2EditPage("camper_id", "editCamper.php", "camper");
+            $chugReport->setIdCol2EditPage("chug_id", "editChug.php", "chug_name");
+            $chugReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
+            $chugReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
+            $chugReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+            $chugReport->setCaption("LINK campers for BLOCK<br>Rosh: ROSH, PHONE");
+            $chugReport->addCaptionReplaceColKey("ROSH", "rosh", "none listed");
+            $chugReport->addCaptionReplaceColKey("PHONE", "roshphone", "no rosh phone");
+            $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no block name");
+            $chugReport->renderTable();
+        } else if ($reportMethod == ReportTypes::Director) {
+            // The director report is similar to the edah report, but unfiltered.
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
+            "ch.chug_id chug_id, bl.block_id block_id " .
+            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g, chug_instances i " .
+            "WHERE c.bunk_id = b.bunk_id AND m.chug_instance_id = i.chug_instance_id AND i.block_id = bl.block_id AND i.block_id = bl.block_id " .
+            "AND i.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = ch.group_id ";
+            if (count($activeBlockIds) > 0) {
+                $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+            }
+            $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
+            
+            // Create and display the report.
+            $directorReport = new ZebraReport($sql);
+            $directorReport->setNewTableColumn("edah");
+            $directorReport->setCaption("Chug Assignments by Edah for LINK");
+            $directorReport->addIgnoreColumn("edah_sort_order");
+            $directorReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
+            $directorReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
+            $directorReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+            $directorReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
+            $directorReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
+            $directorReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
+            $directorReport->renderTable();
         }
     }
     

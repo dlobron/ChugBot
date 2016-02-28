@@ -339,11 +339,10 @@ EOM;
                             $this->colName2Error[$col->name] = errorString("Missing required column " . $col->name);
                             return;
                         }
-                        // Use default, if present.
+                        // Use default, if present.  Otherwise, leave NULL, so users can
+                        // erase optional columns.
                         if (! is_null($col->defaultValue)) {
                             $val = $col->defaultValue;
-                        } else {
-                            continue;
                         }
                     }
                     $this->col2Val[$col->name] = $val;
@@ -373,7 +372,11 @@ EOM;
                 $i = 0;
                 $sql = "UPDATE $this->mainTable SET "; // Common start to SQL
                 foreach ($this->col2Val as $colName => $colVal) {
-                    $sql .= "$colName = \"$colVal\"";
+                    if ($colVal == NULL || empty($colVal)) {
+                        $sql .= "$colName = NULL";
+                    } else {
+                        $sql .= "$colName = \"$colVal\"";
+                    }
                     if ($i < (count($this->col2Val) - 1)) {
                         $sql .= ", ";
                     }
