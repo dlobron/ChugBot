@@ -84,8 +84,10 @@
                     if ($result == FALSE) {
                         $dbError = dbErrorString($sql, $mysqli->error);
                     } else {
-                        // New password entered OK: redirect.
+                        // New password entered OK: log them in and redirect.  Note
+                        // that staff privileges imply camper privileges.
                         $_SESSION['admin_logged_in'] = TRUE;
+                        $_SESSION['camper_logged_in'] = TRUE;
                         header("Location: $redirUrl");
                         exit();
                     }
@@ -102,6 +104,7 @@
                 } else {
                     // New password entered OK: redirect.
                     $_SESSION['admin_logged_in'] = TRUE;
+                    $_SESSION['camper_logged_in'] = TRUE;
                     header("Location: $redirUrl");
                     exit();
                 }

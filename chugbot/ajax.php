@@ -4,6 +4,11 @@
     
     require 'PHPMailer/PHPMailerAutoload.php';
     
+    // Require camper-level access to use any functions.
+    if (! camperLoggedIn()) {
+        exit();
+    }
+    
     function getCamperId() {
         $camper_id = $_SESSION["camper_id"];
         if (! isset($camper_id)) {

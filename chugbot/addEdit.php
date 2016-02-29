@@ -100,6 +100,8 @@
         }
         
         public function renderForm() {
+            camperBounceToLogin(); // Forms require at least camper-level access.
+            
             echo headerText($this->title);
             $allErrors = array_merge(array($this->dbErr), array_values($this->colName2Error));
             $errText = genFatalErrorReport($allErrors);
@@ -422,8 +424,6 @@ EOM;
                 }
             }
         }
-        
-        
     }
 
     class AddPage extends AddEditBase {

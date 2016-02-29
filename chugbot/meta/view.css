@@ -7,6 +7,20 @@ body
 	text-align:center;
 }
 
+.control_button {
+    font-size: 1.2em;
+    padding:3px 8px;
+    color:black;
+    background-color: #cccccc;
+    border:1px solid grey;
+    box-shadow: 2px 2px grey;
+    cursor:pointer;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    font-size: 1.2em;
+}
+
 .toggler 
 {
     position: relative;

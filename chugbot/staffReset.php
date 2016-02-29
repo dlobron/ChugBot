@@ -6,7 +6,7 @@
     
     // Grab the existing admin email from the database.  This is presumed to exist, since
     // this is a reset page.
-    $existingAdminEmail = $existingAdminEmailUserName = $existingAdminEmailPassword = $admin_email = $existingRegularUserToken = "";
+    $existingAdminEmail = $existingAdminEmailUserName = $existingAdminEmailPassword = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = "";
     $dbErr = $staffPasswordErr = $staffPasswordErr2 = "";
     $mysqli = connect_db();
     $sql = "SELECT * from admin_data";
@@ -21,6 +21,8 @@
         $existingAdminEmailUserName = $row["admin_email_username"];
         $existingAdminEmailPassword = $row["admin_email_password"];
         $existingRegularUserToken = $row["regular_user_token"];
+        $existingRegularUserTokenHint = $row["regular_user_token_hint"];
+        $existingCampName = $row["camp_name"];
         
         // Set the admin email and password to current values.  These will be
         // clobbered if we have incoming POST data - otherwise, we'll display them
@@ -29,6 +31,8 @@
         $admin_email_username = $existingAdminEmailUserName;
         $admin_email_password = $existingAdminEmailPassword;
         $regular_user_token = $existingRegularUserToken;
+        $regular_user_token_hint = $existingRegularUserTokenHint;
+        $camp_name = $existingCampName;
     }
     mysqli_free_result($result);
     $mysqli->close();
@@ -38,25 +42,34 @@
         $admin_email = test_input($_POST["admin_email"]);
         $staff_password = test_input($_POST["staff_password"]);
         $staff_password2 = test_input($_POST["staff_password2"]);
-        $redirUrl = urlBaseText() . "staffHome.php"; // Redir for successful email/pw change.
         $admin_email_username = test_input($_POST["admin_email_username"]);
         $admin_email_password = test_input($_POST["admin_email_password"]);
         $regular_user_token = test_input($_POST["regular_user_token"]);
-        // For email values and token, fill in existing values unless new ones were specified.
-        if (is_null($admin_email_username)) {
-            $admin_email_username = $existingAdminEmailUserName;
-        } 
-        if (is_null($admin_email_password)) {
-            $admin_email_password = $existingAdminEmailPassword;
-        }
-        if (is_null($regular_user_token)) {
-            $regular_user_token = $existingRegularUserToken;
-        }
+        $regular_user_token_hint = test_input($_POST["regular_user_token_hint"]);
+        $camp_name = test_input($_POST["camp_name"]);
         
-        // Grab the data to update.  We only update the staff email and password
-        // if they were explictly set in the form.
-        $sql = "UPDATE admin_data SET admin_email_username = \"$admin_email_username\", " .
-        "admin_email_password=\"$admin_email_password\", regular_user_token=\"$regular_user_token\"";
+        // For admin email and user token fields, update to incoming values.  If a value is not given,
+        // set the table field to NULL.
+        $sql = "UPDATE admin_data SET ";
+        $fields = array("admin_email_username", $admin_email_username, $existingAdminEmailUserName,
+                        "admin_email_password", $admin_email_password, $existingAdminEmailPassword,
+                        "regular_user_token", $regular_user_token, $existingRegularUserToken,
+                        "regular_user_token_hint", $regular_user_token_hint, $existingRegularUserTokenHint);
+        for ($i = 0; $i < count($fields); $i += 3) {
+            $colName = $fields[$i];
+            $newVal = $fields[$i+1];
+            $existingVal = $fields[$i+2];
+            $sql .= "$colName = ";
+            if (is_null($newVal) || empty($newVal)) {
+                $sql .= "NULL";
+            } else {
+                $sql .= "\"$newVal\"";
+            }
+            if ($i < (count($fields)-3)) {
+                $sql .= ", ";
+            }
+        }
+        // Only reset the password if it's explicitly supplied.
         if ($staff_password) {
             if (strlen($staff_password) < 5 ||
                 strlen($staff_password) > 20) {
@@ -69,11 +82,17 @@
             $staffPasswordHashed = password_hash($staff_password, PASSWORD_DEFAULT);
             $sql .= ", admin_password = \"$staffPasswordHashed\"";
         }
+        // Assume the email is never empty.  Only update it if a valid address was
+        // given.
         if ($admin_email) {
             if (! filter_var($admin_email, FILTER_VALIDATE_EMAIL)) {
                 $staffEmailErr = errorString("\"$admin_email\" is not a valid email address.");
             }
             $sql .= ", admin_email = \"$admin_email\"";
+        }
+        // Same for camp name: only update it if a new string was given.
+        if ($camp_name) {
+            $sql .= ", camp_name = \"$camp_name\"";
         }
         if (empty($staffEmailErr) &&
             empty($staffPasswordErr) &&
@@ -91,6 +110,7 @@
                 if ($staff_password) {
                     $_SESSION['admin_logged_in'] = TRUE;
                 }
+                $redirUrl = urlBaseText() . "staffHome.php"; // Redir for successful email/pw change.
                 header("Location: $redirUrl");
                 exit();
             }
@@ -162,7 +182,25 @@ Required values are marked with a <font color="red">*</font>.
     $regularUserTokenField->setGuideText("The camper access token is used by non-admin users to confirm their login.  It can be any easy-to-remember string.  This value is not a password, just a token, so it should be something simple, e.g., \"RamahKayitz\".");
     echo $regularUserTokenField->renderHtml();
     
-    $staffPasswordField = new FormItemSingleTextField("Staff Password (<b>leave this field blank to keep it the same</b>.)", FALSE, "staff_password", 4);
+    $hintField = new FormItemTextArea("Camper Access Token Hint Phrase", FALSE, "regular_user_token_hint", 4);
+    $hintField->setInputValue($regular_user_token_hint);
+    $hintField->setInputType("text");
+    $hintField->setInputClass("element textarea medium");
+    $hintField->setInputMaxLength(512);
+    $hintField->setPlaceHolder(" ");
+    $hintField->setGuideText("Optional hint for campers who forget the access token.  Can be anything.");
+    echo $hintField->renderHtml();
+    
+    $campNameField = new FormItemSingleTextField("Camp Name", TRUE, "camp_name", 5);
+    $campNameField->setInputValue($camp_name);
+    $campNameField->setInputType("text");
+    $campNameField->setInputClass("element text medium");
+    $campNameField->setInputMaxLength(50);
+    $campNameField->setGuideText("Enter the standard name for this camp, e.g., \"Camp Ramah New England\"");
+    $campNameField->setPlaceHolder("Camp Ramah New England");
+    echo $campNameField->renderHtml();
+    
+    $staffPasswordField = new FormItemSingleTextField("Staff Password (<b>leave this field blank to keep it the same</b>.)", FALSE, "staff_password", 6);
     $staffPasswordField->setInputType("password");
     $staffPasswordField->setInputClass("element text medium");
     $staffPasswordField->setInputMaxLength(50);
@@ -170,7 +208,7 @@ Required values are marked with a <font color="red">*</font>.
     $staffPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
     echo $staffPasswordField->renderHtml();
     
-    $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", FALSE, "staff_password2", 5);
+    $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", FALSE, "staff_password2", 7);
     $staffPasswordField2->setInputType("password");
     $staffPasswordField2->setInputClass("element text medium");
     $staffPasswordField2->setInputMaxLength(50);

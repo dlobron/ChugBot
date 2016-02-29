@@ -19,7 +19,9 @@ admin_email varchar(50) NOT NULL,
 admin_password varchar(255) NOT NULL,
 admin_email_username varchar(50),
 admin_email_password varchar(255),
-regular_user_token varchar(255))
+regular_user_token varchar(255) NOT NULL DEFAULT "Kayitz",
+regular_user_token_hint varchar(512) DEFAULT "Hebrew word for summer",
+camp_name varchar(255) NOT NULL DEFAULT "Camp Ramah")
 COLLATE utf8_unicode_ci;
 
 # This table holds sessions, e.g., "July", "August", "Full Summer", "Mini Bet", etc.

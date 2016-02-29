@@ -2,6 +2,10 @@
     include_once 'functions.php';
     include_once 'assignmentClasses.php';
     
+    if (! camperLoggedIn()) {
+        exit();
+    }
+    
     function assign($camper, &$assignments, &$chugToAssign) {
         $assignments[$camper->camper_id] = $chugToAssign->chug_id;
         $chugToAssign->assigned_count++;

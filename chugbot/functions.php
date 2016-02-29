@@ -242,20 +242,20 @@ EOM;
     function urlIfy($localLink) {
         return urlBaseText() . $localLink;
     }
-
-    function initialPageUrl() {
-        return urlIfy("index.php");
-    }
     
     function adminLoggedIn() {
         return isset($_SESSION['admin_logged_in']);
+    }
+    
+    function camperLoggedIn() {
+        return isset($_SESSION['camper_logged_in']);
     }
 
     function homeUrl() {
         if (isset($_SESSION['admin_logged_in'])) {
             return urlIfy("staffHome.php");
         } else {
-            return urlIfy("index.php");
+            return urlIfy("camperHome.php");
         }
     }
     
@@ -282,6 +282,16 @@ EOM;
         if (! isset($_SESSION['admin_logged_in'])) {
             $fromUrl = $_SERVER["PHP_SELF"];
             $redirUrl = urlIfy("staffLogin.php?from=$fromUrl");
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    
+    function camperBounceToLogin() {
+        if ((! isset($_SESSION['camper_logged_in'])) &&
+            (! isset($_SESSION['admin_logged_in']))) {
+            $fromUrl = $_SERVER["PHP_SELF"];
+            $redirUrl = urlIfy("index.php?retry=1");
             header("Location: $redirUrl");
             exit();
         }
@@ -325,7 +335,7 @@ EOM;
     }
     
     function footerText() {
-        $homeUrl = initialPageUrl();
+        $homeUrl = homeUrl();
         return
             "<a href=\"http://www.campramahne.org/\">CRNE home</a><br><a href=\"$homeUrl\">Leveling home</a>";
     }
