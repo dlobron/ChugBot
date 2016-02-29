@@ -6,10 +6,18 @@
     
     // We assume we got here from a POST.  If not, go to the home page.
     if (! $_SERVER["REQUEST_METHOD"] == "POST") {
-        $err = errorString("Unknown request method - please hit 'Back' and try again.");
+        $err = errorString("Unknown request method.");
     }
     $edah_id = intval(test_input($_POST["edah"]));
     $block_id = intval(test_input($_POST["block"]));
+    if ($edah_id == NULL || $block_id == NULL) {
+        $err = errorString("Block and edah must be specified.");
+    }
+    if ($err) {
+        echo genErrorPage($err);
+        exit;
+    }
+    
     $levelHomeUrl = urlIfy("levelHome.html");
     $levelHomeUrl .= "?edah=$edah_id&block=$block_id";
     

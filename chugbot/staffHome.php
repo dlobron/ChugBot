@@ -48,16 +48,21 @@
 <h2>Camp Staff Control Panel</h2>
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
 <p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>
-<p>Please hover your mouse over a menu for further help.<p>
-<p>To edit your administrative settings, please click <a href="<?php echo $resetUrl; ?>">here</a>, and to print out matches, please click <a href="<?php echo $reportUrl; ?>">here</a>.
+<p>For help with a field or button, hover your mouse over the item.<p>
+
+<form class="appnitro" action="<?php echo $resetUrl; ?>">
+<button title="Click here to update the administrative settings, including staff password and camper code" class="cb_smaller" type="submit" value="1">Edit Admin Settings</button>
+</form>
+
 </div>
 
 <div class="right_container">
 <h3>Leveling</h3>
-<p>To level, choose a time block and edah from the drop-down lists, and click "Go."</p>
+<p>To level, choose a time block and edah from the drop-down lists, and click "Level."</p>
 <p>If you have an existing assignment, you will be able to edit it.  Nothing will be changed until you click
 the Save button.</p>
-<form id="leveling_choice_form" class="appnitro" method="post" action="<?php echo $levelingUrl;?>">
+<p>To generate a printable chug assigment report, click "Report".
+<form id="leveling_choice_form" class="appnitro" method="post" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
 <label class="description" for="edah">Edah</label>
@@ -80,10 +85,18 @@ the Save button.</p>
 </div><p class="guidelines" id="guide_2"><small>Choose a Block.</small></p>
 </li>
 <li>
-<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<input title="Launch the leveling page" class="control_button" type="submit" value="Level" />
 </li>
 </ul>
 </form>
+
+<form class="appnitro" action="<?php echo $reportUrl; ?>">
+<div class="form_description">
+<p>Click "Report" to go to the camper assigment report page.</p>
+</div>
+<button title="Go to the Report page" class="control_button" type="submit">Report</button>
+</form>
+
 </div>
 
 <div class="multi_form_container">

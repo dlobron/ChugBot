@@ -21,6 +21,20 @@ body
     font-size: 1.2em;
 }
 
+.cb_smaller {
+    font-size: 0.7em;
+    padding:3px 8px;
+    color:black;
+    background-color: #cccccc;
+    border:1px solid grey;
+    box-shadow: 2px 2px grey;
+    cursor:pointer;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    font-size: 1.2em;
+}
+
 .toggler 
 {
     position: relative;
@@ -43,6 +57,8 @@ body
         font-size: 1.2em;
         background:#fff;
         padding-bottom: 1px;
+	padding-left: 10px;
+        padding-right: 10px;
         border: 2px dotted silver;
         border-radius: 10px;
         -moz-border-radius: 10px;
