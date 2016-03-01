@@ -52,6 +52,9 @@ function doAssignmentAjax(action, title, errText,
 // Also, display chugim with no matches, because the user needs the ability to drag
 // to them.
 function getAndDisplayCurrentMatches() {
+        var curUrl = window.location.href;
+        var curUrlBase = curUrl.substr(0, curUrl.lastIndexOf("/"));
+	var editChugBase = curUrlBase + "/editChug.php?eid=";
         var edah = getParameterByName("edah");
         var block = getParameterByName("block");
 	var succeeded = false;
@@ -94,6 +97,7 @@ function getAndDisplayCurrentMatches() {
 					  var chugName = chugId2Beta[chugId]["name"];
 					  var chugMin = chugId2Beta[chugId]["min_size"];
 					  var chugMax = chugId2Beta[chugId]["max_size"];
+					  var editChugUrl = editChugBase + chugId;
 					  if (chugMax == "0") {
 					      chugMax = "no limit";
 					  }
@@ -101,7 +105,8 @@ function getAndDisplayCurrentMatches() {
 					  if (chugName == "Not Assigned Yet") {
 					      html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
 					  } else {
-					      html += "<h4>" + chugName + " (min = " + chugMin + ", max = " + chugMax + ")</h4>";
+					      html += "<h4>" + "<a href=\"" + editChugUrl + "\">" + chugName + "</a>"
+						  + " (min = " + chugMin + ", max = " + chugMax + ")</h4>";
 					  }
 					  html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
 					  $.each(matchedCampers,
