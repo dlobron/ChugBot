@@ -272,6 +272,11 @@ $(function() {
 		// Simulate clicking a link, so this page goes in the browser history.
 		var curUrl = window.location.href;
 		var homeUrl = curUrl.replace("levelHome.html", "staffHome.php");
+		// Remove query string before redir.
+		var qpos = homeUrl.indexOf("?");
+		if (qpos) {
+		    homeUrl = homeUrl.substr(0, qpos);
+		}
 		window.location.href = homeUrl;
 	    })
 	    });

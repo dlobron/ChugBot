@@ -169,7 +169,7 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailPasswordField->setInputType("text");
     $adminEmailPasswordField->setInputClass("element text medium");
     $adminEmailPasswordField->setInputMaxLength(20);
-    $adminEmailPasswordField->setPlaceHolder("Non-valuable password here");
+    $adminEmailPasswordField->setPlaceHolder("Email account password");
     $adminEmailPasswordField->setGuideText("Enter the password of the staff email account (this is <b>not</b> the same as the admin password for this site).  Please do not use a valuable password, since this is not stored securely and is only used for sending email.");
     echo $adminEmailPasswordField->renderHtml();
     

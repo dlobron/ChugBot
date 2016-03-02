@@ -193,18 +193,49 @@ EOM;
             if (empty($this->instanceIdsIdentifier)) {
                 return TRUE; // No instances: not an error.
             }
-            $sql = "DELETE FROM $this->instanceTable WHERE $this->idCol = $idVal";
-            $submitOk = $this->mysqli->query($sql);
-            if ($submitOk == FALSE) {
+            // First, grab existing IDs from the instance table.
+            $sql = "SELECT $this->instanceIdCol FROM $this->instanceTable WHERE $this->idCol = \"$idVal\"";
+            $result = $this->mysqli->query($sql);
+            if ($result == FALSE) {
                 $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                 return FALSE;
             }
+            $existingInstanceKeys = array();
+            while ($row = $result->fetch_array(MYSQLI_NUM)) {
+                $instanceId = $row[0];
+                if (! array_key_exists($idVal, $existingInstanceKeys)) {
+                    $existingInstanceKeys[$idVal] = array();
+                }
+                $existingInstanceKeys[$idVal][$instanceId] = 1;
+            }
+            // Next, step through the active instance hash, and update as follows:
+            // - If an entry exists in $existingInstanceKeys, note that.
+            // - If the entry does not exist, insert it.
             foreach ($this->instanceActiveIdHash as $instanceId => $active) {
+                if (array_key_exists($idVal, $existingInstanceKeys) &&
+                    array_key_exists($instanceId, $existingInstanceKeys[$idVal])) {
+                    // This entry exists in the DB: delete it from $existingInstanceKeys.
+                    unset($existingInstanceKeys[$idVal][$instanceId]);
+                    continue;
+                }
+                // New entry: insert it.
                 $sql = "INSERT INTO $this->instanceTable ($this->idCol, $this->instanceIdCol) VALUES ($idVal, $instanceId)";
                 $submitOk = $this->mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                     return FALSE;
+                }
+            }
+            // At this point, $existingInstanceKeys contains entries that exist in the DB but
+            // not in the new set.  Delete these entries from the DB.
+            foreach ($existingInstanceKeys as $idValKey => $existingInstanceIds) {
+                foreach ($existingInstanceIds as $existingInstanceId => $active) {
+                    $sql = "DELETE FROM $this->instanceTable WHERE $this->instanceIdCol = \$existingInstanceId\" AND $this->idCol = \"$idVal\"";
+                    $submitOk = $this->mysqli->query($sql);
+                    if ($submitOk == FALSE) {
+                        $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                        return FALSE;
+                    }
                 }
             }
             

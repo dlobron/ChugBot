@@ -87,6 +87,8 @@
         debugLog("ourHappiness = $ourHappiness, ourNextSpace = $ourNextSpace");
         $happierCamperId = NULL;
         $mostFreeSpaceCamperId = NULL;
+        $happiestCamperOfLotId = NULL;
+        $minHappinessOfLot = MAX_SIZE_NUM;
         // Loop through existing assignments, and see if any camper assigned to
         // this chug is happier than we are.  If we have a tie, return the camper
         // with the most free space in their next choice, since they are hurt least
@@ -107,6 +109,7 @@
             debugLog("considering other camper assigned to this chug, $otherCamper->name");
             if ($otherCamper->needs_first_choice) {
                 // Campers who need their first choice should never be bumped.
+                debugLog("can't bump camper ID $otherCamperId because they need first choice");
                 continue;
             }
             $theirHappiness = 0;
@@ -114,18 +117,23 @@
                 $theirHappiness = $happiness[$otherCamperId];
             }
             debugLog("their happiness = $theirHappiness");
+            if ($theirHappiness < $minHappinessOfLot) {
+                $happiestCamperOfLotId = $otherCamperId;
+                $minHappinessOfLot = $theirHappiness;
+                debugLog("happiest so far, with happiness of $theirHappiness");
+            }
             if ($theirHappiness < $minHappiness) {
                 // We've found a camper with a lower (better) happiness level.
                 // Note this camper, and update the min.
                 $happierCamperId = $otherCamperId;
                 $minHappiness = $theirHappiness;
-                debugLog("found camper ID $otherCamperId with better (lower) happiness $theirHappiness - min is now $minHappiness");
+                debugLog("found camper $otherCamper->name with better (lower) happiness $theirHappiness - min is now $minHappiness");
             }
             $theirNextSpace = spaceInNextPref($ourAssignments, $chugim, $otherCamper);
             if ($theirNextSpace > $maxNextSpace) {
                 $mostFreeSpaceCamperId = $otherCamperId;
                 $maxNextSpace = $theirNextSpace;
-                debugLog("found camper ID $otherCamperId with more free space, $theirNextSpace");
+                debugLog("found camper ID $otherCamper->name with more free space, $theirNextSpace");
             }
         }
         // If we have a happier camper, return their ID.  Otherwise, if we have
@@ -136,7 +144,15 @@
             return $happierCamperId;
         } elseif ($mostFreeSpaceCamperId != NULL) {
             return $mostFreeSpaceCamperId;
+        } elseif ($camper->needs_first_choice) {
+            // Special case: if this camper needs their first choice, then we have
+            // to bump, if someone is available.  Bump the happiest from our
+            // input set.
+            debugLog("No happier camper found, but $camper->name needs first choice, so bumping happiest available, with ID $happiestCamperOfLotId");
+            return $happiestCamperOfLotId;
         } else {
+            // No happier camper was found, and this camper does not require first
+            // choice.
             return NULL;
         }
     }
