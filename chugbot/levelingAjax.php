@@ -220,7 +220,7 @@
                 $groupId2ChugId2MatchedCampers[$group_id] = array();
             }
             // Get all chugim for the group, and make an array entry.
-            $result2 = getDbResult("SELECT chug_id FROM chugim WHERE group_id = $group_id");
+            $result2 = getDbResult("SELECT c.chug_id chug_id FROM chugim c, chug_instances i WHERE c.group_id = $group_id AND i.block_id = $block_id AND c.chug_id = i.chug_id");
             while ($row2 = mysqli_fetch_row($result2)) {
                 $chug_id = intval($row2[0]);
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();

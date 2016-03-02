@@ -230,7 +230,7 @@ EOM;
             // not in the new set.  Delete these entries from the DB.
             foreach ($existingInstanceKeys as $idValKey => $existingInstanceIds) {
                 foreach ($existingInstanceIds as $existingInstanceId => $active) {
-                    $sql = "DELETE FROM $this->instanceTable WHERE $this->instanceIdCol = \$existingInstanceId\" AND $this->idCol = \"$idVal\"";
+                    $sql = "DELETE FROM $this->instanceTable WHERE $this->instanceIdCol = \"$existingInstanceId\" AND $this->idCol = \"$idVal\"";
                     $submitOk = $this->mysqli->query($sql);
                     if ($submitOk == FALSE) {
                         $this->dbErr = dbErrorString($sql, $this->mysqli->error);
