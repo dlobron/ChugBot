@@ -55,7 +55,7 @@
     } else {
         // List campers in a form.
         $editPageUrl = urlBaseText() . "editCamper.php";
-        echo "<h3>Choose Camper Associated with $email to Edit</h3>";
+        echo "<h3>Choose a Camper Associated with $email to Edit</h3>";
         echo "<form id=\"pickCamperForm\" class=\"appnitro\" method=\"post\" action=\"$editPageUrl\"/>";
         echo "<div class=\"form_description\">";
         echo "<ul>";
@@ -71,7 +71,7 @@
         echo "</ul>";
         
         echo "<input type=\"hidden\" id=\"fromHome\" name=\"fromHome\" value=\"1\" />";
-        echo "<input id=\"saveForm\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit Camper\" />";
+        echo "<input class=\"control_button\" id=\"saveForm\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit Camper\" />";
         echo "</form>";
     }
     

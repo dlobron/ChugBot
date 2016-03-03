@@ -53,7 +53,7 @@
 <button title="Add a new camper" class="control_button" type="submit" name="add" formaction="addCamper.php" >Add Camper</button>
 <br><br><br><br>
 
-<button title="Edit existing camper info" class="control_button" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
+<button title="Edit existing camper info" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
 <span>
 <input placeholder="Email associated with camper" id="email" name="email" class="element text" maxlength="255" size="50"
 class="masterTooltip" title="Enter the email associated with the camper you would like to edit">

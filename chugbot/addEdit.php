@@ -40,8 +40,9 @@
             return $this->colName2Error[$colName];
         }
         
-        public function setSubmitAndContinueTarget($sact) {
+        public function setSubmitAndContinueTarget($sact, $text) {
             $this->submitAndContinueTarget = $sact;
+            $this->submitAndContinueLabel = $text;
         }
         
         abstract protected function renderForm();
@@ -55,6 +56,7 @@
         protected $secondParagraph;
         protected $formItems = array();
         protected $submitAndContinueTarget = NULL;
+        protected $submitAndContinueLabel = "";
     }
     
     // This class handles most of the work for the add and edit pages.  The
@@ -147,8 +149,18 @@ EOM;
             $footerText = footerText();
             $fromText = "";
             $submitAndContinueText = "";
+            $submitText = "";
+            $backText = "";
             if (! is_null($this->submitAndContinueTarget)) {
-                $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"button_text\" type=\"submit\" name=\"submitAndContinue\" value=\"Continue\" />";
+                // If we have a submitAndContinueTarget, display a bold
+                // continue link.
+                $label = $this->submitAndContinueLabel;
+                $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"control_button\" type=\"submit\" name=\"submitAndContinue\" value=\"$label\" />";
+            } else {
+                // If we don't have submitAndContinueTarget, display a submit
+                // and back button, in regular typeface.
+                $submitText = "<input id=\"saveForm\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
+                $backText = "<button onclick=\"history.go(-1);\">Back </button>";
             }
             if ($this->editPage) {
                 $val = $this->col2Val[$this->idCol];
@@ -165,8 +177,8 @@ EOM;
             $html .= <<<EOM
 <li class="buttons">
 <input type="hidden" name="form_id" value="$formId" />
-<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
-<button onclick="history.go(-1);">Back </button>
+$submitText
+$backText
 $submitAndContinueText
 $fromText
 $cancelText
