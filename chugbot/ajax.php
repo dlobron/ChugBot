@@ -248,17 +248,19 @@ END;
         exit();
     }
     
-    // Get the first name for a camper ID.
-    if (isset($_POST["get_first_name"])) {
+    // Get the first name for a camper ID, and leveling instructions.
+    if (isset($_POST["get_first_name_and_instructions"])) {
         $camper_id = $camper_id = getCamperId();
-        $sql = "SELECT first from campers where camper_id = $camper_id";
+        $sql = "SELECT c.first first, a.pref_page_instructions from campers c, admin_data a where c.camper_id = $camper_id";
         $result = $mysqli->query($sql);
         $nameMap = array();
         $nameMap["name"] = "";
+        $nameMap["instructions"] = "";
         if ($result != FALSE) {
             // If we got a first name, set it.
             $row = $result->fetch_row();
             $nameMap["name"] = $row[0];
+            $nameMap["instructions"] = $row[1];
         }
         
         $mysqli->close();
@@ -283,6 +285,7 @@ END;
         "ORDER BY CASE WHEN (blockname LIKE 'July%' OR blockname LIKE 'july%') THEN CONCAT('a', blockname) ".
         "WHEN (blockname LIKE 'Aug%' OR blockname LIKE 'aug%') THEN CONCAT('b', blockname) ELSE blockname END, ".
         "groupname, chugname";
+        error_log("DBG: sql = $sql");
         
         $result = $mysqli->query($sql);
         if ($result == FALSE) {

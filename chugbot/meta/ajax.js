@@ -66,16 +66,33 @@ $(function() {
 		    });
 	    });
     });
+
+// Helper function to decode escaped HTML for the dynamic instructions in the ajax call to
+// get_first_name_and_instructions.  
+function htmlDecode(input){
+    var doc = new DOMParser().parseFromString(input, "text/html");
+    return doc.documentElement.textContent;
+}
+
 $(function() {
 	$.ajax({
 		url: 'ajax.php',
 		    type: 'post',
-		    data:{get_first_name: 1},
+		    data:{get_first_name_and_instructions: 1},
 		    success: function(data) {
 		    $( ".firstname" ).text(function() {
-			    if (data.name &&
-				data.name.length > 0) {
+		    	    if (data.name &&
+		    		data.name.length > 0) {
 				return $(this).text().replace("Ramahniks", data.name);
+			    }
+			});
+		    $( ".pref_page_instructions" ).html(function() {
+		    	    if (data.instructions &&
+		    		data.instructions.length > 0) {
+		    		return $(this).text().replace("INSTRUCTIONS", 
+		    					      // data.instructions might be encoded, so use our
+							      // helper function.
+							      htmlDecode(data.instructions));
 			    }
 			});
 		},
@@ -111,6 +128,7 @@ $(function() {
 					  if (destName in existingChoicesMap) {
 					      existingChoicesForThisDiv = existingChoicesMap[destName];
 					  }
+					  var chugId2Desc = {};
 					  $.each(chugNameAndId2DescList, function(index, chugNameAndId2Desc) {
 						  $.each(chugNameAndId2Desc, function(chugNameAndId, chugDesc) {
 							  // Check to see if this chug is in use for this block/group.  If so, do
@@ -119,13 +137,16 @@ $(function() {
 							  var p = chugNameAndId.split("||");
 							  var chugName = p[0];
 							  var chugId = p[1];
-							  if (key in blockGroupChugInUse) {
-							      return true; // This is like "continue"
-							  }
 							  var titleText = "";
 							  if (chugDesc) {
 							      // If we have a chug description, write it as a tool tip.
+							      // We map the description in chugId2Desc in case we need
+							      // it below when we render the destination chugim.
 							      titleText = "title=\"" + chugName + ": " + chugDesc + "\"";
+							      chugId2Desc[chugId] = chugDesc;
+							  }
+							  if (key in blockGroupChugInUse) {
+							      return true; // This is like "continue"
 							  }
 							  html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " + 
 							      titleText + " >" + chugName + "</li>";
@@ -138,7 +159,14 @@ $(function() {
 						  var p = chugNameAndId.split("||");
 						  var chugName = p[0];
 						  var chugId = p[1];
-						  html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" >" + chugName + "</li>";
+						  var titleText = "";
+						  var chugDesc = chugId2Desc[chugId];
+						  if (chugDesc) {
+						      // If we have a chug description, write it as a tool tip.
+						      titleText = "title=\"" + chugName + ": " + chugDesc + "\"";
+						  }
+						  html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " + 
+						      titleText + " >" + chugName + "</li>";
 					      });
 					  html += "</ul>";
 					  html += "<div class=\"right_invisible\"><img src=\"images/UpDownArrows.png\"></div>";

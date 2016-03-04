@@ -38,7 +38,7 @@
     $editCamperPage->addFormItem($lastNameField);
 
     $emailField = new FormItemSingleTextField("Email address", TRUE, "email", 2);
-    $emailField->setInputType("text");
+    $emailField->setInputType("email");
     $emailField->setInputClass("element text medium");
     $emailField->setInputMaxLength(255);
     $emailField->setInputValue($editCamperPage->columnValue("email"));
