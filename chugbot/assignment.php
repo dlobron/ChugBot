@@ -215,10 +215,10 @@
         // current happiness level when we step through the existing matches in the step
         // after this one.
         $existingPrefs = array();
-        $sql = "SELECT camper_id, group_id, " .
+        $sql = "SELECT p.camper_id camper_id, p.group_id group_id, " .
         "IFNULL(first_choice_id,-1), IFNULL(second_choice_id,-1), IFNULL(third_choice_id,-1), " .
         "IFNULL(fourth_choice_id,-1), IFNULL(fifth_choice_id,-1), IFNULL(sixth_choice_id,-1) " .
-        "FROM preferences WHERE block_id = $block_id";
+        "FROM preferences p WHERE p.block_id = $block_id";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);
@@ -421,8 +421,8 @@
                 $mysqli->close();
                 return FALSE;
             }
-            $sql = "SELECT chug_instance_id from chug_instances i WHERE " .
-            "i.chug_id = $assignedChugId AND i.block_id = $block_id";
+            $sql = "SELECT chug_instance_id from chug_instances WHERE " .
+            "chug_id = $assignedChugId AND block_id = $block_id";
             $result = $mysqli->query($sql);
             if ($result == FALSE) {
                 $err = dbErrorString($sql, $mysqli->error);

@@ -2,6 +2,7 @@
     session_start();
     include_once 'addEdit.php';
     include_once 'formItem.php';
+    camperBounceToLogin();
     
     $addCamperPage = new AddPage("Add a Camper", "Please enter camper information here",
                                  "campers", "camper_id");

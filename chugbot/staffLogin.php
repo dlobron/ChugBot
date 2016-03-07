@@ -11,7 +11,7 @@
     // handled by a separate page - it's too complicated to squeeze all the logic
     // into this page.
     $resetUrl = urlBaseText() . "staffReset.php";
-    $dbError = "";
+    $dbError = $staffPasswordErr = $staffPasswordErr2 = "";
     $existingPasswordHashed = "";
     $staffPasswordHashed = "";
     $mysqli = connect_db();
@@ -117,7 +117,7 @@
 <?php
     echo headerText("Staff Login");
     
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $staffPasswordErr, $staffPasswordErr2));
     if (! is_null($errText)) {
         echo $errText;
         exit();

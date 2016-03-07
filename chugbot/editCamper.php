@@ -2,6 +2,7 @@
     session_start();
     include_once 'addEdit.php';
     include_once 'formItem.php';
+    camperBounceToLogin();
     
     $editCamperPage = new EditPage("Review Camper Information",
                                    "Please review your information below, and make any necessary edits.",

@@ -1,6 +1,6 @@
 # To load this file:
 # source <path-to-file>
-# Remember to remove test data from the end of this file before loading for production use.
+# For production use, remember to comment-out the last "source" line so as not to import test data.
 
 # Create the database
 CREATE DATABASE IF NOT EXISTS chugbot_db COLLATE utf8_unicode_ci;
@@ -269,4 +269,4 @@ ON UPDATE CASCADE,
 PRIMARY KEY pk_edot_for_block(block_id, edah_id))
 COLLATE utf8_unicode_ci;
 
-# SOURCE SampleData.sql;
+SOURCE /Applications/MAMP/htdocs/SampleData.sql;

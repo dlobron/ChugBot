@@ -274,7 +274,7 @@ END;
         $camper_id = $camper_id = getCamperId();
         $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
         "FROM " .
-        "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e " .
+        "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb " .
         "WHERE " .
         "cm.camper_id = $camper_id AND " .
         "cm.session_id = bi.session_id AND " .
@@ -283,6 +283,8 @@ END;
         "ci.chug_id = c.chug_id AND " .
         "e.chug_id = c.chug_id AND " .
         "e.edah_id = cm.edah_id AND " .
+        "eb.edah_id = cm.edah_id AND " .
+        "eb.block_id = b.block_id AND " .
         "c.group_id = g.group_id " .
         "ORDER BY CASE WHEN (blockname LIKE 'July%' OR blockname LIKE 'july%') THEN CONCAT('a', blockname) ".
         "WHEN (blockname LIKE 'Aug%' OR blockname LIKE 'aug%') THEN CONCAT('b', blockname) ELSE blockname END, ".
