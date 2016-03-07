@@ -14,6 +14,7 @@
     $editChugPage->addColumn("description", FALSE);
     $editChugPage->addInstanceTable("chug_instances");
     $editChugPage->fillInstanceId2Name("block_id", "blocks");
+    $editChugPage->setActiveEdotFilterBy("chug");
     
     $editChugPage->handlePost();
     
@@ -44,7 +45,13 @@
     $sessionChooserField->setGuideText("Check each time block in which this chug is active (you can do this later if you are not sure).");
     $editChugPage->addFormItem($sessionChooserField);
     
-    $minField = new FormItemSingleTextField("Minimum participants", FALSE, "min_size", 3);
+    $edahChooser = new FormItemInstanceChooser("Edot", FALSE, "edot_for_chug", 3);
+    $edahChooser->setId2Name($editChugPage->activeEdotFilterId2Name);
+    $edahChooser->setActiveIdHash($editChugPage->activeEdotHash);
+    $edahChooser->setGuideText("Choose the edot who may participate in this chug (you can do this later if you are not sure now)");
+    $editChugPage->addFormItem($edahChooser);
+    
+    $minField = new FormItemSingleTextField("Minimum participants", FALSE, "min_size", 4);
     $minField->setInputClass("element text medium");
     $minField->setInputType("text");
     $minField->setInputMaxLength(4);
@@ -53,7 +60,7 @@
     $minField->setGuideText("Enter the minimum number of campers needed for this chug to take place (default = no minimum)");
     $editChugPage->addFormItem($minField);
 
-    $maxField = new FormItemSingleTextField("Maximum participants", FALSE, "max_size", 4);
+    $maxField = new FormItemSingleTextField("Maximum participants", FALSE, "max_size", 5);
     $maxField->setInputClass("element text medium");
     $maxField->setInputType("text");
     $maxField->setInputMaxLength(4);
@@ -62,7 +69,7 @@
     $maxField->setGuideText("Enter the maximum number of campers allowed in this chug (default = no limit)");
     $editChugPage->addFormItem($maxField);
     
-    $commentsField = new FormItemTextArea("Description", FALSE, "description", 5);
+    $commentsField = new FormItemTextArea("Description", FALSE, "description", 6);
     $commentsField->setInputClass("element textarea medium");
     $commentsField->setInputValue($editChugPage->columnValue("description"));
     $commentsField->setPlaceHolder("Chug description");

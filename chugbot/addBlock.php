@@ -14,6 +14,7 @@ A block is a time period for an activity: for example, weeks 1-2 of July.  Each 
 EOM;
     $addBlockPage->addSecondParagraph($secondParagraph);
     $addBlockPage->fillInstanceId2Name("session_id", "sessions");
+    $addBlockPage->setActiveEdotFilterBy("block");
     
     $addBlockPage->handlePost();
 
@@ -29,6 +30,12 @@ EOM;
     $sessionChooserField->setActiveIdHash($addBlockPage->instanceActiveIdHash);
     $sessionChooserField->setGuideText("Choose each session that contains this time block (you can do this later if you are not sure now).");
     $addBlockPage->addFormItem($sessionChooserField);
+    
+    $edahChooser = new FormItemInstanceChooser("Edot", FALSE, "edot_for_block", 2);
+    $edahChooser->setId2Name($addBlockPage->activeEdotFilterId2Name);
+    $edahChooser->setActiveIdHash($addBlockPage->activeEdotHash);
+    $edahChooser->setGuideText("Choose the edot who will participate in this time block (you can do this later if you are not sure now)");
+    $addBlockPage->addFormItem($edahChooser);
 
     $addBlockPage->renderForm();
 ?>

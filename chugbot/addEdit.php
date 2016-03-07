@@ -101,6 +101,13 @@
             $this->instanceIdsIdentifier = $instanceIdCol . "s";
         }
         
+        public function setActiveEdotFilterBy($filterBy) {
+            fillId2Name($this->mysqli, $this->activeEdotFilterId2Name, $this->dbErr,
+                        "edah_id", "edot");
+            $this->activeEdotFilterBy = $filterBy;
+            $this->activeEdotFilterTable = "edot_for_" . $filterBy;
+        }
+        
         public function renderForm() {
             camperBounceToLogin(); // Forms require at least camper-level access.
             
@@ -151,6 +158,8 @@ EOM;
             $submitAndContinueText = "";
             $submitText = "";
             $backText = "";
+            $homeUrl = homeUrl();
+            $homeText = "<input type=\"button\" onclick=\"location.href='$homeUrl';\" value=\"Home\" />";
             if (! is_null($this->submitAndContinueTarget)) {
                 // If we have a submitAndContinueTarget, display a bold
                 // continue link.
@@ -179,6 +188,7 @@ EOM;
 <input type="hidden" name="form_id" value="$formId" />
 $submitText
 $backText
+$homeText
 $submitAndContinueText
 $fromText
 $cancelText
@@ -199,14 +209,72 @@ EOM;
         protected function populateInstanceActionIds() {
             // If we have active instance IDs, grab them.
             populateActiveIds($this->instanceActiveIdHash, $this->instanceIdsIdentifier);
+            
+            // Same, for per-edah filter.
+            if ($this->activeEdotFilterTable) {
+                $multiColName = $this->activeEdotFilterTable;
+                populateActiveIds($this->activeEdotHash, $multiColName);
+            }
         }
         
-        protected function updateActiveInstances($idVal) {
-            if (empty($this->instanceIdsIdentifier)) {
-                return TRUE; // No instances: not an error.
+        protected function updateInstances($idVal, &$activeHash, $edahFilter = FALSE) {
+            $instanceIdCol = "";
+            $idCol = "";
+            $instanceTable = "";
+            $activeHash = NULL;
+            if ($edahFilter) {
+                if ($this->activeEdotFilterBy == NULL) {
+                    return;
+                }
+                $instanceIdCol = "edah_id";
+                $instanceTable = $this->activeEdotFilterTable;
+                $idCol = $this->activeEdotFilterBy . "_id"; // e.g., chug_id or block_id
+            } else {
+                if (empty($this->instanceIdsIdentifier)) {
+                    return;
+                }
+                $instanceIdCol = $this->instanceIdCol;
+                $instanceTable = $this->instanceTable;
+                $idCol = $this->idCol;
             }
+            
+            $sql = "SELECT $instanceIdCol from $instanceTable where $idCol = $idVal";
+            $result = $this->mysqli->query($sql);
+            if ($result == FALSE) {
+                $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                return;
+            }
+            while ($row = $result->fetch_array(MYSQLI_NUM)) {
+                $activeHash[$row[0]] = 1;
+            }
+            mysqli_free_result($result);
+        }
+        
+        protected function updateActiveInstances($idVal, $edahFilter = FALSE) {
+            $instanceIdCol = "";
+            $idCol = "";
+            $instanceTable = "";
+            $activeHash = NULL;
+            if ($edahFilter) {
+                if ($this->activeEdotFilterTable == NULL) {
+                    return TRUE; // No edah filter: not an error.
+                }
+                $instanceIdCol = "edah_id";
+                $idCol = $this->activeEdotFilterBy . "_id"; // e.g., chug_id or block_id
+                $instanceTable = $this->activeEdotFilterTable;
+                $activeHash = $this->activeEdotHash;
+            } else {
+                if (empty($this->instanceIdsIdentifier)) {
+                    return TRUE; // No instances: not an error.
+                }
+                $instanceIdCol = $this->instanceIdCol;
+                $idCol = $this->idCol;
+                $instanceTable = $this->instanceTable;
+                $activeHash = $this->instanceActiveIdHash;
+            }
+            
             // First, grab existing IDs from the instance table.
-            $sql = "SELECT $this->instanceIdCol FROM $this->instanceTable WHERE $this->idCol = \"$idVal\"";
+            $sql = "SELECT $instanceIdCol FROM $instanceTable WHERE $idCol = \"$idVal\"";
             $result = $this->mysqli->query($sql);
             if ($result == FALSE) {
                 $this->dbErr = dbErrorString($sql, $this->mysqli->error);
@@ -223,7 +291,7 @@ EOM;
             // Next, step through the active instance hash, and update as follows:
             // - If an entry exists in $existingInstanceKeys, note that.
             // - If the entry does not exist, insert it.
-            foreach ($this->instanceActiveIdHash as $instanceId => $active) {
+            foreach ($activeHash as $instanceId => $active) {
                 if (array_key_exists($idVal, $existingInstanceKeys) &&
                     array_key_exists($instanceId, $existingInstanceKeys[$idVal])) {
                     // This entry exists in the DB: delete it from $existingInstanceKeys.
@@ -231,7 +299,7 @@ EOM;
                     continue;
                 }
                 // New entry: insert it.
-                $sql = "INSERT INTO $this->instanceTable ($this->idCol, $this->instanceIdCol) VALUES ($idVal, $instanceId)";
+                $sql = "INSERT INTO $instanceTable ($idCol, $instanceIdCol) VALUES ($idVal, $instanceId)";
                 $submitOk = $this->mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);
@@ -242,7 +310,7 @@ EOM;
             // not in the new set.  Delete these entries from the DB.
             foreach ($existingInstanceKeys as $idValKey => $existingInstanceIds) {
                 foreach ($existingInstanceIds as $existingInstanceId => $active) {
-                    $sql = "DELETE FROM $this->instanceTable WHERE $this->instanceIdCol = \"$existingInstanceId\" AND $this->idCol = \"$idVal\"";
+                    $sql = "DELETE FROM $instanceTable WHERE $instanceIdCol = \"$existingInstanceId\" AND $idCol = \"$idVal\"";
                     $submitOk = $this->mysqli->query($sql);
                     if ($submitOk == FALSE) {
                         $this->dbErr = dbErrorString($sql, $this->mysqli->error);
@@ -266,13 +334,20 @@ EOM;
         protected $editPage = FALSE;
         protected $constantIdValue = NULL;
         
-        // The next columns pertain to items with per-item instances.
+        // The next members pertain to items with per-item instances.
         // We make them public so users can grab them directly.
         public $instanceTable = "";
         public $instanceId2Name = array();
         public $instanceActiveIdHash = array();
         public $instanceIdsIdentifier = "";
         public $instanceIdCol = "";
+        
+        // These members pertain to items with per-edah filters.  These have
+        // names like edot_for_block or edot_for_chug;
+        public $activeEdotHash = array();
+        public $activeEdotFilterBy = NULL; // e.g., "chug" or "block"
+        public $activeEdotFilterTable = NULL;
+        public $activeEdotFilterId2Name = array();
         
         public $fromAddPage = FALSE;
         public $submitData = FALSE;
@@ -352,19 +427,10 @@ EOM;
                     return;
                 }
                 $this->col2Val = $result->fetch_array(MYSQLI_ASSOC);
-                // Populate active instance IDs, if configured.
-                if (! empty($this->instanceIdsIdentifier)) {
-                    $sql = "SELECT $this->instanceIdCol from $this->instanceTable where $this->idCol = $idVal";
-                    $result = $this->mysqli->query($sql);
-                    if ($result == FALSE) {
-                        $this->dbErr = dbErrorString($sql, $this->mysqli->error);
-                        return;
-                    }
-                    while ($row = $result->fetch_array(MYSQLI_NUM)) {
-                        $this->instanceActiveIdHash[$row[0]] = 1;
-                    }
-                    mysqli_free_result($result);
-                }
+                
+                // Populate active instance IDs and edah filter, if configured.
+                $this->updateInstances($idVal, $this->instanceActiveIdHash);
+                $this->updateInstances($idVal, $this->activeEdotHash, TRUE);
             } else {
                 // From other sources (our add page or this page), column values should
                 // be in the POST data, unless we are coming from the home page.
@@ -438,6 +504,12 @@ EOM;
                 if (! $instanceUpdateOk) {
                     return;
                 }
+                // Same, for edah filter, if any.
+                $instanceUpdateOk = $this->updateActiveInstances($idVal, TRUE);
+                if (! $instanceUpdateOk) {
+                    return;
+                }
+                
                 // If we've been asked to continue, do so here.  Set the ID
                 // field in the _SESSION hash, so JQuery can grab it via an Ajax call.
                 if ($submitAndContinue) {
@@ -535,6 +607,11 @@ EOM;
             if (! $instanceUpdateOk) {
                 return;
             }
+            // Same, for edah filter, if any.
+            $instanceUpdateOk = $this->updateActiveInstances($mainTableInsertId, TRUE);
+            if (! $instanceUpdateOk) {
+                return;
+            }
             
             // Add all parameters with values to the hash we'll pass to the edit
             // page.
@@ -548,6 +625,12 @@ EOM;
             if (count($this->instanceActiveIdHash) > 0) {
                 $key = $this->instanceIdsIdentifier . "[]";
                 $paramHash[$key] = array_keys($this->instanceActiveIdHash);
+            }
+            
+            // Same for edah filter.
+            if (count($this->activeEdotHash) > 0) {
+                $key = $this->activeEdotFilterTable . "[]";
+                $paramHash[$key] = array_keys($this->activeEdotHash);
             }
             
             $thisPage = basename($_SERVER['PHP_SELF']);

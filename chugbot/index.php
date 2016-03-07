@@ -3,6 +3,18 @@
     include_once 'formItem.php';
     session_start();
     
+    // If the user is logged in as an admin, redirect to the admin page.  If they
+    // are logged in as a camper, redirect to the camper home page.
+    $staffHome = urlIfy("staffHome.php");
+    $camperHome = urlIfy("camperHome.php");
+    if (adminLoggedIn()) {
+        header("Location: $staffHome");
+        exit();
+    } else if (camperLoggedIn()) {
+        header("Location: $camperHome");
+        exit();
+    }
+    
     $campName = "Camp Ramah";
     $hint = "No hint available";
     $adminEmail = "";

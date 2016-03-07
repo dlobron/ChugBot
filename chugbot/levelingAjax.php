@@ -89,7 +89,7 @@
             
             // Grab chug limits, and create Chug objects.
             $chugId2Chug = array();
-            $result = getDbResult("SELECT * FROM chugim where group_id = $groupId");
+            $result = getDbResult("SELECT * FROM chugim c, edot_for_chug e where c.group_id = $groupId AND c.chug_id = e.chug_id AND e.edah_id = $edah_id");
             while ($row = mysqli_fetch_assoc($result)) {
                 $c = new Chug($row["name"], $row["max_size"], $row["min_size"], $row["chug_id"]);
                 $c->group_id = intval($row["group_id"]);

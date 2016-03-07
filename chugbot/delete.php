@@ -64,8 +64,8 @@
     if ($deletedOk) {
         $homeUrl = urlIfy("staffHome.php");
         echo "<div class=\"centered_container\">";
-        echo "<h3>Deletion Successsful!</h3>";
-        echo "<p>You have successfully deleted $item_name.  Please click <a href=\"$homeUrl\">here</a> to go back, or wait to be redirected.<p>";
+        echo "<h3>Deletion Successful!</h3>";
+        echo "<p>Deletion successful.  Please click <a href=\"$homeUrl\">here</a> to go back, or wait to be redirected.<p>";
         echo "</div>";
         echo "<script type=\"text/javascript\">";
         echo "setTimeout(function () { window.location.href= '$homeUrl'; },1000);";

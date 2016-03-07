@@ -6,7 +6,7 @@
     
     // Grab the existing admin email from the database.  This is presumed to exist, since
     // this is a reset page.
-    $existingAdminEmail = $existingAdminEmailUserName = $existingAdminEmailPassword = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = "";
+    $existingAdminEmail = $existingAdminEmailUserName = $existingAdminEmailPassword = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = "";
     $dbErr = $staffPasswordErr = $staffPasswordErr2 = "";
     $mysqli = connect_db();
     $sql = "SELECT * from admin_data";
@@ -24,6 +24,7 @@
         $existingRegularUserTokenHint = $row["regular_user_token_hint"];
         $existingCampName = $row["camp_name"];
         $existingPrefInstructions = $row["pref_page_instructions"];
+        $existingCampWeb = $row["camp_web"];
         
         // Set the admin email and password to current values.  These will be
         // clobbered if we have incoming POST data - otherwise, we'll display them
@@ -35,6 +36,7 @@
         $regular_user_token_hint = $existingRegularUserTokenHint;
         $camp_name = $existingCampName;
         $pref_page_instructions = $existingPrefInstructions;
+        $camp_web = $existingCampWeb;
     }
     mysqli_free_result($result);
     $mysqli->close();
@@ -50,6 +52,7 @@
         $regular_user_token_hint = test_input($_POST["regular_user_token_hint"]);
         $camp_name = test_input($_POST["camp_name"]);
         $pref_page_instructions = test_input($_POST["pref_page_instructions"]);
+        $camp_web = test_input($_POST["camp_web"]);
         
         // For admin email and user token fields, update to incoming values.  If a value is not given,
         // set the table field to NULL.
@@ -58,7 +61,8 @@
                         "admin_email_password", $admin_email_password, $existingAdminEmailPassword,
                         "regular_user_token", $regular_user_token, $existingRegularUserToken,
                         "regular_user_token_hint", $regular_user_token_hint, $existingRegularUserTokenHint,
-                        "pref_page_instructions", $pref_page_instructions, $existingPrefInstructions);
+                        "pref_page_instructions", $pref_page_instructions, $existingPrefInstructions,
+                        "camp_web", $camp_web, $existingCampWeb);
         for ($i = 0; $i < count($fields); $i += 3) {
             $colName = $fields[$i];
             $newVal = $fields[$i+1];
@@ -214,15 +218,24 @@ Required values are marked with a <font color="red">*</font>.
     $campNameField->setPlaceHolder("Camp Ramah New England");
     echo $campNameField->renderHtml();
     
-    $staffPasswordField = new FormItemSingleTextField("Staff Password (<b>leave this field blank to keep it the same</b>.)", FALSE, "staff_password", 7);
+    $campWebField = new FormItemSingleTextField("Camp Website", FALSE, "camp_web", 7);
+    $campWebField->setInputValue($camp_web);
+    $campWebField->setInputType("text");
+    $campWebField->setInputClass("element text medium");
+    $campWebField->setInputMaxLength(50);
+    $campWebField->setGuideText("Enter your camp website, if you have one, e.g., \"www.campramahne.org\"");
+    $campWebField->setPlaceHolder(" ");
+    echo $campWebField->renderHtml();
+    
+    $staffPasswordField = new FormItemSingleTextField("Staff Password (<b>leave this field blank to keep it the same</b>.)", FALSE, "staff_password", 8);
     $staffPasswordField->setInputType("password");
     $staffPasswordField->setInputClass("element text medium");
     $staffPasswordField->setInputMaxLength(50);
-    $staffPasswordField->setPlaceHolder(" ");
+    $staffPasswordField->setPlaceHolder("www.campramahne.org");
     $staffPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
     echo $staffPasswordField->renderHtml();
     
-    $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", FALSE, "staff_password2", 8);
+    $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", FALSE, "staff_password2", 9);
     $staffPasswordField2->setInputType("password");
     $staffPasswordField2->setInputClass("element text medium");
     $staffPasswordField2->setInputMaxLength(50);

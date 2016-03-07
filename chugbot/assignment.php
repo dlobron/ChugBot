@@ -196,10 +196,10 @@
             array_push($camperIdsToAssign, $camper_id);
         }
         
-        // Grab the chugim in this group.
+        // Grab the chugim available for this group/block/edah.
         $chugim = array();
-        $sql = "SELECT name, max_size, min_size, chug_id FROM chugim WHERE " .
-        "group_id = $group_id";
+        $sql = "SELECT c.name, c.max_size, c.min_size, c.chug_id FROM chugim c, edot_for_chug e, edot_for_block b WHERE " .
+        "c.group_id = $group_id AND c.chug_id = e.chug_id AND e.edah_id = $edah_id AND b.edah_id = $edah_id AND b.block_id = $block_id";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);
@@ -247,11 +247,13 @@
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
         $existingMatches = array();
-        $sql = "SELECT m.camper_id, c.group_id, c.name, c.chug_id FROM matches m, chugim c, campers ca, block_instances b, chug_instances i " .
+        $sql = "SELECT m.camper_id, c.group_id, c.name, c.chug_id FROM matches m, chugim c, campers ca, block_instances b, chug_instances i, edot_for_chug e " .
         "WHERE i.block_id = $block_id AND m.chug_instance_id = i.chug_instance_id " .
         "AND i.chug_id = c.chug_id AND c.group_id != $group_id " .
         "AND m.camper_id = ca.camper_id AND ca.edah_id = $edah_id AND b.block_id = $block_id " .
         "AND b.session_id = ca.session_id " .
+        "AND e.chug_id = c.chug_id " .
+        "AND e.edah_id = $edah_id " .
         "GROUP BY 1,2";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {

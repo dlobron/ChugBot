@@ -378,7 +378,9 @@ EOM;
             $msg = "Database Error: $data";
         }
         $retVal = "<font color=\"red\">$msg</font><br>";
-        //$retVal = $retVal . "Error: " . $sql . "<br>";
+        if (DEBUG) {
+            $retVal .= "Error: " . $sql . "<br>";
+        }
 	return $retVal;
     }
     
@@ -415,8 +417,6 @@ EOM;
         $retVal = $retVal . '<input type="hidden" name="fromAddPage" value="1">';
         $retVal = $retVal . '</form>';
         $retVal = $retVal . '<script type="text/javascript">document.passToEditPageForm.submit();</script>';
-        
-        // TODO: Add noscript link or switch to HTML5.
 
         return $retVal;
     }
