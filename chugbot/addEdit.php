@@ -530,7 +530,10 @@ EOM;
             // invalid rows, and delete those rows.  We log an info message to the user if
             // any invalid rows are found.
             // Note that matches are auto-deleted if the chug instance is deleted.
-            // So far, we only handle invalid matches here, but we can add additional queries with a UNION ALL if needed.
+            // So far, we only handle invalid matches here, but we can add additional queries with a UNION ALL if needed.  For each
+            // category, simply select the ID value from the target table, and do a left outer join against a subquery that returns only
+            // valid instances in that table.  Then, iterate through the result, and delete any rows that have a NULL value in the right-hand
+            // table from the join.
             $sql = "SELECT m.match_id pk_value, legal_instances.chug_instance_id instance_id, 'match_id' pk_column, 'matches' table_name FROM " .
             "matches m LEFT OUTER JOIN " .
             "(SELECT i.chug_instance_id chug_instance_id, m.match_id match_id FROM " .
