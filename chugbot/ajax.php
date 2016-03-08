@@ -252,6 +252,7 @@ END;
     if (isset($_POST["get_first_name_and_instructions"])) {
         $camper_id = $camper_id = getCamperId();
         $sql = "SELECT c.first first, a.pref_page_instructions from campers c, admin_data a where c.camper_id = $camper_id";
+        error_log("DBG: getting first name with $sql");
         $result = $mysqli->query($sql);
         $nameMap = array();
         $nameMap["name"] = "";
@@ -289,7 +290,6 @@ END;
         "ORDER BY CASE WHEN (blockname LIKE 'July%' OR blockname LIKE 'july%') THEN CONCAT('a', blockname) ".
         "WHEN (blockname LIKE 'Aug%' OR blockname LIKE 'aug%') THEN CONCAT('b', blockname) ELSE blockname END, ".
         "groupname, chugname";
-        error_log("DBG: sql = $sql");
         
         $result = $mysqli->query($sql);
         if ($result == FALSE) {

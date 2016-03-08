@@ -198,8 +198,9 @@
         
         // Grab the chugim available for this group/block/edah.
         $chugim = array();
-        $sql = "SELECT c.name, c.max_size, c.min_size, c.chug_id FROM chugim c, edot_for_chug e, edot_for_block b WHERE " .
-        "c.group_id = $group_id AND c.chug_id = e.chug_id AND e.edah_id = $edah_id AND b.edah_id = $edah_id AND b.block_id = $block_id";
+        $sql = "SELECT c.name, c.max_size, c.min_size, c.chug_id FROM chugim c, edot_for_chug e, edot_for_block b, chug_instances i WHERE " .
+        "c.group_id = $group_id AND c.chug_id = e.chug_id AND e.edah_id = $edah_id AND b.edah_id = $edah_id AND b.block_id = $block_id AND " .
+        "i.chug_id = c.chug_id AND i.block_id = $block_id";
         $result = $mysqli->query($sql);
         if ($result == FALSE) {
             $err = dbErrorString($sql, $mysqli->error);
@@ -209,6 +210,11 @@
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $c = new Chug($row[0], $row[1], $row[2], $row[3]);
             $chugim[$c->chug_id] = $c;
+        }
+        if (count($chugim) == 0) {
+            $err = errorString("No chugim found for edah $edah_id, block $block_id, group $group_id");
+            error_log("$err");
+            return FALSE;
         }
         
         // Grab camper pref lists in this block, by group.  We'll use this to compute each camper's
@@ -329,9 +335,12 @@
                 continue;
             }
             if (! array_key_exists($candidateChugId, $chugim)) {
-                error_log("ERROR: Preferred chug ID " . $candidateChugId . " not found in input set");
-                $err = "Chug choices for " . $camper->name . " contains illegal chug ID " . $candidateChugId;
-                return false;
+                // This could occur if the allowed edot for a chug were changed after preference were made.
+                // We can't easily correct this, so just log an error for now.
+                error_log("ERROR: Preferred chug ID " . $candidateChugId . " not found in allowed chug set");
+                $err = "Chug choices for " . $camper->name . " contained illegal chug ID " . $candidateChugId;
+                array_push($camperIdsToAssign, $camper->camper_id); // Try the next pref.
+                continue;
             }
             $candidateChug =& $chugim[$candidateChugId];
             
@@ -399,7 +408,15 @@
         debugLog("Finished assignment loop - results:");
         foreach ($campers as $camperId => $cdbg) {
             $assignedChugId = $assignments[$camperId];
+            if ($assignedChugId == NULL) {
+                error_log("ERROR: Failed to assign chug for camper ID $camperId");
+                return FALSE;
+            }
             $assignedChug = $chugim[$assignedChugId];
+            if ($assignedChug == NULL) {
+                error_log("ERROR: Assigned camper ID $camperId to illegal chug ID $assignedChugId");
+                return FALSE;
+            }
             debugLog("Assigned " . $cdbg->name . ", cid " . $cdbg->camper_id . " to " . $assignedChug->name . ", choice " . $cdbg->choice_level);
             if ($cdbg->choice_level == 1) {
                 $firstCt++;

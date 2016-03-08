@@ -137,7 +137,7 @@ FOREIGN KEY fk_group(group_id) REFERENCES groups(group_id)
 ON DELETE SET NULL
 ON UPDATE CASCADE,
 max_size int NULL,
-min_size int NULL,
+min_size int NULL DEFAULT 0,
 description varchar(2048),
 UNIQUE KEY uk_chugim(name, group_id),
 chug_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
@@ -200,7 +200,8 @@ sixth_choice_id int,
 FOREIGN KEY fk_sixth_choice_id(sixth_choice_id) REFERENCES chugim(chug_id)
 ON DELETE SET NULL
 ON UPDATE CASCADE,
-PRIMARY KEY(camper_id, group_id, block_id))
+UNIQUE KEY(camper_id, group_id, block_id),
+preference_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci;
 
 # Assignments are done at the edah/block/group level.  This table holds beta
@@ -242,7 +243,8 @@ chug_instance_id int NOT NULL,
 FOREIGN KEY fk_chug_instance_id(chug_instance_id) REFERENCES chug_instances(chug_instance_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-PRIMARY	KEY pk_matches(camper_id, chug_instance_id))
+UNIQUE KEY uk_matches(camper_id, chug_instance_id),
+match_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci;
 
 CREATE TABLE edot_for_chug(

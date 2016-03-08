@@ -41,7 +41,7 @@ function doAssignmentAjax(action, title, errText,
 		    errMsg = "The system was unable to ";
 		    errMsg += errText;
 		    errMsg += ". If the problem persists, please contact the administrator.  Error: ";
-		    errMsg += err;
+		    errMsg += err + " " + desc;
 		    $( "#results" ).text(errMsg);
 		    $( "#results" ).show("slide", 250 );
 		}

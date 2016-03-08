@@ -52,6 +52,7 @@
         $err = "";
         $ok = do_assignment($edah_id, $block_id, $group_id, $err);
         if (! $ok) {
+            error_log("Assignment for edah $edah_id, block $block_id, group $group_id failed");
             if (empty($err)) {
                 $err = "Unknown assignment error";
             }

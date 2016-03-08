@@ -162,9 +162,13 @@ EOM;
             $homeText = "<input type=\"button\" onclick=\"location.href='$homeUrl';\" value=\"Home\" />";
             if (! is_null($this->submitAndContinueTarget)) {
                 // If we have a submitAndContinueTarget, display a bold
-                // continue link.
+                // continue link.  Set the ID col in the session status so we
+                // can pick it up if needed.
                 $label = $this->submitAndContinueLabel;
                 $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"control_button\" type=\"submit\" name=\"submitAndContinue\" value=\"$label\" />";
+                $idCol = $this->idCol;
+                $_SESSION["$idCol"] = $this->col2Val[$this->idCol];
+                $val = $this->col2Val[$this->idCol];
             } else {
                 // If we don't have submitAndContinueTarget, display a submit
                 // and back button, in regular typeface.
@@ -352,6 +356,8 @@ EOM;
         public $fromAddPage = FALSE;
         public $submitData = FALSE;
         public $fromHomePage = FALSE;
+        
+        protected $infoMessage = "";
     }
     
     class EditPage extends AddEditBase {
@@ -361,6 +367,7 @@ EOM;
         }
         
         public function handlePost() {
+            $submitAndContinue = FALSE;
             if ($_SERVER["REQUEST_METHOD"] != "POST") {
                 // If the page was not POSTed, we might have arrived here via
                 // a link.  In this case, we expect the ID value to be in the query
@@ -400,7 +407,6 @@ EOM;
                     (! empty($_POST["fromStaffHomePage"]))) {
                     $this->fromHomePage = TRUE;
                 }
-                $submitAndContinue = FALSE;
                 if (! empty($_POST["submitAndContinue"])) {
                     $submitAndContinue = TRUE;
                 }
@@ -493,7 +499,7 @@ EOM;
                     }
                     $i++;
                 }
-                $sql .=" WHERE $this->idCol = $idVal";
+                $sql .= " WHERE $this->idCol = $idVal";
                 $submitOk = $this->mysqli->query($sql);
                 if ($submitOk == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);
@@ -509,20 +515,66 @@ EOM;
                 if (! $instanceUpdateOk) {
                     return;
                 }
-                
-                // If we've been asked to continue, do so here.  Set the ID
-                // field in the _SESSION hash, so JQuery can grab it via an Ajax call.
-                if ($submitAndContinue) {
-                    $_SESSION["$this->idCol"] = $idVal;
-                    $submitAndContinueUrl = urlIfy($this->submitAndContinueTarget);
-                    header("Location: $submitAndContinueUrl");
-                    exit;
-                }
+
                 $this->resultStr =
                     "<h3>$name updated!  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
             } else if ($this->fromAddPage) {
                 $this->resultStr =
                 "<h3>$name added successfully!  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
+            }
+            
+            // Edits to certain tables and columns might render other items invalid.  For
+            // example, if the user changes the edot allowed for a chug, then we need to remove
+            // preferences and matches to that chug for
+            // We construct a query that returns the primary key and table name for
+            // invalid rows, and delete those rows.  We log an info message to the user if
+            // any invalid rows are found.
+            // Note that matches are auto-deleted if the chug instance is deleted.
+            // So far, we only handle invalid matches here, but we can add additional queries with a UNION ALL if needed.
+            $sql = "SELECT m.match_id pk_value, legal_instances.chug_instance_id instance_id, 'match_id' pk_column, 'matches' table_name FROM " .
+            "matches m LEFT OUTER JOIN " .
+            "(SELECT i.chug_instance_id chug_instance_id, m.match_id match_id FROM " .
+            "matches m, chug_instances i, edot_for_block e, campers c, block_instances bi, edot_for_chug ec WHERE " .
+            "m.chug_instance_id = i.chug_instance_id AND i.block_id = bi.block_id AND bi.session_id = c.session_id AND " .
+            "m.camper_id = c.camper_id AND e.block_id = i.block_id AND e.edah_id = c.edah_id AND ec.chug_id = i.chug_id	AND " .
+            "ec.edah_id = c.edah_id) legal_instances " .
+            "ON m.chug_instance_id = legal_instances.chug_instance_id AND m.match_id = legal_instances.match_id ORDER BY pk_value";
+            $result = $this->mysqli->query($sql);
+            if ($result == FALSE) {
+                $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                return FALSE;
+            }
+            $deleteHash = array();
+            while ($row = $result->fetch_assoc()) {
+                $pk_value = $row["pk_value"];
+                $instance_id = $row["instance_id"];
+                $pk_column = $row["pk_column"];
+                $table_name = $row["table_name"];
+                if ($instance_id == NULL) {
+                    error_log("pk value $pk_value in col $pk_column in table $table_name is now invalid: marking for delete");
+                    if (! array_key_exists($table_name, $deleteHash)) {
+                        $deleteHash[$table_name] = array();
+                    }
+                    $deleteHash[$table_name][$pk_value] = $pk_column;
+                }
+            }
+            foreach ($deleteHash as $table => $pkVal2Col) {
+                foreach ($pkVal2Col as $val => $pkCol) {
+                    $sql = "DELETE FROM $table WHERE $pkCol = $val";
+                    $result = $this->mysqli->query($sql);
+                    if ($result) {
+                        error_log("Deleted OK");
+                    }
+                }
+            }
+            
+            // If we've been asked to continue, do so here.  Set the ID
+            // field in the _SESSION hash, so JQuery can grab it via an Ajax call.
+            if ($submitAndContinue) {
+                $_SESSION["$this->idCol"] = $idVal;
+                $submitAndContinueUrl = urlIfy($this->submitAndContinueTarget);
+                header("Location: $submitAndContinueUrl");
+                exit;
             }
             
             // If a column is set to its default, set it to the empty string
