@@ -31,4 +31,6 @@ The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which m
 - session: A session for which campers can register, such as July or August.
 - block: A time block within a session, such as July 1 or August 2.  This is the unit within which the bot does camper/chug assignment.
 
+My daughter drew a picture of what the bot might look like in real life.  He's pretty cool:
+
 ![bot image](chugbot/images/ChugBot.JPG?raw=true)
