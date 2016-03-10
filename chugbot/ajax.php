@@ -2,7 +2,7 @@
     session_start();
     include_once 'functions.php';
     
-    require 'PHPMailer/PHPMailerAutoload.php';
+    require_once 'PHPMailer/PHPMailerAutoload.php';
     
     // Require camper-level access to use any functions.
     if (! camperLoggedIn()) {
@@ -204,30 +204,12 @@ END;
                 die(json_encode(array("error" => "Database Failure")));
             }
             $row = $result->fetch_assoc();
-            
-            // An example of the possible parameters for PHPMailer can be found here:
-            // https://github.com/Synchro/PHPMailer/blob/master/examples/gmail.phps
-            // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
-            // of 2016.
-            $mail = new PHPMailer;
-            $mail->addAddress($email);
-            $mail->isSMTP();
-            $mail->Host = 'localhost';
-            $mail->Port = 25;
-            $mail->SMTPAuth = true;
-            $mail->Username = $row["admin_email_username"];
-            $mail->Password = $row["admin_email_password"];
-            $mail->setFrom($row["admin_email"], "Camp Ramah");
-            
-            $mail->Subject = "Camp Ramah chug preferences for $first $last";
-            $mail->isHTML(true);
-            $mail->Body = $email_text;
-            if (! $mail->send()) {
-                error_log("Failed to send email to $email");
-                error_log("Mailer error: " . $mail->ErrorInfo);
-            } else {
-                error_log("Sent confirmation email to $email");
-            }
+            $mailError = "";
+            $sentOk = sendMail($email,
+                               "Camp Ramah chug preferences for $first $last",
+                               $email_text,
+                               $row,
+                               $mailError);
         } else {
             error_log("No email is configured for $first $last: Not sending confirmation");
         }

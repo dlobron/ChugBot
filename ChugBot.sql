@@ -26,6 +26,13 @@ camp_name varchar(255) NOT NULL DEFAULT "Camp Ramah",
 camp_web varchar(128) NOT NULL DEFAULT "www.campramahne.org")
 COLLATE utf8_unicode_ci;
 
+# Admin password reset codes, with expiration.
+CREATE TABLE password_reset_codes(
+code varchar(512) NOT NULL,
+expires DATETIME NOT NULL,
+code_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
+COLLATE utf8_unicode_ci;
+
 # This table holds sessions, e.g., "July", "August", "Full Summer", "Mini Bet", etc.
 CREATE TABLE sessions(
 session_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,

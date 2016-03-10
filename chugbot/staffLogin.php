@@ -10,7 +10,7 @@
     // a new one, and to enter an email address.  Password changes will be
     // handled by a separate page - it's too complicated to squeeze all the logic
     // into this page.
-    $resetUrl = urlBaseText() . "staffReset.php";
+    $forgotUrl = urlIfy("forgotPassword.php");
     $dbError = $staffPasswordErr = $staffPasswordErr2 = "";
     $existingPasswordHashed = "";
     $staffPasswordHashed = "";
@@ -52,8 +52,8 @@
                 // If we don't have an existing password, then we want to insert
                 // the incoming data, provided there are no errors.
                 if (strlen($staff_password) < 5 ||
-                    strlen($staff_password) > 20) {
-                    $staffPasswordErr = errorString("Password must be between 5 and 20 characters");
+                    strlen($staff_password) > 255) {
+                    $staffPasswordErr = errorString("Password must be between 5 and 255 characters");
                 } else {
                     $staffPasswordHashed = password_hash($staff_password, PASSWORD_DEFAULT);
                 }
@@ -99,7 +99,7 @@
                 // to the admin home page.
                 if (! password_verify($staff_password, $existingPasswordHashed)) {
                     $staffPasswordErr = errorString("Password does not match - please try again.") .
-                    "<p>If you forgot the password, please click <a href=\"$resetUrl\">here</a> to reset it.</p>";
+                    "<p>If you forgot the password, please click <a href=\"$forgotUrl\">here</a>.</p>";
                     usleep(250000); // Sleep for 0.25 sec, to slow a dictionary attack.
                 } else {
                     // New password entered OK: redirect.
@@ -137,7 +137,7 @@
         echo ("<p>Please create a staff password, and enter an email in case you need to reset or change the password.<br>");
         echo ("The password should be between 5 and 20 characters.</p>");
     } else {
-        echo ("<p>Please enter the staff admin password.  To change the existing password, or if you forgot the password, please click <a href=\"$resetUrl\">here</a>.</p>");
+        echo ("<p>Please enter the staff admin password.  If you forgot the password, please click <a href=\"$forgotUrl\">here</a>.</p>");
     }
     echo loginRequiredMessage();
     echo "After logging in, you will be $redirText";

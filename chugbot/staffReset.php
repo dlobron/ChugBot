@@ -80,8 +80,8 @@
         // Only reset the password if it's explicitly supplied.
         if ($staff_password) {
             if (strlen($staff_password) < 5 ||
-                strlen($staff_password) > 20) {
-                $staffPasswordErr = errorString("Password must be between 5 and 20 characters");
+                strlen($staff_password) > 255) {
+                $staffPasswordErr = errorString("Password must be between 5 and 255 characters");
             }
             if ($staff_password2 != $staff_password) {
                 // The repeated password must match the first.
@@ -119,7 +119,7 @@
                 if ($staff_password) {
                     $_SESSION['admin_logged_in'] = TRUE;
                 }
-                $redirUrl = urlBaseText() . "staffHome.php"; // Redir for successful email/pw change.
+                $redirUrl = urlBaseText() . "staffHome.php?update=as"; // Redir for successful email/pw change.
                 header("Location: $redirUrl");
                 exit();
             }
@@ -231,7 +231,7 @@ Required values are marked with a <font color="red">*</font>.
     $staffPasswordField->setInputType("password");
     $staffPasswordField->setInputClass("element text medium");
     $staffPasswordField->setInputMaxLength(50);
-    $staffPasswordField->setPlaceHolder("www.campramahne.org");
+    $staffPasswordField->setPlaceHolder(" ");
     $staffPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
     echo $staffPasswordField->renderHtml();
     

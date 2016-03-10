@@ -2,6 +2,25 @@
     session_start();
     include 'functions.php';
     bounceToLogin();
+    
+    // Check for a query string that signals a message.
+    $parts = explode("&", $_SERVER['QUERY_STRING']);
+    $message = NULL;
+    foreach ($parts as $part) {
+        $cparts = explode("=", $part);
+        if (count($cparts) != 2) {
+            continue;
+        }
+        if ($cparts[0] == "update" &&
+            $cparts[1] == "pw") {
+            $message = "<font color=\"green\">Admin password updated!</font>";
+            break;
+        } else if ($cparts[0] == "update" &&
+                   $cparts[1] == "as") {
+            $message = "<font color=\"green\">Admin settings updated!</font>";
+            break;
+        }
+    }
 
     $resetUrl = urlIfy("staffReset.php");
     $levelingUrl = urlIfy("levelHomeLaunch.php");
@@ -43,6 +62,17 @@
 <div class="centered_container">
 <!-- This empty div makes the display cleaner. -->
 </div>
+
+<?php
+    if ($message) {
+        $messageText = <<<EOM
+<div class="centered_container">
+<h2>$message</h2>
+</div>
+EOM;
+        echo $messageText;
+    }
+    ?>
 
 <div class="centered_container">
 <h2>Camp Staff Control Panel</h2>

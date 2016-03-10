@@ -525,11 +525,12 @@ EOM;
             
             // Edits to certain tables and columns might render other items invalid.  For
             // example, if the user changes the edot allowed for a chug, then we need to remove
-            // preferences and matches to that chug for
+            // matches to that chug for campers in that edah.
             // We construct a query that returns the primary key and table name for
             // invalid rows, and delete those rows.  We log an info message to the user if
             // any invalid rows are found.
-            // Note that matches are auto-deleted if the chug instance is deleted.
+	    // Note that certain other items are auto-deleted via cascade.  For example, if a chug is deleted, then instances are
+	    // also deleted, and that cascades to matches.  However, the allowed-edot for chugim and blocks are not cascaded.
             // So far, we only handle invalid matches here, but we can add additional queries with a UNION ALL if needed.  For each
             // category, simply select the ID value from the target table, and do a left outer join against a subquery that returns only
             // valid instances in that table.  Then, iterate through the result, and delete any rows that have a NULL value in the right-hand

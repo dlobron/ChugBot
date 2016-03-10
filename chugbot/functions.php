@@ -1,5 +1,39 @@
 <?php
     include_once 'constants.php';
+    require_once 'PHPMailer/PHPMailerAutoload.php';
+    
+    function sendMail($address,
+                      $subject,
+                      $body,
+                      $admin_data_row,
+                      &$error) {
+        // An example of the possible parameters for PHPMailer can be found here:
+        // https://github.com/Synchro/PHPMailer/blob/master/examples/gmail.phps
+        // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
+        // of 2016.
+        $mail = new PHPMailer;
+        $mail->addAddress($address);
+        $mail->Subject = $subject;
+        $mail->Body = $body;
+        $mail->isSMTP();
+        $mail->isHTML(true);
+        $mail->Host = 'localhost';
+        $mail->Port = 25;
+        $mail->SMTPAuth = true;
+        $mail->Username = $admin_data_row["admin_email_username"];
+        $mail->Password = $admin_data_row["admin_email_password"];
+        $mail->setFrom($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
+        $sentOk = $mail->send();
+        if (! $sentOk) {
+            error_log("Failed to send email to $address");
+            error_log("Mailer error: " . $mail->ErrorInfo);
+            $error = $mail->ErrorInfo;
+        } else {
+            error_log("Mail sent to $address OK");
+        }
+        
+        return $sentOk;
+    }
     
     function debugLog($message) {
         if (DEBUG) {
@@ -232,14 +266,17 @@ EOM;
             $scheme = "https";
         }
         $localUrl = "/";
-        $penSlashPos = strrpos($_SERVER["REQUEST_URI"], "/");
-        if ($penSlashPos != FALSE) {
-            $localUrl = substr($_SERVER["REQUEST_URI"], 0, $penSlashPos+1);
+        $lastSlashPos = strrpos($_SERVER["PHP_SELF"], "/"); // Note that we're reverse-searching.
+        if ($lastSlashPos != FALSE) {
+            // Remove everything after the last slash (keep the slash).
+            $localUrl = substr($_SERVER["PHP_SELF"], 0, $lastSlashPos + 1);
         }
+        // Return the local URL minus everything after the last slash.
         return $scheme . "://" . $_SERVER['HTTP_HOST'] . $localUrl;
     }
     
     function urlIfy($localLink) {
+        error_log("DBG: urlIfy: localLink is $localLink, base text is " . urlBaseText());
         return urlBaseText() . $localLink;
     }
     
