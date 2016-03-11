@@ -98,7 +98,8 @@ function getAndDisplayCurrentMatches() {
 					  var chugMin = chugId2Beta[chugId]["min_size"];
 					  var chugMax = chugId2Beta[chugId]["max_size"];
 					  var editChugUrl = editChugBase + chugId;
-					  if (chugMax == "0") {
+					  if (chugMax == "0" ||
+					      chugMax == "10000") {
 					      chugMax = "no limit";
 					  }
 					  html += "<div name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";

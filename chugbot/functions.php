@@ -122,9 +122,8 @@
 EOM;
         $retVal = $retVal . $errorHtml . "</div>";
         $retVal = $retVal . "<p>Please hit \"Back\" and try again, or report the error to an administrator if it persists.</p>";
-        $retVal = $retVal . "<div id=\"footer\">";
         $retVal = $retVal . footerText();
-        $retVal = $retVal . "</div><img id=\"bottom\" src=\"images/bottom.png\" alt=\"\"></body></html>";
+        $retVal = $retVal . "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\"></body></html>";
         
         return $retVal;
     }
@@ -371,9 +370,27 @@ EOM;
     }
     
     function footerText() {
+        $retVal = "<div class=\"nav_container\">";
+        $mysqli = connect_db();
+        $sql = "SELECT camp_name, camp_web FROM admin_data";
+        $result = $mysqli->query($sql);
+        if ($result) {
+            $row = $result->fetch_assoc();
+            $campUrl = $row["camp_web"];
+            $campName = $row["camp_name"];
+            $retVal .= "<a href=\"http://$campUrl/\">$campName Home</a><br><br>";
+        }
         $homeUrl = homeUrl();
-        return
-            "<a href=\"http://www.campramahne.org/\">CRNE home</a><br><a href=\"$homeUrl\">Leveling home</a>";
+        $retVal .= "<a href=\"$homeUrl\">Chug Home</a>";
+        if (adminLoggedIn()) {
+            // Include the camper home for staff.
+            $camperUrl = urlIfy("camperHome.php");
+            $retVal .= "<br><br><a href=\"$camperUrl\">Camper Home</a>";
+        }
+        $retVal .= "</div>";
+        $mysqli->close();
+        
+        return $retVal;
     }
     
     function headerText($title) {

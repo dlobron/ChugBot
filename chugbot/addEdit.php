@@ -199,10 +199,8 @@ $cancelText
 </li>
 </ul>
 </form>
-<div id="footer">
+</div>
 $footerText
-</div>
-</div>
 <img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>
@@ -615,7 +613,10 @@ EOM;
             foreach ($deleteHash as $pref_id => $cols_to_null) {
                 foreach ($cols_to_null as $col) {
                     $sql = "UPDATE preferences SET $col = NULL WHERE preference_id = $pref_id";
-                    error_log("DBG: sql = $sql");
+                    $result = $this->mysqli->query($sql);
+                    if ($result) {
+                        error_log("Removed preference OK");
+                    }
                 }
             }            
             

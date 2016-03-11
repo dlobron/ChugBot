@@ -55,18 +55,18 @@
     } else {
         // List campers in a form.
         $editPageUrl = urlBaseText() . "editCamper.php";
-        echo "<h3>Choose a Camper Associated with $email to Edit</h3>";
         echo "<form id=\"pickCamperForm\" class=\"appnitro\" method=\"post\" action=\"$editPageUrl\"/>";
         echo "<div class=\"form_description\">";
+        echo "<h3>Choose a Camper Associated with $email to Edit</h3>";
+        echo "</div>";
         echo "<ul>";
         echo "<li>";
-        echo "<div>";
         echo "<select class=\"element select medium\" id=\"camper_id\" name=\"camper_id\">";
         foreach ($camperId2Name as $camperId => $camperName) {
             echo("<option value=\"$camperId\" >$camperName</option>");
         }
         echo "</select>";
-        echo "</div><p class=\"guidelines\" id=\"guide_camper\"><small>Please choose the camper you want to edit, then click \"Edit Camper\".</small></p>";
+        echo "<p class=\"guidelines\" id=\"guide_camper\"><small>Please choose the camper you want to edit, then click \"Edit Camper\".</small></p>";
         echo "</li>";
         echo "</ul>";
         
@@ -77,12 +77,12 @@
     
     ?>
 
-<div id="footer">
+</div>
+
 <?php
     echo footerText();
 ?>
-</div>
-</div>
+
 <img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>

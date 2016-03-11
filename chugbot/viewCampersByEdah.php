@@ -77,13 +77,12 @@ page, please click <?php echo staffHomeAnchor(); ?>.</p>
     }
     ?>
 </div>
+</div>
 
-<div id="footer">
 <?php
     echo footerText();
     ?>
-</div>
-</div>
+
 <img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>

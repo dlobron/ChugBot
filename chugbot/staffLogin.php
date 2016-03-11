@@ -188,12 +188,12 @@
     ?>
 <input type="hidden" name="query_string" id="query_string" value=\"<?php echo $qs; ?>\" />
 </form>
+</div>
 
-<div id="footer">
 <?php
     echo footerText();
 ?>
-</div>
+
 <img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>

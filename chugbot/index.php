@@ -86,13 +86,11 @@
 <form id="staffForm" class="appnitro" method="post">
 <button type="submit" name="staffInit" form="staffForm" formaction="staffLogin.php" value="1">Admin</button>
 </form>
+</div>
 
-<div id="footer">
 <?php
     echo footerText();
 ?>
-</div>
-</div>
 
 <img id="bottom" src="images/bottom.png" alt="">
 </body>

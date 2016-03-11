@@ -153,11 +153,10 @@ the Save button.</p>
 <?php echo genPickListForm($bunkId2Name, "bunk", "bunks"); ?>
 </div>
 
-<div id="footer">
 <?php
     echo footerText();
 ?>
-</div>
+
 <img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>

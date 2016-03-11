@@ -253,11 +253,10 @@ Required values are marked with a <font color="red">*</font>.
 </ul>
 </form>
 
-<div id="footer">
 <?php
     echo footerText();
 ?>
-</div>
+
 <img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>

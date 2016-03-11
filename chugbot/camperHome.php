@@ -62,12 +62,12 @@ class="masterTooltip" title="Enter the email associated with the camper you woul
 <input type="hidden" id="fromHome" name="fromHome" value="1" />
 </form>
 
-<div id="footer">
+</div>
+
 <?php
     echo footerText();
 ?>
-</div>
-</div>
+
 <img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>
