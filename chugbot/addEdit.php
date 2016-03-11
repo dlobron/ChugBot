@@ -122,7 +122,7 @@
             $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
             $html = "<img id=\"top\" src=\"images/top.png\" alt=\"\">";
             if ($this->resultStr) {
-                $html .= "<div id=\"centered_container\">$this->resultStr</div>";
+                $html .= "<div class=\"centered_container\">$this->resultStr</div>";
             }
             $secondParagraphHtml = "";
             if ($this->secondParagraph) {
@@ -517,10 +517,10 @@ EOM;
                 }
 
                 $this->resultStr =
-                    "<h3>$name updated!  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
+                    "<h3><font color=\"green\">$name updated!</font>  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
             } else if ($this->fromAddPage) {
                 $this->resultStr =
-                "<h3>$name added successfully!  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
+                "<h3><font color=\"green\">$name added successfully!</font>  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
             }
             
             // Edits to certain tables and columns might render other items invalid.  For
@@ -571,6 +571,53 @@ EOM;
                     }
                 }
             }
+            // Our preferences table has a somewhat odd structure, so we delete items in a custom way.  This suggests that the design
+            // of the table is not optimal, but for the moment I don't have time to redesign and debug, so I'm resorting to this hack.
+            // CHOICECOL = "first_choice_id"
+            $template = "SELECT p.preference_id pref_id, p.CHOICECOL choice_id, legal_choice_n.preference_id legal_pref_id, 'CHOICECOL' col FROM " .
+            "preferences p LEFT OUTER JOIN " .
+            "(SELECT p.preference_id preference_id, p.CHOICECOL CHOICECOL, p.camper_id camper_id, p.group_id group_id, p.block_id block_id FROM " .
+            "preferences p, campers c, edot_for_block eb, edot_for_chug ec, chugim ch WHERE " .
+            "p.camper_id = c.camper_id AND c.edah_id = ec.edah_id AND ec.chug_id = p.CHOICECOL AND " .
+            "p.block_id = eb.block_id AND eb.edah_id = c.edah_id AND eb.edah_id = c.edah_id AND " .
+            "ch.group_id = p.group_id) legal_choice_n " .
+            "ON p.preference_id = legal_choice_n.preference_id AND " .
+            "p.CHOICECOL = legal_choice_n.CHOICECOL AND " .
+            "p.camper_id = legal_choice_n.camper_id AND " .
+            "p.group_id = legal_choice_n.group_id AND " .
+            "p.block_id = legal_choice_n.block_id " .
+            "GROUP BY pref_id";
+            $choices = array("first_choice_id", "second_choice_id", "third_choice_id", "fourth_choice_id", "fifth_choice_id", "sixth_choice_id");
+            $deleteHash = array();
+            foreach ($choices as $choice) {
+                $sql = preg_replace('/CHOICECOL/', $choice, $template);
+                $result = $this->mysqli->query($sql);
+                if ($result == FALSE) {
+                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                    return FALSE;
+                }
+                while ($row = $result->fetch_assoc()) {
+                    $pref_id = $row["pref_id"];
+                    $choice_id = $row["choice_id"];
+                    $legal_pref_id = $row["legal_pref_id"];
+                    $col = $row["col"];
+                    // Look for rows where choice_id is not NULL, but legal_pref_id is NULL.
+                    if ($choice_id != NULL &&
+                        $legal_pref_id == NULL) {
+                        if (! array_key_exists($pref_id, $deleteHash)) {
+                            $deleteHash[$pref_id] = array();
+                        }
+                        array_push($deleteHash[$pref_id], $col);
+                        error_log("pref ID $pref_id has choice $choice_id for column $col, which is now illegal: will remove");
+                    }
+                }
+            }
+            foreach ($deleteHash as $pref_id => $cols_to_null) {
+                foreach ($cols_to_null as $col) {
+                    $sql = "UPDATE preferences SET $col = NULL WHERE preference_id = $pref_id";
+                    error_log("DBG: sql = $sql");
+                }
+            }            
             
             // If we've been asked to continue, do so here.  Set the ID
             // field in the _SESSION hash, so JQuery can grab it via an Ajax call.

@@ -276,7 +276,6 @@ EOM;
     }
     
     function urlIfy($localLink) {
-        error_log("DBG: urlIfy: localLink is $localLink, base text is " . urlBaseText());
         return urlBaseText() . $localLink;
     }
     
