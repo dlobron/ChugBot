@@ -12,6 +12,9 @@
         // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
         // of 2016.
         $mail = new PHPMailer;
+        // For some reason, JQuery is unable to parse our JSON if an email error
+        // occurs when SMTPDebug is enabled, so I'm not using it for now.  
+        //$mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
         $mail->addAddress($address);
         $mail->Subject = $subject;
         $mail->Body = $body;
@@ -117,11 +120,11 @@
             $desc = "An error";
         }
         $retVal = <<<EOM
-<div id="error_box">
+<div class="error_box">
 <h3>Oops!  $desc occurred:</h3>
 EOM;
-        $retVal = $retVal . $errorHtml . "</div>";
-        $retVal = $retVal . "<p>Please hit \"Back\" and try again, or report the error to an administrator if it persists.</p>";
+        $retVal = $retVal . $errorHtml . "<br>";
+        $retVal = $retVal . "<p>Please hit \"Back\" and try again, or report the error to an administrator if it persists.</p></div>";
         $retVal = $retVal . footerText();
         $retVal = $retVal . "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\"></body></html>";
         
@@ -369,8 +372,15 @@ EOM;
         return $url;
     }
     
-    function footerText() {
-        $retVal = "<div class=\"nav_container\">";
+    function navText() {
+        $retVal = "";
+        $homeUrl = homeUrl();
+        $retVal .= "<a href=\"$homeUrl\">Chug Home</a>";
+        if (adminLoggedIn()) {
+            // Include the camper home for staff.
+            $camperUrl = urlIfy("camperHome.php");
+            $retVal .= "<br><a href=\"$camperUrl\">Camper Home</a>";
+        }
         $mysqli = connect_db();
         $sql = "SELECT camp_name, camp_web FROM admin_data";
         $result = $mysqli->query($sql);
@@ -378,22 +388,23 @@ EOM;
             $row = $result->fetch_assoc();
             $campUrl = $row["camp_web"];
             $campName = $row["camp_name"];
-            $retVal .= "<a href=\"http://$campUrl/\">$campName Home</a><br><br>";
+            $retVal .= "<br><a href=\"http://$campUrl/\">$campName Home</a>";
         }
-        $homeUrl = homeUrl();
-        $retVal .= "<a href=\"$homeUrl\">Chug Home</a>";
-        if (adminLoggedIn()) {
-            // Include the camper home for staff.
-            $camperUrl = urlIfy("camperHome.php");
-            $retVal .= "<br><br><a href=\"$camperUrl\">Camper Home</a>";
-        }
-        $retVal .= "</div>";
         $mysqli->close();
         
         return $retVal;
     }
     
+    function footerText() {
+        $retVal = "<div class=\"nav_container\">";
+        $retVal .= navText();
+        $retVal .= "</div>";
+        
+        return $retVal;
+    }
+    
     function headerText($title) {
+        $navText = navText();
         $retVal = <<<EOM
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -405,8 +416,11 @@ EOM;
         
 </head>
 
-<body id="main_body>
+<body id="main_body">
         
+<div class="top_nav_container">
+$navText
+</div>
 EOM;
         return $retVal;
     }

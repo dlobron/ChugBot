@@ -2,8 +2,6 @@
     session_start();
     include_once 'functions.php';
     
-    require_once 'PHPMailer/PHPMailerAutoload.php';
-    
     // Require camper-level access to use any functions.
     if (! camperLoggedIn()) {
         exit();
@@ -121,6 +119,8 @@
         $homeAnchor = homeAnchor();
         $homeUrl = homeUrl();
         $email_text = <<<END
+<html><body>
+<h3>Preferences Recorded!</h3>
 <p>We have received your chug preferences, <b>$first</b>!  Please review your choices to make sure they are correct.
 If anything is incorrect or missing, you can go back to correct it by clicking ${homeAnchor}, or by pasting this link into your browser: $homeUrl</p>
 END;
@@ -206,14 +206,14 @@ END;
             $row = $result->fetch_assoc();
             $mailError = "";
             $sentOk = sendMail($email,
-                               "Camp Ramah chug preferences for $first $last",
-                               $email_text,
-                               $row,
-                               $mailError);
+                             "Camp Ramah chug preferences for $first $last",
+                             $email_text,
+                             $row,
+                             $mailError);
         } else {
             error_log("No email is configured for $first $last: Not sending confirmation");
         }
-        
+
         // After doing the DB updates, grab the name and home URL, and return them, for
         // display in the confirmation window.
         $sql = "SELECT first from campers where camper_id = $camper_id";

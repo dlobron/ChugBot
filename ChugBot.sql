@@ -3,14 +3,14 @@
 # For production use, remember to comment-out the last "source" line so as not to import test data.
 
 # Create the database
-CREATE DATABASE IF NOT EXISTS chugbot_db COLLATE utf8_unicode_ci;
+CREATE DATABASE IF NOT EXISTS camprama_chugbot_db COLLATE utf8_unicode_ci;
 
 # Create a user for the chugbot program (if it does not already exist), and
 # grant the access it needs.
-GRANT CREATE,INSERT,SELECT,UPDATE,DELETE ON chugbot_db.* TO 'chugbot'@'localhost' IDENTIFIED BY 'chugbot';
+GRANT CREATE,INSERT,SELECT,UPDATE,DELETE ON camprama_chugbot_db.* TO 'chugbot'@'localhost' IDENTIFIED BY 'chugbot';
 
 # Switch to the new database, in preparation for creating tables.
-USE chugbot_db;
+USE camprama_chugbot_db;
 
 # Create a table to hold admin data.  The ISP for CRNE tells us to create an email account in cPanel
 # use the full email as the username and the email account password as the password.

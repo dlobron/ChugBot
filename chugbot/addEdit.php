@@ -120,7 +120,7 @@
             }
             $formId = "main_form";
             $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
-            $html = "<img id=\"top\" src=\"images/top.png\" alt=\"\">";
+            $html = "";
             if ($this->resultStr) {
                 $html .= "<div class=\"centered_container\">$this->resultStr</div>";
             }

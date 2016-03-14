@@ -252,6 +252,7 @@ Required values are marked with a <font color="red">*</font>.
 </li>
 </ul>
 </form>
+</div>
 
 <?php
     echo footerText();

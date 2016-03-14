@@ -226,10 +226,6 @@
     }
     ?>
 
-<div class="centered_container">
-<h2></h2>
-
-
 <?php
     $errors = array();
     $reportMethod = ReportTypes::None;
@@ -515,6 +511,8 @@ EOM;
     }
     
     ?>
+
+</div>
 
 <?php
     echo footerText();

@@ -36,6 +36,9 @@
     $parts = explode("&", $_SERVER['QUERY_STRING']);
     $adminEmail = "";
     foreach ($parts as $part) {
+        if (empty($part)) {
+            continue;
+        }
         $cparts = explode("=", $part);
         if (count($cparts) != 2) {
             fatalError("Malformed URL: please try pasting the link directly into your browser.");
@@ -103,7 +106,7 @@
         // Generate and send the email.  Display a message indicating the email status.
         // First, generate a code, and insert it into the database, with a generous
         // expiration date.
-        $code = bin2hex(random_bytes(8));
+        $code = bin2hex(openssl_random_pseudo_bytes(8));
         $sql = "INSERT INTO password_reset_codes (code, expires) VALUES " .
         "(\"$code\", DATE_ADD(NOW(), INTERVAL 24 HOUR))";
         getDbResult($sql, $dbErr);
@@ -115,7 +118,7 @@
         if ($dbErr) {
             fatalError($dbErr);
         }
-        $row = $result->mysqli_fetch_assoc();
+        $row = $result->fetch_assoc();
         $campName = $row["camp_name"];
         $resetUrl = urlIfy("forgotPassword.php");
         $resetUrl .= "?rid=$code";
@@ -139,19 +142,17 @@ EOM;
                               $emailError);
     }
     
+    if ($emailError) {
+        fatalError("$emailError.  Please try again, or escalate to a database administrator to reset the administrative password manually.");
+    }
+    
     // Page display for non-error cases starts here.
     echo headerText("Admin Password Reset Page");
-    echo "<div class=\"centered_container\"></div>"; // This empty div helps display.
     
     if ($emailSent) {
         echo "<div class=\"centered_container\">";
         echo "<h2>Mail Sent</h2>";
         echo "<p>An email has been sent to $adminEmail.  Please check your Inbox and follow the instructions in the message to reset the administrative password.</p>";
-        echo "</div>";
-    } else if ($emailError) {
-        echo "<div class=\"centered_container\">";
-        echo "<h2>Email Error</h2>";
-        echo "<p>An error occured while sending email to $adminEmail: $emailError.  Please try again, or escalate to a database administrator to reset the administrative password manually.</p>";
         echo "</div>";
     } else if ($_SESSION['reset_password_ok']) {
         echo "<h1>Enter New Password";
@@ -186,6 +187,9 @@ EOM;
         $cancelUrl = homeUrl();
         echo "<a href=\"$cancelUrl\">Cancel</a>";
         echo "</li></ul></form>";
+    } else {
+        // We shouldn't hit this case.
+        fatalError("Password reset failed: please try again, or contact a database administrator to reset manually.");
     }
     ?>
 

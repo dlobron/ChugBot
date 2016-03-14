@@ -59,9 +59,7 @@
     }
     ?>
 
-<div class="centered_container">
-<!-- This empty div makes the display cleaner. -->
-</div>
+
 
 <?php
     if ($message) {

@@ -7,5 +7,5 @@
     define("MYSQL_HOST", "localhost");
     define("MYSQL_USER", "chugbot");
     define("MYSQL_PASSWD", "chugbot");
-    define("MYSQL_DB", "chugbot_db");
+    define("MYSQL_DB", "camprama_chugbot_db");
 ?>

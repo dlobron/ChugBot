@@ -59,9 +59,12 @@ $(function() {
 			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
 			    $( "#results" ).show("slide", 500 );
 			},
-			    error: function() {
-			    $( "#results" ).text("Oops! The system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator.");
+			    error: function(xhr, desc, err) {
+			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
+			    $( "#results" ).text("Oops! Our system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator.");
 			    $( "#results" ).show("slide", 250 );
+			    console.log("Details: ", desc);
+			    console.log("Error:", err);
 			}
 		    });
 	    });
@@ -98,7 +101,8 @@ $(function() {
 		},
 		    error: function(xhr, desc, err) {
 		       console.log(xhr);
-		       console.log("Details: " + desc + "\nError:" + err);
+		       console.log("Details: ", desc);
+		       console.log("Error: ", err);
 		}
 	    });
 	$.ajax({
@@ -177,7 +181,8 @@ $(function() {
 		},
 		    error: function(xhr, desc, err) {
 		       console.log(xhr);
-		       console.log("Details: " + desc + "\nError:" + err);
+		       console.log("Details: ", desc);
+		       console.log("Error: ", err);
 		}
 	    }).then(function(){
 		    if (success) {
