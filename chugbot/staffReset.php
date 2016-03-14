@@ -6,8 +6,8 @@
     
     // Grab the existing admin email from the database.  This is presumed to exist, since
     // this is a reset page.
-    $existingAdminEmail = $existingAdminEmailUserName = $existingAdminEmailPassword = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = "";
-    $dbErr = $staffPasswordErr = $staffPasswordErr2 = "";
+    $existingAdminEmail = $existingAdminEmailUserName = $existingAdminEmailPassword = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = "";
+    $dbErr = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = "";
     $mysqli = connect_db();
     $sql = "SELECT * from admin_data";
     $result = $mysqli->query($sql);
@@ -20,6 +20,7 @@
         $existingAdminEmail = $row["admin_email"];
         $existingAdminEmailUserName = $row["admin_email_username"];
         $existingAdminEmailPassword = $row["admin_email_password"];
+        $existingAdminEmailCc = $row["admin_email_cc"];
         $existingRegularUserToken = $row["regular_user_token"];
         $existingRegularUserTokenHint = $row["regular_user_token_hint"];
         $existingCampName = $row["camp_name"];
@@ -32,6 +33,7 @@
         $admin_email = $existingAdminEmail;
         $admin_email_username = $existingAdminEmailUserName;
         $admin_email_password = $existingAdminEmailPassword;
+        $admin_email_cc = $existingAdminEmailCc;
         $regular_user_token = $existingRegularUserToken;
         $regular_user_token_hint = $existingRegularUserTokenHint;
         $camp_name = $existingCampName;
@@ -48,6 +50,7 @@
         $staff_password2 = test_input($_POST["staff_password2"]);
         $admin_email_username = test_input($_POST["admin_email_username"]);
         $admin_email_password = test_input($_POST["admin_email_password"]);
+        $admin_email_cc = test_input($_POST["admin_email_cc"]);
         $regular_user_token = test_input($_POST["regular_user_token"]);
         $regular_user_token_hint = test_input($_POST["regular_user_token_hint"]);
         $camp_name = test_input($_POST["camp_name"]);
@@ -62,7 +65,8 @@
                         "regular_user_token", $regular_user_token, $existingRegularUserToken,
                         "regular_user_token_hint", $regular_user_token_hint, $existingRegularUserTokenHint,
                         "pref_page_instructions", $pref_page_instructions, $existingPrefInstructions,
-                        "camp_web", $camp_web, $existingCampWeb);
+                        "camp_web", $camp_web, $existingCampWeb,
+                        "admin_email_cc", $admin_email_cc, $existingAdminEmailCc);
         for ($i = 0; $i < count($fields); $i += 3) {
             $colName = $fields[$i];
             $newVal = $fields[$i+1];
@@ -75,6 +79,17 @@
             }
             if ($i < (count($fields)-3)) {
                 $sql .= ", ";
+            }
+        }
+        // If an admin CC was given, check each address for validity.  Multiple
+        // address should be comma-separated, but allow space, colon, and semicolon.
+        if ($admin_email_cc) {
+            $ccs = preg_split("/[,:; ]/", $admin_email_cc);
+            foreach ($ccs as $cc) {
+                if (! filter_var($cc, FILTER_VALIDATE_EMAIL)) {
+                    $adminEmailCcErr = errorString("\"$cc\" is not a valid email address.");
+                    break;
+                }
             }
         }
         // Only reset the password if it's explicitly supplied.
@@ -106,6 +121,7 @@
         if (empty($staffEmailErr) &&
             empty($staffPasswordErr) &&
             empty($staffPasswordErr2) &&
+            empty($adminEmailCcErr) &&
             empty($dbError)) {
             // No errors: insert the new/updated data, and then redirect
             // to the admin home page.
@@ -131,7 +147,7 @@
 <?php
     echo headerText("Edit Admin Data");
     
-    $errText = genFatalErrorReport(array($dbErr, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr));
+    $errText = genFatalErrorReport(array($dbErr, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();
@@ -154,7 +170,8 @@ Required values are marked with a <font color="red">*</font>.
 <ul>
 
 <?php
-    $adminEmailField = new FormItemSingleTextField("Admin Email Address", TRUE, "admin_email", 0);
+    $counter = 0;
+    $adminEmailField = new FormItemSingleTextField("Admin Email Address", TRUE, "admin_email", $counter++);
     $adminEmailField->setInputValue($admin_email);
     $adminEmailField->setInputType("email");
     $adminEmailField->setInputClass("element text medium");
@@ -164,7 +181,17 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailField->setError($staffEmailErr);
     echo $adminEmailField->renderHtml();
     
-    $adminEmailUserNameField = new FormItemSingleTextField("Admin Email User Name", FALSE, "admin_email_username", 1);
+    $adminEmailCcField = new FormItemSingleTextField("Admin Email CC Addresses", FALSE, "admin_email_cc", $counter++);
+    $adminEmailCcField->setInputValue($admin_email_cc);
+    $adminEmailCcField->setInputType("email");
+    $adminEmailCcField->setInputClass("element text medium");
+    $adminEmailCcField->setInputMaxLength(255);
+    $adminEmailCcField->setPlaceHolder(" ");
+    $adminEmailCcField->setGuideText("Enter one or more emails to be CC'ed on camper correspondence.  Separate multiple addresses with commas.");
+    $adminEmailCcField->setError($adminEmailCcErr);
+    echo $adminEmailCcField->renderHtml();
+    
+    $adminEmailUserNameField = new FormItemSingleTextField("Admin Email User Name", FALSE, "admin_email_username", $counter++);
     $adminEmailUserNameField->setInputValue($admin_email_username);
     $adminEmailUserNameField->setInputType("text");
     $adminEmailUserNameField->setInputClass("element text medium");
@@ -173,16 +200,16 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailUserNameField->setGuideText("Enter the username for the staff email account (this is often the same as the admin email address).");
     echo $adminEmailUserNameField->renderHtml();
     
-    $adminEmailPasswordField = new FormItemSingleTextField("Admin Email Password", FALSE, "admin_email_password", 2);
+    $adminEmailPasswordField = new FormItemSingleTextField("Admin Email Password", FALSE, "admin_email_password", $counter++);
     $adminEmailPasswordField->setInputValue($admin_email_password);
-    $adminEmailPasswordField->setInputType("text");
+    $adminEmailPasswordField->setInputType("password");
     $adminEmailPasswordField->setInputClass("element text medium");
     $adminEmailPasswordField->setInputMaxLength(20);
     $adminEmailPasswordField->setPlaceHolder("Email account password");
     $adminEmailPasswordField->setGuideText("Enter the password of the staff email account (this is <b>not</b> the same as the admin password for this site).  Please do not use a valuable password, since this is not stored securely and is only used for sending email.");
     echo $adminEmailPasswordField->renderHtml();
     
-    $regularUserTokenField = new FormItemSingleTextField("Camper Access Token", FALSE, "regular_user_token", 3);
+    $regularUserTokenField = new FormItemSingleTextField("Camper Access Token", FALSE, "regular_user_token", $counter++);
     $regularUserTokenField->setInputValue($regular_user_token);
     $regularUserTokenField->setInputType("text");
     $regularUserTokenField->setInputClass("element text medium");
@@ -191,7 +218,7 @@ Required values are marked with a <font color="red">*</font>.
     $regularUserTokenField->setGuideText("The camper access token is used by non-admin users to confirm their login.  It can be any easy-to-remember string.  This value is not a password, just a token, so it should be something simple, e.g., \"RamahKayitz\".");
     echo $regularUserTokenField->renderHtml();
     
-    $hintField = new FormItemTextArea("Camper Access Token Hint Phrase", FALSE, "regular_user_token_hint", 4);
+    $hintField = new FormItemTextArea("Camper Access Token Hint Phrase", FALSE, "regular_user_token_hint", $counter++);
     $hintField->setInputValue($regular_user_token_hint);
     $hintField->setInputType("text");
     $hintField->setInputClass("element textarea medium");
@@ -200,7 +227,7 @@ Required values are marked with a <font color="red">*</font>.
     $hintField->setGuideText("Optional hint for campers who forget the access token.  Can be anything.");
     echo $hintField->renderHtml();
     
-    $prefInstructions = new FormItemTextArea("Camper Instructions for Ranking", FALSE, "pref_page_instructions", 5);
+    $prefInstructions = new FormItemTextArea("Camper Instructions for Ranking", FALSE, "pref_page_instructions", $counter++);
     $prefInstructions->setInputValue($pref_page_instructions);
     $prefInstructions->setInputType("text");
     $prefInstructions->setInputClass("element textarea medium");
@@ -209,7 +236,7 @@ Required values are marked with a <font color="red">*</font>.
     $prefInstructions->setGuideText("These are the instructions campers will see on the ranking page.  HTML tags are OK.");
     echo $prefInstructions->renderHtml();
     
-    $campNameField = new FormItemSingleTextField("Camp Name", TRUE, "camp_name", 6);
+    $campNameField = new FormItemSingleTextField("Camp Name", TRUE, "camp_name", $counter++);
     $campNameField->setInputValue($camp_name);
     $campNameField->setInputType("text");
     $campNameField->setInputClass("element text medium");
@@ -218,7 +245,7 @@ Required values are marked with a <font color="red">*</font>.
     $campNameField->setPlaceHolder("Camp Ramah New England");
     echo $campNameField->renderHtml();
     
-    $campWebField = new FormItemSingleTextField("Camp Website", FALSE, "camp_web", 7);
+    $campWebField = new FormItemSingleTextField("Camp Website", FALSE, "camp_web", $counter++);
     $campWebField->setInputValue($camp_web);
     $campWebField->setInputType("text");
     $campWebField->setInputClass("element text medium");
@@ -227,7 +254,8 @@ Required values are marked with a <font color="red">*</font>.
     $campWebField->setPlaceHolder(" ");
     echo $campWebField->renderHtml();
     
-    $staffPasswordField = new FormItemSingleTextField("Staff Password (<b>leave this field blank to keep it the same</b>.)", FALSE, "staff_password", 8);
+    $staffPasswordField = new FormItemSingleTextField("New Staff Password (leave this field blank to keep staff password the same.)",
+                                                      FALSE, "staff_password", $counter++);
     $staffPasswordField->setInputType("password");
     $staffPasswordField->setInputClass("element text medium");
     $staffPasswordField->setInputMaxLength(50);
@@ -235,7 +263,7 @@ Required values are marked with a <font color="red">*</font>.
     $staffPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
     echo $staffPasswordField->renderHtml();
     
-    $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", FALSE, "staff_password2", 9);
+    $staffPasswordField2 = new FormItemSingleTextField("Retype New Staff Password", FALSE, "staff_password2", $counter++);
     $staffPasswordField2->setInputType("password");
     $staffPasswordField2->setInputClass("element text medium");
     $staffPasswordField2->setInputMaxLength(50);

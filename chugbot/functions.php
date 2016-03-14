@@ -16,6 +16,13 @@
         // occurs when SMTPDebug is enabled, so I'm not using it for now.  
         //$mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
         $mail->addAddress($address);
+        if ($admin_data_row["admin_email_cc"] != NULL &&
+            (! empty($admin_data_row["admin_email_cc"]))) {
+            $ccs = preg_split("/[,:; ]/", $admin_data_row["admin_email_cc"]);
+            foreach ($ccs as $cc) {
+                $mail->AddCC($cc);
+            }
+        }
         $mail->Subject = $subject;
         $mail->Body = $body;
         $mail->isSMTP();
