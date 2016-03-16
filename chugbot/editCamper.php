@@ -8,6 +8,7 @@
                                    "Please review your information below, and make any necessary edits.",
                                    "campers", "camper_id");
     $editCamperPage->addSecondParagraph("Then click <b>Choose Chugim</b> to proceed to the ranking page");
+    $editCamperPage->setAlternateResultString("Please review your information below, make any edits needed, and then click <b>Choose Chugim</b> to make your chug rankings.");
     $editCamperPage->addColumn("first");
     $editCamperPage->addColumn("last");
     $editCamperPage->addColumn("email");

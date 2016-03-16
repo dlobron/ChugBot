@@ -27,11 +27,12 @@
         $mail->Body = $body;
         $mail->isSMTP();
         $mail->isHTML(true);
+        $mail->SMTPAuth = true;
         $mail->Host = 'localhost';
         $mail->Port = 25;
-        $mail->SMTPAuth = true;
         $mail->Username = $admin_data_row["admin_email_username"];
         $mail->Password = $admin_data_row["admin_email_password"];
+        error_log("DBG: Using usename " . $admin_data_row["admin_email_username"] . " password " . $admin_data_row["admin_email_password"]);
         $mail->setFrom($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
         $sentOk = $mail->send();
         if (! $sentOk) {
@@ -395,7 +396,10 @@ EOM;
             $row = $result->fetch_assoc();
             $campUrl = $row["camp_web"];
             $campName = $row["camp_name"];
-            $retVal .= "<br><a href=\"http://$campUrl/\">$campName Home</a>";
+            if ((! empty($campUrl)) &&
+                (! empty($campName))) {
+                $retVal .= "<br><a href=\"http://$campUrl/\">$campName Home</a>";
+            }
         }
         $mysqli->close();
         

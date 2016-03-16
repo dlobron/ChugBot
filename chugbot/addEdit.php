@@ -225,7 +225,7 @@ EOM;
             $instanceTable = "";
             $activeHash = NULL;
             if ($edahFilter) {
-                if ($this->activeEdotFilterBy == NULL) {
+                if ($this->activeEdotFilterBy === NULL) {
                     return;
                 }
                 $instanceIdCol = "edah_id";
@@ -258,7 +258,7 @@ EOM;
             $instanceTable = "";
             $activeHash = NULL;
             if ($edahFilter) {
-                if ($this->activeEdotFilterTable == NULL) {
+                if ($this->activeEdotFilterTable === NULL) {
                     return TRUE; // No edah filter: not an error.
                 }
                 $instanceIdCol = "edah_id";
@@ -328,6 +328,10 @@ EOM;
             $this->constantIdValue = $civ;
         }
         
+        public function setAlternateResultString($ars) {
+            $this->alternateResultString = $ars;
+        }
+        
         public $mainTable;
         
         protected $idCol; // The ID column name of $this->mainTable
@@ -356,6 +360,7 @@ EOM;
         public $fromHomePage = FALSE;
         
         protected $infoMessage = "";
+        protected $alternateResultString = NULL;
     }
     
     class EditPage extends AddEditBase {
@@ -445,6 +450,8 @@ EOM;
                             $val = 1;
                         } else if ($val == "off") {
                             $val = 0;
+                        } else if (empty($val)) {
+                            $val = 0;
                         } else {
                             $val = intval($val);
                         }
@@ -476,18 +483,21 @@ EOM;
             $name = preg_replace('/^edit/', "", $thisPage);
             $name = preg_replace('/.php$/', "", $name);
             $idVal = $this->col2Val[$this->idCol];
-            $addAnotherText = "";
+            $additionalText = "Please edit below if needed, or return $homeAnchor.";
+            if ($this->alternateResultString) {
+                $additionalText = $this->alternateResultString;
+            }
             if (is_null($this->constantIdValue)) {
                 // Only display an "add another" link for tables that allow multiple
                 // rows.
                 $addAnother = urlBaseText() . "/$addPage";
-                $addAnotherText = "To add another $name, please click <a href=\"$addAnother\">here</a>.";
+                $additionalText .= " To add another $name, click <a href=\"$addAnother\">here</a>.";
             }
             if ($this->submitData) {
                 $i = 0;
                 $sql = "UPDATE $this->mainTable SET "; // Common start to SQL
                 foreach ($this->col2Val as $colName => $colVal) {
-                    if ($colVal == NULL || empty($colVal)) {
+                    if ($colVal === NULL || empty($colVal)) {
                         $sql .= "$colName = NULL";
                     } else {
                         $sql .= "$colName = \"$colVal\"";
@@ -515,10 +525,10 @@ EOM;
                 }
 
                 $this->resultStr =
-                    "<h3><font color=\"green\">$name updated!</font>  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
+                    "<h3><font color=\"green\">$name updated!</font> $additionalText</h3>";
             } else if ($this->fromAddPage) {
                 $this->resultStr =
-                "<h3><font color=\"green\">$name added successfully!</font>  Please edit below if needed, or return $homeAnchor. $addAnotherText</h3>";
+                "<h3><font color=\"green\">$name added successfully!</font> $additionalText</h3>";
             }
             
             // Edits to certain tables and columns might render other items invalid.  For
@@ -552,7 +562,7 @@ EOM;
                 $instance_id = $row["instance_id"];
                 $pk_column = $row["pk_column"];
                 $table_name = $row["table_name"];
-                if ($instance_id == NULL) {
+                if ($instance_id === NULL) {
                     error_log("pk value $pk_value in col $pk_column in table $table_name is now invalid: marking for delete");
                     if (! array_key_exists($table_name, $deleteHash)) {
                         $deleteHash[$table_name] = array();
@@ -600,8 +610,8 @@ EOM;
                     $legal_pref_id = $row["legal_pref_id"];
                     $col = $row["col"];
                     // Look for rows where choice_id is not NULL, but legal_pref_id is NULL.
-                    if ($choice_id != NULL &&
-                        $legal_pref_id == NULL) {
+                    if ($choice_id !== NULL &&
+                        $legal_pref_id === NULL) {
                         if (! array_key_exists($pref_id, $deleteHash)) {
                             $deleteHash[$pref_id] = array();
                         }
@@ -668,7 +678,7 @@ EOM;
             // are missing, and grab defaults if applicable.
             foreach ($this->columns as $col) {
                 $val = test_input($_POST[$col->name]);
-                if ($val == NULL) {
+                if ($val === NULL) {
                     if ($col->required && (! $this->fromHomePage)) {
                         $this->colName2Error[$col->name] = errorString("Missing value for required column " . $col->name);
                         return;
