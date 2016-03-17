@@ -47,6 +47,13 @@ $(function() {
 		    }
 		    arrayOrderedLists.push(orderedList);		    
 		}
+		// Report an error if no chugim were selected.
+		if (arrayOrderedLists.length == 0) {
+		    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
+		    $( "#results" ).text("No chugim were selected.");
+		    $( "#results" ).show("slide", 250 );
+		    return;
+		}
 		$.ajax({
 			url: 'ajax.php',
 			    type: 'post',
@@ -177,6 +184,9 @@ $(function() {
 					  html += "</div>";				  
 				      });
 			      });
+		       if (html.length == 0) {
+			   html = "<div class=\"error_box\"><h3>No eligible chugim were found.</h3></div>";
+		       }
 		       $("body").append(html);
 		},
 		    error: function(xhr, desc, err) {
