@@ -1,5 +1,6 @@
 <?php
     include_once 'formItem.php';
+    include_once 'dbConn.php';
     
     class Column {
         function __construct($name, $required = TRUE, $defaultValue = NULL) {
@@ -301,18 +302,13 @@ EOM;
                     continue;
                 }
                 // New entry: insert it.
-                $stmt = $this->mysqli->prepare("INSERT INTO $instanceTable ($idCol, $instanceIdCol) VALUES (?, ?)");
-                if ($stmt == FALSE) {
-                    $this->dbErr = dbErrorString("Failed to prepare INSERT for IDCol $idCol, IIDCol $instanceIdCol, ID $idVal, IID $instanceId", $this->mysqli->error);
+                $dbc = new DbConn();
+                $dbc->addColVal($idVal, 'i');
+                $dbc->addColVal($instanceId, 'i');
+                $queryOk = $dbc->doQuery("INSERT INTO $instanceTable ($idCol, $instanceIdCol) VALUES (?, ?)", $this->dbErr);
+                if (! $queryOk) {
                     return FALSE;
                 }
-                $bindOk = $stmt->bind_param('ii', $idVal, $instanceId);
-                if (! $bindOk) {
-                    $this->dbErr = dbErrorString("Failed to bind INSERT for IDCol $idCol, IIDCol $instanceIdCol, ID $idVal, IID $instanceId", $stmt->error);
-                    return FALSE;
-                }
-                $stmt->execute();
-                $stmt->close();
             }
             // At this point, $existingInstanceKeys contains entries that exist in the DB but
             // not in the new set.  Delete these entries from the DB.
@@ -704,14 +700,13 @@ EOM;
                 }
             }
             
-            // Build the insert SQL from the POST values we collected above.
-            // It's critical that columns and their values be listed in the same order,
-            // so we build the lists at the same time.
-            $paramTypeList = "";
+            // Insert the POST values we collected above.
             $qmCsv = "";
             $colCsv = "";
-            $vals = array();
+            $dbc = new DbConn();
             foreach ($this->col2Val as $colName => $colVal) {
+                // Build the column and parameter strings, and add the column
+                // values to the DbConn object.
                 if (empty($qmCsv)) {
                     $qmCsv = "?";
                 } else {
@@ -722,22 +717,12 @@ EOM;
                 } else {
                     $colCsv .= ", $colName";
                 }
-                $paramTypeList .= $col2Type[$colName]; // Column value
-                array_push($vals, $colVal);
+                $dbc->addColVal($colVal, $col2Type[$colName]);
             }
-            $stmt = $this->mysqli->prepare("INSERT INTO $this->mainTable ($colCsv) VALUES ($qmCsv)");
-            $paramsByRef = array();
-            $paramsByRef[] = &$paramTypeList;
-            foreach ($vals as $param) {
-                $paramsByRef[] = &$param;
-            }
-            $bindOk = call_user_func_array(array(&$stmt, 'bind_param'), $paramsByRef);
-            if (! $bindOk) {
-                $this->dbErr = dbErrorString("Failed to bind INSERT statement", $this->mysqli->error);
+            $queryOk = $dbc->doQuery("INSERT INTO $this->mainTable ($colCsv) VALUES ($qmCsv)", $this->dbErr);
+            if (! $queryOk) {
                 return;
             }
-            $stmt->execute();
-            $stmt->close();
             
             // If we have instances, update them.
             $mainTableInsertId = $this->mysqli->insert_id;

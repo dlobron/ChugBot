@@ -4,8 +4,6 @@
     include_once 'formItem.php';
     bounceToLogin();
     
-    // Grab the existing admin email from the database.  This is presumed to exist, since
-    // this is a reset page.
     $existingAdminEmail = $existingAdminEmailUserName = $existingAdminEmailPassword = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = "";
     $dbErr = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = "";
     $mysqli = connect_db();
@@ -59,7 +57,8 @@
         
         // For admin email and user token fields, update to incoming values.  If a value is not given,
         // set the table field to NULL.
-        $sql = "UPDATE admin_data SET ";
+        $sql = "UPDATE admin_data SET admin_email_username = ?, admin_email_password = ?, regular_user_token = ?, " .
+        "regular_user_token_hint = ?, pref_page_instructions = ?, camp_web = ?, admin_email_cc = ?
         $fields = array("admin_email_username", $admin_email_username, $existingAdminEmailUserName,
                         "admin_email_password", $admin_email_password, $existingAdminEmailPassword,
                         "regular_user_token", $regular_user_token, $existingRegularUserToken,
