@@ -91,11 +91,19 @@
         // At this point, we have a valid password.  Update the admin database, log
         // the user in, and redirect to the staff home page with a success message.
         $staffPasswordHashed = password_hash($staff_password, PASSWORD_DEFAULT);
-        $sql = "UPDATE admin_data SET admin_password = \"$staffPasswordHashed\"";
-        getDbResult($sql, $dbErr);
-        if ($dbErr) {
-            fatalError($dbErr);
+        $sql = "UPDATE admin_data SET admin_password = ?";
+        $mysqli = connect_db();
+        $stmt = $mysqli->prepare($sql);
+        if ($stmt == FALSE) {
+            fatalError("Can't prepare admin password update");
         }
+        $bindOk = $stmt->bind_param('s', $staffPasswordHashed);
+        if ($bindOk == FALSE) {
+            fatalError("Can't bind admin password update");
+        }
+        $stmt->execute();
+        $stmt->close();
+  
         $_SESSION['admin_logged_in'] = TRUE;
         $redirUrl = urlIfy("staffHome.php?update=pw");
         header("Location: $redirUrl");
