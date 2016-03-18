@@ -301,12 +301,18 @@ EOM;
                     continue;
                 }
                 // New entry: insert it.
-                $sql = "INSERT INTO $instanceTable ($idCol, $instanceIdCol) VALUES ($idVal, $instanceId)";
-                $submitOk = $this->mysqli->query($sql);
-                if ($submitOk == FALSE) {
-                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                $stmt = $this->mysqli->prepare("INSERT INTO $instanceTable ($idCol, $instanceIdCol) VALUES (?, ?)");
+                if ($stmt == FALSE) {
+                    $this->dbErr = dbErrorString("Failed to prepare INSERT for IDCol $idCol, IIDCol $instanceIdCol, ID $idVal, IID $instanceId", $this->mysqli->error);
                     return FALSE;
                 }
+                $bindOk = $stmt->bind_param('ii', $idVal, $instanceId);
+                if (! $bindOk) {
+                    $this->dbErr = dbErrorString("Failed to bind INSERT for IDCol $idCol, IIDCol $instanceIdCol, ID $idVal, IID $instanceId", $stmt->error);
+                    return FALSE;
+                }
+                $stmt->execute();
+                $stmt->close();
             }
             // At this point, $existingInstanceKeys contains entries that exist in the DB but
             // not in the new set.  Delete these entries from the DB.
@@ -676,6 +682,7 @@ EOM;
             
             // Check for POST values.  Fire an error if required inputs
             // are missing, and grab defaults if applicable.
+            $col2Type = array();
             foreach ($this->columns as $col) {
                 $val = test_input($_POST[$col->name]);
                 if ($val === NULL) {
@@ -690,30 +697,47 @@ EOM;
                     }
                 }
                 $this->col2Val[$col->name] = $val;
+                if ($col->numeric) {
+                    $col2Type[$col->name] = 'i';
+                } else {
+                    $col2Type[$col->name] = 's';
+                }
             }
             
             // Build the insert SQL from the POST values we collected above.
             // It's critical that columns and their values be listed in the same order,
             // so we build the lists at the same time.
-            $i = 0;
-            $sqlStart = "INSERT INTO $this->mainTable (";
-            $valueList = " VALUES (";
+            $paramTypeList = "";
+            $qmCsv = "";
+            $colCsv = "";
+            $vals = array();
             foreach ($this->col2Val as $colName => $colVal) {
-                $sqlStart .= "$colName";
-                $valueList .= "\"$colVal\"";
-                if ($i++ < (count($this->col2Val) - 1)) {
-                    $sqlStart .= ", ";
-                    $valueList .= ", ";
+                if (empty($qmCsv)) {
+                    $qmCsv = "?";
+                } else {
+                    $qmCsv .= ", ?";
                 }
+                if (empty($colCsv)) {
+                    $colCsv = $colName;
+                } else {
+                    $colCsv .= ", $colName";
+                }
+                $paramTypeList .= $col2Type[$colName]; // Column value
+                array_push($vals, $colVal);
             }
-            $sqlStart .= ")";
-            $valueList .= ")";
-            $sql = $sqlStart . $valueList;
-            $submitOk = $this->mysqli->query($sql);
-            if ($submitOk == FALSE) {
-                $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+            $stmt = $this->mysqli->prepare("INSERT INTO $this->mainTable ($colCsv) VALUES ($qmCsv)");
+            $paramsByRef = array();
+            $paramsByRef[] = &$paramTypeList;
+            foreach ($vals as $param) {
+                $paramsByRef[] = &$param;
+            }
+            $bindOk = call_user_func_array(array(&$stmt, 'bind_param'), $paramsByRef);
+            if (! $bindOk) {
+                $this->dbErr = dbErrorString("Failed to bind INSERT statement", $this->mysqli->error);
                 return;
             }
+            $stmt->execute();
+            $stmt->close();
             
             // If we have instances, update them.
             $mainTableInsertId = $this->mysqli->insert_id;

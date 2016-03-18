@@ -72,18 +72,27 @@
                     empty($staffPasswordErr2)) {
                     // No errors: insert the new password and email, and then redirect
                     // to the admin home page.
+                    $insertedOk = FALSE;
                     $mysqli = connect_db();
                     $sql = "";
                     if (empty($existingPasswordHashed)) {
-                        $sql = "INSERT INTO admin_data (admin_email, admin_password) VALUES " .
-                        "(\"$staff_email\", \"$staffPasswordHashed\")";
+                        $sql = "INSERT INTO admin_data (admin_email, admin_password) VALUES (? , ?)";
                     } else {
-                        $sql = "UPDATE admin_data SET admin_email = \"$staff_email\", admin_password = \"$staffPasswordHashed\"";
+                        $sql = "UPDATE admin_data SET admin_email = ?, admin_password = ?";
                     }
-                    $result = $mysqli->query($sql);
-                    if ($result == FALSE) {
+                    $stmt = $mysqli->prepare($sql);
+                    if ($stmt == FALSE) {
                         $dbError = dbErrorString($sql, $mysqli->error);
                     } else {
+                        $bindOk = $stmt->bind_param('ss', $staff_email, $staffPasswordHashed);
+                        if ($bindOk == FALSE) {
+                            $dbError = dbErrorString($sql, $stmt->error);
+                        } else {
+                            $stmt->execute();
+                            $stmt->close();
+                        }
+                    }
+                    if ($insertedOk) {
                         // New password entered OK: log them in and redirect.  Note
                         // that staff privileges imply camper privileges.
                         $_SESSION['admin_logged_in'] = TRUE;
