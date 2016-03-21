@@ -34,19 +34,18 @@
     $chugId2Name = array();
     $bunkId2Name = array();
     
-    $mysqli = connect_db();
-    fillId2Name($mysqli, $chugId2Name, $dbErr,
+    fillId2Name($chugId2Name, $dbErr,
                 "chug_id", "chugim", "group_id",
                 "groups");
-    fillId2Name($mysqli, $sessionId2Name, $dbErr,
+    fillId2Name($sessionId2Name, $dbErr,
                 "session_id", "sessions");
-    fillId2Name($mysqli, $blockId2Name, $dbErr,
+    fillId2Name($blockId2Name, $dbErr,
                 "block_id", "blocks");
-    fillId2Name($mysqli, $groupId2Name, $dbErr,
+    fillId2Name($groupId2Name, $dbErr,
                 "group_id", "groups");
-    fillId2Name($mysqli, $edahId2Name, $dbErr,
+    fillId2Name($edahId2Name, $dbErr,
                 "edah_id", "edot");
-    fillId2Name($mysqli, $bunkId2Name, $dbErr,
+    fillId2Name($bunkId2Name, $dbErr,
                 "bunk_id", "bunks");
     ?>
 

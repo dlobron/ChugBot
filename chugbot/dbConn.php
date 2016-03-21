@@ -40,6 +40,9 @@
         }
         
         private function buildWhereClause() {
+            if (count($this->whereColNames) == 0) {
+                return;
+            }
             $this->whereClause = "WHERE ";
             for ($i = 0; $i < count($this->whereColNames); $i++) {
                 $colName = $this->whereColNames[$i];

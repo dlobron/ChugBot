@@ -247,6 +247,7 @@ EOM;
             $db->addWhereColumn($idCol, $idVal, 'i');
             $result = $db->simpleSelectFromTable($instanceTable, $this->dbErr);
             if ($result == FALSE) {
+                error_log("Instance update select failed: $this->dbErr");
                 return;
             }
             while ($row = $result->fetch_array(MYSQLI_NUM)) {
@@ -283,7 +284,7 @@ EOM;
             $db->addWhereColumn($idCol, $idVal, 'i');
             $result = $db->simpleSelectFromTable($instanceTable, $this->dbErr);
             if ($result == FALSE) {
-                $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                error_log("Existing ID query failed: $this->dbErr");
                 return FALSE;
             }
             $existingInstanceKeys = array();
@@ -310,6 +311,7 @@ EOM;
                 $dbc->addColumn($instanceIdCol, $instanceId, 'i');
                 $queryOk = $dbc->insertIntoTable($instanceTable, $this->dbErr);
                 if (! $queryOk) {
+                    error_log("Instance insert failed: $this->dbErr");
                     return FALSE;
                 }
             }
@@ -322,7 +324,7 @@ EOM;
                     $db->addWhereColumn($idCol, $idVal, 'i');
                     $delOk = $db->deleteFromTable($instanceTable, $this->dbErr);
                     if ($delOk == FALSE) {
-                        error_log("Failed to delete instance");
+                        error_log("Failed to delete instance: $this->dbErr");
                         return FALSE;
                     }
                 }
@@ -442,7 +444,7 @@ EOM;
                 $db->addWhereColumn($this->idCol, $idVal, 'i');
                 $result = $db->simpleSelectFromTable($this->mainTable, $this->dbErr);
                 if ($result == FALSE) {
-                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                    error_log("Failed to get column values from DB: $this->dbErr");
                     return;
                 }
                 $this->col2Val = $result->fetch_array(MYSQLI_ASSOC);
@@ -515,6 +517,7 @@ EOM;
                 $db->addWhereColumn($this->idCol, $idVal, 'i');
                 $submitOk = $db->updateTable($this->mainTable, $this->dbErr);
                 if ($submitOk == FALSE) {
+                    error_log("Updated failed: $this->dbErr");
                     return;
                 }
                 // Update instances, if we have them.
@@ -717,6 +720,7 @@ EOM;
             }
             $queryOk = $dbc->insertIntoTable($this->mainTable, $this->dbErr);
             if (! $queryOk) {
+                error_log("Insert failed: $this->dbErr");
                 return;
             }
             
