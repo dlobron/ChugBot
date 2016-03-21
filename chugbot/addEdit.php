@@ -86,6 +86,7 @@
             $col->setNumeric($numeric);
             array_push($this->columns, $col);
             $this->colName2Error[$name] = "";
+            $this->col2Type[$name] = $numeric ? 'i' : 's';
         }
         
         public function columnValue($column) {
@@ -241,16 +242,16 @@ EOM;
                 $idCol = $this->idCol;
             }
             
-            $sql = "SELECT $instanceIdCol from $instanceTable where $idCol = $idVal";
-            $result = $this->mysqli->query($sql);
+            $db = new DbConn();
+            $db->addSelectColumn($instanceIdCol);
+            $db->addWhereColumn($idCol, $idVal, 'i');
+            $result = $db->simpleSelectFromTable($instanceTable, $this->dbErr);
             if ($result == FALSE) {
-                $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                 return;
             }
             while ($row = $result->fetch_array(MYSQLI_NUM)) {
                 $activeHash[$row[0]] = 1;
             }
-            mysqli_free_result($result);
         }
         
         protected function updateActiveInstances($idVal, $edahFilter = FALSE) {
@@ -277,8 +278,10 @@ EOM;
             }
             
             // First, grab existing IDs from the instance table.
-            $sql = "SELECT $instanceIdCol FROM $instanceTable WHERE $idCol = \"$idVal\"";
-            $result = $this->mysqli->query($sql);
+            $db = new DbConn();
+            $db->addSelectColumn($instanceIdCol);
+            $db->addWhereColumn($idCol, $idVal, 'i');
+            $result = $db->simpleSelectFromTable($instanceTable, $this->dbErr);
             if ($result == FALSE) {
                 $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                 return FALSE;
@@ -303,9 +306,9 @@ EOM;
                 }
                 // New entry: insert it.
                 $dbc = new DbConn();
-                $dbc->addColVal($idVal, 'i');
-                $dbc->addColVal($instanceId, 'i');
-                $queryOk = $dbc->doQuery("INSERT INTO $instanceTable ($idCol, $instanceIdCol) VALUES (?, ?)", $this->dbErr);
+                $dbc->addColumn($idCol, $idVal, 'i');
+                $dbc->addColumn($instanceIdCol, $instanceId, 'i');
+                $queryOk = $dbc->insertIntoTable($instanceTable, $this->dbErr);
                 if (! $queryOk) {
                     return FALSE;
                 }
@@ -314,10 +317,12 @@ EOM;
             // not in the new set.  Delete these entries from the DB.
             foreach ($existingInstanceKeys as $idValKey => $existingInstanceIds) {
                 foreach ($existingInstanceIds as $existingInstanceId => $active) {
-                    $sql = "DELETE FROM $instanceTable WHERE $instanceIdCol = \"$existingInstanceId\" AND $idCol = \"$idVal\"";
-                    $submitOk = $this->mysqli->query($sql);
-                    if ($submitOk == FALSE) {
-                        $this->dbErr = dbErrorString($sql, $this->mysqli->error);
+                    $db = new DbConn();
+                    $db->addWhereColumn($instanceIdCol, $existingInstanceId, 'i');
+                    $db->addWhereColumn($idCol, $idVal, 'i');
+                    $delOk = $db->deleteFromTable($instanceTable, $this->dbErr);
+                    if ($delOk == FALSE) {
+                        error_log("Failed to delete instance");
                         return FALSE;
                     }
                 }
@@ -338,7 +343,8 @@ EOM;
         
         protected $idCol; // The ID column name of $this->mainTable
         protected $col2Val = array(); // Column name -> value (filled by us)
-        protected $columns = array(); // Column names (filled by the caller)
+        protected $columns = array(); // Column names in order (filled by the caller)
+        protected $col2Type = array(); // Like above, but hashed by name.
         protected $editPage = FALSE;
         protected $constantIdValue = NULL;
         
@@ -419,8 +425,8 @@ EOM;
                 // exist in the POST or be set as a constant.
                 $idVal = test_input($_POST[$this->idCol]);
                 if (! $idVal) {
-                    if (! is_null($self->constantIdValue)) {
-                        $idVal = $self->constantIdValue;
+                    if (! is_null($this->constantIdValue)) {
+                        $idVal = $this->constantIdValue;
                     } else {
                         $this->colName2Error[$this->idCol] = errorString("No $this->idCol was chosen to edit: please select one");
                         return;
@@ -431,8 +437,10 @@ EOM;
             if ($this->fromHomePage) {
                 // If we're coming from a home page, we need to get our
                 // column values from the DB.
-                $sql = "SELECT * FROM $this->mainTable WHERE $this->idCol = $idVal";
-                $result = $this->mysqli->query($sql);
+                $db = new DbConn();
+                $db->addSelectColumn("*");
+                $db->addWhereColumn($this->idCol, $idVal, 'i');
+                $result = $db->simpleSelectFromTable($this->mainTable, $this->dbErr);
                 if ($result == FALSE) {
                     $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                     return;
@@ -496,23 +504,17 @@ EOM;
                 $additionalText .= " To add another $name, click <a href=\"$addAnother\">here</a>.";
             }
             if ($this->submitData) {
-                $i = 0;
-                $sql = "UPDATE $this->mainTable SET "; // Common start to SQL
+                $db = new DbConn();
                 foreach ($this->col2Val as $colName => $colVal) {
-                    if ($colVal === NULL || empty($colVal)) {
-                        $sql .= "$colName = NULL";
-                    } else {
-                        $sql .= "$colName = \"$colVal\"";
+                    $type = $this->col2Type[$colName];
+                    if ($type === NULL || empty($type)) {
+                        $type = 'i'; // Assume unknown columns are always numeric IDs.
                     }
-                    if ($i < (count($this->col2Val) - 1)) {
-                        $sql .= ", ";
-                    }
-                    $i++;
+                    $db->addColumn($colName, $colVal, $type);
                 }
-                $sql .= " WHERE $this->idCol = $idVal";
-                $submitOk = $this->mysqli->query($sql);
+                $db->addWhereColumn($this->idCol, $idVal, 'i');
+                $submitOk = $db->updateTable($this->mainTable, $this->dbErr);
                 if ($submitOk == FALSE) {
-                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                     return;
                 }
                 // Update instances, if we have them.
@@ -545,6 +547,7 @@ EOM;
             // category, simply select the ID value from the target table, and do a left outer join against a subquery that returns only
             // valid instances in that table.  Then, iterate through the result, and delete any rows that have a NULL value in the right-hand
             // table from the join.
+            // This query has no parameters, so we can run it directly.
             $sql = "SELECT m.match_id pk_value, legal_instances.chug_instance_id instance_id, 'match_id' pk_column, 'matches' table_name FROM " .
             "matches m LEFT OUTER JOIN " .
             "(SELECT i.chug_instance_id chug_instance_id, m.match_id match_id FROM " .
@@ -574,16 +577,21 @@ EOM;
             }
             foreach ($deleteHash as $table => $pkVal2Col) {
                 foreach ($pkVal2Col as $val => $pkCol) {
-                    $sql = "DELETE FROM $table WHERE $pkCol = $val";
-                    $result = $this->mysqli->query($sql);
-                    if ($result) {
+                    $db = new DbConn();
+                    $err = "";
+                    $db->addWhereColumn($pkCol, $val, 'i');
+                    if ($db->deleteFromTable($table, $err)) {
                         error_log("Deleted OK");
+                    } else {
+                        error_log("Failed to delete obsolete instance: $err");
                     }
                 }
             }
             // Our preferences table has a somewhat odd structure, so we delete items in a custom way.  This suggests that the design
             // of the table is not optimal, but for the moment I don't have time to redesign and debug, so I'm resorting to this hack.
-            // CHOICECOL = "first_choice_id"
+            // CHOICECOL = "first_choice_id".
+            // TODO: Improve the preferences table structure.
+            // This query has no input parameters, so we can run it directly.
             $template = "SELECT p.preference_id pref_id, p.CHOICECOL choice_id, legal_choice_n.preference_id legal_pref_id, 'CHOICECOL' col FROM " .
             "preferences p LEFT OUTER JOIN " .
             "(SELECT p.preference_id preference_id, p.CHOICECOL CHOICECOL, p.camper_id camper_id, p.group_id group_id, p.block_id block_id FROM " .
@@ -624,10 +632,14 @@ EOM;
             }
             foreach ($deleteHash as $pref_id => $cols_to_null) {
                 foreach ($cols_to_null as $col) {
-                    $sql = "UPDATE preferences SET $col = NULL WHERE preference_id = $pref_id";
-                    $result = $this->mysqli->query($sql);
-                    if ($result) {
+                    $db = new DbConn();
+                    $db->addColumn($col, NULL, 's');
+                    $db->addWhereColumn("preference_id", $pref_id, 'i');
+                    $err = "";
+                    if ($db->updateTable("preferences", $err)) {
                         error_log("Removed preference OK");
+                    } else {
+                        error_log("Failed to remove preference: $err");
                     }
                 }
             }            
@@ -678,7 +690,6 @@ EOM;
             
             // Check for POST values.  Fire an error if required inputs
             // are missing, and grab defaults if applicable.
-            $col2Type = array();
             foreach ($this->columns as $col) {
                 $val = test_input($_POST[$col->name]);
                 if ($val === NULL) {
@@ -693,39 +704,24 @@ EOM;
                     }
                 }
                 $this->col2Val[$col->name] = $val;
-                if ($col->numeric) {
-                    $col2Type[$col->name] = 'i';
-                } else {
-                    $col2Type[$col->name] = 's';
-                }
             }
             
             // Insert the POST values we collected above.
-            $qmCsv = "";
-            $colCsv = "";
             $dbc = new DbConn();
             foreach ($this->col2Val as $colName => $colVal) {
-                // Build the column and parameter strings, and add the column
-                // values to the DbConn object.
-                if (empty($qmCsv)) {
-                    $qmCsv = "?";
-                } else {
-                    $qmCsv .= ", ?";
+                $type = $this->col2Type[$colName];
+                if ($type === NULL || empty($type)) {
+                    $type = 'i'; // If we don't know of this column, assume it's a numeric ID.
                 }
-                if (empty($colCsv)) {
-                    $colCsv = $colName;
-                } else {
-                    $colCsv .= ", $colName";
-                }
-                $dbc->addColVal($colVal, $col2Type[$colName]);
+                $dbc->addColumn($colName, $colVal, $type);
             }
-            $queryOk = $dbc->doQuery("INSERT INTO $this->mainTable ($colCsv) VALUES ($qmCsv)", $this->dbErr);
+            $queryOk = $dbc->insertIntoTable($this->mainTable, $this->dbErr);
             if (! $queryOk) {
                 return;
             }
             
             // If we have instances, update them.
-            $mainTableInsertId = $this->mysqli->insert_id;
+            $mainTableInsertId = $dbc->insertId();
             $instanceUpdateOk = $this->updateActiveInstances($mainTableInsertId);
             if (! $instanceUpdateOk) {
                 return;

@@ -2,10 +2,11 @@
     session_start();
     include_once 'functions.php';
     include_once 'formItem.php';
+    include_once 'dbConn.php';
     bounceToLogin();
     
-    $existingAdminEmail = $existingAdminEmailUserName = $existingAdminEmailPassword = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = "";
-    $dbErr = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = "";
+    $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = "";
+    $dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = "";
     $mysqli = connect_db();
     $sql = "SELECT * from admin_data";
     $result = $mysqli->query($sql);
@@ -16,8 +17,6 @@
     } else {
         $row = mysqli_fetch_assoc($result);
         $existingAdminEmail = $row["admin_email"];
-        $existingAdminEmailUserName = $row["admin_email_username"];
-        $existingAdminEmailPassword = $row["admin_email_password"];
         $existingAdminEmailCc = $row["admin_email_cc"];
         $existingRegularUserToken = $row["regular_user_token"];
         $existingRegularUserTokenHint = $row["regular_user_token_hint"];
@@ -29,8 +28,6 @@
         // clobbered if we have incoming POST data - otherwise, we'll display them
         // on the initial page.
         $admin_email = $existingAdminEmail;
-        $admin_email_username = $existingAdminEmailUserName;
-        $admin_email_password = $existingAdminEmailPassword;
         $admin_email_cc = $existingAdminEmailCc;
         $regular_user_token = $existingRegularUserToken;
         $regular_user_token_hint = $existingRegularUserTokenHint;
@@ -46,8 +43,6 @@
         $admin_email = test_input($_POST["admin_email"]);
         $staff_password = test_input($_POST["staff_password"]);
         $staff_password2 = test_input($_POST["staff_password2"]);
-        $admin_email_username = test_input($_POST["admin_email_username"]);
-        $admin_email_password = test_input($_POST["admin_email_password"]);
         $admin_email_cc = test_input($_POST["admin_email_cc"]);
         $regular_user_token = test_input($_POST["regular_user_token"]);
         $regular_user_token_hint = test_input($_POST["regular_user_token_hint"]);
@@ -55,30 +50,28 @@
         $pref_page_instructions = test_input($_POST["pref_page_instructions"]);
         $camp_web = test_input($_POST["camp_web"]);
         
-        // For admin email and user token fields, update to incoming values.  If a value is not given,
-        // set the table field to NULL.
-        $sql = "UPDATE admin_data SET admin_email_username = ?, admin_email_password = ?, regular_user_token = ?, " .
-        "regular_user_token_hint = ?, pref_page_instructions = ?, camp_web = ?, admin_email_cc = ?
-        $fields = array("admin_email_username", $admin_email_username, $existingAdminEmailUserName,
-                        "admin_email_password", $admin_email_password, $existingAdminEmailPassword,
-                        "regular_user_token", $regular_user_token, $existingRegularUserToken,
-                        "regular_user_token_hint", $regular_user_token_hint, $existingRegularUserTokenHint,
-                        "pref_page_instructions", $pref_page_instructions, $existingPrefInstructions,
-                        "camp_web", $camp_web, $existingCampWeb,
-                        "admin_email_cc", $admin_email_cc, $existingAdminEmailCc);
-        for ($i = 0; $i < count($fields); $i += 3) {
-            $colName = $fields[$i];
-            $newVal = $fields[$i+1];
-            $existingVal = $fields[$i+2];
-            $sql .= "$colName = ";
-            if (is_null($newVal) || empty($newVal)) {
-                $sql .= "NULL";
-            } else {
-                $sql .= "\"$newVal\"";
+        // Add NULL-able column values to the DB object.
+        $db = new DbConn();
+        $db->addColumn("admin_email_cc", $admin_email_cc, 's');
+        $db->addColumn("camp_name", $camp_name, 's');
+        $db->addColumn("camp_web", $camp_web, 's');
+        $db->addColumn("pref_page_instructions", $pref_page_instructions, 's');
+        $db->addColumn("regular_user_token", $regular_user_token, 's');
+        $db->addColumn("regular_user_token_hint", $regular_user_token_hint, 's');
+        
+        // Assume the email is never empty.  Only update it if a valid address was
+        // given.
+        if ($admin_email) {
+            if (! filter_var($admin_email, FILTER_VALIDATE_EMAIL)) {
+                $staffEmailErr = errorString("\"$admin_email\" is not a valid email address.");
             }
-            if ($i < (count($fields)-3)) {
-                $sql .= ", ";
-            }
+            $db->addColumn("admin_email", $admin_email, 's');
+        } else {
+            $staffEmailErr = errorString("Admin email is required");
+        }
+        // Camp name is required.
+        if (! $camp_name) {
+            $campNameErr = errorString("Camp name is required");
         }
         // If an admin CC was given, check each address for validity.  Multiple
         // address should be comma-separated, but allow space, colon, and semicolon.
@@ -102,33 +95,19 @@
                 $staffPasswordErr2 = errorString("Passwords do not match");
             }
             $staffPasswordHashed = password_hash($staff_password, PASSWORD_DEFAULT);
-            $sql .= ", admin_password = \"$staffPasswordHashed\"";
-        }
-        // Assume the email is never empty.  Only update it if a valid address was
-        // given.
-        if ($admin_email) {
-            if (! filter_var($admin_email, FILTER_VALIDATE_EMAIL)) {
-                $staffEmailErr = errorString("\"$admin_email\" is not a valid email address.");
-            }
-            $sql .= ", admin_email = \"$admin_email\"";
-        }
-        // Same for camp name: only update it if a new string was given.
-        if ($camp_name) {
-            $sql .= ", camp_name = \"$camp_name\"";
+            $db->addColumn("admin_password", $staffPasswordHashed, 's');
         }
                 
         if (empty($staffEmailErr) &&
             empty($staffPasswordErr) &&
             empty($staffPasswordErr2) &&
             empty($adminEmailCcErr) &&
-            empty($dbError)) {
+            empty($dbError) &&
+            empty($campNameErr)) {
             // No errors: insert the new/updated data, and then redirect
             // to the admin home page.
-            $mysqli = connect_db();
-            $result = $mysqli->query($sql);
-            if ($result == FALSE) {
-                $dbError = dbErrorString($sql, $mysqli->error);
-            } else {
+            $updateOk = $db->updateTable("admin_data", $dbError);
+            if ($updateOk) {
                 // New data entered OK: go to the home page.  If a password was
                 // validated, log the user in.
                 if ($staff_password) {
@@ -146,7 +125,7 @@
 <?php
     echo headerText("Edit Admin Data");
     
-    $errText = genFatalErrorReport(array($dbErr, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr));
+    $errText = genFatalErrorReport(array($dbError, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr, $campNameErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();
@@ -189,24 +168,6 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailCcField->setGuideText("Enter one or more emails to be CC'ed on camper correspondence.  Separate multiple addresses with commas.");
     $adminEmailCcField->setError($adminEmailCcErr);
     echo $adminEmailCcField->renderHtml();
-    
-    $adminEmailUserNameField = new FormItemSingleTextField("Admin Email User Name", FALSE, "admin_email_username", $counter++);
-    $adminEmailUserNameField->setInputValue($admin_email_username);
-    $adminEmailUserNameField->setInputType("text");
-    $adminEmailUserNameField->setInputClass("element text medium");
-    $adminEmailUserNameField->setInputMaxLength(50);
-    $adminEmailUserNameField->setPlaceHolder("leveling@campramahne.org");
-    $adminEmailUserNameField->setGuideText("Enter the username for the staff email account (this is often the same as the admin email address).");
-    echo $adminEmailUserNameField->renderHtml();
-    
-    $adminEmailPasswordField = new FormItemSingleTextField("Admin Email Password", FALSE, "admin_email_password", $counter++);
-    $adminEmailPasswordField->setInputValue($admin_email_password);
-    $adminEmailPasswordField->setInputType("password");
-    $adminEmailPasswordField->setInputClass("element text medium");
-    $adminEmailPasswordField->setInputMaxLength(20);
-    $adminEmailPasswordField->setPlaceHolder("Email account password");
-    $adminEmailPasswordField->setGuideText("Enter the password of the staff email account (this is <b>not</b> the same as the admin password for this site).  Please do not use a valuable password, since this is not stored securely and is only used for sending email.");
-    echo $adminEmailPasswordField->renderHtml();
     
     $regularUserTokenField = new FormItemSingleTextField("Camper Access Token", FALSE, "regular_user_token", $counter++);
     $regularUserTokenField->setInputValue($regular_user_token);

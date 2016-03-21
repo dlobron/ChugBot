@@ -2,6 +2,7 @@
     session_start();
     include_once 'functions.php';
     include_once 'formItem.php';
+    include_once 'dbConn.php';
     
     function getDbResult($sql, &$err) {
         $mysqli = connect_db();
@@ -90,19 +91,13 @@
         }
         // At this point, we have a valid password.  Update the admin database, log
         // the user in, and redirect to the staff home page with a success message.
+        $err = "";
         $staffPasswordHashed = password_hash($staff_password, PASSWORD_DEFAULT);
-        $sql = "UPDATE admin_data SET admin_password = ?";
-        $mysqli = connect_db();
-        $stmt = $mysqli->prepare($sql);
-        if ($stmt == FALSE) {
-            fatalError("Can't prepare admin password update");
+        $db = new DbConn();
+        $db->addColumn("admin_password", $staffPasswordHashed, 's');
+        if (! $db->updateTable("admin_data", $err)) {
+            fatalError("Can't update admin password: $err");
         }
-        $bindOk = $stmt->bind_param('s', $staffPasswordHashed);
-        if ($bindOk == FALSE) {
-            fatalError("Can't bind admin password update");
-        }
-        $stmt->execute();
-        $stmt->close();
   
         $_SESSION['admin_logged_in'] = TRUE;
         $redirUrl = urlIfy("staffHome.php?update=pw");
@@ -114,7 +109,7 @@
         // Generate and send the email.  Display a message indicating the email status.
         // First, generate a code, and insert it into the database, with a generous
         // expiration date.
-        $code = bin2hex(openssl_random_pseudo_bytes(8));
+        $code = bin2hex(openssl_random_pseudo_bytes(32));
         $sql = "INSERT INTO password_reset_codes (code, expires) VALUES " .
         "(\"$code\", DATE_ADD(NOW(), INTERVAL 24 HOUR))";
         getDbResult($sql, $dbErr);

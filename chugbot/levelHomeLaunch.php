@@ -1,6 +1,7 @@
 <?php
     session_start();
-    include 'assignment.php';
+    include_once 'assignment.php';
+    include_once 'dbConn.php';
     bounceToLogin();
     $err = $dbErr = "";
     
@@ -22,11 +23,13 @@
     $levelHomeUrl .= "?edah=$edah_id&block=$block_id";
     
     // Check for an existing assignment set.
-    $mysqli = connect_db();
-    $sql = "SELECT * FROM ASSIGNMENTS WHERE edah_id = $edah_id AND block_id = $block_id";
-    $result = $mysqli->query($sql);
+    $db = new DbConn();
+    $db->addSelectColumn("*");
+    $db->addWhereColumn("edah_id", $edah_id, 'i');
+    $db->addWhereColumn("block_id", $block_id, 'i');
+    $db->isSelect = TRUE;
+    $result = $db->simpleSelectFromTable("assignments", $dbErr);
     if ($result == FALSE) {
-        $dbErr = dbErrorString($sql, $mysqli->error);
         echo genErrorPage($dbErr);
         exit;
     }
@@ -38,6 +41,7 @@
     
     // We're now ready to build our assignments.  We iterate over each activity
     // group, and make an assignment for each one.
+    $mysqli = connect_db();
     $sql = "SELECT group_id, name FROM groups";
     $result = $mysqli->query($sql);
     if ($result == FALSE) {

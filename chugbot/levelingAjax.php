@@ -1,6 +1,7 @@
 <?php
     session_start();
     include_once 'assignment.php'; // Includes functions and classes.
+    include_once 'dbConn.php';
     header("content-type:application/json");
     
     function getDbResult($sql) {
@@ -16,9 +17,18 @@
     }
     
     function getPrefListsForCampersByGroup($edah_id, $block_id, &$camperId2Name) {
-        $sql = "SELECT camper_id, first, last FROM campers c, block_instances b WHERE c.edah_id = $edah_id AND " .
-        "c.session_id = b.session_id and b.block_id = $block_id";
-        $result = getDbResult($sql);
+        $db = new DbConn();
+        $db->isSelect = TRUE;
+        $db->addColVal($edah_id, 'i');
+        $db->addColVal($block_id, 'i');
+        $sql = "SELECT camper_id, first, last FROM campers c, block_instances b WHERE c.edah_id = ? AND " .
+        "c.session_id = b.session_id and b.block_id = ?";
+        $err = "";
+        $result = $db->doQuery($sql, $err);
+        if ($result == FALSE) {
+            error_log("WARNING: getPrefLists failed: $err");
+            return;
+        }
         $camperInString = "(";
         $rc = mysqli_num_rows($result);
         if ($rc == 0) {
@@ -41,7 +51,18 @@
         
         $camperId2Group2PrefList = array();
         $keylist = array("first_choice_id", "second_choice_id", "third_choice_id", "fourth_choice_id", "fifth_choice_id", "sixth_choice_id");
-        $result = getDbResult("SELECT * FROM preferences WHERE block_id = $block_id AND camper_id IN $camperInString ORDER BY group_id");
+        $db = new DbConn();
+        $db->isSelect = TRUE;
+        $db->addColVal($block_id, 'i');
+        // Note that $camperInString does not need to be parameterized, because we build it ourselves above.
+        $sql = "SELECT * FROM preferences WHERE block_id = ? AND camper_id IN $camperInString ORDER BY group_id";
+        $err = "";
+        $result = $db->doQuery($sql, $err);
+        if ($result == FALSE) {
+            error_log("Preferences select failed: $err");
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
         while ($row = $result->fetch_assoc()) {
             $group_id = intval($row["group_id"]);
             $camper_id = intval($row["camper_id"]);
@@ -89,7 +110,18 @@
             
             // Grab chug limits, and create Chug objects.
             $chugId2Chug = array();
-            $result = getDbResult("SELECT * FROM chugim c, edot_for_chug e where c.group_id = $groupId AND c.chug_id = e.chug_id AND e.edah_id = $edah_id");
+            $db = new DbConn();
+            $db->isSelect = TRUE;
+            $db->addColVal($groupId, 'i');
+            $db->addColVal($edah_id, 'i');
+            $sql = "SELECT * FROM chugim c, edot_for_chug e where c.group_id = ? AND c.chug_id = e.chug_id AND e.edah_id = ?";
+            $err = "";
+            $result = $db->doQuery($sql, $err);
+            if ($result == FALSE) {
+                error_log("Chug limit select failed: $err");
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => $err)));
+            }
             while ($row = mysqli_fetch_assoc($result)) {
                 $c = new Chug($row["name"], $row["max_size"], $row["min_size"], $row["chug_id"]);
                 $c->group_id = intval($row["group_id"]);
@@ -135,25 +167,55 @@
                         }
                     }
                     // First, delete the existing match for this block and group for this camper, if any.
+                    $err = "";
+                    $db = new DbConn();
+                    $db->isSelect = TRUE;
+                    $db->addColVal($block_id, 'i');
+                    $db->addColVal($camperId, 'i');
+                    $db->addColVal($groupId, 'i');
                     $sql = "SELECT m.chug_instance_id existing_instance_id from matches m, chug_instances i, chugim c WHERE " .
-                    "i.chug_instance_id = m.chug_instance_id AND i.block_id = $block_id AND m.camper_id = $camperId " .
-                    "AND c.chug_id = i.chug_id AND c.group_id = $groupId";
-                    $result = getDbResult($sql);
+                    "i.chug_instance_id = m.chug_instance_id AND i.block_id = ? AND m.camper_id = ? " .
+                    "AND c.chug_id = i.chug_id AND c.group_id = ?";
+                    $result = $db->doQuery($sql, $err);
+                    if ($result == FALSE) {
+                        error_log("Existing instance ID select failed: $err");
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => $err)));
+                    }
                     $row = $result->fetch_assoc();
                     $existingChugInstanceId = $row["existing_instance_id"];
-                    $sql = "DELETE FROM matches WHERE camper_id = $camperId AND " .
-                    "chug_instance_id = $existingChugInstanceId";
-                    getDbResult($sql);
+                    $db = new DbConn();
+                    $db->addWhereColumn("camper_id", $camperId, 'i');
+                    $db->addWhereColumn("chug_instance_id", $existingChugInstanceId, 'i');
+                    if (! $db->deleteFromTable("matches", $err)) {
+                        error_log("Unable to delete existing match: $err");
+                        exit;
+                    }
                     // Next, get the instance ID for this chug in this block and group.
+                    $db = new DbConn();
+                    $db->isSelect = TRUE;
+                    $db->addColVal($chugId, 'i');
+                    $db->addColVal($block_id, 'i');
+                    $db->addColVal($groupId, 'i');
                     $sql = "SELECT i.chug_instance_id new_instance_id from chug_instances i, chugim c WHERE " .
-                    "i.chug_id = c.chug_id AND c.chug_id = $chugId AND i.block_id = $block_id AND c.group_id = $groupId";
-                    $result = getDbResult($sql);
+                    "i.chug_id = c.chug_id AND c.chug_id = ? AND i.block_id = ? AND c.group_id = ?";
+                    $result = $db->doQuery($sql, $err);
+                    if ($result == FALSE) {
+                        error_log("Chug instance ID select failed: $err");
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => $err)));
+                    }
                     $row = $result->fetch_assoc();
                     $newInstanceId = $row["new_instance_id"];
                     // Finally, insert the new instance into the matches table.
-                    $sql = "INSERT INTO matches (camper_id, chug_instance_id) " .
-                    "VALUES ($camperId, $newInstanceId)";
-                    getDbResult($sql);
+                    $db = new DbConn();
+                    $db->addColumn("camper_id", $camperId, 'i');
+                    $db->addColumn("chug_instance_id", $newInstanceId, 'i');
+                    if (! $db->insertIntoTable("matches", $err)) {
+                        error_log("Unable to insert match: $err");
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => $err)));
+                    }
                 }
             }
             // Compute assignment stats, and update the assignments table.
@@ -162,13 +224,29 @@
             overUnder(array_values($chugId2Chug), $underMin, $overMax);
 
             // Update the assignment table (metadata about this assignment) with our stats.
-            $sql = "DELETE FROM assignments WHERE edah_id = $edah_id AND " .
-            "block_id = $block_id AND group_id = $groupId";
-            getDbResult($sql);
-            $sql = "INSERT INTO assignments (edah_id, block_id, group_id, first_choice_ct, second_choice_ct, third_choice_ct, " .
-            "fourth_choice_or_worse_ct, under_min_list, over_max_list) " .
-            "VALUES ($edah_id, $block_id, $groupId, $firstCt, $secondCt, $thirdCt, $fourthOrWorseCt, \"$underMin\", \"$overMax\")";
-            getDbResult($sql);
+            $db = new DbConn();
+            $db->addWhereColumn("edah_id", $edah_id, 'i');
+            $db->addWhereColumn("block_id", $block_id, 'i');
+            $db->addWhereColumn("group_id", $groupId, 'i');
+            if (! $db->deleteFromTable("assignments", $err)) {
+                error_log("Unable to delete existing assignment: $err");
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => $err)));
+            }
+            $db = new DbConn();
+            $db->addColumn("edah_id", $edah_id, 'i');
+            $db->addColumn("block_id", $block_id, 'i');
+            $db->addColumn("group_id", $groupId, 'i');
+            $db->addColumn("first_choice_ct", $firstCt, 'i');
+            $db->addColumn("second_choice_ct", $secondCt, 'i');
+            $db->addColumn("third_choice_ct", $thirdCt, 'i');
+            $db->addColumn("fourth_choice_or_worse_ct", $fourthOrWorseCt, 'i');
+            $db->addColumn("under_min_list", $underMin, 's');
+            $db->addColumn("over_max_list", $overMax, 's');
+            if (! $db->insertIntoTable("assignments", $err)) {
+                error_log("Unable to insert new assignment stats: $err");
+                exit;
+            }
         }
         
         $retVal["ok"] = 1;
@@ -220,21 +298,43 @@
                 $groupId2ChugId2MatchedCampers[$group_id] = array();
             }
             // Get all chugim for this group/edah, and make an array entry.
-            $result2 = getDbResult("SELECT c.chug_id chug_id FROM chugim c, chug_instances i, edot_for_chug ec " .
-                                   "WHERE c.group_id = $group_id AND i.block_id = $block_id AND c.chug_id = i.chug_id " .
-                                   "AND ec.chug_id = c.chug_id AND ec.edah_id = $edah_id");
+            $db = new DbConn();
+            $db->isSelect = TRUE;
+            $db->addColVal($group_id, 'i');
+            $db->addColVal($block_id, 'i');
+            $db->addColVal($edah_id, 'i');
+            $err = "";
+            $result2 = $db->doQuery("SELECT c.chug_id chug_id FROM chugim c, chug_instances i, edot_for_chug ec " .
+                                    "WHERE c.group_id = ? AND i.block_id = ? AND c.chug_id = i.chug_id " .
+                                    "AND ec.chug_id = c.chug_id AND ec.edah_id = ?", $err);
+            if ($result2 == FALSE) {
+                error_log("Unable to select chugim: $err");
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => $err)));
+            }
             while ($row2 = mysqli_fetch_row($result2)) {
                 $chug_id = intval($row2[0]);
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
             }
             $groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex] =  array();
             // Get matches for this group/block/edah/session.
+            $db = new DbConn();
+            $db->isSelect = TRUE;
+            $db->addColVal($group_id, 'i');
+            $db->addColVal($edah_id, 'i');
+            $db->addColVal($block_id, 'i');
+            $err = "";
             $sql = "SELECT m.camper_id, ch.chug_id FROM matches m, campers c, block_instances b, chugim ch, chug_instances i " .
             "WHERE i.block_id = b.block_id AND ch.chug_id = i.chug_id " .
-            "AND ch.group_id = $group_id AND m.chug_instance_id = i.chug_instance_id " .
-            "AND m.camper_id = c.camper_id AND c.edah_id = $edah_id " .
-            "AND b.block_id = $block_id AND b.session_id = c.session_id";
-            $result3 = getDbResult($sql);
+            "AND ch.group_id = ? AND m.chug_instance_id = i.chug_instance_id " .
+            "AND m.camper_id = c.camper_id AND c.edah_id = ? " .
+            "AND b.block_id = ? AND b.session_id = c.session_id";
+            $result3 = $db->doQuery($sql, $err);
+            if ($result3 == FALSE) {
+                error_log("Unable to select matches: $err");
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => $err)));
+            }
             while ($row3 = mysqli_fetch_row($result3)) {
                 $camper_id = intval($row3[0]);
                 $chug_id = intval($row3[1]);
@@ -275,13 +375,32 @@
         $block_id = $_POST["block_id"];
         $edah_name = "";
         $block_name = "";
-        $result = getDbResult("SELECT name FROM edot where edah_id=$edah_id");
-        if ($result->num_rows > 0) {
+        $db = new DbConn();
+        $db->isSelect = TRUE;
+        $db->addSelectColumn("name");
+        $db->addWhereColumn("edah_id", $edah_id, 'i');
+        $err = "";
+        $result = $db->simpleSelectFromTable("edot", $err);
+        if ($result == FALSE) {
+            error_log("Unable to select edah: $err");
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        if ($result->num_rows) {
             $row = $result->fetch_row();
             $edah_name = $row[0];
         }
-        $result = getDbResult("SELECT name FROM blocks where block_id=$block_id");
-        if ($result->num_rows > 0) {
+        $db = new DbConn();
+        $db->isSelect = TRUE;
+        $db->addSelectColumn("name");
+        $db->addWhereColumn("block_id", $block_id, 'i');
+        $result = $db->simpleSelectFromTable("blocks", $err);
+        if ($result == FALSE) {
+            error_log("Unable to select block: $err");
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        if ($result->num_rows) {
             $row = $result->fetch_row();
             $block_name = $row[0];
         }
@@ -318,7 +437,19 @@
                     die(json_encode(array("error" => $err)));
                 }
             }
-            $result2 = getDbResult("SELECT * FROM assignments WHERE edah_id = $edah_id AND group_id = $group_id AND block_id = $block_id");
+            $db = new DbConn();
+            $db->isSelect = TRUE;
+            $db->addSelectColumn("*");
+            $db->addWhereColumn("edah_id", $edah_id, 'i');
+            $db->addWhereColumn("group_id", $group_id, 'i');
+            $db->addWhereColumn("block_id", $block_id, 'i');
+            $err = "";
+            $result2 = $db->simpleSelectFromTable("assignments", $err);
+            if ($result2 == FALSE) {
+                error_log("Unable to select assignment: $err");
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => $err)));
+            }
             $row = mysqli_fetch_assoc($result2);
             // Increment choice counts
             foreach ($choiceKeys as $choiceKey) {

@@ -1,6 +1,7 @@
 <?php
     session_start();
-    include 'functions.php';
+    include_once 'functions.php';
+    include_once 'dbConn.php';
     bounceToLogin();
     
     $dbErr = $itemIdErr = $qsErr = "";
@@ -36,13 +37,9 @@
         if (empty($itemIdErr) &&
             empty($qsErr)) {
             // Do the deletion if we have all parameters.
-            $sql = "DELETE FROM $table_name where $id_col = \"$item_id\"";
-            $submitOk = $mysqli->query($sql);
-            if ($submitOk == FALSE) {
-                $dbErr = dbErrorString($sql, $mysqli->error);
-            } else {
-                $deletedOk = TRUE;
-            }
+            $db = new DbConn();
+            $db->addWhereColumn($id_col, $item_id, 'i');
+            $deletedOk = $db->deleteFromTable($table_name, $dbErr);
         }
     }
     

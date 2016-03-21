@@ -1,4 +1,5 @@
 <?php
+    include_once 'dbConn.php';
     include_once 'functions.php';
 
     abstract class FormItem {

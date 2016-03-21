@@ -1,6 +1,7 @@
 <?php
     include_once 'functions.php';
     include_once 'assignmentClasses.php';
+    include_once 'dbConn.php';
     
     if (! camperLoggedIn()) {
         exit();
@@ -159,7 +160,6 @@
     
     function do_assignment($edah_id, $block_id, $group_id, &$err) {
         debugLog("Making assignment for edah $edah_id, block $block_id, group $group_id");
-        $mysqli = connect_db();
         
         // Grab the campers in this edah and block, and prefs for this group.  We determine the
         // campers in a block by joining with the block_instances table, which tells us which
@@ -167,21 +167,25 @@
         // table only knows about sessions).
         $campers = array();
         $camperIdsToAssign = array();
+        $db = new DbConn();
+        $db->addColVal($edah_id, 'i');
+        $db->addColVal($block_id, 'i');
+        $db->addColVal($group_id, 'i');
+        $db->isSelect = TRUE;
         $sql = "SELECT c.camper_id, c.first, c.last, c.needs_first_choice, " .
         "IFNULL(p.first_choice_id,-1), IFNULL(p.second_choice_id,-1), IFNULL(p.third_choice_id,-1), " .
         "IFNULL(p.fourth_choice_id,-1), IFNULL(p.fifth_choice_id,-1), IFNULL(p.sixth_choice_id,-1) " .
         "FROM campers c, block_instances b, preferences p " .
-        "WHERE c.edah_id = $edah_id " .
+        "WHERE c.edah_id = ? " .
         "AND c.session_id = b.session_id " .
-        "AND b.block_id = $block_id " .
+        "AND b.block_id = ? " .
         "AND p.camper_id = c.camper_id " .
-        "AND p.group_id = $group_id " .
+        "AND p.group_id = ? " .
         "AND p.block_id = b.block_id " .
         "AND c.inactive = 0";
-        $result = $mysqli->query($sql);
+        $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
-            $err = dbErrorString($sql, $mysqli->error);
-            $mysqli->close();
+            error_log($err);
             return FALSE;
         }
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
@@ -198,13 +202,19 @@
         
         // Grab the chugim available for this group/block/edah.
         $chugim = array();
+        $db = new DbConn();
+        $db->addColVal($group_id, 'i');
+        $db->addColVal($edah_id, 'i');
+        $db->addColVal($edah_id, 'i');
+        $db->addColVal($block_id, 'i');
+        $db->addColVal($block_id, 'i');
+        $db->isSelect = TRUE;
         $sql = "SELECT c.name, c.max_size, c.min_size, c.chug_id FROM chugim c, edot_for_chug e, edot_for_block b, chug_instances i WHERE " .
-        "c.group_id = $group_id AND c.chug_id = e.chug_id AND e.edah_id = $edah_id AND b.edah_id = $edah_id AND b.block_id = $block_id AND " .
-        "i.chug_id = c.chug_id AND i.block_id = $block_id";
-        $result = $mysqli->query($sql);
+        "c.group_id = ? AND c.chug_id = e.chug_id AND e.edah_id = ? AND b.edah_id = ? AND b.block_id = ? AND " .
+        "i.chug_id = c.chug_id AND i.block_id = ?";
+        $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
-            $err = dbErrorString($sql, $mysqli->error);
-            $mysqli->close();
+            error_log($err);
             return FALSE;
         }
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
@@ -213,7 +223,7 @@
         }
         if (count($chugim) == 0) {
             $err = errorString("No chugim found for edah $edah_id, block $block_id, group $group_id");
-            error_log("$err");
+            error_log($err);
             return FALSE;
         }
         
@@ -221,14 +231,16 @@
         // current happiness level when we step through the existing matches in the step
         // after this one.
         $existingPrefs = array();
+        $db = new DbConn();
+        $db->addColVal($block_id, 'i');
+        $db->isSelect = TRUE;
         $sql = "SELECT p.camper_id camper_id, p.group_id group_id, " .
         "IFNULL(first_choice_id,-1), IFNULL(second_choice_id,-1), IFNULL(third_choice_id,-1), " .
         "IFNULL(fourth_choice_id,-1), IFNULL(fifth_choice_id,-1), IFNULL(sixth_choice_id,-1) " .
-        "FROM preferences p WHERE p.block_id = $block_id";
-        $result = $mysqli->query($sql);
+        "FROM preferences p WHERE p.block_id = ?";
+        $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
-            $err = dbErrorString($sql, $mysqli->error);
-            $mysqli->close();
+            error_log($err);
             return FALSE;
         }
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
@@ -253,18 +265,24 @@
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
         $existingMatches = array();
+        $db = new DbConn();
+        $db->addColVal($block_id, 'i');
+        $db->addColVal($group_id, 'i');
+        $db->addColVal($edah_id, 'i');
+        $db->addColVal($block_id, 'i');
+        $db->addColVal($edah_id, 'i');
+        $db->isSelect = TRUE;
         $sql = "SELECT m.camper_id, c.group_id, c.name, c.chug_id FROM matches m, chugim c, campers ca, block_instances b, chug_instances i, edot_for_chug e " .
-        "WHERE i.block_id = $block_id AND m.chug_instance_id = i.chug_instance_id " .
-        "AND i.chug_id = c.chug_id AND c.group_id != $group_id " .
-        "AND m.camper_id = ca.camper_id AND ca.edah_id = $edah_id AND b.block_id = $block_id " .
+        "WHERE i.block_id = ? AND m.chug_instance_id = i.chug_instance_id " .
+        "AND i.chug_id = c.chug_id AND c.group_id != ? " .
+        "AND m.camper_id = ca.camper_id AND ca.edah_id = ? AND b.block_id = ? " .
         "AND b.session_id = ca.session_id " .
         "AND e.chug_id = c.chug_id " .
-        "AND e.edah_id = $edah_id " .
+        "AND e.edah_id = ? " .
         "GROUP BY 1,2";
-        $result = $mysqli->query($sql);
+        $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
-            $err = dbErrorString($sql, $mysqli->error);
-            $mysqli->close();
+            error_log($err);
             return FALSE;
         }
         $happiness = array();
@@ -428,34 +446,35 @@
                 $fourthOrWorseCt++;
             }
             // Update the matches table with each camper's assignment.
-            $sql = "DELETE FROM matches WHERE camper_id = $cdbg->camper_id AND chug_instance_id IN " .
-            "(SELECT chug_instance_id FROM chug_instances i, chugim c WHERE i.block_id = $block_id " .
-            "AND i.chug_id = c.chug_id AND c.group_id = $group_id)";
-            $result = $mysqli->query($sql);
+            $db = new DbConn();
+            $db->addColVal("camper_id", $cdbg->camper_id, 'i');
+            $db->addColVal("block_id", $block_id, 'i');
+            $db->addColVal("group_id", $group_id, 'i');
+            $sql = "DELETE FROM matches WHERE camper_id = ? AND chug_instance_id IN " .
+            "(SELECT chug_instance_id FROM chug_instances i, chugim c WHERE i.block_id = ? " .
+            "AND i.chug_id = c.chug_id AND c.group_id = ?)";
+            $result = $db->doQuery($sql, $err);
             if ($result == FALSE) {
-                $err = dbErrorString($sql, $mysqli->error);
                 error_log($err);
-                $mysqli->close();
                 return FALSE;
             }
-            $sql = "SELECT chug_instance_id from chug_instances WHERE " .
-            "chug_id = $assignedChugId AND block_id = $block_id";
-            $result = $mysqli->query($sql);
+            $db = new DbConn();
+            $db->addSelectColumn("chug_instance_id");
+            $db->addWhereColumn("chug_id", $assignedChugId, 'i');
+            $db->addWhereColumn("block_id", $block_id, 'i');
+            $db->isSelect = TRUE;
+            $result = $db->simpleSelectFromTable("chug_instances", $err);
             if ($result == FALSE) {
-                $err = dbErrorString($sql, $mysqli->error);
                 error_log($err);
-                $mysqli->close();
                 return FALSE;
             }
             $row = $result->fetch_assoc();
-            $chugInstanceId = $row["chug_instance_id"];
-            $sql = "INSERT INTO matches (camper_id, chug_instance_id) " .
-            "VALUES ($cdbg->camper_id, $chugInstanceId)";
-            $result = $mysqli->query($sql);
+            $db = new DbConn();
+            $db->addColumn("camper_id", $cdbg->camper_id, 'i');
+            $db->addColumn("chug_instance_id", $assignedChugId, 'i');
+            $result = $db->insertIntoTable("matches", $err);
             if ($result == FALSE) {
-                $err = dbErrorString($sql, $mysqli->error);
                 error_log($err);
-                $mysqli->close();
                 return FALSE;
             }
         }
@@ -464,27 +483,31 @@
         overUnder($chugim, $underMin, $overMax);
         
         // Update the assignment table (metadata about this assignment) with our stats.
-        $sql = "DELETE FROM assignments WHERE edah_id = $edah_id AND " .
-        "block_id = $block_id AND group_id = $group_id";
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            $err = dbErrorString($sql, $mysqli->error);
+        $db = new DbConn();
+        $db->addWhereColumn("edah_id", $edah_id, 'i');
+        $db->addWhereColumn("block_id", $block_id, 'i');
+        $db->addWhereColumn("group_id", $group_id, 'i');
+        $delOk = $db->deleteFromTable("assignments", $err);
+        if ($delOk == FALSE) {
             error_log($err);
-            $mysqli->close();
             return FALSE;
         }
-        $sql = "INSERT INTO assignments (edah_id, block_id, group_id, first_choice_ct, second_choice_ct, third_choice_ct, " .
-        "fourth_choice_or_worse_ct, under_min_list, over_max_list) " .
-        "VALUES ($edah_id, $block_id, $group_id, $firstCt, $secondCt, $thirdCt, $fourthOrWorseCt, \"$underMin\", \"$overMax\")";
-        $result = $mysqli->query($sql);
+        $db = new DbConn();
+        $db->addColumn("edah_id", $edah_id, 'i');
+        $db->addColumn("block_id", $block_id, 'i');
+        $db->addColumn("group_id", $group_id, 'i');
+        $db->addColumn("first_choice_ct", $firstCt, 'i');
+        $db->addColumn("second_choice_ct", $secondCt, 'i');
+        $db->addColumn("third_choice_ct", $thirdCt, 'i');
+        $db->addColumn("fourth_choice_or_worse_ct", $fourthOrWorseCt, 'i');
+        $db->addColumn("under_min_list", $underMin, 's');
+        $db->addColumn("over_max_list", $overMax, 's');
+        $result = $db->insertIntoTable("assignments", $err);
         if ($result == FALSE) {
-            $err = dbErrorString($sql, $mysqli->error);
             error_log($err);
-            $mysqli->close();
             return FALSE;
         }
         
-        $mysqli->close();
         return TRUE;
     }
     

@@ -30,9 +30,8 @@
         $mail->SMTPAuth = true;
         $mail->Host = 'localhost';
         $mail->Port = 25;
-        $mail->Username = $admin_data_row["admin_email_username"];
-        $mail->Password = $admin_data_row["admin_email_password"];
-        error_log("DBG: Using usename " . $admin_data_row["admin_email_username"] . " password " . $admin_data_row["admin_email_password"]);
+        $mail->Username = ADMIN_EMAIL_USERNAME;
+        $mail->Password = ADMIN_EMAIL_PASSWORD;
         $mail->setFrom($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
         $sentOk = $mail->send();
         if (! $sentOk) {
@@ -88,23 +87,6 @@
                 $overMax .= " (+" . strval($amtOver) . ")";
             }
         }
-    }
-    
-    function getCamperRowForId(&$mysqli, $camper_id, &$dbErr, &$idErr) {
-        $camperIdNum = intval($camper_id);
-        $sql = "select * from campers where camper_id = $camperIdNum";
-        $retVal = array();
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            $dbErr = dbErrorString($sql, $mysqli->error);
-        } else if ($result->num_rows != 1) {
-            $camperIdErr = errorString("camper ID $camper_id not found");
-        } else {
-            $retVal =  $result->fetch_array(MYSQLI_NUM);
-        }
-        mysqli_free_result($result);
-        
-        return $retVal;
     }
     
     function genFatalErrorReport($errorList) {
@@ -221,43 +203,6 @@ EOM;
             $retVal = $retVal . "<input type=\"checkbox\" name=\"${arrayName}[]\" value=\"$idStr\" $selStr />$name<br>";
         }
         return $retVal;
-    }
-    
-    function fillId2Name(&$mysqli, &$id2Name, &$dbErr,
-                         $idColumn, $table, $secondIdColumn = NULL,
-                         $secondTable = NULL) {
-        $sql = "";
-        if ($secondIdColumn) {
-            $sql = "SELECT $idColumn, $secondIdColumn, name FROM $table";
-        } else {
-            $sql = "SELECT $idColumn, name FROM $table";
-        }
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            $dbErr = dbErrorString($sql, $mysqli->error);
-        } else {
-            $secondId2Name = array();
-            if ($secondTable) {
-                $sql = "SELECT $secondIdColumn, name from $secondTable";
-                $result2 = $mysqli->query($sql);
-                if ($result2 == FALSE) {
-                    $dbErr = dbErrorString($sql, $mysqli->error);
-                } else {
-                    while ($row = $result2->fetch_array(MYSQLI_NUM)) {
-                        $secondId2Name[$row[0]] = $row[1];
-                    }
-                    mysqli_free_result($result2);
-                }
-            }
-            while ($row = $result->fetch_array(MYSQLI_NUM)) {
-                if ($secondIdColumn) {
-                    $id2Name[$row[0]] = $row[2] . " - " . $secondId2Name[$row[1]];
-                } else {
-                    $id2Name[$row[0]] = $row[1];
-                }
-            }
-            mysqli_free_result($result);
-        }
     }
     
     function test_input($data) {

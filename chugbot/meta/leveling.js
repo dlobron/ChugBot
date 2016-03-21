@@ -147,7 +147,7 @@ function getAndDisplayCurrentMatches() {
 					  html += "</ul><br style=\"clear: both\"></div>\n";
 				      });
 			   html += "</div>\n";
-			   });;
+			   });
 		    $("#fillmatches").html(html);
                 },
                     error: function(xhr, desc, err) {

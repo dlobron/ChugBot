@@ -2,6 +2,8 @@
     session_start();
     include_once 'functions.php';
     include_once 'formItem.php';
+    include_once 'dbConn.php';
+    
     // If the user is already logged in, redirect.
     bouncePastIfLoggedIn("staffHome.php");
     
@@ -72,25 +74,13 @@
                     empty($staffPasswordErr2)) {
                     // No errors: insert the new password and email, and then redirect
                     // to the admin home page.
-                    $insertedOk = FALSE;
-                    $mysqli = connect_db();
-                    $sql = "";
+                    $dbConn = new DbConn();
+                    $dbConn->addColumn("admin_email", $staff_email, 's');
+                    $dbConn->addColumn("admin_password", $staffPasswordHashed, 's');
                     if (empty($existingPasswordHashed)) {
-                        $sql = "INSERT INTO admin_data (admin_email, admin_password) VALUES (? , ?)";
+                        $insertedOk = $dbConn->insertIntoTable("admin_data", $dbError);
                     } else {
-                        $sql = "UPDATE admin_data SET admin_email = ?, admin_password = ?";
-                    }
-                    $stmt = $mysqli->prepare($sql);
-                    if ($stmt == FALSE) {
-                        $dbError = dbErrorString($sql, $mysqli->error);
-                    } else {
-                        $bindOk = $stmt->bind_param('ss', $staff_email, $staffPasswordHashed);
-                        if ($bindOk == FALSE) {
-                            $dbError = dbErrorString($sql, $stmt->error);
-                        } else {
-                            $stmt->execute();
-                            $stmt->close();
-                        }
+                        $insertedOk = $dbConn->updateTable("admin_data", $dbError);
                     }
                     if ($insertedOk) {
                         // New password entered OK: log them in and redirect.  Note

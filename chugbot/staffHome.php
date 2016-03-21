@@ -1,6 +1,7 @@
 <?php
     session_start();
-    include 'functions.php';
+    include_once 'dbConn.php';
+    include_once 'functions.php';
     bounceToLogin();
     
     // Check for a query string that signals a message.

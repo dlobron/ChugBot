@@ -1,18 +1,15 @@
 <?php
     session_start();
+    include_once 'dbConn.php';
     include_once 'functions.php';
     include_once 'formItem.php';
     bounceToLogin();
     
     // A class to generate a zebra-striped report.
     class ZebraReport {
-        function __construct($sql) {
+        function __construct($db, $sql) {
+            $this->db = $db;
             $this->sql = $sql;
-            $this->mysqli = connect_db();
-        }
-        
-        function __destruct() {
-            $this->mysqli->close();
         }
         
         public function addIgnoreColumn($ic) {
@@ -57,9 +54,10 @@
                 echo genFatalErrorReport(array("No table query was specified"));
                 exit();
             }
-            $result = $this->mysqli->query($this->sql);
+            $err = "";
+            $result = $this->db->doQuery($this->sql, $err);
             if ($result == FALSE) {
-                echo dbErrorString($this->sql, $this->mysqli->error);
+                echo dbErrorString($err);
                 exit();
             }
             // If no rows were found, display a message.
@@ -170,8 +168,8 @@
         private $ignoreCols = array();
         private $idCol2EditUrl = array();
         private $valCol2IdCol = array();
-        private $mysqli;
         private $sql = NULL;
+        private $db = NULL;
         private $caption = NULL;
         private $newTableColumn = NULL;
         private $headerTextMap = array();
@@ -200,19 +198,18 @@
                                  ReportTypes::Director  => "Director (whole camp, sorted by edah)"
                                 );
     
-    $mysqli = connect_db();
-    fillId2Name($mysqli, $chugId2Name, $dbErr,
+    fillId2Name($chugId2Name, $dbErr,
                 "chug_id", "chugim", "group_id",
                 "groups");
-    fillId2Name($mysqli, $sessionId2Name, $dbErr,
+    fillId2Name($sessionId2Name, $dbErr,
                 "session_id", "sessions");
-    fillId2Name($mysqli, $blockId2Name, $dbErr,
+    fillId2Name($blockId2Name, $dbErr,
                 "block_id", "blocks");
-    fillId2Name($mysqli, $groupId2Name, $dbErr,
+    fillId2Name($groupId2Name, $dbErr,
                 "group_id", "groups");
-    fillId2Name($mysqli, $edahId2Name, $dbErr,
+    fillId2Name($edahId2Name, $dbErr,
                 "edah_id", "edot");
-    fillId2Name($mysqli, $bunkId2Name, $dbErr,
+    fillId2Name($bunkId2Name, $dbErr,
                 "bunk_id", "bunks");
     ?>
 
@@ -392,6 +389,8 @@ EOM;
     if ($doReport) {
         // Prepare and display the report, setting the SQL according to the report
         // type.
+        $db = new DbConn();
+        $db->isSelect = TRUE;
         if ($reportMethod == ReportTypes::ByEdah) {
             // Per-edah report.
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
@@ -404,12 +403,13 @@ EOM;
                 $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
             }
             if ($edahId) {
-                $sql .= "AND c.edah_id = $edahId ";
+                $sql .= "AND c.edah_id = ? ";
+                $db->addColVal($edahId, 'i');
             }
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
             
             // Create and display the report.
-            $edahReport = new ZebraReport($sql);
+            $edahReport = new ZebraReport($db, $sql);
             $edahReport->setNewTableColumn("edah");
             $edahReport->setCaption("Chug Assignments by Edah for LINK");
             $edahReport->addIgnoreColumn("edah_sort_order");
@@ -434,11 +434,12 @@ EOM;
             }
             if ($bunkId) {
                 $sql .= "AND b.bunk_id = $bunkId ";
+                $db->addColVal($bunkId, 'i');
             }
             $sql .= "ORDER BY bunk, name, edah_sort_order, edah, group_name";
             
             // Create and display the report.
-            $bunkReport = new ZebraReport($sql);
+            $bunkReport = new ZebraReport($db, $sql);
             $bunkReport->setNewTableColumn("bunk");
             $bunkReport->setCaption("Chug Assignments by Bunk for LINK");
             $bunkReport->addIgnoreColumn("edah_sort_order");
@@ -465,7 +466,7 @@ EOM;
             }
             $sql .= "ORDER BY edah, edah_sort_order, block, camper, bunk";
             
-            $chugReport = new ZebraReport($sql);
+            $chugReport = new ZebraReport($db, $sql);
             $chugReport->setNewTableColumn("edah");
             $chugReport->addIgnoreColumn("edah_sort_order");
             $chugReport->addIgnoreColumn("rosh");
@@ -496,7 +497,7 @@ EOM;
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
             
             // Create and display the report.
-            $directorReport = new ZebraReport($sql);
+            $directorReport = new ZebraReport($db, $sql);
             $directorReport->setNewTableColumn("edah");
             $directorReport->setCaption("Chug Assignments by Edah for LINK");
             $directorReport->addIgnoreColumn("edah_sort_order");

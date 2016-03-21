@@ -1,6 +1,7 @@
 <?php
     session_start();
-    include 'functions.php';
+    include_once 'dbConn.php';
+    include_once 'functions.php';
     
     echo headerText("Choose Camper to Edit");
 
@@ -17,11 +18,16 @@
         if (empty($emailErr)) {
             // Grab the campers who are associated with this email, and store them
             // associatively by ID in $camperId2Name.
-            $mysqli = connect_db();
-            $sql = "SELECT camper_id, first, last FROM campers WHERE email=\"$email\"";
-            $result = $mysqli->query($sql);
+            $db = new DbConn();
+            $db->isSelect = TRUE;
+            $db->addSelectColumn("camper_id");
+            $db->addSelectColumn("first");
+            $db->addSelectColumn("last");
+            $db->addWhereColumn("email", $email, 's');
+            $err = "";
+            $result = $db->simpleSelectFromTable("campers", $err);
             if ($result == FALSE) {
-                echo(dbErrorString($sql, $mysqli->error));
+                echo(dbErrorString($sql, $err));
                 $dbError = TRUE;
             } else {
                 while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
