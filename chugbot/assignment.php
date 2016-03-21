@@ -447,9 +447,9 @@
             }
             // Update the matches table with each camper's assignment.
             $db = new DbConn();
-            $db->addColVal("camper_id", $cdbg->camper_id, 'i');
-            $db->addColVal("block_id", $block_id, 'i');
-            $db->addColVal("group_id", $group_id, 'i');
+            $db->addColVal($cdbg->camper_id, 'i');
+            $db->addColVal($block_id, 'i');
+            $db->addColVal($group_id, 'i');
             $sql = "DELETE FROM matches WHERE camper_id = ? AND chug_instance_id IN " .
             "(SELECT chug_instance_id FROM chug_instances i, chugim c WHERE i.block_id = ? " .
             "AND i.chug_id = c.chug_id AND c.group_id = ?)";

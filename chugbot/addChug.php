@@ -35,7 +35,7 @@
     $groupDropDown->setInputClass("element select medium");
     $groupDropDown->setInputSingular("group");
     $groupDropDown->setColVal($groupIdVal);
-    $groupDropDown->fillDropDownId2Name($addChugPage->mysqli, $addChugPage->dbErr,
+    $groupDropDown->fillDropDownId2Name($addChugPage->dbErr,
                                         "group_id", "groups");
     $addChugPage->addFormItem($groupDropDown);
     

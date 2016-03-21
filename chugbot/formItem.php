@@ -202,8 +202,8 @@
             return $this->html;
         }
         
-        public function fillDropDownId2Name($mysqli, &$dbErr, $idCol, $table) {
-            fillId2Name($mysqli, $this->id2Name, $dbErr,
+        public function fillDropDownId2Name(&$dbErr, $idCol, $table) {
+            fillId2Name($this->id2Name, $dbErr,
                         $idCol, $table);
         }
         

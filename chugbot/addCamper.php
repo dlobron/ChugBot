@@ -51,7 +51,7 @@
     $sessionDropDown->setInputClass("element select medium");
     $sessionDropDown->setInputSingular("session");
     $sessionDropDown->setColVal($sessionIdVal);
-    $sessionDropDown->fillDropDownId2Name($addCamperPage->mysqli, $addCamperPage->dbErr,
+    $sessionDropDown->fillDropDownId2Name($addCamperPage->dbErr,
                                         "session_id", "sessions");
     $addCamperPage->addFormItem($sessionDropDown);
     
@@ -62,7 +62,7 @@
     $edahDropDown->setInputSingular("edah");
     $edahDropDown->setInputClass("element select medium");
     $edahDropDown->setColVal($edahIdVal);
-    $edahDropDown->fillDropDownId2Name($addCamperPage->mysqli, $addCamperPage->dbErr,
+    $edahDropDown->fillDropDownId2Name($addCamperPage->dbErr,
                                        "edah_id", "edot");
     $addCamperPage->addFormItem($edahDropDown);
     
@@ -72,7 +72,7 @@
     $bunkDropDown->setInputSingular("bunk");
     $bunkDropDown->setInputClass("element select medium");
     $bunkDropDown->setColVal($bunkIdVal);
-    $bunkDropDown->fillDropDownId2Name($addCamperPage->mysqli, $addCamperPage->dbErr,
+    $bunkDropDown->fillDropDownId2Name($addCamperPage->dbErr,
                                        "bunk_id", "bunks");
     $addCamperPage->addFormItem($bunkDropDown);
     

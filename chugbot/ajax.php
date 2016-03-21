@@ -282,7 +282,7 @@ END;
     if (isset($_POST["get_chug_info"])) {
         $camper_id = getCamperId();
         $db = new DbConn();
-        $db->addColVal($camper_id);
+        $db->addColVal($camper_id, 'i');
         $db->isSelect = TRUE;
         $err = "";
         $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
