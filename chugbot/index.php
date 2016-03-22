@@ -4,17 +4,7 @@
     include_once 'formItem.php';
     session_start();
     
-    // If the user is logged in as an admin, redirect to the admin page.  If they
-    // are logged in as a camper, redirect to the camper home page.
-    $staffHome = urlIfy("staffHome.php");
-    $camperHome = urlIfy("camperHome.php");
-    if (adminLoggedIn()) {
-        header("Location: $staffHome");
-        exit();
-    } else if (camperLoggedIn()) {
-        header("Location: $camperHome");
-        exit();
-    }
+    $loggedIn = (adminLoggedIn() || camperLoggedIn());
     
     $campName = "Camp Ramah";
     $hint = "No hint available";
@@ -36,7 +26,11 @@
         }
     }
     
-    $codeMessage = "To get started, please enter the camper code and click \"Go!\".  If you forgot the code, hover your mouse over the input box for a hint.";
+    if ($loggedIn) {
+        $codeMessage = "Click \"Go\" to access the camper site";
+    } else {
+        $codeMessage = "To get started, please enter the camper code and click \"Go!\".  If you forgot the code, hover your mouse over the input box for a hint.";
+    }
     $parts = explode("&", $_SERVER['QUERY_STRING']);
     foreach ($parts as $part) {
         $cparts = explode("=", $part);
@@ -69,14 +63,16 @@
 <ul>
 
 <?php
-    $ccField = new FormItemSingleTextField("Camper Access Code", TRUE, "camper_code", 0);
-    $ccField->setInputValue($admin_email);
-    $ccField->setInputType("text");
-    $ccField->setInputClass("element text medium");
-    $ccField->setInputMaxLength(20);
-    $ccField->setPlaceHolder("Access code");
-    $ccField->setGuideText("Hint: $hint");
-    echo $ccField->renderHtml();
+    if (! $loggedIn) {
+        $ccField = new FormItemSingleTextField("Camper Access Code", TRUE, "camper_code", 0);
+        $ccField->setInputValue($admin_email);
+        $ccField->setInputType("text");
+        $ccField->setInputClass("element text medium");
+        $ccField->setInputMaxLength(20);
+        $ccField->setPlaceHolder("Access code");
+        $ccField->setGuideText("Hint: $hint");
+        echo $ccField->renderHtml();
+    }
 ?>
 
 </ul>
