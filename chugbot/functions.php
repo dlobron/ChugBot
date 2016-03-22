@@ -241,6 +241,10 @@ EOM;
     function camperLoggedIn() {
         return isset($_SESSION['camper_logged_in']);
     }
+    
+    function baseUrl() {
+        return urlIfy("index.php");
+    }
 
     function homeUrl() {
         if (isset($_SESSION['admin_logged_in'])) {
@@ -327,13 +331,17 @@ EOM;
     
     function navText() {
         $retVal = "";
+        $baseUrl = baseUrl();
+        $retVal .= "<a href=\"$baseUrl\">Site Home</a>";
         $homeUrl = homeUrl();
-        $retVal .= "<a href=\"$homeUrl\">Chug Home</a>";
         if (adminLoggedIn()) {
-            // Include the camper home for staff.
+            $retVal .= "<br><a href=\"$homeUrl\">Staff Home</a>";
+            $camperUrl = urlIfy("camperHome.php");
             $camperUrl = urlIfy("camperHome.php");
             $retVal .= "<br><a href=\"$camperUrl\">Camper Home</a>";
-        }
+        } else {
+            $retVal .= "<br><a href=\"$homeUrl\">Camper Home</a>";
+        }        
         $mysqli = connect_db();
         $sql = "SELECT camp_name, camp_web FROM admin_data";
         $result = $mysqli->query($sql);
