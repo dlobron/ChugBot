@@ -7,7 +7,6 @@
     $dbErr = $itemIdErr = $qsErr = "";
     $comma_sep = $table_name = $item_id = $id_col = "";
     $deletedOk = FALSE;
-    $mysqli = connect_db();
     
     $parts = explode("&", $_SERVER['QUERY_STRING']); // Expect: idCol=$idcol&tableName=$tableName
     if (count($parts) != 2) {
@@ -42,8 +41,6 @@
             $deletedOk = $db->deleteFromTable($table_name, $dbErr);
         }
     }
-    
-    $mysqli->close();
     
     ?>
 

@@ -23,11 +23,6 @@
         function __construct($title, $firstParagraph) {
             $this->title = $title;
             $this->firstParagraph = $firstParagraph;
-            $this->mysqli = connect_db();
-        }
-        
-        function __destruct() {
-            $this->mysqli->close();
         }
         
         public function addFormItem($fi) {
@@ -51,7 +46,6 @@
         public $title;
         public $dbErr = "";
         public $colName2Error = array();
-        public $mysqli;
         protected $resultStr = "";
         protected $firstParagraph;
         protected $secondParagraph;
@@ -559,9 +553,9 @@ EOM;
             "m.camper_id = c.camper_id AND e.block_id = i.block_id AND e.edah_id = c.edah_id AND ec.chug_id = i.chug_id	AND " .
             "ec.edah_id = c.edah_id) legal_instances " .
             "ON m.chug_instance_id = legal_instances.chug_instance_id AND m.match_id = legal_instances.match_id ORDER BY pk_value";
-            $result = $this->mysqli->query($sql);
+            $db = new DbConn();
+            $result = $db->runQueryDirectly($sql, $this->dbErr);
             if ($result == FALSE) {
-                $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                 return FALSE;
             }
             $deleteHash = array();
@@ -612,9 +606,9 @@ EOM;
             $deleteHash = array();
             foreach ($choices as $choice) {
                 $sql = preg_replace('/CHOICECOL/', $choice, $template);
-                $result = $this->mysqli->query($sql);
+                $db = new DbConn();
+                $result = $db->runQueryDirectly($sql, $this->dbErr);
                 if ($result == FALSE) {
-                    $this->dbErr = dbErrorString($sql, $this->mysqli->error);
                     return FALSE;
                 }
                 while ($row = $result->fetch_assoc()) {

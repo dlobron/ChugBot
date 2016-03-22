@@ -1,4 +1,5 @@
 <?php
+    include_once 'dbConn.php';
     include_once 'functions.php';
     session_start();
     
@@ -8,16 +9,16 @@
     // code.  If none is found, display an error message.
     $loginMessage = "";
     if (! camperLoggedIn()) {
-        $mysqli = connect_db();
+        $db = new DbConn();
         $sql = "SELECT regular_user_token,regular_user_token_hint FROM admin_data";
-        $result = $mysqli->query($sql);
+        $err = "";
+        $result = $db->runQueryDirectly($sql, $err);
         $code = $hint = "";
         if ($result) {
             $row = $result->fetch_assoc();
             $code = $row["regular_user_token"];
             $hint = $row["regular_user_token_hint"];
         }
-        mysqli_free_result($result);
         
         $accessCode = test_input($_POST['camper_code']);
         $n = strlen($accessCode);

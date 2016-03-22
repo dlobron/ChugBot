@@ -4,16 +4,6 @@
     include_once 'formItem.php';
     include_once 'dbConn.php';
     
-    function getDbResult($sql, &$err) {
-        $mysqli = connect_db();
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            $err = dbErrorString($sql, $mysqli->error);
-        }
-        $mysqli->close();
-        return $result;
-    }
-    
     function fatalError($err) {
         echo headerText("Password Reset Error");
         $errText = genFatalErrorReport(array($err));
@@ -52,12 +42,13 @@
     if ($uuid) {
         // Select all codes, and see if the incoming code matches one.
         // First, delete all expired codes.
+        $db = new DbConn();
         $sql = "DELETE FROM password_reset_codes WHERE expires <= NOW()";
-        getDbResult($sql, $dbErr);
+        $db->runQueryDirectly($sql, $dbErr);
         
         // Select all remaining codes, and compare against the one we received.
         $sql = "SELECT code FROM password_reset_codes";
-        $result = getDbResult($sql, $dbErr);
+        $result = runQueryDirectly($sql, $dbErr);
         if ($dbErr) {
             fatalError($dbErr);
         }
@@ -109,15 +100,16 @@
         // Generate and send the email.  Display a message indicating the email status.
         // First, generate a code, and insert it into the database, with a generous
         // expiration date.
+        $db = new DbConn();
         $code = bin2hex(openssl_random_pseudo_bytes(32));
         $sql = "INSERT INTO password_reset_codes (code, expires) VALUES " .
         "(\"$code\", DATE_ADD(NOW(), INTERVAL 24 HOUR))";
-        getDbResult($sql, $dbErr);
+        $db->runQueryDirectly($sql, $dbErr);
         if ($dbErr) {
             fatalError($dbErr);
         }
         $sql = "SELECT * FROM admin_data";
-        $result = getDbResult($sql, $dbErr);
+        $result = $db->runQueryDirectly($sql, $dbErr);
         if ($dbErr) {
             fatalError($dbErr);
         }

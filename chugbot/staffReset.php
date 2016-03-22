@@ -7,11 +7,12 @@
     
     $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = "";
     $dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = "";
-    $mysqli = connect_db();
+    $db = new DbConn();
+    $err = "";
     $sql = "SELECT * from admin_data";
-    $result = $mysqli->query($sql);
+    $result = $db->runQueryDirectly($sql, $dbError);
     if ($result == FALSE) {
-        $dbError = dbErrorString($sql, $mysqli->error);
+        error_log("admin_data query failed: $dbError");
     } else if ($result->num_rows != 1) {
         $dbError = dbErrorString($sql, "Bad row count for admin data");
     } else {
@@ -35,8 +36,6 @@
         $pref_page_instructions = $existingPrefInstructions;
         $camp_web = $existingCampWeb;
     }
-    mysqli_free_result($result);
-    $mysqli->close();
     
     $staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = $existingEmailErr = "";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {

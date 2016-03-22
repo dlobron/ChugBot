@@ -16,19 +16,17 @@
     $dbError = $staffPasswordErr = $staffPasswordErr2 = "";
     $existingPasswordHashed = "";
     $staffPasswordHashed = "";
-    $mysqli = connect_db();
+    $db = new DbConn();
     $sql = "SELECT admin_password from admin_data";
-    $result = $mysqli->query($sql);
+    $result = $db->runQueryDirectly($sql, $dbError);
     if ($result == FALSE) {
-        $dbError = dbErrorString($sql, $mysqli->error);
+        ;
     } else if ($result->num_rows > 1) {
         $dbError = dbErrorString($sql, "Bad row count for admin email and password");
     } else if ($result->num_rows == 1) {
         $row = mysqli_fetch_row($result);
         $existingPasswordHashed = $row[0];
     }
-    mysqli_free_result($result);
-    $mysqli->close();
     
     $staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = "";
     

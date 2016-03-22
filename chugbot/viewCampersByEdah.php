@@ -1,5 +1,6 @@
 <?php
     session_start();
+    include_once 'dbConn.php';
     include_once 'functions.php';
     bounceToLogin();
     
@@ -7,7 +8,6 @@
     $dbErr = $nameErr = "";
     $camperId2Name = array();
     $camperId2Edah = array();
-    $mysqli = connect_db();
     $forEdahText = "all edot";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql = "SELECT c.camper_id camper_id, c.first first, c.last last, e.name edah_name, e.sort_order edah_sort_order FROM campers c, edot e WHERE c.edah_id = e.edah_id";
@@ -16,25 +16,20 @@
             $sql .= " AND e.edah_id = \"$edah_id\"";
         }
         $sql .= " ORDER BY last, edah_sort_order, edah_name";
-        $result = $mysqli->query($sql);
-        if ($result == FALSE) {
-            $dbErr = dbErrorString($sql, $mysqli->error);
-        } else {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $camperId = $row["camper_id"];
-                $last = $row["last"];
-                $first = $row["first"];
-		$edahName = $row["edah_name"];
-                $camperId2Edah[$camperId] = $edahName;
-                if ($edah_id) {
-                    $forEdahText = "$edahName";
-                }
-                $camperId2Name[$camperId] = "$last, $first";
+        $db = new DbConn();
+        $result = $db->runQueryDirectly($sql, $dbErr);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $camperId = $row["camper_id"];
+            $last = $row["last"];
+            $first = $row["first"];
+            $edahName = $row["edah_name"];
+            $camperId2Edah[$camperId] = $edahName;
+            if ($edah_id) {
+                $forEdahText = "$edahName";
             }
+            $camperId2Name[$camperId] = "$last, $first";
         }
     }
-
-    $mysqli->close();
     ?>
 
 <?php

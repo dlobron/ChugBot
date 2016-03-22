@@ -5,14 +5,14 @@
     header("content-type:application/json");
     
     function getDbResult($sql) {
-        $mysqli = connect_db();
-        $result = $mysqli->query($sql);
+        $db = new DbConn();
+        $err = "";
+        $result = $db->runQueryDirectly($sql, $err);
         if ($result == FALSE) {
-            error_log("ERROR: failed to execute SQL: $sql");
+            error_log("ERROR: failed to execute SQL: $sql, $err");
             header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => "Database error")));
+            die(json_encode(array("error" => $err)));
         }
-        $mysqli->close();
         return $result;
     }
     

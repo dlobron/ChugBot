@@ -1,4 +1,5 @@
 <?php
+    include_once 'dbConn.php';
     include_once 'functions.php';
     include_once 'formItem.php';
     session_start();
@@ -18,9 +19,10 @@
     $campName = "Camp Ramah";
     $hint = "No hint available";
     $adminEmail = "";
-    $mysqli = connect_db();
+    $db = new DbConn();
+    $err = "";
     $sql = "SELECT camp_name, regular_user_token_hint, admin_email FROM admin_data";
-    $result = $mysqli->query($sql);
+    $result = $db->runQueryDirectly($sql, $err);
     if ($result) {
         $row = $result->fetch_assoc();
         if ($row["camp_name"]) {
@@ -33,7 +35,6 @@
             $adminEmail = $row["admin_email"];
         }
     }
-    mysqli_free_result($result);
     
     $codeMessage = "To get started, please enter the camper code and click \"Go!\".  If you forgot the code, hover your mouse over the input box for a hint.";
     $parts = explode("&", $_SERVER['QUERY_STRING']);

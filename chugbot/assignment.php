@@ -200,7 +200,8 @@
             array_push($camperIdsToAssign, $camper_id);
         }
         
-        // Grab the chugim available for this group/block/edah.
+        // Grab the chugim available for this group/block/edah.  The chug must have an
+        // instance in this block, must be available to this edah, and must be in this group.
         $chugim = array();
         $db = new DbConn();
         $db->addColVal($group_id, 'i');
@@ -225,6 +226,22 @@
             $err = errorString("No chugim found for edah $edah_id, block $block_id, group $group_id");
             error_log($err);
             return FALSE;
+        }
+        
+        // Map chug ID to chug instance ID, for this block.  We'll use this when we create entries
+        // in the matches table.
+        $chugInstanceIdForChugId = array();
+        $db = new DbConn();
+        $db->addSelectColumn("*");
+        $db->addWhereColumn("block_id", $block_id, 'i');
+        $db->isSelect = TRUE;
+        $result = $db->simpleSelectFromTable("chug_instances", $err);
+        if ($result == FALSE) {
+            error_log($err);
+            return FALSE;
+        }
+        while ($row = mysqli_fetch_assoc($result)) {
+            $chugInstanceIdForChugId[$row["chug_id"]] = $row["chug_instance_id"];
         }
         
         // Grab camper pref lists in this block, by group.  We'll use this to compute each camper's
@@ -435,6 +452,11 @@
                 error_log("ERROR: Assigned camper ID $camperId to illegal chug ID $assignedChugId");
                 return FALSE;
             }
+            $assignedChugInstanceId = $chugInstanceIdForChugId[$assignedChugId];
+            if ($assignedChugInstanceId == NULL) {
+                error_log("ERROR: Assigned camper ID $camperId chug ID $assignedChugId, which has no instance for block $block_id");
+                return FALSE;
+            }
             debugLog("Assigned " . $cdbg->name . ", cid " . $cdbg->camper_id . " to " . $assignedChug->name . ", choice " . $cdbg->choice_level);
             if ($cdbg->choice_level == 1) {
                 $firstCt++;
@@ -471,7 +493,7 @@
             $row = $result->fetch_assoc();
             $db = new DbConn();
             $db->addColumn("camper_id", $cdbg->camper_id, 'i');
-            $db->addColumn("chug_instance_id", $assignedChugId, 'i');
+            $db->addColumn("chug_instance_id", $assignedChugInstanceId, 'i');
             $result = $db->insertIntoTable("matches", $err);
             if ($result == FALSE) {
                 error_log($err);

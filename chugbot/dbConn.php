@@ -9,6 +9,17 @@
         function __destruct() {
             $this->mysqli->close();
         }
+        
+        // Run a query directly, with no interpolation.  Use only for queries
+        // without user-supplied parameters.
+        public function runQueryDirectly($sql, &$err) {
+            $result = $this->mysqli->query($sql);
+            if ($result == FALSE) {
+                $err = dbErrorString($sql, $this->mysqli->error);
+            }
+
+            return $result;
+        }
     
         // Add a column value, and its type.  Possible types are:
         // i => integer, d => double, s => string, b => blob

@@ -41,11 +41,10 @@
     
     // We're now ready to build our assignments.  We iterate over each activity
     // group, and make an assignment for each one.
-    $mysqli = connect_db();
+    $db = new DbConn();
     $sql = "SELECT group_id, name FROM groups";
-    $result = $mysqli->query($sql);
+    $result = $db->runQueryDirectly($sql, $dbErr);
     if ($result == FALSE) {
-        $dbErr = dbErrorString($sql, $mysqli->error);
         echo genErrorPage($dbErr);
         exit;
     }

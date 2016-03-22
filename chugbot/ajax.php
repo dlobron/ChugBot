@@ -19,12 +19,10 @@
     
     // Return login status.
     header('content-type: application/json; charset=UTF-8');
-    $mysqli = connect_db();
     if (isset($_POST["check_login"])) {
         $retVals = array();
         $retVals["loggedIn"] = isset($_SESSION['admin_logged_in']);
         $retVals["loginUrl"] = urlIfy("staffLogin.php");
-        $mysqli->close();
         echo json_encode($retVals);
         exit();
     }
@@ -79,7 +77,6 @@
             array_push($existingChoices[$key], $val);
         }
         
-        $mysqli->close();
         echo json_encode($existingChoices);
         exit();
     }
@@ -95,12 +92,14 @@
         // for example: August 2||aleph.
         
         // First, make an associative array mapping chug ID to name (for email).
+        $db = new DbConn();
         $chugId2Name = array();
         $sql = "SELECT chug_id, name FROM chugim";
-        $result = $mysqli->query($sql);
+        $err = "";
+        $result = $db->runQueryDirectly($sql, $err);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => "Database error: can't get chug name->ID map")));
+            die(json_encode(array("error" => $err)));
         }
         while ($row = mysqli_fetch_row($result)) {
             $chugId2Name[$row[0]] = $row[1];
@@ -217,11 +216,13 @@ END;
         // If we have an email address, send a confirmation email listing the
         // camper's choices.
         if ($email) {
+            $db = new DbConn();
             $sql = "SELECT * FROM admin_data";
-            $result = $mysqli->query($sql);
+            $err = "";
+            $result = $db->runQueryDirectly($sql, $err);
             if ($result == FALSE) {
                 header('HTTP/1.1 500 Internal Server Error');
-                die(json_encode(array("error" => "Database Failure")));
+                die(json_encode(array("error" => $err)));
             }
             $row = $result->fetch_assoc();
             $mailError = "";
@@ -248,7 +249,6 @@ END;
             $retVal["homeUrl"] = homeUrl();
         }
         
-        $mysqli->close();
         echo json_encode($retVal);
         exit();
     }
@@ -272,7 +272,6 @@ END;
             $nameMap["instructions"] = $row[1];
         }
         
-        $mysqli->close();
         echo json_encode($nameMap);
         exit();
     }
@@ -330,7 +329,6 @@ END;
             array_push($dataToJson[$blockname][$groupname], $chugNameAndId2Desc);
         }
 
-        $mysqli->close();
         echo json_encode($dataToJson);
         exit();
     }
