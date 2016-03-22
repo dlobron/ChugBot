@@ -45,10 +45,13 @@
         $db = new DbConn();
         $sql = "DELETE FROM password_reset_codes WHERE expires <= NOW()";
         $db->runQueryDirectly($sql, $dbErr);
+        if ($dbErr) {
+            fatalError($dbErr);
+        }
         
         // Select all remaining codes, and compare against the one we received.
         $sql = "SELECT code FROM password_reset_codes";
-        $result = runQueryDirectly($sql, $dbErr);
+        $result = $db->runQueryDirectly($sql, $dbErr);
         if ($dbErr) {
             fatalError($dbErr);
         }
@@ -150,10 +153,12 @@ EOM;
         echo "<p>An email has been sent to $adminEmail.  Please check your Inbox and follow the instructions in the message to reset the administrative password.</p>";
         echo "</div>";
     } else if ($_SESSION['reset_password_ok']) {
-        echo "<h1>Enter New Password";
+        echo "<div class=\"centered_container\">";
+        echo "<h2>Enter New Password</h2>";
         echo "<p>Please enter a new administrative password.  Passwords must be at least 5 characters.</p>";
         echo "</div>";
         $selfTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
+        echo "<div class=\"form_container\">";
         echo "<form class=\"appnitro\" method=\"post\" action=\"$selfTarget\">";
         echo "<div class=\"form_description\">";
         echo "<h2>Enter New Admin Password</h2>";
@@ -181,7 +186,7 @@ EOM;
         echo "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
         $cancelUrl = homeUrl();
         echo "<a href=\"$cancelUrl\">Cancel</a>";
-        echo "</li></ul></form>";
+        echo "</li></ul></div></form>";
     } else {
         // We shouldn't hit this case.
         fatalError("Password reset failed: please try again, or contact a database administrator to reset manually.");
