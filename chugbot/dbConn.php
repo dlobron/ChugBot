@@ -79,7 +79,11 @@
             }
             
             $this->buildWhereClause();
-            return $this->doQuery("SELECT $selCols FROM $table $this->whereClause", $err);
+            return $this->doQuery("SELECT $selCols FROM $table $this->whereClause $this->orderByClause", $err);
+        }
+        
+        public function addOrderByClause($clause) {
+            $this->orderByClause = $clause;
         }
         
         public function deleteFromTable($table, &$err) {
@@ -173,6 +177,7 @@
         private $colVals = array();
         private $colTypes = "";
         private $whereClause = "";
+        private $orderByClause = "";
         public $isSelect = FALSE;
     }
     

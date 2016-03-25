@@ -2,6 +2,12 @@
     session_start();
     include_once 'assignment.php'; // Includes functions and classes.
     include_once 'dbConn.php';
+    
+    // Require admin login for these functions.
+    if (! adminLoggedIn()) {
+        exit();
+    }
+    
     header("content-type:application/json");
     
     function getDbResult($sql) {

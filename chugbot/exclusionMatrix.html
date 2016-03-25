@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+  <meta charset="utf-8" />
+  <title>Exclusion Matrix</title>
+  <link rel="stylesheet"
+        href="jquery/ui/1.11.4/themes/smoothness/jquery-ui.css" />
+  <script src="jquery/jquery-1.11.3.min.js"></script>
+  <script src="jquery/ui/1.11.4/jquery-ui.js"></script>
+  <script src="meta/matrix.js"></script>
+  <link rel="stylesheet" href="meta/view.css" />
+  <style>
+    .control_buttons {
+    position: relative;
+    margin: auto;
+    margin-top: 20px;
+    text-align: center;
+    width:35%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    }
+    .control_buttons input[type=submit] {
+    padding:3px 8px;
+    color:black;
+    background-color: #cccccc;
+    border:1px solid grey;
+    box-shadow: 2px 2px grey;
+    cursor:pointer;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px; 
+    font-size: 1.5em;    
+    }
+    table {
+    width: 100%;
+    border-collapse: collapse;
+    }
+  </style>
+
+  </head>
+  <body>
+
+  <div class="centered_container">
+    <h2>Welcome to the Exclusion Matrix</h2>
+    <p>This page lets you tell the system that certain chugim should not be
+    assigned to the same camper in the same block as other chugim.  For example,
+    you might want to prevent a camper from being assigned to both Cooking and
+    Outdoor Cooking.</p>
+    <p>To disallow a chug combination, find the first chug on the left side, and
+    match it to the column headed by the second chug.  For example, to prevent
+    the system from assigning Cooking and Outdoor Cooking to the same camper in
+    the same block, you would find the row with "Cooking" at the start, then
+    find the column with "Outdoor Cooking" at the top, and click the checkbox at
+    the intersection.</p>
+    <p>When you are done, click "Save Changes" at the bottom of this page.</p>
+  </div>
+  
+  <div id="checkboxes" class="zebra"></div>
+
+  <div class="control_buttons">
+    <input title="Save changes and exit this page"  type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
+  </div>
+  
+  </body>
+</html>

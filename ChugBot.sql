@@ -14,7 +14,7 @@ USE camprama_chugbot_db;
 
 # Create a table to hold admin data.  The ISP for CRNE tells us to create an email account in cPanel
 # use the full email as the username and the email account password as the password.
-CREATE TABLE admin_data(
+CREATE TABLE IF NOT EXISTS admin_data(
 admin_email varchar(50) NOT NULL,
 admin_password varchar(255) NOT NULL,
 admin_email_cc varchar(255),
@@ -26,14 +26,14 @@ camp_web varchar(128) NOT NULL DEFAULT "www.campramahne.org")
 COLLATE utf8_unicode_ci;
 
 # Admin password reset codes, with expiration.
-CREATE TABLE password_reset_codes(
+CREATE TABLE IF NOT EXISTS password_reset_codes(
 code varchar(512) NOT NULL,
 expires DATETIME NOT NULL,
 code_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci;
 
 # This table holds sessions, e.g., "July", "August", "Full Summer", "Mini Bet", etc.
-CREATE TABLE sessions(
+CREATE TABLE IF NOT EXISTS sessions(
 session_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
 UNIQUE KEY uk_sessions(name))
@@ -41,7 +41,7 @@ COLLATE utf8_unicode_ci;
 
 # A block is a division of a session, e.g.,
 # "July 1" or "August 2".  
-CREATE TABLE blocks(
+CREATE TABLE IF NOT EXISTS blocks(
 block_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
 UNIQUE KEY uk_blocks(name))
@@ -54,7 +54,7 @@ COLLATE utf8_unicode_ci;
 # July + August and Mini Aleph.  In theory, we could ask campers to just
 # indicate the blocks they are signed up for, but they sign up for things 
 # in terms of sessions.
-CREATE TABLE block_instances(
+CREATE TABLE IF NOT EXISTS block_instances(
 block_id int NOT NULL,
 FOREIGN KEY fk_block_id(block_id) REFERENCES blocks(block_id)
 ON DELETE CASCADE
@@ -67,7 +67,7 @@ PRIMARY KEY pk_block_instances(block_id, session_id))
 COLLATE utf8_unicode_ci;
 
 # List all edot (Kochavim, Ilanot 1, Ilanot 2, etc).
-CREATE TABLE edot(
+CREATE TABLE IF NOT EXISTS edot(
 edah_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
 rosh_name varchar(100) DEFAULT "",
@@ -79,14 +79,14 @@ COLLATE utf8_unicode_ci;
 
 # Create a table of bunks.  Campers are optionally assigned to one bunk
 # for the summer, which can be changed as needed on the edit camper page.
-CREATE TABLE bunks(
+CREATE TABLE IF NOT EXISTS bunks(
 bunk_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
 UNIQUE KEY uk_bunks(name))
 COLLATE utf8_unicode_ci;
 
 # A bunk instance is an assignment of bunk to edah.
-CREATE TABLE bunk_instances(
+CREATE TABLE IF NOT EXISTS bunk_instances(
 bunk_id int NOT NULL,
 FOREIGN KEY fk_bunk_id(bunk_id) REFERENCES bunks(bunk_id)
 ON DELETE CASCADE
@@ -101,7 +101,7 @@ COLLATE utf8_unicode_ci;
 # This table stores camper registration for the summer.  Each 
 # camper signs up for one edah in a summer, and they choose
 # a session.
-CREATE TABLE campers(
+CREATE TABLE IF NOT EXISTS campers(
 camper_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 edah_id int,
 FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
@@ -124,7 +124,7 @@ COLLATE utf8_unicode_ci;
 
 # Each chug instance is assigned to a group for the whole summer.
 # For example, swimming might be in group aleph.
-CREATE TABLE groups(
+CREATE TABLE IF NOT EXISTS groups(
 group_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL, # aleph, bet, or gimel
 UNIQUE KEY uk_groups(name))
@@ -136,7 +136,7 @@ COLLATE utf8_unicode_ci;
 # edot and sessions.  
 # To check: I think that chugim with the same name can exist in more than one group (for example, Swimming aleph,
 # Swimming bet).  
-CREATE TABLE chugim(
+CREATE TABLE IF NOT EXISTS chugim(
 name varchar(50) NOT NULL,
 group_id int,
 FOREIGN KEY fk_group(group_id) REFERENCES groups(group_id)
@@ -149,11 +149,27 @@ UNIQUE KEY uk_chugim(name, group_id),
 chug_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci;
 
+# The next table maps a chug ID to another chug ID.  Its purpose is to prevent us
+# from pairing certain chugim to the same camper in the same block (we do this de-dup automatically
+# for the same chug).  For example, we might not want to assign both Cooking and Outdoor Cooking.
+CREATE TABLE IF NOT EXISTS chug_dedup_instances(
+left_chug_id int NOT NULL,
+FOREIGN KEY fk_left_chug_id(left_chug_id) REFERENCES chugim(chug_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+right_chug_id int NOT NULL,
+FOREIGN KEY fk_right_chug_id(left_chug_id) REFERENCES chugim(chug_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+UNIQUE KEY uk_chug_dedup_instances(left_chug_id, right_chug_id),
+chug_dedup_instances_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
+COLLATE utf8_unicode_ci;
+
 # A chug instance is a concrete offering of a chug in a block.
 # For example, swimming, July first week.  Note that the chugim
 # themselves are assigned to groups, so an instance also includes
 # the group (aleph, bet or gimel).
-CREATE TABLE chug_instances(
+CREATE TABLE IF NOT EXISTS chug_instances(
 chug_id int NOT NULL,
 FOREIGN KEY fk_chug_id(chug_id) REFERENCES chugim(chug_id)
 ON DELETE CASCADE
@@ -169,7 +185,7 @@ COLLATE utf8_unicode_ci;
 # Each entry in this table represents a camper preference list for a given group of chugim in a 
 # given block.  For example, a camper would make a pref list for the aleph chugim in July, first week.
 # Up to 6 choices are allowed for each group/block tuple.
-CREATE TABLE preferences(
+CREATE TABLE IF NOT EXISTS preferences(
 camper_id int NOT NULL,
 FOREIGN KEY fk_camper_id(camper_id) REFERENCES campers(camper_id)
 ON DELETE CASCADE
@@ -212,7 +228,7 @@ COLLATE utf8_unicode_ci;
 
 # Assignments are done at the edah/block/group level.  This table holds beta
 # about each assignment.  The actual matches are stored in the matches table.
-CREATE TABLE assignments(
+CREATE TABLE IF NOT EXISTS assignments(
 edah_id int NOT NULL,
 FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
 ON DELETE CASCADE
@@ -240,7 +256,7 @@ COLLATE utf8_unicode_ci;
 # and instances have a chug and a block, so a match associates a camper
 # with an activity for a group and block.  For example, a match could
 # be: Shira -> Climbing, aleph, July 1.
-CREATE TABLE matches(
+CREATE TABLE IF NOT EXISTS matches(
 camper_id int NOT NULL,
 FOREIGN KEY fk_camper_id(camper_id) REFERENCES campers(camper_id)
 ON DELETE CASCADE
@@ -253,7 +269,7 @@ UNIQUE KEY uk_matches(camper_id, chug_instance_id),
 match_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci;
 
-CREATE TABLE edot_for_chug(
+CREATE TABLE IF NOT EXISTS edot_for_chug(
 chug_id int NOT NULL,
 FOREIGN KEY fk_chug_id(chug_id) REFERENCES chugim(chug_id)
 ON DELETE CASCADE
@@ -265,7 +281,7 @@ ON UPDATE CASCADE,
 PRIMARY KEY pk_edot_for_chug(chug_id, edah_id))
 COLLATE utf8_unicode_ci;
 
-CREATE TABLE edot_for_block(
+CREATE TABLE IF NOT EXISTS edot_for_block(
 block_id int NOT NULL,
 FOREIGN KEY fk_block_id(block_id) REFERENCES blocks(block_id)
 ON DELETE CASCADE
