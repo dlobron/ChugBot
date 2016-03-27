@@ -1,57 +1,67 @@
 var chugNames = [];
-var chugIds = [];
+var chugChecked = {};
 $(function() {
 	$.ajax({
-		// Build parallel lists of chug IDs and corresponding names.
-		// We do this with lists rather than a single associative array
-		// because we need the ordering to be consistent.
                 url: 'matrix.php',
                     type: 'post',
                     data: {get_chug_map: 1},
                     success: function(json) {
 		    var obj = JSON.parse(json);
-		    $.each(obj, function(chugId, chugName) {
-			    chugIds.push(chugId);
+		    $.each(obj.chugMap, function(index, chugName) {
 			    chugNames.push(chugName);
 			});
-		    console.log("DBG: Have " + chugNames.length + " chugim");
+		    $.each(obj.matrixMap, function(leftChug, rightChug2Enabled) {
+			    $.each(rightChug2Enabled, function(rightChug, enabled) {
+				    if (leftChug in chugChecked == false) {
+					chugChecked[leftChug] = {};
+				    }
+				    chugChecked[leftChug][rightChug] = 1;
+				    console.log("DBG: checked " + leftChug + " " + rightChug);
+				});
+			});    
 		}, error: function(xhr, desc, err) {
 		    console.log(xhr);
 		    console.log("Details: " + desc + "\nError:" + err);
+		    var errHtml = "<div class=error_box><h2>Error</h2><font=red>Unable to save changes: </font>" + err + ". Please contact an administrator.</div>";
+		    $("#errors").html(errHtml);
                 }
             }).then(function() {
-		    console.log("DBG: Have " + chugNames.length + " chugim");
 		    var target = $('#checkboxes');
 		    var i, x, y, checkbox, html;
-		    html = "<table id=\"matrix\"><thead><tr><th></th>";
+		    html = "<div class=matrix_container><table id=\"matrix\"><thead><tr><th></th>";
 		    // Table column headers                                                   
 		    for (i = 0; i < chugNames.length; i++) {
 			html += "<th>" + chugNames[i] + "</th>";
 		    }
 		    html += "</tr></thead><tbody>";
+		    var rowIndex = 0;
 		    for (x = 0; x < chugNames.length; x++) {
-			// Add a row for each chug.                             
-			html += "<tr><td>" + chugNames[x] + "</td>";
+			// Add a row for each chug, with zebra striping.
+			oddText = "";
+			if (rowIndex++ % 2 != 0) {
+			    oddText = "class=darkstripe";
+			}             
+			html += "<tr " + oddText + "><td>" + chugNames[x] + "</td>";
 			for (y = 0; y < chugNames.length; y++) {
-			    html += "<td class=\"idCheckBox\">";
-			    checkbox = '<input type=checkbox ';
-			    checkbox += 'data-x="' + chugIds[x] + '"';
-			    checkbox += ' data-y="' + chugIds[y] + '"';
+			    html += "<td>";
+			    var checkedText = " ";
+			    if ((chugNames[x] in chugChecked) &&
+				chugNames[y] in chugChecked[chugNames[x]]) {
+				checkedText = " checked=1 ";
+			    }
+			    checkbox = '<input type=checkbox' + checkedText;
+			    checkbox += 'data-x="' + chugNames[x] + '"';
+			    checkbox += ' data-y="' + chugNames[y] + '"';
 			    checkbox += '/>';
 			    html += checkbox;
 			    html += "</td>";
 			}
 			html += "</tr>";
 		    }
-		    html += "</tbody></table>";
+		    html += "</tbody></table></div>";
+		    target.html(html); // Display the table.
 
-		    console.log("html = " + html);
-		    target.html(html);
-
-		    //target.append(html).width(function() {
-		    //	return $(this).find("input:checkbox").outerWidth() * chugNames.length
-		    //	    });
-
+		    // For debugging: alert when a box is checked.
 		    //target.on('change', 'input:checkbox', function() {
 		    //var $this = $(this),
 		    //  x = $this.data('x'),
@@ -64,18 +74,40 @@ $(function() {
 
 $(function() {
         $("#SaveChanges").click(function(event) {
-		console.log("DBG: submit clicked");
                 event.preventDefault();
-		$('#matrix tr').each(function() {
-			var cell = $(this).find(".idCheckBox");
-			if (cell == undefined) {
-			    return;
+		var leftRight2Checked = {};
+		$('#matrix').find('input[type="checkbox"]').each(function () {
+			var $this = $(this);
+			var leftChug = $this.data('x');
+			var rightChug = $this.data('y');
+			if (leftChug in leftRight2Checked == false) {
+			    leftRight2Checked[leftChug] = {};
 			}
-			var leftChugId = $cell.data('x');
-			var rightChugId = $cell.data('y');
-			var checked = $cell.prop('checked');
-			console.log("DBG: left ID " + leftChugId + ", right ID " + rightChugId + " checked = " + checked);
+			leftRight2Checked[leftChug][rightChug] = $this.prop('checked') ? 1: 0;
 		    });
+		// Send ajax.
+		var curUrl = window.location.href;
+		var homeUrl = curUrl.replace("exclusionMatrix.html", "staffHome.php");
+		// Remove query string before redir.
+		var qpos = homeUrl.indexOf("?");
+		if (qpos) {
+		    homeUrl = homeUrl.substr(0, qpos);
+		}
+		$.ajax({
+			url: 'matrix.php',
+			    type: 'post',
+			    data: {update_table:1, checkMap:leftRight2Checked},
+			    success: function(data) {
+			    homeUrl += "?update=ex";
+			    window.location.href = homeUrl;
+			},
+			    error: function(xhr, desc, err) {
+                            console.log(xhr);
+                            console.log("Details: " + desc + "\nError:" + err);
+			    var errHtml = "<div class=error_box><h2>Error</h2><font=red>Unable to save changes: </font>" + err + ". Please contact an administrator.</div>";
+			    $("#errors").html(errHtml);
+                        }
+                    });
 	    });
     });
 		    

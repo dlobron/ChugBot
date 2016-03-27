@@ -20,9 +20,18 @@
                    $cparts[1] == "as") {
             $message = "<font color=\"green\">Admin settings updated!</font>";
             break;
+        } else if ($cparts[0] == "update" &&
+                   $cparts[1] == "ex") {
+            $message = "<font color=\"green\">De-duplication matrix updated!</font>";
+            break;
+        } else if ($cparts[0] == "error" &&
+                   $cparts[1] == "ex") {
+            $message = "<font color=\"red\">Error updating de-duplication matrix.</font> Please try again, or escalate to an administrator.";
+            break;
         }
     }
 
+    $matrixUrl = urlIfy("exclusionMatrix.html");
     $resetUrl = urlIfy("staffReset.php");
     $levelingUrl = urlIfy("levelHomeLaunch.php");
     $reportUrl = urlIfy("report.php");
@@ -80,6 +89,10 @@ EOM;
 
 <form class="appnitro" action="<?php echo $resetUrl; ?>">
 <button title="Click here to update the administrative settings, including staff password and camper code" class="cb_smaller" type="submit" value="1">Edit Admin Settings</button>
+</form>
+
+<form class="appnitro" action="<?php echo $matrixUrl; ?>">
+<button title="Click here to update the de-duplication settings" class="cb_even_smaller" type="submit" value="1">De-Duplication Matrix</button>
 </form>
 
 </div>

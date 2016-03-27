@@ -26,8 +26,7 @@ body
 }
 
 .cb_smaller {
-    font-size: 0.7em;
-    padding:3px 8px;
+    padding:3px 5px;
     color:black;
     background-color: #cccccc;
     border:1px solid grey;
@@ -37,6 +36,19 @@ body
     -moz-border-radius: 3px;
     border-radius: 3px;
     font-size: 1.2em;
+}
+
+.cb_even_smaller {
+    font-size: 0.9em;
+    padding:3px 5px;
+    color:black;
+    background-color: #cccccc;
+    border:1px solid grey;
+    box-shadow: 2px 2px grey;
+    cursor:pointer;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .toggler 
@@ -139,6 +151,17 @@ body
         -webkit-border-radius: 10px;
 }
 
+.image_container
+{
+	position: relative;
+        margin-top: 15px;
+        margin:0 auto;
+        text-align: center;
+	padding-top: 20px;
+        padding-bottom: 3px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
 .centered_container
 {
 	position: relative;

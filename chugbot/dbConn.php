@@ -91,6 +91,10 @@
             return $this->doQuery("DELETE FROM $table $this->whereClause", $err);
         }
         
+        public function addIgnore() {
+            $this->ignore = "IGNORE";
+        }
+        
         public function updateTable($table, &$err) {
             $setClause = "SET ";
             for ($i = 0; $i < count($this->colNames); $i++) {
@@ -122,7 +126,7 @@
                 }
             }
             
-            $insertOk = $this->doQuery("INSERT INTO $table ($colCsv) VALUES ($qmCsv)",
+            $insertOk = $this->doQuery("INSERT $this->ignore INTO $table ($colCsv) VALUES ($qmCsv)",
                                        $err);
             $this->insert_id = $this->mysqli->insert_id;
 
@@ -178,6 +182,7 @@
         private $colTypes = "";
         private $whereClause = "";
         private $orderByClause = "";
+        private $ignore = "";
         public $isSelect = FALSE;
     }
     

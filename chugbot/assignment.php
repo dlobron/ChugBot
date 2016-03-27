@@ -51,21 +51,24 @@
         return $maxFree;
     }
     
-    function isDuplicate($candidateChug, $matchesForThisCamper) {
-        $retVal = FALSE;
-        $candidateChugLcName = strtolower($candidateChug->name);
-        if (array_key_exists($candidateChugLcName, $matchesForThisCamper)) {
-            $retVal = TRUE; // Exact match
-        }
-        // Special case: don't allow duplicate cooking assignments.
-        // TODO: Replace this with a generalized dedup table.
-        $existingCooking = preg_grep("/cooking/i", $matchesForThisCamper);
-        if (count($existingCooking) &&
-            preg_match("/cooking/i", $candidateChugLcName)) {
-            $retVal = TRUE;
+    function isDuplicate($candidateChug, $matchesForThisCamper, $deDupMatrix) {
+        $candidateChugName = $candidateChug->name;
+        if (array_key_exists($candidateChugName, $deDupMatrix)) {
+            // Grab the set of chugim with which the candidate chug may not
+            // be duplicated.
+            $forbiddenToDupSet = $deDupMatrix[$candidateChugName];
+            foreach ($matchesForThisCamper as $existingMatch) {
+                if (array_key_exists($existingMatch, $forbiddenToDupSet)) {
+                    // We've found an existing match that appears in the
+                    // candidate chug's de-dup list: this means the candidate
+                    // is a duplicate and should not be assigned unless an
+                    // override is in place.
+                    return TRUE;
+                }
+            }
         }
         
-        return $retVal;
+        return FALSE;
     }
     
     // Reminder: if this camper has needs_first_choice set, then we can bump
@@ -275,6 +278,30 @@
             }
         }
         
+        // Grab the de-dup matrix.  Each chug name should map to a list of
+        // those chugim that are not allowed to be dup'ed with it (if any such
+        // exist).
+        $deDupMatrix = array();
+        $db = new DbConn();
+        $db->addSelectColumn("*");
+        $result = $db->simpleSelectFromTable("chug_dedup_instances", $err);
+        if ($result == FALSE) {
+            error_log($err);
+            return FALSE;
+        }
+        while ($row = mysqli_fetch_assoc($result)) {
+            $leftChug = $row["left_chug_name"];
+            $rightChug = $row["right_chug_name"];
+            if (! array_key_exists($leftChug, $deDupMatrix)) {
+                $deDupMatrix[$leftChug] = array();
+            }
+            if (! array_key_exists($rightChug, $deDupMatrix)) {
+                $deDupMatrix[$rightChug] = array();
+            }
+            $deDupMatrix[$leftChug][$rightChug] = 1;
+            $deDupMatrix[$rightChug][$leftChug] = 1;
+        }
+        
         // Grab existing matches for this block, for *other* groups, and arrange them in a lookup table
         // by camper ID.  We'll use this to prevent dups.  Note that when preventing
         // dups, we compare chugim by name rather than ID, since Ropes aleph will have
@@ -312,7 +339,10 @@
             }
             $camper = $campers[$cid];
             $gid = intval($row[1]);
-            $existingMatches[$camper->camper_id][strtolower($row[2])] = 1; // Note this match.
+            if (! array_key_exists($camper->camper_id, $existingMatches)) {
+                $existingMatches[$camper->camper_id] = array();
+            }
+            array_push($existingMatches[$camper->camper_id], $row[2]);
             if (array_key_exists($camper->camper_id, $existingPrefs)) {
                 // Compute the happiness level of this match.
                 $prefsByGid = $existingPrefs[$camper->camper_id];
@@ -385,16 +415,16 @@
             // consistent, apart from case.
             if (array_key_exists($camper->camper_id, $existingMatches)) {
                 $matchesForThisCamper = $existingMatches[$camper->camper_id];
-                debugLog("Have " . count($matchesForThisCamper) . " existing match, trying to assign to $candidateChug->name");
+                debugLog("Have " . count($matchesForThisCamper) . " existing matches, trying to assign to $candidateChug->name");
                 // Check for duplicate assignment, and skip dups, unless needs_first_choice
                 // is set.
-                if (isDuplicate($candidateChug, $matchesForThisCamper)) {
+                if (isDuplicate($candidateChug, $matchesForThisCamper, $deDupMatrix)) {
                     if ($camper->needs_first_choice == FALSE) {
                         array_push($camperIdsToAssign, $camper->camper_id);
                         debugLog("Skipping duplicate " . $candidateChug->name);
                         continue;
                     } else {
-                        debugLog("Skipping duplicate " . $candidateChug->name . ", needs first choice");
+                        debugLog("Allowing duplicate " . $candidateChug->name . ", needs first choice");
                     }
                 }
             }

@@ -149,20 +149,20 @@ UNIQUE KEY uk_chugim(name, group_id),
 chug_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci;
 
-# The next table maps a chug ID to another chug ID.  Its purpose is to prevent us
+# The next table maps a chug name to another chug name.  Its purpose is to prevent us
 # from pairing certain chugim to the same camper in the same block (we do this de-dup automatically
 # for the same chug).  For example, we might not want to assign both Cooking and Outdoor Cooking.
+# Note that we dedup by name, not ID, for usability. 
 CREATE TABLE IF NOT EXISTS chug_dedup_instances(
-left_chug_id int NOT NULL,
-FOREIGN KEY fk_left_chug_id(left_chug_id) REFERENCES chugim(chug_id)
+left_chug_name varchar(50) NOT NULL,
+FOREIGN KEY fk_left_chug_name(left_chug_name) REFERENCES chugim(name)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-right_chug_id int NOT NULL,
-FOREIGN KEY fk_right_chug_id(left_chug_id) REFERENCES chugim(chug_id)
+right_chug_name varchar(50) NOT NULL,
+FOREIGN KEY fk_right_chug_name(right_chug_name) REFERENCES chugim(name)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
-UNIQUE KEY uk_chug_dedup_instances(left_chug_id, right_chug_id),
-chug_dedup_instances_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
+UNIQUE KEY uk_chug_dedup_instances(left_chug_name, right_chug_name))
 COLLATE utf8_unicode_ci;
 
 # A chug instance is a concrete offering of a chug in a block.

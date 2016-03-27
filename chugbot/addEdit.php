@@ -750,9 +750,29 @@ EOM;
                 $paramHash[$key] = array_keys($this->activeEdotHash);
             }
             
+            // If we added a new chug, update the exclusion table.
+            if ($this->addChugPage) {
+                $myChugName = $this->col2Val["name"];
+                $db = new DbConn();
+                $db->addIgnore();
+                $db->addColumn("left_chug_name", $myChugName, 's');
+                $db->addColumn("right_chug_name", $myChugName, 's');
+                $insertOk = $db->insertIntoTable("chug_dedup_instances", $this->dbErr);
+                if (! $insertOk) {
+                    error_log("Insert into chug_dedup_instances failed: $this->dbErr");
+                    return;
+                }
+            }
+            
             $thisPage = basename($_SERVER['PHP_SELF']);
             $editPage = preg_replace('/^add/', "edit", $thisPage); // e.g., "addGroup.php" -> "editGroup.php"
             echo(genPassToEditPageForm($editPage, $paramHash));
         }
+        
+        public function setAddChugPage() {
+            $this->addChugPage = 1;
+        }
+        
+        private $addChugPage;
     }
     

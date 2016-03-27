@@ -7,6 +7,7 @@
     $addChugPage = new AddPage("Add Chug",
                                "Please enter chug information here",
                                "chugim", "chug_id");
+    $addChugPage->setAddChugPage();
     $addChugPage->addColumn("name");
     $addChugPage->addColumn("group_id");
     $addChugPage->addColumn("min_size", FALSE, MIN_SIZE_NUM);

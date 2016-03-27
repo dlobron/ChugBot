@@ -11,12 +11,12 @@
         die(json_encode(array("error" => $err)));
     }
     
-    // Get chugim and IDs, and exclusion status.
+    // Get chugim, and exclusion status.
     if (isset($_POST["get_chug_map"])) {
+        $retVal = array();
         $db = new DbConn();
-        $db->addSelectColumn("chug_id");
         $db->addSelectColumn("name");
-        $db->addOrderByClause("ORDER BY name");
+        $db->addOrderByClause("GROUP BY name ORDER BY name ");
         $err = "";
         $result = $db->simpleSelectFromTable("chugim", $err);
         if ($result == FALSE) {
@@ -25,14 +25,66 @@
         }
         $chugMap = array();
         while ($row = $result->fetch_assoc()) {
-            $chugMap[$row["chug_id"]] = $row["name"];
+            array_push($chugMap, $row["name"]);
         }
+        $retVal["chugMap"] = $chugMap;
         
-        echo json_encode($chugMap);
+        $matrixMap = array();
+        $db = new DbConn();
+        $db->addSelectColumn("*");
+        $result = $db->simpleSelectFromTable("chug_dedup_instances", $err);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        while ($row = $result->fetch_assoc()) {
+            if (! array_key_exists($row["left_chug_name"], $matrixMap)) {
+                $matrixMap[$row["left_chug_name"]] = array();
+            }
+            $matrixMap[$row["left_chug_name"]][$row["right_chug_name"]] = 1;
+        }
+        $retVal["matrixMap"] = $matrixMap;
+        
+        echo json_encode($retVal);
         exit();
     }
 
-    // Update the exclusion table.
+    // Update the exclusion table.  If a chug combination is checked, we want
+    // to add it (unless it exists).  If it's unchecked, we want to delete it if
+    // it's there.
+    if (isset($_POST["update_table"])) {
+        $err = "";
+        $checkMap = $_POST["checkMap"];
+        foreach ($checkMap as $leftChug => $rightChug2Checked) {
+            foreach ($rightChug2Checked as $rightChug => $checked) {
+                $db = new DbConn();
+                if ($checked) {
+                    // Add the tuple, unless it exists.
+                    $db->addIgnore();
+                    $db->addColumn("left_chug_name", $leftChug, 's');
+                    $db->addColumn("right_chug_name", $rightChug, 's');
+                    $insertOk = $db->insertIntoTable("chug_dedup_instances", $err);
+                    if (! $insertOk) {
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => $err)));
+                    }
+                } else {
+                    // Delete the tuple, if it exists.
+                    $db->addWhereColumn("left_chug_name", $leftChug, 's');
+                    $db->addWhereColumn("right_chug_name", $rightChug, 's');
+                    $delOk = $db->deleteFromTable("chug_dedup_instances", $err);
+                    if (! $insertOk) {
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => $err)));
+                    }
+                }
+            }
+        }
+        
+        $ok = 1;
+        echo json_encode($ok);
+        exit();
+    }
 
 
 ?>

@@ -32,35 +32,87 @@
     border-radius: 3px; 
     font-size: 1.5em;    
     }
-    table {
-    width: 100%;
+    .matrix_container
+    {
+    position: relative;
+    overflow: auto;
+    margin-top: 20px;
+    margin-left: 10px;
+    width: 95%;
+    font-size: 1.2em;
+    background: #fff;
+    padding-bottom: 1px;
+    border: 2px dotted silver;
+    border-radius: 5px;
     border-collapse: collapse;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    }
+    .matrix_container table {
+    width: 95%;
+    text-align: left;
+    margin: 0 0 1em 0;
+    caption-side: top;
+    }
+    .matrix_container caption {
+    font-size: 1.5em;
+    padding: 0.3em;
+    }
+    .matrix_container th, td {
+    padding: 0.3em;
+    border-bottom: 1px solid #000;
+    border-right: 1px solid #000;
+    }    
+    .darkstripe {
+    background-color: #eee;
+    }    
+    .matrix_container th:last-child, td:last-child {
+    border-right: 0;
+    }    
+    .matrix_container tfoot th, tfoot td {
+    border-bottom: 0;
+    text-align: center;
+    }    
+    .matrix_container th {
+    width: 25%;
     }
   </style>
 
   </head>
   <body>
+    
+    <div class="top_nav_container" id="nav"></div>
+    <script>
+      // This is a bit of a hack, but acceptable for now.
+      var curUrl = window.location.href;
+      homeUrl = curUrl.substr(0, curUrl.lastIndexOf("/"));
+      document.getElementById("nav").innerHTML = "<a href=\"" + homeUrl + "\">Home</a>";
+    </script>
 
-  <div class="centered_container">
-    <h2>Welcome to the Exclusion Matrix</h2>
-    <p>This page lets you tell the system that certain chugim should not be
-    assigned to the same camper in the same block as other chugim.  For example,
-    you might want to prevent a camper from being assigned to both Cooking and
-    Outdoor Cooking.</p>
-    <p>To disallow a chug combination, find the first chug on the left side, and
-    match it to the column headed by the second chug.  For example, to prevent
-    the system from assigning Cooking and Outdoor Cooking to the same camper in
-    the same block, you would find the row with "Cooking" at the start, then
-    find the column with "Outdoor Cooking" at the top, and click the checkbox at
-    the intersection.</p>
-    <p>When you are done, click "Save Changes" at the bottom of this page.</p>
-  </div>
-  
-  <div id="checkboxes" class="zebra"></div>
+    <div class="centered_container">
+      <h2>De-Duplication Matrix</h2>
+      <p>This page lets you tell the system that certain chugim should not be
+	assigned to the same camper in the same block as other chugim.</p>
+      <p>To disallow a chug combination, find the first chug on the left side, and
+	match it to the column headed by the second chug.  For example, to prevent
+	the system from assigning Cooking and Outdoor Cooking to the same camper in
+	July 1, find the row with "Cooking" on the left, then locate the column
+	with "Outdoor Cooking" at the top, and click the checkbox at the
+	intersection of that row/column.</p>
+      <p>Note that by default, chugim are de-duplicated with themselves.</p>
+      <p>When you are done, click "Save Changes" at the bottom of this page.</p>
+    </div>
 
-  <div class="control_buttons">
-    <input title="Save changes and exit this page"  type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
-  </div>
-  
+    <div id="errors"></div>
+    
+    <div class="image_container"><img src="images/Matrix.jpg" alt="" /></div>
+
+    <div id="checkboxes"></div>
+    </div>
+    
+    <div class="control_buttons">
+      <input title="Save changes and exit this page"  type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
+    </div>
+    
   </body>
 </html>
