@@ -164,6 +164,39 @@
     function do_assignment($edah_id, $block_id, $group_id, &$err) {
         debugLog("Making assignment for edah $edah_id, block $block_id, group $group_id");
         
+        // Get the name of this edah, block, and group, for logging and error printing.
+        $db = new DbConn();
+        $db->addSelectColumn("name");
+        $db->addWhereColumn("edah_id", $edah_id, 'i');
+        $result = $db->simpleSelectFromTable("edot", $err);
+        if ($result == FALSE) {
+            error_log($err);
+            return FALSE;
+        }
+        $row = mysqli_fetch_assoc($result);
+        $edahName = $row["name"];
+        $db = new DbConn();
+        $db->addSelectColumn("name");
+        $db->addWhereColumn("block_id", $block_id, 'i');
+        $result = $db->simpleSelectFromTable("blocks", $err);
+        if ($result == FALSE) {
+            error_log($err);
+            return FALSE;
+        }
+        $row = mysqli_fetch_assoc($result);
+        $blockName = $row["name"];
+        $db = new DbConn();
+        $db->addSelectColumn("name");
+        $db->addWhereColumn("group_id", $group_id, 'i');
+        $result = $db->simpleSelectFromTable("groups", $err);
+        if ($result == FALSE) {
+            error_log($err);
+            return FALSE;
+        }
+        $row = mysqli_fetch_assoc($result);
+        $groupName = $row["name"];
+        debugLog("Edah $edahName, block $blockName, group $groupName");
+        
         // Grab the campers in this edah and block, and prefs for this group.  We determine the
         // campers in a block by joining with the block_instances table, which tells us which
         // sessions overlap with our block (campers register for sessions, not blocks, so the campers
@@ -202,6 +235,11 @@
             $campers[$camper_id] = $c;
             array_push($camperIdsToAssign, $camper_id);
         }
+        if (count($campers) == 0) {
+            $err = errorString("No campers found for edah $edahName, block $blockName, group $groupName");
+            error_log($err);
+            return FALSE;
+        }
         
         // Grab the chugim available for this group/block/edah.  The chug must have an
         // instance in this block, must be available to this edah, and must be in this group.
@@ -226,7 +264,7 @@
             $chugim[$c->chug_id] = $c;
         }
         if (count($chugim) == 0) {
-            $err = errorString("No chugim found for edah $edah_id, block $block_id, group $group_id");
+            $err = errorString("No chugim found for edah $edahName, block $blockName, group $groupName");
             error_log($err);
             return FALSE;
         }
@@ -362,14 +400,14 @@
                         error_log("WARNING: No preference found for $camper->name for assigned chug ID $chug_id");
                     }
                 } else {
-                    error_log("WARNING: No prefs for group $gid for camper ID $camper_id");
+                    error_log("WARNING: No prefs for group $gid for camper " . $camper->name);
                     if ($camper != NULL) {
                         error_log("Camper name: " . $camper->name);
                     }
                 }
             } else {
                 // Campers should have a pref list.
-                error_log("WARNING: No preferences found for camper ID $camper_id");
+                error_log("WARNING: No preferences found for camper " . $camper->name);
                 if ($camper != NULL) {
                     error_log("Camper name: " . $camper->name);
                 }

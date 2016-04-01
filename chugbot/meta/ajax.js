@@ -185,7 +185,7 @@ $(function() {
 				      });
 			      });
 		       if (html.length == 0) {
-			   html = "<div class=\"error_box\"><h3>No eligible chugim were found.</h3></div>";
+			   html = "<div class=\"error_box\"><h3>No chugim were found for your edah and session.</h3></div>";
 		       }
 		       $("body").append(html);
 		},
