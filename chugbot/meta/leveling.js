@@ -149,6 +149,7 @@ function getAndDisplayCurrentMatches() {
 								 });
 							 }
 						     }
+						     var titleText = "title=\"<no preferences>\"";
 						     if (prefListText) {
 							 // If we have a pref list, write it as a tool tip.
 							 titleText = "title=\"" + prefListText + "\"";

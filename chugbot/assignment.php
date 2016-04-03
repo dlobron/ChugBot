@@ -201,24 +201,28 @@
         // campers in a block by joining with the block_instances table, which tells us which
         // sessions overlap with our block (campers register for sessions, not blocks, so the campers
         // table only knows about sessions).
+        // We use a left outer join on preferences because we want to include campers who do not
+        // have any preferences in the system (staff might want to assign them manually).
         $campers = array();
         $camperIdsToAssign = array();
         $db = new DbConn();
+        $db->addColVal($group_id, 'i');
+        $db->addColVal($block_id, 'i');
         $db->addColVal($edah_id, 'i');
         $db->addColVal($block_id, 'i');
-        $db->addColVal($group_id, 'i');
         $db->isSelect = TRUE;
         $sql = "SELECT c.camper_id, c.first, c.last, c.needs_first_choice, " .
-        "IFNULL(p.first_choice_id,-1), IFNULL(p.second_choice_id,-1), IFNULL(p.third_choice_id,-1), " .
-        "IFNULL(p.fourth_choice_id,-1), IFNULL(p.fifth_choice_id,-1), IFNULL(p.sixth_choice_id,-1) " .
-        "FROM campers c, block_instances b, preferences p " .
-        "WHERE c.edah_id = ? " .
-        "AND c.session_id = b.session_id " .
-        "AND b.block_id = ? " .
-        "AND p.camper_id = c.camper_id " .
-        "AND p.group_id = ? " .
-        "AND p.block_id = b.block_id " .
-        "AND c.inactive = 0";
+        "prefs.fr firstpref, prefs.sc secpref, prefs.th thirdpref, prefs.frth fourthpref, prefs.ff fifthpref, prefs.sxth sixthpref " .
+        "FROM block_instances b, campers c " .
+        "LEFT OUTER JOIN " .
+        "(SELECT p.group_id group_id, p.block_id block_id, p.camper_id camper_id, " .
+        "IFNULL(p.first_choice_id,-1) fr, IFNULL(p.second_choice_id,-1) sc, " .
+        "IFNULL(p.third_choice_id,-1) th, IFNULL(p.fourth_choice_id,-1) frth, " .
+        "IFNULL(p.fifth_choice_id,-1) ff, IFNULL(p.sixth_choice_id,-1) sxth " .
+        "FROM preferences p, block_instances b, campers c " .
+        "WHERE c.camper_id = p.camper_id AND p.block_id = b.block_id AND c.session_id = b.session_id) prefs " .
+        "ON prefs.group_id = ? AND prefs.block_id = ? AND prefs.camper_id = c.camper_id " .
+        "WHERE c.edah_id = ? AND c.session_id = b.session_id AND b.block_id = ? AND c.inactive = 0";
         $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
             error_log($err);
@@ -234,6 +238,7 @@
             $camper_id = intval($row[0]);
             $campers[$camper_id] = $c;
             array_push($camperIdsToAssign, $camper_id);
+            error_log("DBG: Added $c->name");
         }
         if (count($campers) == 0) {
             $err = errorString("No campers found for edah $edahName, block $blockName, group $groupName");
