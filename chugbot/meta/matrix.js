@@ -1,5 +1,18 @@
 var chugNames = [];
 var chugChecked = {};
+
+$(function() {
+        $.ajax({
+                url: 'ajax.php',
+		    type: 'post',
+		    data: {get_nav: 1},
+		    success: function(txt) {
+		    var html = "<div class=\"nav_container\">" + txt + "</div>";
+		    $("#nav").html(html);
+		}
+	    });
+    });
+
 $(function() {
 	$.ajax({
                 url: 'matrix.php',

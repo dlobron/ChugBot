@@ -81,13 +81,7 @@
   </head>
   <body>
     
-    <div class="top_nav_container" id="nav"></div>
-    <script>
-      // This is a bit of a hack, but acceptable for now.
-      var curUrl = window.location.href;
-      homeUrl = curUrl.substr(0, curUrl.lastIndexOf("/"));
-      document.getElementById("nav").innerHTML = "<a href=\"" + homeUrl + "\">Home</a>";
-    </script>
+    <div id="nav"></div>
 
     <div class="centered_container">
       <h2>De-Duplication Matrix</h2>

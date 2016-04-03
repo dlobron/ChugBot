@@ -12,7 +12,7 @@
         // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
         // of 2016.
         $mail = new PHPMailer;
-        // For some reason, JQuery is unable to parse our JSON if an email error
+        // JQuery is unable to parse our JSON if an email error
         // occurs when SMTPDebug is enabled, so I'm not using it for now.  
         //$mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
         $mail->addAddress($address);
@@ -32,9 +32,13 @@
         $mail->Port = 25;
         $mail->Username = ADMIN_EMAIL_USERNAME;
         $mail->Password = ADMIN_EMAIL_PASSWORD;
-        $mail->setFrom($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
-        $sentOk = $mail->send();
-        if (! $sentOk) {
+        // GMail's filter rejects our messages when the source is something like foo@gmail.com,
+        // so we set the from to the admin email username (normally, the address of our email
+        // account on this ISP), and we set the reply-to to whatever the administrator's
+        // actual email is.
+        $mail->setFrom(ADMIN_EMAIL_USERNAME, $admin_data_row["camp_name"]);
+        $mail->addReplyTo($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
+        if (! $mail->send()) {
             error_log("Failed to send email to $address");
             error_log("Mailer error: " . $mail->ErrorInfo);
             $error = $mail->ErrorInfo;
@@ -329,18 +333,21 @@ EOM;
         return $url;
     }
     
-    function navText() {
+    function navText($bottom = FALSE) {
         $retVal = "";
         $baseUrl = baseUrl();
-        $retVal .= "<a href=\"$baseUrl\">Site Home</a>";
+        $aclass = "nav_anchor";
+        if ($bottom) {
+            $aclass = "hnav_anchor";
+        }
+        $retVal .= "<a class=\"$aclass\" href=\"$baseUrl\">Site Home</a>";
         $homeUrl = homeUrl();
         if (adminLoggedIn()) {
-            $retVal .= "<br><a href=\"$homeUrl\">Staff Home</a>";
+            $retVal .= "<a class=\"$aclass\" href=\"$homeUrl\">Staff Home</a>";
             $camperUrl = urlIfy("camperHome.php");
-            $camperUrl = urlIfy("camperHome.php");
-            $retVal .= "<br><a href=\"$camperUrl\">Camper Home</a>";
+            $retVal .= "<a class=\"$aclass\" href=\"$camperUrl\">Camper Home</a>";
         } else {
-            $retVal .= "<br><a href=\"$homeUrl\">Camper Home</a>";
+            $retVal .= "<a class=\"$aclass\" href=\"$homeUrl\">Camper Home</a>";
         }        
         $mysqli = connect_db();
         $sql = "SELECT camp_name, camp_web FROM admin_data";
@@ -351,7 +358,7 @@ EOM;
             $campName = $row["camp_name"];
             if ((! empty($campUrl)) &&
                 (! empty($campName))) {
-                $retVal .= "<br><a href=\"http://$campUrl/\">$campName Home</a>";
+                $retVal .= "<a class=\"$aclass\" href=\"http://$campUrl/\">$campName Home</a>";
             }
         }
         $mysqli->close();
@@ -360,11 +367,11 @@ EOM;
     }
     
     function footerText() {
-        $retVal = "<div class=\"nav_container\">";
-        $retVal .= navText();
-        $retVal .= "</div>";
+            //$retVal = "<div class=\"hnav_container\">";
+            //$retVal .= navText(TRUE);
+            //$retVal .= "</div>";
         
-        return $retVal;
+        return "";
     }
     
     function headerText($title) {
@@ -375,14 +382,13 @@ EOM;
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>$title</title>
-<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
 <script type="text/javascript" src="meta/view.js"></script>
-        
+<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
 </head>
 
 <body id="main_body">
         
-<div class="top_nav_container">
+<div class="nav_container">
 $navText
 </div>
 EOM;

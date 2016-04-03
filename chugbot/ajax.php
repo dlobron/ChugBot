@@ -27,6 +27,13 @@
         exit();
     }
     
+    // Compute and return nav text for an HTML page.
+    if (isset($_POST["get_nav"])) {
+        $retVal = navText();
+        echo json_encode($retVal);
+        exit();
+    }
+    
     // Get the current set of prefs for this camper (if any), so that
     // the rank page can start with the current choices.
     if (isset($_POST["get_existing_choices"])) {
