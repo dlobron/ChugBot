@@ -134,8 +134,8 @@
             $last = $row[2];
         }
 
-        $homeAnchor = homeAnchor();
-        $homeUrl = homeUrl();
+        $homeUrl = urlIfy("camperHome.php");
+        $homeAnchor = "<a href=\"$homeUrl\">here</a>";
         $email_text = <<<END
 <html><body>
 <h3>Preferences Recorded!</h3>

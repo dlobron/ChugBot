@@ -38,7 +38,8 @@
         // actual email is.
         $mail->setFrom(ADMIN_EMAIL_USERNAME, $admin_data_row["camp_name"]);
         $mail->addReplyTo($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
-        if (! $mail->send()) {
+        $sentOk = $mail->send();
+        if (! $sentOk) {
             error_log("Failed to send email to $address");
             error_log("Mailer error: " . $mail->ErrorInfo);
             $error = $mail->ErrorInfo;

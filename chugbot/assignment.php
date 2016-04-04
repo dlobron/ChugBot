@@ -3,6 +3,7 @@
     include_once 'assignmentClasses.php';
     include_once 'dbConn.php';
     
+    // Require camper-level permission to run any of the functions here.
     if (! camperLoggedIn()) {
         exit();
     }
@@ -29,26 +30,25 @@
         return ($retVal > 0) ? $retVal : 0; // The difference will be negative if oversubscribed.
     }
     
-    function &chugWithMostSpace(&$chugim) {
+    function chugWithMostSpace($chugim) {
         $maxFreeSpace = 0;
-        $maxFree = NULL;
+        $maxFreeId = NULL;
         foreach ($chugim as $chugId => $chug) {
             // Always return a chug: if all chugim have the same free space, then
             // we'll return the first one in the list.  It's crucial that we always
             // return a chug, because it guarantees that the assignment loop will
             // finish.
-            if ($maxFree == NULL) {
-                $maxFree =& $chug;
+            if ($maxFreeId == NULL) {
+                $maxFreeId = $chugId;
             }
-            if ($maxFree == NULL ||
+            if ($maxFreeId == NULL ||
                 $maxFreeSpace < ($chug->max_size - $chug->assigned_count)) {
                 $maxFreeSpace = $chug->max_size - $chug->assigned_count;
-                $maxFree =& $chug;
+                $maxFreeId = $chugId;
             }
         }
-        
-        debugLog("chugWithMostSpace: $maxFree->name");
-        return $maxFree;
+
+        return $maxFreeId;
     }
     
     function isDuplicate($candidateChug, $matchesForThisCamper, $deDupMatrix) {
@@ -238,7 +238,6 @@
             $camper_id = intval($row[0]);
             $campers[$camper_id] = $c;
             array_push($camperIdsToAssign, $camper_id);
-            error_log("DBG: Added $c->name");
         }
         if (count($campers) == 0) {
             $err = errorString("No campers found for edah $edahName, block $blockName, group $groupName");
@@ -437,7 +436,8 @@
                 // If we run out of preferences, assign the camper to the chug with the most
                 // free space.  Note that chugWithMostSpace is guaranteed to return a chug, so
                 // we know that this loop must terminate.
-                $maxFreeChug =& chugWithMostSpace($chugim);
+                $maxFreeChugId = chugWithMostSpace($chugim);
+                $maxFreeChug =& $chugim[$maxFreeChugId];
                 debugLog("No more prefs: assigning to max free chug " . $maxFreeChug->name);
                 assign($camper, $assignments, $maxFreeChug);
                 continue;
