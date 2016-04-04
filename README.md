@@ -14,9 +14,19 @@ The application assumes that you have PHP installed in your webserver, and that 
 please follow these instructions:
 
 1. Enter the MySQL command line as root, and run "source ChugBot.sql".  Note that there is a line in the SQL that pulls in sample data: you should comment this out.
-Alternately, you can enter the commands into an admin window.  You may have to change the name of the database to fit your ISP's conventions.
+Alternately, you can enter the database commands into an admin window.  You may have to change the name of the database to fit your ISP's conventions.
 
-2. Update constants.php with the login information for your MySQL database.
+2. Update constants.php with the login information for your MySQL database and your email account.  If your ISP's email authentication is broken, you might also need to add the following to the sendMail function in functions.php:
+
+    $mail->SMTPOptions = array(
+        'ssl' => array(
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true
+        )
+    );
+
+(Please see https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting for details on this).
 
 3. Copy the contents of the "chugbot" directory to the directory where you want the website to run.  For example, if your webserver
 root is /home/web/htdocs (assuming a Unix-like directory structure), and you want this application to appear in a browser as mycamp.org/leveling/, you would copy these files to /home/web/htdocs/leveling/.
