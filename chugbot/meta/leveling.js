@@ -305,9 +305,17 @@ $(function() {
 		if (r != true) {
 		    return;
 		}
-		doAssignmentAjax("reassign", "Assignment saved!", "reassign",
-				 edah, block);
-		getAndDisplayCurrentMatches();
+		var ajaxAction = function() {
+		    var ra = $.Deferred();
+		    doAssignmentAjax("reassign", "Assignment saved!", "reassign",
+				     edah, block);
+		    ra.resolve();
+		    return ra;
+		};
+		var displayAction = function() {		    
+		    getAndDisplayCurrentMatches();
+		};
+		ajaxAction().done(displayAction);
             });
     });
 

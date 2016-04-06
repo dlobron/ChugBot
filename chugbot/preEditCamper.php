@@ -48,13 +48,14 @@
     // If the email was invalid, display an error and "hit back button".  If no rows, report that no campers matched
     // and offer an Add link.  Otherwise, list each camper in the form, with the submit going to
     // the edit page and camper_id set to the camper's ID.
+    $camperHomeUrl = urlIfy("camperHome.php");
     if (! empty($emailErr)) {
         echo "<h3>An Error Occurred</h3>";
         echo "$emailErr<br>";
-        echo "<p>Please hit the \"Back\" button and try again.</p>";
+        echo "<p>Please click <a href=\"$camperHomeUrl\">here</a> to try again.</p>";
+        die();
     } else if (count($camperId2Name) == 0) {
-        $addUrl = urlIfy("addCamper.php");
-        $camperHomeUrl = urlIfy("camperHome.php");
+        $addUrl = urlIfy("addCamper.php");        
         echo "<h3>An Error Occurred</h3>";
         echo "No camper assignments were found for email $email.<br>";
         echo "You can click <a href=\"$addUrl\">here</a> to add a camper, or <a href=\"$camperHomeUrl\">here</a> to return to the home page.";

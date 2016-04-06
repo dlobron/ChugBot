@@ -158,13 +158,16 @@ EOM;
             $homeText = "<input type=\"button\" onclick=\"location.href='$homeUrl';\" value=\"Home\" />";
             if (! is_null($this->submitAndContinueTarget)) {
                 // If we have a submitAndContinueTarget, display a bold
-                // continue link.  Set the ID col in the session status so we
+                // continue link, and do not display the home or cancel links.
+                // Set the ID column in the session status so we
                 // can pick it up if needed.
                 $label = $this->submitAndContinueLabel;
                 $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"control_button\" type=\"submit\" name=\"submitAndContinue\" value=\"$label\" />";
                 $idCol = $this->idCol;
                 $_SESSION["$idCol"] = $this->col2Val[$this->idCol];
                 $val = $this->col2Val[$this->idCol];
+                $homeText = "";
+                $cancelText = "";
             } else {
                 // If we don't have submitAndContinueTarget, display a submit
                 // and back button, in regular typeface.

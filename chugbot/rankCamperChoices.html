@@ -17,12 +17,14 @@
     margin-top: 20px;
     text-align: center;
     width:7%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     }
 
     .pref_submit input[type=submit] {
-    padding:5px 15px;
     color:white;
     background-color:green;
     border:2px solid #336600;
@@ -83,18 +85,28 @@
   <div id="results" class="ui-widget-content ui-corner-all" style="display:none">
     <p>
       <h3>Preferences submitted, NAME!</h3>  You may close your browser, or
-      click <a href="URL">here</a> to return to the home page.
+      click <a href="URL">here</a> to return to the home page.  
     </p>
   </div>
 </div>
 
 <div class="pref_submit">
 <form>
-<input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit" />
+<input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit" class="SubmitPrefsButton" />
 </form>
+</div>
 </div>
 
 <div id="filltarget"></div>
+
+<div class="stand_alone_button_container">
+<div class="pref_submit">
+<form>
+<input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit"
+       class="SubmitPrefsButton" />
+</form>
+</div>
+</div>
 
 </body>
 </html>

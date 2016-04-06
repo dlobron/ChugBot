@@ -34,7 +34,7 @@ $(function() {
 	    })
 	    });
 $(function() {
-	$("#SubmitPrefs").click(function(event) {
+	$(".SubmitPrefsButton").click(function(event) {
 		event.preventDefault();
 		// Collect data from the dest arrays when the submit button is clicked.
 		var arrayOrderedLists = [];
@@ -59,6 +59,8 @@ $(function() {
 		    }
 		    arrayOrderedLists.push(orderedList);		    
 		}
+		// Jump to the top so the user sees either an error box or a confirmation box.
+		$("body").scrollTop(0);
 		// Report an error if no chugim were selected.
 		if (arrayOrderedLists.length == 0) {
 		    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
@@ -73,6 +75,10 @@ $(function() {
 			    success: function(data) {
 			    $( "#results" ).html(function() {
 				    txt = $(this).html().replace("NAME", data.name);
+				    if (data.hasOwnProperty('email')) {
+					var mailText = "Confirmation email sent to " + data.email + ".<br><br>You may";
+					txt = txt.replace("You may", mailText);
+				    }
 				    return txt.replace("URL", data.homeUrl);
 				});
 			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
@@ -198,8 +204,9 @@ $(function() {
 			      });
 		       if (html.length == 0) {
 			   html = "<div class=\"error_box\"><h3>No chugim were found for your edah and session.</h3></div>";
-		       }
-		       $("body").append(html);
+		       } 
+		       //$("body").append(html);
+		       $("#filltarget").html(html);
 		},
 		    error: function(xhr, desc, err) {
 		       console.log(xhr);

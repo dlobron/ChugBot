@@ -246,6 +246,7 @@ END;
         // display in the confirmation window.
         $db = new DbConn();
         $db->addSelectColumn("first");
+        $db->addSelectColumn("email");
         $db->addWhereColumn("camper_id", $camper_id, 'i');
         $err = "";
         $result = $db->simpleSelectFromTable("campers", $err);
@@ -253,6 +254,7 @@ END;
         if ($result != FALSE) {
             $row = $result->fetch_row();
             $retVal["name"] = $row[0];
+            $retVal["email"] = $row[1];
             $retVal["homeUrl"] = homeUrl();
         }
         
