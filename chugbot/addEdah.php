@@ -11,7 +11,7 @@
     $addEdahPage->addColumn("rosh_name", FALSE);
     $addEdahPage->addColumn("rosh_phone", FALSE);
     $addEdahPage->addColumn("comments", FALSE);
-    $addEdahPage->addColumn("sort_order", FALSE);
+    $addEdahPage->addColumn("sort_order", FALSE, TRUE);
     $addEdahPage->handlePost();
     
     $nameField = new FormItemSingleTextField("Edah Name", TRUE, "name", 0);

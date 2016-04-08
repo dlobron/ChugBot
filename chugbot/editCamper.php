@@ -12,11 +12,11 @@
     $editCamperPage->addColumn("first");
     $editCamperPage->addColumn("last");
     $editCamperPage->addColumn("email");
-    $editCamperPage->addColumn("session_id");
-    $editCamperPage->addColumn("edah_id");
-    $editCamperPage->addColumn("bunk_id");
-    $editCamperPage->addColumn("needs_first_choice", FALSE, 0, TRUE);
-    $editCamperPage->addColumn("inactive", FALSE, 0, TRUE);
+    $editCamperPage->addColumn("session_id", TRUE, TRUE);
+    $editCamperPage->addColumn("edah_id", TRUE, TRUE);
+    $editCamperPage->addColumn("bunk_id", FALSE, TRUE);
+    $editCamperPage->addColumn("needs_first_choice", FALSE, TRUE, 0);
+    $editCamperPage->addColumn("inactive", FALSE, TRUE, 0);
     $editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html", "Choose Chugim");
 
     $editCamperPage->handlePost();

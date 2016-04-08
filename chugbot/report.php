@@ -226,19 +226,19 @@
 <?php
     $errors = array();
     $reportMethod = ReportTypes::None;
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $reset = test_input($_POST["reset"]);
-        $reportMethod = test_input($_POST["report_method"]);
-        $edahId = test_input($_POST["edah_id"]);
-        $bunkId = test_input($_POST["bunk_id"]);
-        $chugId = test_input($_POST["chug_id"]);
-        $doReport = test_input($_POST["do_report"]);
+    if ($_SERVER["REQUEST_METHOD"] == "GET") {
+        $reset = test_input($_GET["reset"]);
+        $reportMethod = test_input($_GET["report_method"]);
+        $edahId = test_input($_GET["edah_id"]);
+        $bunkId = test_input($_GET["bunk_id"]);
+        $chugId = test_input($_GET["chug_id"]);
+        $doReport = test_input($_GET["do_report"]);
         
         // Grab active block IDs.
         $activeBlockIds = array();
         populateActiveIds($activeBlockIds, "block_ids");
 
-        // Report method is required for POST.  All other filter parameters are
+        // Report method is required for GET.  All other filter parameters are
         // optional (if we don't have a filter, we show everything).
         // Exception: if $reset is true, we set report type to none, and reset
         // other values.
@@ -295,7 +295,7 @@
 <div class="form_container">
     
 <h1><a>Chug Assignment Report</a></h1>
-<form id="main_form" class="appnitro" method="post" action="$actionTarget">
+<form id="main_form" class="appnitro" method="GET" action="$actionTarget">
 <div class="form_description">
 <h2>Chug Assignment Report</h2>
 <p>Start by choosing a report type, then select filters as needed.  Required options are marked with a <font color="red">*</font>.</p>
@@ -382,7 +382,6 @@ EOM;
     echo "<li class=\"buttons\">";
     echo "<input id=\"submitFormButton\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
     echo "<input id=\"resetFormButton\" class=\"button_text\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
-    echo "<button onclick=\"history.go(-1);\">Back </button>";
     echo "<a href=\"$cancelUrl\">Home</a>";
     echo "</li></ul></form>";
     
@@ -433,7 +432,7 @@ EOM;
                 $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
             }
             if ($bunkId) {
-                $sql .= "AND b.bunk_id = $bunkId ";
+                $sql .= "AND b.bunk_id = ? ";
                 $db->addColVal($bunkId, 'i');
             }
             $sql .= "ORDER BY bunk, name, edah_sort_order, edah, group_name";

@@ -2,6 +2,17 @@
     include_once 'constants.php';
     require_once 'PHPMailer/PHPMailerAutoload.php';
     
+    function forwardNoHistory($url) {
+        $retVal = '<script type="text/javascript">';
+        $retVal .= "window.location.replace(\"$url\")";
+        $retVal .= '</script>';
+        $retVal .= '<noscript>';
+        $retVal .= '<meta http-equiv="refresh" content="0;url='.$url.'" />';
+        $retVal .= '</noscript>';
+        
+        return $retVal;
+    }
+    
     function sendMail($address,
                       $subject,
                       $body,
@@ -118,8 +129,8 @@
 <div class="error_box">
 <h3>Oops!  $desc occurred:</h3>
 EOM;
-        $retVal = $retVal . $errorHtml . "<br>";
-        $retVal = $retVal . "<p>Please hit \"Back\" and try again, or report the error to an administrator if it persists.</p></div>";
+        $retVal = $retVal . $errorHtml;
+        $retVal = $retVal . "<p>Please click Back to try again, or report the error to an administrator if it persists.</p></div>";
         $retVal = $retVal . footerText();
         $retVal = $retVal . "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\"></body></html>";
         

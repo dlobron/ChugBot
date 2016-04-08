@@ -103,7 +103,7 @@ EOM;
 <p>If you have an existing assignment, you will be able to edit it.  Nothing will be changed until you click
 the Save button.</p>
 <p>To generate a printable chug assigment report, click "Report".
-<form id="leveling_choice_form" class="appnitro" method="post" action="<?php echo $levelingUrl; ?>">
+<form id="leveling_choice_form" class="appnitro" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
 <label class="description" for="edah">Edah</label>
@@ -131,11 +131,12 @@ the Save button.</p>
 </ul>
 </form>
 
-<form class="appnitro" action="<?php echo $reportUrl; ?>">
+<form class="appnitro" action="<?php echo $reportUrl; ?>" method="GET">
 <div class="form_description">
 <p>Click "Report" to go to the camper assigment report page.</p>
 </div>
 <button title="Go to the Report page" class="control_button" type="submit">Report</button>
+<input type="hidden" name="reset" id="reset" value="1" />
 </form>
 
 </div>

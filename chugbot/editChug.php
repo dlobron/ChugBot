@@ -8,9 +8,9 @@
                                  "Please edit chug below as needed",
                                  "chugim", "chug_id");
     $editChugPage->addColumn("name");
-    $editChugPage->addColumn("group_id");
-    $editChugPage->addColumn("min_size", FALSE, MIN_SIZE_NUM);
-    $editChugPage->addColumn("max_size", FALSE, MAX_SIZE_NUM);
+    $editChugPage->addColumn("group_id", TRUE, TRUE);
+    $editChugPage->addColumn("min_size", FALSE, TRUE, MIN_SIZE_NUM);
+    $editChugPage->addColumn("max_size", FALSE, TRUE, MAX_SIZE_NUM);
     $editChugPage->addColumn("description", FALSE);
     $editChugPage->addInstanceTable("chug_instances");
     $editChugPage->fillInstanceId2Name("block_id", "blocks");

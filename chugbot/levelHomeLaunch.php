@@ -5,12 +5,11 @@
     bounceToLogin();
     $err = $dbErr = "";
     
-    // We assume we got here from a POST.  If not, go to the home page.
-    if (! $_SERVER["REQUEST_METHOD"] == "POST") {
+    if ($_SERVER["REQUEST_METHOD"] != "GET") {
         $err = errorString("Unknown request method.");
     }
-    $edah_id = intval(test_input($_POST["edah"]));
-    $block_id = intval(test_input($_POST["block"]));
+    $edah_id = intval(test_input($_GET["edah"]));
+    $block_id = intval(test_input($_GET["block"]));
     if ($edah_id == NULL || $block_id == NULL) {
         $err = errorString("Block and edah must be specified.");
     }
@@ -35,7 +34,7 @@
     }
     if ($result->num_rows > 0) {
         // We have an existing assignment: redirect to the display/edit page.
-        header("Location: $levelHomeUrl");
+        echo forwardNoHistory($levelHomeUrl);
         exit;
     }
     
@@ -65,8 +64,7 @@
     }
     // Assignments done - redirect to the assignment page.
     error_log("Assigned edah $edah_id, block $block_id OK");
-    header("Location: $levelHomeUrl");
-    
+    echo forwardNoHistory($levelHomeUrl);
     exit;
     
     ?>

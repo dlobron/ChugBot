@@ -75,7 +75,7 @@
         }
         
         public function addColumn($name, $required = TRUE,
-                                  $defVal = NULL, $numeric = FALSE) {
+                                  $numeric = FALSE, $defVal = NULL) {
             $col = new Column($name, $required, $defVal);
             $col->setNumeric($numeric);
             array_push($this->columns, $col);
@@ -153,12 +153,10 @@ EOM;
             $fromText = "";
             $submitAndContinueText = "";
             $submitText = "";
-            $backText = "";
             $homeUrl = homeUrl();
-            $homeText = "<input type=\"button\" onclick=\"location.href='$homeUrl';\" value=\"Home\" />";
             if (! is_null($this->submitAndContinueTarget)) {
                 // If we have a submitAndContinueTarget, display a bold
-                // continue link, and do not display the home or cancel links.
+                // continue link.
                 // Set the ID column in the session status so we
                 // can pick it up if needed.
                 $label = $this->submitAndContinueLabel;
@@ -166,13 +164,11 @@ EOM;
                 $idCol = $this->idCol;
                 $_SESSION["$idCol"] = $this->col2Val[$this->idCol];
                 $val = $this->col2Val[$this->idCol];
-                $homeText = "";
                 $cancelText = "";
             } else {
                 // If we don't have submitAndContinueTarget, display a submit
-                // and back button, in regular typeface.
+                // in regular typeface.
                 $submitText = "<input id=\"saveForm\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
-                $backText = "<button onclick=\"history.go(-1);\">Back </button>";
             }
             if ($this->editPage) {
                 $val = $this->col2Val[$this->idCol];
@@ -184,14 +180,12 @@ EOM;
                 $fromText .= "<input type=\"hidden\" name=\"$this->idCol\" " .
                 "id=\"$this->idCol\" value=\"$val\"/>";
             } else {
-                $fromText = "<input type=\"hidden\" name=\"fromAddPage value=\"1\">";
+                $fromText = "<input type=\"hidden\" name=\"fromAddPage\" value=\"1\">";
             }
             $html .= <<<EOM
 <li class="buttons">
 <input type="hidden" name="form_id" value="$formId" />
 $submitText
-$backText
-$homeText
 $submitAndContinueText
 $fromText
 $cancelText
@@ -445,16 +439,18 @@ EOM;
                     return;
                 }
                 $this->col2Val = $result->fetch_array(MYSQLI_ASSOC);
-                
+
                 // Populate active instance IDs and edah filter, if configured.
                 $this->updateInstances($idVal, $this->instanceActiveIdHash);
                 $this->updateInstances($idVal, $this->activeEdotHash, TRUE);
             } else {
                 // From other sources (our add page or this page), column values should
-                // be in the POST data, unless we are coming from the home page.
+                // be in the form data.
                 foreach ($this->columns as $col) {
                     $val = test_input($_POST[$col->name]);
-                    if ($col->numeric) {
+                    // Translate numeric values as needed, but keep NULL as-is.
+                    if ($col->numeric &&
+                        $val !== NULL) {
                         if ($val == "on") {
                             $val = 1;
                         } else if ($val == "off") {
@@ -465,14 +461,18 @@ EOM;
                             $val = intval($val);
                         }
                     }
-                    if ($val == NULL) {
+                    if ($val === NULL) {
                         if ($col->required && (! $this->fromHomePage)) {
                             $this->colName2Error[$col->name] = errorString("Missing required column " . $col->name);
                             return;
                         }
-                        // Use default, if present.  Otherwise, leave NULL, so users can
-                        // erase optional columns.
+                        // This is tricky: if a value is NULL, and we have a default,
+                        // should we leave it NULL, or use the default?  For now, let's
+                        // use the default.  This means that columns with default values
+                        // will revert to those values if they are not set.  I think this
+                        // is OK, but we might eventually want to change this.
                         if (! is_null($col->defaultValue)) {
+                            error_log("Column $col->name is unset: using default value $col->defaultValue");
                             $val = $col->defaultValue;
                         }
                     }
@@ -514,7 +514,7 @@ EOM;
                 $db->addWhereColumn($this->idCol, $idVal, 'i');
                 $submitOk = $db->updateTable($this->mainTable, $this->dbErr);
                 if ($submitOk == FALSE) {
-                    error_log("Updated failed: $this->dbErr");
+                    error_log("Update failed: $this->dbErr");
                     return;
                 }
                 // Update instances, if we have them.

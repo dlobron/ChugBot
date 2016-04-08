@@ -10,9 +10,9 @@
     $addCamperPage->addColumn("first");
     $addCamperPage->addColumn("last");
     $addCamperPage->addColumn("email");
-    $addCamperPage->addColumn("session_id");
-    $addCamperPage->addColumn("edah_id");
-    $addCamperPage->addColumn("bunk_id");
+    $addCamperPage->addColumn("session_id", TRUE, TRUE);
+    $addCamperPage->addColumn("edah_id", TRUE, TRUE);
+    $addCamperPage->addColumn("bunk_id", FALSE, TRUE);
 
     $addCamperPage->handlePost();
 

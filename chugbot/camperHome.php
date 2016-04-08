@@ -28,7 +28,7 @@
             $loginMessage = "<h3><font color=\"green\">Login successful!</font></h3>";
         } else {
             $homeUrl = urlIfy("index.php?retry=1");
-            $errText = genFatalErrorReport(array("Access code missing or incorrect: please click <a href=\"$homeUrl\">here</a> and try again. Hint: $hint"));
+            $errText = genFatalErrorReport(array("Camper access code missing or incorrect.<br><br><b>Hint: $hint</b>"), $homeUrl);
             echo $errText;
             exit();
         }
