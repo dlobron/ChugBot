@@ -45,7 +45,7 @@
         
         public $title;
         public $dbErr = "";
-        public $colName2Error = array();
+        protected $colName2Error = array();
         protected $resultStr = "";
         protected $firstParagraph;
         protected $secondParagraph;
@@ -55,7 +55,7 @@
     }
     
     // This class handles most of the work for the add and edit pages.  The
-    // subclasses each implement a custom handlePost function, since those are
+    // subclasses each implement a custom handleSubmit function, since those are
     // substantially different for add and edit actions.
     abstract class AddEditBase extends FormPage {
         function __construct($title, $firstParagraph, $mainTable, $idCol) {
@@ -64,7 +64,7 @@
             $this->idCol = $idCol;
         }
         
-        abstract protected function handlePost();
+        abstract protected function handleSubmit();
         
         public function addSecondParagraph($p) {
             $this->secondParagraph = $p;
@@ -79,7 +79,6 @@
             $col = new Column($name, $required, $defVal);
             $col->setNumeric($numeric);
             array_push($this->columns, $col);
-            $this->colName2Error[$name] = "";
             $this->col2Type[$name] = $numeric ? 'i' : 's';
         }
         
@@ -108,7 +107,13 @@
             camperBounceToLogin(); // Forms require at least camper-level access.
             
             echo headerText($this->title);
-            $allErrors = array_merge(array($this->dbErr), array_values($this->colName2Error));
+            $allErrors = array();
+            foreach (array_merge(array($this->dbErr), array_values($this->colName2Error)) as $err) {
+                if (! $err) {
+                    continue;
+                }
+                array_push($allErrors, $err);
+            }
             $errText = genFatalErrorReport($allErrors);
             if (! is_null($errText)) {
                 echo $errText;
@@ -370,7 +375,7 @@ EOM;
             $this->editPage = TRUE;
         }
         
-        public function handlePost() {
+        public function handleSubmit() {
             $submitAndContinue = FALSE;
             if ($_SERVER["REQUEST_METHOD"] != "POST") {
                 // If the page was not POSTed, we might have arrived here via
@@ -674,28 +679,32 @@ EOM;
             parent::__construct($title, $firstParagraph, $mainTable, $idCol);
         }
 
-        public function handlePost() {
+        public function handleSubmit() {
             if ($_SERVER["REQUEST_METHOD"] != "POST") {
                 return;
+            }
+            if ((! empty($_POST["fromHome"])) ||
+                (! empty($_POST["fromStaffHomePage"]))) {
+                $this->fromHomePage = TRUE;
             }
             
             // If we have active instance IDs, grab them.
             $this->populateInstanceActionIds();
             
             // If we're coming from the home page, there's nothing further to
-            // process.
-            if (! empty($_POST["fromHome"])) {
+            // process: just display the form.
+            if ($this->fromHomePage) {
                 return;
             }
             
-            // Check for POST values.  Fire an error if required inputs
+            // Check for submitted values.  Fire an error if required inputs
             // are missing, and grab defaults if applicable.
             foreach ($this->columns as $col) {
                 $val = test_input($_POST[$col->name]);
                 if ($val === NULL) {
-                    if ($col->required && (! $this->fromHomePage)) {
+                    if ($col->required) {
                         $this->colName2Error[$col->name] = errorString("Missing value for required column " . $col->name);
-                        return;
+                        continue;
                     }
                     if (! is_null($col->defaultValue)) {
                         $val = $col->defaultValue;
@@ -705,8 +714,11 @@ EOM;
                 }
                 $this->col2Val[$col->name] = $val;
             }
+            if (! empty($this->colName2Error)) {
+                return;
+            }
             
-            // Insert the POST values we collected above.
+            // Insert the values we collected above.
             $dbc = new DbConn();
             foreach ($this->col2Val as $colName => $colVal) {
                 $type = $this->col2Type[$colName];
@@ -778,4 +790,67 @@ EOM;
         
         private $addChugPage;
     }
+    
+    // Adding a camper is very different from other add actions, so we define
+    // a separate class for this.  The main difference is that when the data is
+    // submitted, we store it in session state, to be committed only after
+    // the user has chosen chugim.
+    class AddCamperPage extends AddEditBase {
+        function __construct($title, $firstParagraph, $mainTable, $idCol) {
+            parent::__construct($title, $firstParagraph, $mainTable, $idCol);
+        }
+        
+        public function handleSubmit() {
+            
+            // If we're coming from the home page, there's nothing further to
+            // process: just display the form.
+            if ((! empty($_POST["fromHome"])) ||
+                (! empty($_POST["fromStaffHomePage"]))) {
+                $this->fromHomePage = TRUE;
+            }
+            if ($this->fromHomePage) {
+                return;
+            }
+            
+            // Clear camper ID from the session, in case multiple campers are
+            // being added in the same browser.
+            unset($_SESSION["camper_id"]);
+
+            // Check for submitted values.  Fire an error if required inputs
+            // are missing, and grab defaults if applicable.
+            foreach ($this->columns as $col) {
+                $val = test_input($_POST[$col->name]);
+                if ($val === NULL) {
+                    if ($col->required) {
+                        $this->colName2Error[$col->name] = errorString("Missing value for required column " . $col->name);
+                        continue;
+                    }
+                    if (! is_null($col->defaultValue)) {
+                        $val = $col->defaultValue;
+                    } else {
+                        continue;
+                    }
+                }
+                $this->col2Val[$col->name] = $val;
+            }
+            if (! empty($this->colName2Error)) {
+                // If we hit any errors, stop here and display, so the user
+                // can correct them.
+                return;
+            }
+            
+            // At this point, we have valid new-camper data.  Set all our
+            // column data in the SESSION hash.
+            foreach ($this->col2Val as $colName => $colVal) {
+                $_SESSION[$colName] = $colVal;
+                error_log("DBG: Set session $colName = $colVal");
+            }
+            
+            $rankChoicesUrl = urlIfy("rankCamperChoices.html");
+            echo ("<script type=\"text/javascript\">window.location.replace(\"$rankChoicesUrl\");</script>");
+            exit();
+        }
+    }
+    
+?>
     

@@ -8,7 +8,7 @@
                                     "sessions", "session_id");
     $editSessionPage->addColumn("name");
     
-    $editSessionPage->handlePost();
+    $editSessionPage->handleSubmit();
     
     $nameField = new FormItemSingleTextField("Session Name", TRUE, "name", 0);
     $nameField->setInputType("text");

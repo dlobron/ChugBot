@@ -7,7 +7,7 @@
     $editGroupPage = new EditPage("Edit Group", "Please update group information as needed",
                                   "groups", "group_id");
     $editGroupPage->addColumn("name");
-    $editGroupPage->handlePost();
+    $editGroupPage->handleSubmit();
     
     $nameField = new FormItemSingleTextField("Group Name", TRUE, "name", 0);
     $nameField->setInputType("text");

@@ -12,7 +12,7 @@
     $editEdahPage->addColumn("rosh_phone", FALSE);
     $editEdahPage->addColumn("comments", FALSE);
     $editEdahPage->addColumn("sort_order", FALSE, TRUE);
-    $editEdahPage->handlePost();
+    $editEdahPage->handleSubmit();
     
     $nameField = new FormItemSingleTextField("Edah Name", TRUE, "name", 0);
     $nameField->setInputClass("element text medium");

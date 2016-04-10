@@ -11,9 +11,9 @@
     function getCamperId() {
         $camper_id = $_SESSION["camper_id"];
         if (! isset($camper_id)) {
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => "Camper ID not set")));
+            return NULL;
         }
+        
         return $camper_id;
     }
     
@@ -37,7 +37,14 @@
     // Get the current set of prefs for this camper (if any), so that
     // the rank page can start with the current choices.
     if (isset($_POST["get_existing_choices"])) {
+        $existingChoices = array();
         $camper_id = getCamperId();
+        if ($camper_id === NULL) {
+            // If we were loaded from the Add Camper page, there will not
+            // be any preferences for this camper yet.
+            echo json_encode($existingChoices);
+            exit();
+        }
         $err = "";
         $db = new DbConn();
         for ($i = 0; $i < 6; $i++) {
@@ -69,7 +76,7 @@
             header('HTTP/1.1 500 Internal Server Error');
             die(json_encode(array("error" => $err)));
         }
-        $existingChoices = array();
+        
         while ($row = $result->fetch_row()) {
             $blockname = $row[0];
             $groupname = $row[1];
@@ -88,21 +95,46 @@
         exit();
     }
     
-    // Update preferences for a camper, and email them a confirmation of their
-    // choices if they have an email.
+    // Enter or update preferences for a camper, and email them a confirmation of their
+    // choices.
     if (isset($_POST["submit_prefs"])) {
+        $err = "";
         $camper_id = getCamperId();
+        if ($camper_id === NULL) {
+            // If there's no camper ID yet, it means that a newly-added camper is
+            // submitting preferences for the first time.  In this case, we add
+            // the camper here.  All camper columns are required except bunk_id.
+            $db = new DbConn();
+            $db->addColumn("first", $_SESSION["first"], 's');
+            $db->addColumn("last", $_SESSION["last"], 's');
+            $db->addColumn("email", $_SESSION["email"], 's');
+            $db->addColumn("session_id", intval($_SESSION["session_id"]), 'i');
+            $db->addColumn("edah_id", intval($_SESSION["edah_id"]), 'i');
+            $bunkIdVal = NULL;
+            if (array_key_exists("bunk_id", $_SESSION)) {
+                $bunkIdVal = intval($_SESSION["bunk_id"]);
+            }
+            $db->addColumn("bunk_id", $bunkIdVal, i);
+            if (! $db->insertIntoTable("campers", $err)) {
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => $err)));
+            }
+            // Grab the newly-created camper ID, for use below, and set it.
+            $camper_id = $db->insertId();
+            $_SESSION["camper_id"] = $camper_id;
+            error_log("DBG: Submitted new camper with ID $camper_id");
+        }
+        
         $pref_arrays = $_POST["pref_arrays"];
         // $pref_arrays is an array of arrays.  Each array is a list of preferred chugim,
         // in order, for a block/group tuple (for example, July 1, aleph).  The
         // first item in the array is a ||-separated tuple indicating these things,
         // for example: August 2||aleph.
-        
         // First, make an associative array mapping chug ID to name (for email).
         $db = new DbConn();
         $chugId2Name = array();
         $sql = "SELECT chug_id, name FROM chugim";
-        $err = "";
+        
         $result = $db->runQueryDirectly($sql, $err);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
@@ -264,52 +296,94 @@ END;
     
     // Get the first name for a camper ID, and leveling instructions.
     if (isset($_POST["get_first_name_and_instructions"])) {
-        $camper_id = $camper_id = getCamperId();
-        $sql = "SELECT c.first first, a.pref_page_instructions from campers c, admin_data a where c.camper_id = ?";
-        $db = new DbConn();
-        $db->addColVal($camper_id, 'i');
-        $db->isSelect = TRUE;
-        $err = "";
-        $result = $db->doQuery($sql, $err);
         $nameMap = array();
         $nameMap["name"] = "";
         $nameMap["instructions"] = "";
-        if ($result != FALSE) {
-            // If we got a first name, set it.
-            $row = $result->fetch_row();
-            $nameMap["name"] = $row[0];
-            $nameMap["instructions"] = $row[1];
+        $sql = "";
+        $camper_id = getCamperId();
+        if ($camper_id === NULL) {
+            // If the camper does not have an ID yet, then this is a newly-added
+            // camper.  We expect their name to be in the SESSION array.
+            $nameMap["name"] = $_SESSION["first"];
+            $sql = "SELECT pref_page_instructions instructions from admin_data";
+        } else {
+            $sql = "SELECT c.first name, a.pref_page_instructions instructions from campers c, admin_data a where c.camper_id = ?";
+            $db->addColVal($camper_id, 'i');
+        }
+        $db = new DbConn();
+        $db->isSelect = TRUE;
+        $err = "";
+        $result = $db->doQuery($sql, $err);
+        if ($result) {
+            $row = $result->fetch_assoc();
+            $nameMap["instructions"] = $row["instructions"];
+            if ($camper_id !== NULL) {
+                $nameMap["name"] = $row["name"];
+            }
+        } else {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
         }
         
         echo json_encode($nameMap);
         exit();
     }
     
-    // Get the chug lists corresponding to a camper's registration.  When we select, sort
+    // Get the chug lists corresponding to a camper's edah and session.  When we select, sort
     // July ahead of August.
     if (isset($_POST["get_chug_info"])) {
         $camper_id = getCamperId();
         $db = new DbConn();
-        $db->addColVal($camper_id, 'i');
         $db->isSelect = TRUE;
-        $err = "";
-        $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
-        "FROM " .
-        "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb " .
-        "WHERE " .
-        "cm.camper_id = ? AND " .
-        "cm.session_id = bi.session_id AND " .
-        "bi.block_id = b.block_id AND " .
-        "b.block_id = ci.block_id AND " .
-        "ci.chug_id = c.chug_id AND " .
-        "e.chug_id = c.chug_id AND " .
-        "e.edah_id = cm.edah_id AND " .
-        "eb.edah_id = cm.edah_id AND " .
-        "eb.block_id = b.block_id AND " .
-        "c.group_id = g.group_id " .
-        "ORDER BY CASE WHEN (blockname LIKE 'July%' OR blockname LIKE 'july%') THEN CONCAT('a', blockname) ".
+        $sql = "";
+        if ($camper_id) {
+            // If we have a camper ID, use it to grab the chug lists.
+            $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
+            "FROM " .
+            "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb " .
+            "WHERE " .
+            "cm.camper_id = ? AND " .
+            "cm.session_id = bi.session_id AND " .
+            "bi.block_id = b.block_id AND " .
+            "b.block_id = ci.block_id AND " .
+            "ci.chug_id = c.chug_id AND " .
+            "e.chug_id = c.chug_id AND " .
+            "e.edah_id = cm.edah_id AND " .
+            "eb.edah_id = cm.edah_id AND " .
+            "eb.block_id = b.block_id AND " .
+            "c.group_id = g.group_id ";
+            $db->addColVal($camper_id, 'i');
+        } else {
+            // If we do not have a camper ID, deduce the chug lists from the edah and session,
+            // both of which we expect to be present in the session array.
+            if (! (array_key_exists("session_id", $_SESSION) &&
+                   array_key_exists("edah_id", $_SESSION))) {
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => "New camper missing session or edah ID")));
+            }
+            $session_id = $_SESSION["session_id"];
+            $edah_id = $_SESSION["edah_id"];
+            $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
+            "FROM " .
+            "block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb " .
+            "WHERE " .
+            "bi.session_id = ? AND " .
+            "bi.block_id = b.block_id AND " .
+            "b.block_id = ci.block_id AND " .
+            "ci.chug_id = c.chug_id AND " .
+            "e.chug_id = c.chug_id AND " .
+            "e.edah_id = ? AND " .
+            "eb.edah_id = e.edah_id AND " .
+            "eb.block_id = b.block_id AND " .
+            "c.group_id = g.group_id ";
+            $db->addColVal($session_id, 'i');
+            $db->addColVal($edah_id, 'i');
+        }
+        // Order July ahead of August, for UI clarity.
+        $sql .= "ORDER BY CASE WHEN (blockname LIKE 'July%' OR blockname LIKE 'july%') THEN CONCAT('a', blockname) ".
         "WHEN (blockname LIKE 'Aug%' OR blockname LIKE 'aug%') THEN CONCAT('b', blockname) ELSE blockname END, ".
         "groupname, chugname";
+        $err = "";
         $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');

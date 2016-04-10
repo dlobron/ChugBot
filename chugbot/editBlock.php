@@ -16,7 +16,7 @@ EOM;
     $editBlockPage->fillInstanceId2Name("session_id", "sessions");
     $editBlockPage->setActiveEdotFilterBy("block");
     
-    $editBlockPage->handlePost();
+    $editBlockPage->handleSubmit();
 
     $nameField = new FormItemSingleTextField("Block Name", TRUE, "name", 0);
     $nameField->setInputMaxLength(255);

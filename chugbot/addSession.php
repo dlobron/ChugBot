@@ -8,7 +8,7 @@
                                   "Please enter session information",
                                   "sessions", "session_id");
     $addSessionPage->addColumn("name");
-    $addSessionPage->handlePost();
+    $addSessionPage->handleSubmit();
     
     $nameField = new FormItemSingleTextField("Session Name", TRUE, "name", 0);
     $nameField->setInputType("text");

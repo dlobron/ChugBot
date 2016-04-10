@@ -19,7 +19,7 @@
     $editCamperPage->addColumn("inactive", FALSE, TRUE, 0);
     $editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html", "Choose Chugim");
 
-    $editCamperPage->handlePost();
+    $editCamperPage->handleSubmit();
 
     $firstNameField = new FormItemSingleTextField("First Name", TRUE, "first", 0);
     $firstNameField->setInputType("text");

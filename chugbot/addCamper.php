@@ -4,8 +4,8 @@
     include_once 'formItem.php';
     camperBounceToLogin();
     
-    $addCamperPage = new AddPage("Add a Camper", "Please enter camper information here",
-                                 "campers", "camper_id");
+    $addCamperPage = new AddCamperPage("Add a Camper", "Please enter camper information here",
+                                       "campers", "camper_id");
     $addCamperPage->setAlternateResultString("Please review your information below, make any edits needed, and then click <b>Choose Chugim</b> to make your chug rankings.");
     $addCamperPage->addColumn("first");
     $addCamperPage->addColumn("last");
@@ -14,7 +14,7 @@
     $addCamperPage->addColumn("edah_id", TRUE, TRUE);
     $addCamperPage->addColumn("bunk_id", FALSE, TRUE);
 
-    $addCamperPage->handlePost();
+    $addCamperPage->handleSubmit();
 
     $firstNameField = new FormItemSingleTextField("First Name", TRUE, "first", 0);
     $firstNameField->setInputType("text");

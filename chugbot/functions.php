@@ -113,7 +113,7 @@
                 continue;
             }
             if ($ec > 0) {
-                $errorHtml .= $errorHtml . ", " . $errorText;
+                $errorHtml .= ", " . $errorText;
             } else {
                 $errorHtml = $errorText;
             }
@@ -453,7 +453,7 @@ EOM;
     }
     
     function genPassToEditPageForm($action, $paramHash) {
-        $retVal = "<form action=\"$action\" method=\"post\" name=\"passToEditPageForm\">";
+        $retVal = "<form action=\"$action\" method=\"POST\" name=\"passToEditPageForm\">";
         foreach ($paramHash as $name => $value) {
             if (is_array($value)) {
                 foreach ($value as $valueElement) {

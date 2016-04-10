@@ -13,7 +13,7 @@
     $addBunkPage->addSecondParagraph($secondParagraph);
     $addBunkPage->fillInstanceId2Name("edah_id", "edot");
     
-    $addBunkPage->handlePost();
+    $addBunkPage->handleSubmit();
 
     $nameField = new FormItemSingleTextField("Bunk Name", TRUE, "name", 0);
     $nameField->setInputMaxLength(255);

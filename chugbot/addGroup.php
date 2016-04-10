@@ -8,7 +8,7 @@
                                 "Please enter your group information",
                                 "groups", "group_id");
     $addGroupPage->addColumn("name");
-    $addGroupPage->handlePost();
+    $addGroupPage->handleSubmit();
     
     $nameField = new FormItemSingleTextField("Group Name", TRUE, "name", 0);
     $nameField->setInputType("text");

@@ -17,7 +17,7 @@
     $addChugPage->fillInstanceId2Name("block_id", "blocks");
     $addChugPage->setActiveEdotFilterBy("chug");
     
-    $addChugPage->handlePost();
+    $addChugPage->handleSubmit();
     
     $nameField = new FormItemSingleTextField("Chug Name", TRUE, "name", 0);
     $nameField->setInputType("text");
