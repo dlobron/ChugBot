@@ -15,6 +15,7 @@
     position: relative;
     margin: auto;
     margin-top: 3px;
+    margin-left: 40%;
     text-align: center;
     width:8%;
     display: flex;
@@ -23,7 +24,6 @@
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     }
-
     .pref_submit input[type=submit] {
     color:white;
     background-color:green;
@@ -34,7 +34,29 @@
     border-radius: 5px; 
     font-size: 2.02em;    
     }
-
+    .pref_submit_bottom {
+    position: relative;
+    margin: auto;
+    margin-top: 3px;
+    margin-left: 27%;
+    text-align: center;
+    width:8%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    }
+    .pref_submit_bottom input[type=submit] {
+    color:white;
+    background-color:green;
+    border:2px solid #336600;
+    cursor:pointer;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px; 
+    font-size: 2.02em;    
+    }
     #sortable1, #sortable2 {
     border: 2px dotted silver;
     width: 142px;
@@ -60,11 +82,15 @@
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     }
+    label {
+      display: inline-block;
+      width: 5em;
+  }
   </style>
   <script>
-  $(function() {
-    $(document).tooltip();
-  });  
+    $(document).tooltip({
+      position: { my: "left+350 center", at: "right center" }
+    });
   function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -100,7 +126,7 @@
 <div id="filltarget"></div>
 
 <div class="stand_alone_button_container">
-<div class="pref_submit">
+<div class="pref_submit_bottom">
 <form>
 <input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit"
        class="SubmitPrefsButton" />

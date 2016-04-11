@@ -61,10 +61,9 @@
 <?php
     echo headerText("Staff Home");
     
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr), TRUE);
     if (! is_null($errText)) {
         echo $errText;
-        exit();
     }
     ?>
 

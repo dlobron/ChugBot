@@ -114,10 +114,9 @@
                 }
                 array_push($allErrors, $err);
             }
-            $errText = genFatalErrorReport($allErrors);
+            $errText = genFatalErrorReport($allErrors, TRUE);
             if (! is_null($errText)) {
                 echo $errText;
-                exit();
             }
             $formId = "main_form";
             $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
@@ -654,8 +653,8 @@ EOM;
             if ($submitAndContinue) {
                 $_SESSION["$this->idCol"] = $idVal;
                 $submitAndContinueUrl = urlIfy($this->submitAndContinueTarget);
-                header("Location: $submitAndContinueUrl");
-                exit;
+                echo ("<script type=\"text/javascript\">window.location.replace(\"$submitAndContinueUrl\");</script>");
+                exit();
             }
             
             // If a column is set to its default, set it to the empty string
@@ -840,12 +839,13 @@ EOM;
             }
             
             // At this point, we have valid new-camper data.  Set all our
-            // column data in the SESSION hash.
+            // column data in the SESSION hash, so that ajax methods can pick it
+            // up.
             foreach ($this->col2Val as $colName => $colVal) {
                 $_SESSION[$colName] = $colVal;
-                error_log("DBG: Set session $colName = $colVal");
             }
             
+            // Go to the choice-ranking page.
             $rankChoicesUrl = urlIfy("rankCamperChoices.html");
             echo ("<script type=\"text/javascript\">window.location.replace(\"$rankChoicesUrl\");</script>");
             exit();

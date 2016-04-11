@@ -6,7 +6,7 @@
     
     function fatalError($err) {
         echo headerText("Password Reset Error");
-        $errText = genFatalErrorReport(array($err));
+        $errText = genFatalErrorReport(array($err), TRUE);
         echo $errText;
         exit();
     }

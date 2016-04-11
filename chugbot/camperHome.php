@@ -28,7 +28,7 @@
             $loginMessage = "<h3><font color=\"green\">Login successful!</font></h3>";
         } else {
             $homeUrl = urlIfy("index.php?retry=1");
-            $errText = genFatalErrorReport(array("Camper access code missing or incorrect.<br><br><b>Hint: $hint</b>"), $homeUrl);
+            $errText = genFatalErrorReport(array("Camper access code missing or incorrect.<br><br><b>Hint: $hint</b>"));
             echo $errText;
             exit();
         }
@@ -49,11 +49,13 @@
 <p>To add a new camper to the system, please click the "Add" button.</p>
 <p>To edit existing camper information, please enter the email address associated with that camper and then click "Edit".</p>
 
-<form class="appnitro" id="choiceForm" method="post" />
+<form class="appnitro" id="choiceForm" method="POST" />
 <br>
 <button title="Add a new camper" class="control_button" type="submit" name="add" formaction="addCamper.php" >Add Camper</button>
-<br><br><br><br>
+<input type="hidden" id="fromHome" name="fromHome" value="1" />
+</form>
 
+<form class="appnitro" id="choiceForm" method="GET" />
 <button title="Edit existing camper info" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
 <span>
 <input placeholder="Email associated with camper" id="email" name="email" class="element text" maxlength="255" size="50"

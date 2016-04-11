@@ -189,11 +189,11 @@ $(function() {
 						  var chugName = p[0];
 						  var chugId = p[1];
 						  var titleText = "";
-						  var chugDesc = chugId2Desc[chugId];
-						  if (chugDesc) {
+						  //var chugDesc = chugId2Desc[chugId];
+						  //if (chugDesc) {
 						      // If we have a chug description, write it as a tool tip.
-						      titleText = "title=\"" + chugName + ": " + chugDesc + "\"";
-						  }
+						  //    titleText = "title=\"" + chugName + ": " + chugDesc + "\"";
+						  //}
 						  html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " + 
 						      titleText + " >" + chugName + "</li>";
 					      });
@@ -216,7 +216,10 @@ $(function() {
 	    }).then(function(){
 		    if (success) {
 			$( "#sortable1, #sortable2" ).sortable({
-				connectWith: ".connectedSortable"
+				connectWith: ".connectedSortable",
+				    receive: function(event, ui) {
+				    console.log("DBG: Item dropped!");
+				}
 				    }).disableSelection();
 		    }});
     });

@@ -4,9 +4,9 @@
     include_once 'formItem.php';
     camperBounceToLogin();
     
-    $addCamperPage = new AddCamperPage("Add a Camper", "Please enter camper information here",
+    $addCamperPage = new AddCamperPage("Add a Camper", "Step 1: Enter camper information",
                                        "campers", "camper_id");
-    $addCamperPage->setAlternateResultString("Please review your information below, make any edits needed, and then click <b>Choose Chugim</b> to make your chug rankings.");
+    $addCamperPage->setAlternateResultString("Please enter your camper info below.");
     $addCamperPage->addColumn("first");
     $addCamperPage->addColumn("last");
     $addCamperPage->addColumn("email");

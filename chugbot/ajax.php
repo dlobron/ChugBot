@@ -300,6 +300,8 @@ END;
         $nameMap["name"] = "";
         $nameMap["instructions"] = "";
         $sql = "";
+        $db = new DbConn();
+        $db->isSelect = TRUE;
         $camper_id = getCamperId();
         if ($camper_id === NULL) {
             // If the camper does not have an ID yet, then this is a newly-added
@@ -310,8 +312,6 @@ END;
             $sql = "SELECT c.first name, a.pref_page_instructions instructions from campers c, admin_data a where c.camper_id = ?";
             $db->addColVal($camper_id, 'i');
         }
-        $db = new DbConn();
-        $db->isSelect = TRUE;
         $err = "";
         $result = $db->doQuery($sql, $err);
         if ($result) {

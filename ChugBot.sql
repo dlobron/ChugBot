@@ -20,7 +20,7 @@ admin_password varchar(255) NOT NULL,
 admin_email_cc varchar(255),
 regular_user_token varchar(255) NOT NULL DEFAULT "Kayitz",
 regular_user_token_hint varchar(512) DEFAULT "Hebrew word for summer",
-pref_page_instructions varchar(2048) DEFAULT "&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose up to six preferred Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;",
+pref_page_instructions varchar(2048) DEFAULT "&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose six Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;",
 camp_name varchar(255) NOT NULL DEFAULT "Camp Ramah New England",
 camp_web varchar(128) NOT NULL DEFAULT "www.campramahne.org")
 COLLATE utf8_unicode_ci;

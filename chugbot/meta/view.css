@@ -11,6 +11,10 @@ body
 	text-align:center;
 }
 
+.connectedSortable li {
+    cursor:move;
+}
+
 .control_button {
     font-size: 1.2em;
     padding:3px 8px;
