@@ -199,7 +199,8 @@ $(function() {
 					      });
 					  html += "</ul>";
 					  html += "<div class=\"right_invisible\"><img src=\"images/UpDownArrows.png\"></div>";
-					  html += "</div>";				  
+					  html += "<div class=\"ui-progressbar\"><div class=\"progress-label\"></div></div>";
+					  html += "</div>";
 				      });
 			      });
 		       if (html.length == 0) {
@@ -218,9 +219,36 @@ $(function() {
 			$( "#sortable1, #sortable2" ).sortable({
 				connectWith: ".connectedSortable",
 				    receive: function(event, ui) {
-				    console.log("DBG: Item dropped!");
+				    console.log(event);
+				    console.log(ui);
+				    // Count the number of dropped items, and display
+				    // a message indicating how many to go.
+				    //var ct = event.target.children.length;
+				    var rd = $(event.target.parentElement).find("#sortable2 li");
+				    var ct = rd.length;
+				    var text;
+				    var barMax = 6;
+				    if (ct < barMax) {
+					text = "<small>" + ct + "/" + barMax + "</small>";
+				    } else {
+					text = "<small>Done!</small>";
+				    }
+				    var label = $(event.target.parentElement).find(".progress-label");
+				    var bar = $(event.target.parentElement).find(".ui-progressbar");
+				    $(bar).height(35);
+				    $(bar).width(120);
+				    $(bar).progressbar({
+					    max: barMax,
+					    value: ct,
+					    create: function() {
+						label.html(text);
+					    },
+					    change: function() {
+						label.html(text);
+					    }
+					});	    
 				}
-				    }).disableSelection();
+			    }).disableSelection();
 		    }});
     });
 
