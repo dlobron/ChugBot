@@ -219,8 +219,6 @@ $(function() {
 			$( "#sortable1, #sortable2" ).sortable({
 				connectWith: ".connectedSortable",
 				    receive: function(event, ui) {
-				    console.log(event);
-				    console.log(ui);
 				    // Count the number of dropped items, and display
 				    // a message indicating how many to go.
 				    //var ct = event.target.children.length;
@@ -231,10 +229,11 @@ $(function() {
 				    if (ct < barMax) {
 					text = "<small>" + ct + "/" + barMax + "</small>";
 				    } else {
-					text = "<small>Done!</small>";
+					text = "<small>" + ct + "/" + barMax + "!</small>";
 				    }
 				    var label = $(event.target.parentElement).find(".progress-label");
 				    var bar = $(event.target.parentElement).find(".ui-progressbar");
+				    var barValue = $(bar).find( ".ui-progressbar-value" );
 				    $(bar).height(35);
 				    $(bar).width(120);
 				    $(bar).progressbar({
@@ -242,9 +241,15 @@ $(function() {
 					    value: ct,
 					    create: function() {
 						label.html(text);
+						$(this).find( ".ui-progressbar-value" ).css({ 'background': 'Yellow' });
 					    },
 					    change: function() {
 						label.html(text);
+						if (ct < barMax) {
+						    $(barValue).css({ 'background': 'Yellow' });
+						} else {
+						    $(barValue).css({ 'background': '#00ff00' });
+						}
 					    }
 					});	    
 				}
