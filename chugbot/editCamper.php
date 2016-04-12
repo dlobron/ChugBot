@@ -7,7 +7,7 @@
     $editCamperPage = new EditPage("Review Camper Information",
                                    "Please review your information below, and make any necessary edits.",
                                    "campers", "camper_id");
-    $editCamperPage->addSecondParagraph("Then click <b>Update Chugim</b> to update your chug preferences.");
+    $editCamperPage->addSecondParagraph("Then click <b>Update Chugim</b> to update your chug preferences, or click <b>Save and Exit</b> to save your changes without updating chug preferences.");
     $editCamperPage->setAlternateResultString("Please review your information below, make any edits needed, and then click <b>Choose Chugim</b> to make your chug rankings.");
     $editCamperPage->addColumn("first");
     $editCamperPage->addColumn("last");
