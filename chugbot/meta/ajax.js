@@ -10,6 +10,7 @@ $(function() {
 	    });
     });
 
+var expectedChugCount = 6;
 var success = false;
 var existingChoicesMap = {};
 var blockGroupChugInUse = {};
@@ -39,18 +40,30 @@ $(function() {
 		// Collect data from the dest arrays when the submit button is clicked.
 		var arrayOrderedLists = [];
 		var divs = document.getElementsByName("chug_choice_container");
+		var chugCountError = "<h3>Oops! Errors were found:</h3>";
+		var errorCount = 0;
 		for (var i = 0; i < divs.length; i++){
 		    var divElement = divs[i];
 		    var ulList = divElement.getElementsByTagName("ul");
 		    for (var j = 0; j < ulList.length; j++) {
 			var ulElement = ulList[j];
 			var listName = ulElement.getAttribute("name");
-			if (listName == "src") {
+			if (listName == "dragSrc") {
 			    continue; // We're only interested in the drag-dest list.
 			}
 			var orderedList = [];
 			orderedList.push(listName); // Put the block/group name first in the list.
 			var listElements = ulElement.getElementsByTagName("li");
+			var sessionAndGroup = listName.split("||");
+			if (listElements.length < expectedChugCount) {
+			    errorCount++;
+			    chugCountError += "Only " + listElements.length + " chugim selected for " + sessionAndGroup[0] + ", " + sessionAndGroup[1] + " (you must choose " + expectedChugCount + ")<br>";
+			    continue;
+			} else if (listElements.length > expectedChugCount) {
+			    errorCount++;
+			    chugCountError += "Too many chugim were chosen for " + sessionAndGroup[0] + ", " + sessionAndGroup[1] + " (you must choose " + expectedChugCount + ")<br>";
+			    continue;
+			}
 			for (var k = 0; k < listElements.length; k++) {
 			    var listElement = listElements[k];
 			    var value = listElement.getAttribute("value");
@@ -68,6 +81,12 @@ $(function() {
 		    $( "#results" ).show("slide", 250 );
 		    return;
 		}
+		if (errorCount > 0) {
+		    $( "#error:visible" ).removeAttr( "style" ).fadeOut();
+		    $( "#error" ).html(chugCountError);
+		    $( "#error" ).show("slide", 250 );
+                    return;
+                }
 		$.ajax({
 			url: 'ajax.php',
 			    type: 'post',
@@ -206,7 +225,6 @@ $(function() {
 		       if (html.length == 0) {
 			   html = "<div class=\"error_box\"><h3>No chugim were found for your edah and session.</h3></div>";
 		       } 
-		       //$("body").append(html);
 		       $("#filltarget").html(html);
 		},
 		    error: function(xhr, desc, err) {
@@ -214,22 +232,46 @@ $(function() {
 		       console.log("Details: ", desc);
 		       console.log("Error: ", err);
 		}
-	    }).then(function(){
+	    }).then(function() {
 		    if (success) {
+			// Display default progress bars on each chug holder.
+			$('*[class*=chug_choice_container]').each(function() {
+				var rd = $(this).find("#sortable2 li");
+				var ct = rd.length;
+				var label = $(this).find(".progress-label");
+				var bar = $(this).find(".ui-progressbar");
+				var barValue = $(bar).find( ".ui-progressbar-value" );
+				var text = "<small>" + ct + "/" + expectedChugCount + "</small>";
+				var color = 'Yellow';
+				if (ct == expectedChugCount) {
+				    color = "#00ff00";
+				} else if (ct > expectedChugCount) {
+				    color = "Red";
+				}
+				$(bar).height(35);
+				$(bar).width(120);
+				$(bar).progressbar({
+					max: expectedChugCount,
+					    value: ct,
+					    create: function() {
+					    label.html(text);
+					    $(this).find(".ui-progressbar-value").css({ 'background': color });
+					}
+				    });
+			    });
 			$( "#sortable1, #sortable2" ).sortable({
 				connectWith: ".connectedSortable",
 				    receive: function(event, ui) {
 				    // Count the number of dropped items, and display
 				    // a message indicating how many to go.
-				    //var ct = event.target.children.length;
 				    var rd = $(event.target.parentElement).find("#sortable2 li");
 				    var ct = rd.length;
-				    var text;
-				    var barMax = 6;
-				    if (ct < barMax) {
-					text = "<small>" + ct + "/" + barMax + "</small>";
-				    } else {
-					text = "<small>" + ct + "/" + barMax + "!</small>";
+				    var text = "<small>" + ct + "/" + expectedChugCount + "</small>";
+				    var color = "Yellow";
+				    if (ct == expectedChugCount) {
+					color = "#00ff00";
+				    } else if (ct > expectedChugCount) {
+					color = "Red";
 				    }
 				    var label = $(event.target.parentElement).find(".progress-label");
 				    var bar = $(event.target.parentElement).find(".ui-progressbar");
@@ -237,20 +279,20 @@ $(function() {
 				    $(bar).height(35);
 				    $(bar).width(120);
 				    $(bar).progressbar({
-					    max: barMax,
+					    max: expectedChugCount,
 					    value: ct,
 					    create: function() {
 						label.html(text);
-						$(this).find( ".ui-progressbar-value" ).css({ 'background': 'Yellow' });
+						$(this).find( ".ui-progressbar-value" ).css({ 'background': color });
 					    },
 					    change: function() {
 						label.html(text);
-						if (ct < barMax) {
-						    $(barValue).css({ 'background': 'Yellow' });
-						} else {
-						    $(barValue).css({ 'background': '#00ff00' });
-						}
-					    }
+						$(this).find( ".ui-progressbar-value" ).css({ 'background': color });
+					    },
+					    complete: function() {
+                                                label.html(text);
+                                                $(this).find( ".ui-progressbar-value" ).css({ 'background': color });
+                                            }
 					});	    
 				}
 			    }).disableSelection();
