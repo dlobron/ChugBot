@@ -35,10 +35,14 @@
             }
             return $this->colName2Error[$colName];
         }
-        
+    
         public function setSubmitAndContinueTarget($sact, $text) {
             $this->submitAndContinueTarget = $sact;
             $this->submitAndContinueLabel = $text;
+        }
+        
+        public function setSaveAndReturnLabel($text) {
+            $this->saveAndReturnLabel = $text;
         }
         
         abstract protected function renderForm();
@@ -52,6 +56,7 @@
         protected $formItems = array();
         protected $submitAndContinueTarget = NULL;
         protected $submitAndContinueLabel = "";
+        protected $saveAndReturnLabel = NULL;
     }
     
     // This class handles most of the work for the add and edit pages.  The
@@ -156,6 +161,7 @@ EOM;
             $footerText = footerText();
             $fromText = "";
             $submitAndContinueText = "";
+            $saveAndReturnText = "";
             $submitText = "";
             $homeUrl = homeUrl();
             if (! is_null($this->submitAndContinueTarget)) {
@@ -174,6 +180,12 @@ EOM;
                 // in regular typeface.
                 $submitText = "<input id=\"saveForm\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
             }
+            if (! is_null($this->saveAndReturnLabel)) {
+                // If we have a saveAndReturnLabel, create a button to save and return to the
+                // home page.
+                $label = $this->saveAndReturnLabel;
+                $saveAndReturnText = "<input id=\"saveAndReturn\" class=\"control_button\" type=\"submit\" name=\"saveAndReturn\" value=\"$label\" />";
+            }
             if ($this->editPage) {
                 $val = $this->col2Val[$this->idCol];
                 if ((! $val) &&
@@ -190,6 +202,7 @@ EOM;
 <li class="buttons">
 <input type="hidden" name="form_id" value="$formId" />
 $submitText
+$saveAndReturnText
 $submitAndContinueText
 $fromText
 $cancelText
@@ -376,6 +389,7 @@ EOM;
         
         public function handleSubmit() {
             $submitAndContinue = FALSE;
+            $saveAndReturn = FALSE;
             if ($_SERVER["REQUEST_METHOD"] != "POST") {
                 // If the page was not POSTed, we might have arrived here via
                 // a link.  In this case, we expect the ID value to be in the query
@@ -417,6 +431,9 @@ EOM;
                 }
                 if (! empty($_POST["submitAndContinue"])) {
                     $submitAndContinue = TRUE;
+                }
+                if (! empty($_POST["saveAndReturn"])) {
+                    $saveAndReturn = TRUE;
                 }
                 // Get the ID of the item to be edited: this is required to either
                 // exist in the POST or be set as a constant.
@@ -654,6 +671,12 @@ EOM;
                 $_SESSION["$this->idCol"] = $idVal;
                 $submitAndContinueUrl = urlIfy($this->submitAndContinueTarget);
                 echo ("<script type=\"text/javascript\">window.location.replace(\"$submitAndContinueUrl\");</script>");
+                exit();
+            }
+            // For save and return, go back to the home page.
+            if ($saveAndReturn) {
+                $homeUrl = homeUrl();
+                echo ("<script type=\"text/javascript\">window.location.replace(\"$homeUrl\");</script>");
                 exit();
             }
             

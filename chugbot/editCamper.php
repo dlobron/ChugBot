@@ -7,7 +7,7 @@
     $editCamperPage = new EditPage("Review Camper Information",
                                    "Please review your information below, and make any necessary edits.",
                                    "campers", "camper_id");
-    $editCamperPage->addSecondParagraph("Then click <b>Choose Chugim</b> to proceed to the ranking page");
+    $editCamperPage->addSecondParagraph("Then click <b>Update Chugim</b> to update your chug preferences.");
     $editCamperPage->setAlternateResultString("Please review your information below, make any edits needed, and then click <b>Choose Chugim</b> to make your chug rankings.");
     $editCamperPage->addColumn("first");
     $editCamperPage->addColumn("last");
@@ -17,7 +17,8 @@
     $editCamperPage->addColumn("bunk_id", FALSE, TRUE);
     $editCamperPage->addColumn("needs_first_choice", FALSE, TRUE, 0);
     $editCamperPage->addColumn("inactive", FALSE, TRUE, 0);
-    $editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html", "Choose Chugim");
+    $editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html", "Update Chugim");
+    $editCamperPage->setSaveAndReturnLabel("Save and Exit");
 
     $editCamperPage->handleSubmit();
 
