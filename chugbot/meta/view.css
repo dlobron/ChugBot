@@ -119,6 +119,12 @@ body
     	-webkit-border-radius: 10px;
 }
 
+.chug_choice_container > h3
+{
+	text-align: left;
+	margin-left: 50px;
+}
+
 .centered_invisible
 {
 	position: absolute;
