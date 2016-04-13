@@ -273,9 +273,13 @@ $(function() {
         $("#Report").click(function(event) {
                 event.preventDefault();
                 // Simulate clicking a link, so this page goes in the browser history.
-                var curUrl = window.location.href;
-                var homeUrl = curUrl.replace("levelHome.html", "report.php");
-                window.location.href = homeUrl;
+                var baseUrl = window.location.href;
+		baseUrl = baseUrl.replace("levelHome.html", "report.php");
+		var edah = getParameterByName("edah");
+		var block = getParameterByName("block");
+		var reportUrl = baseUrl.split("?")[0];
+		var reportUrl = reportUrl + "?report_method=1&block_ids%5B%5D=" + block + "&edah_id=" + edah + "&do_report=1&submit=Display";
+                window.location.href = reportUrl;
             })
             });
 

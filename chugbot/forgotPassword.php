@@ -6,7 +6,9 @@
     
     function fatalError($err) {
         echo headerText("Password Reset Error");
-        $errText = genFatalErrorReport(array($err), TRUE);
+        $tryAgainUrl = urlIfy("staffLogin.php");
+        $errText = genFatalErrorReport(array($err), FALSE,
+                                       $tryAgainUrl);
         echo $errText;
         exit();
     }

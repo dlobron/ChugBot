@@ -103,7 +103,7 @@
                         foreach ($this->captionReplaceColKeys as $key => $column) {
                             $replaceText = $row[$column];
                             if (! $replaceText) {
-                                $replaceText = $this->captionReplaceColDefault[$column];
+                                $replaceText = $this->captionReplaceColDefault[$key];
                             }
                             $captionText = str_replace($key, $replaceText, $captionText);
                         }
@@ -386,6 +386,11 @@ EOM;
     echo "</li></ul></form>";
     
     if ($doReport) {
+        echo "<div class=\"form_container\">";
+        echo "<form id=\"print_form\" class=\"appnitro\" method=\"GET\" action=\"printReport.php\">";
+        echo "<input id=\"submitFormButton\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Print\" />";
+        echo "</form></div>";
+        
         // Prepare and display the report, setting the SQL according to the report
         // type.
         $db = new DbConn();

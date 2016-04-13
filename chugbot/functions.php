@@ -70,10 +70,25 @@
     function populateActiveIds(&$idHash, $key) {
         // If we have active instance IDs, grab them.
         if (empty($key) ||
-            empty($_POST[$key])) {
+            (array_key_exists($key, $_POST) == FALSE
+             &&
+             array_key_exists($key, $_GET) == FALSE)) {
             return; // No instances.
         }
-        foreach ($_POST[$key] as $instance_id) {
+        $arr = array();
+        if (array_key_exists($key, $_POST)) {
+            $arr = $_POST[$key];
+        } else if (array_key_exists($key, $_GET)) {
+            $arr = $_GET[$key];
+        }
+        foreach ($arr as $instance_id) {
+            $instanceId = test_input($instance_id);
+            if ($instanceId == NULL) {
+                continue;
+            }
+            $idHash[$instanceId] = 1;
+        }
+        foreach ($_GET[$key] as $instance_id) {
             $instanceId = test_input($instance_id);
             if ($instanceId == NULL) {
                 continue;
