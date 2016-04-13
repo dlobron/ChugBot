@@ -315,7 +315,10 @@
             for ($i = 2; $i < count($row); $i++) {
                 $chug_id = intval($row[$i]);
                 if ($chug_id >= 0) {
-                    $existingPrefs[$camper_id][$gid][$chug_id] = $i - 1; // map to 1-based pref level
+                    // Map to zero-based pref level.  It's important for this to
+                    // be zero-based, because multiple first choices should
+                    // equal "perfect happiness", i.e., a score of zero.
+                    $existingPrefs[$camper_id][$gid][$chug_id] = $i - 2;
                 }
             }
         }
