@@ -105,7 +105,8 @@
         }
     }
     
-    function genFatalErrorReport($errorList, $fixOnSamePage = FALSE) {
+    function genFatalErrorReport($errorList, $fixOnSamePage = FALSE,
+                                 $backUrl = NULL) {
         $errorHtml = "";
         $ec = 0;
         foreach ($errorList as $errorText) {
@@ -129,11 +130,15 @@
 <div class="error_box">
 <h3>Oops!  $desc occurred:</h3>
 EOM;
+        $backText = "Back";
+        if ($backUrl) {
+            $backText = "<a href=\"$backUrl\">here</a>";
+        }
         $retVal = $retVal . $errorHtml;
         if ($fixOnSamePage) {
             $retVal = $retVal . "<p>Please fix the errors and try again.</p></div>";
         } else {
-            $retVal = $retVal . "<p>Please click Back to try again, or report the error to an administrator if it persists.</p></div>";
+            $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div>";
         }
         $retVal = $retVal . footerText();
         $retVal = $retVal . "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\"></body></html>";

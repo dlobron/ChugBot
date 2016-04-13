@@ -113,8 +113,9 @@
 
 <?php
     echo headerText("Staff Login");
-    
-    $errText = genFatalErrorReport(array($dbErr, $staffPasswordErr, $staffPasswordErr2));
+    $staffUrl = urlIfy("staffLogin.php");
+    $errText = genFatalErrorReport(array($dbErr, $staffPasswordErr, $staffPasswordErr2),
+                                   FALSE, $staffUrl);
     if (! is_null($errText)) {
         echo $errText;
         exit();
