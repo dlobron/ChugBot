@@ -122,7 +122,6 @@
             // Grab the newly-created camper ID, for use below, and set it.
             $camper_id = $db->insertId();
             $_SESSION["camper_id"] = $camper_id;
-            error_log("DBG: Submitted new camper with ID $camper_id");
         }
         
         $pref_arrays = $_POST["pref_arrays"];

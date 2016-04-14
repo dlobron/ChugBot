@@ -87,6 +87,7 @@ $(function() {
 		    $( "#error" ).show("slide", 250 );
                     return;
                 }
+		$( "#error" ).hide(); // At this point, we have no validation errors.
 		$.ajax({
 			url: 'ajax.php',
 			    type: 'post',
