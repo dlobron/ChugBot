@@ -164,14 +164,26 @@
             $first = $row[1];
             $last = $row[2];
         }
-
-        $homeUrl = urlIfy("camperHome.php");
+        $camperCodeText = "";
+        $db = new DbConn();
+        $db->addSelectColumn("regular_user_token");
+        $result = $db->simpleSelectFromTable("admin_data", $err);
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_row();
+            $camperCodeText = " (" . $row[0] . ")";
+        }
+        $homeUrl = urlIfy("index.php");
         $homeAnchor = "<a href=\"$homeUrl\">here</a>";
         $email_text = <<<END
 <html><body>
 <h3>Preferences Recorded!</h3>
 <p>We have received your chug preferences, <b>$first</b>!  Please review your choices to make sure they are correct.
-If anything is incorrect or missing, you can go back to correct it by clicking ${homeAnchor}, or by pasting this link into your browser: $homeUrl</p>
+If anything is incorrect or missing, you can edit your choices by following these instructions:
+<ol>
+        <li>Click $homeAnchor, or paste this link into your browser: $homeUrl.</li>
+        <li>If prompted, enter the camper access code $camperCodeText and click Go.</li>
+        <li>Enter the email address to which this message was sent, and choose your camper name from the drop-down.</li>
+</ol>
 END;
         // Delete existing selections, and insert the new ones.
         $err = "";

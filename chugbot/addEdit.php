@@ -172,7 +172,6 @@ EOM;
                 $label = $this->submitAndContinueLabel;
                 $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"control_button\" type=\"submit\" name=\"submitAndContinue\" value=\"$label\" />";
                 $idCol = $this->idCol;
-                $_SESSION["$idCol"] = $this->col2Val[$this->idCol];
                 $val = $this->col2Val[$this->idCol];
                 $cancelText = "";
             } else {
@@ -448,6 +447,10 @@ EOM;
                 }
             }
             $this->col2Val[$this->idCol] = $idVal;
+            // Certain edit pages, such as for campers, need the ID to be
+            // stored as a session variable.
+            $_SESSION[$this->idCol] = $idVal;
+            
             if ($this->fromHomePage) {
                 // If we're coming from a home page, we need to get our
                 // column values from the DB.
@@ -665,10 +668,8 @@ EOM;
                 }
             }            
             
-            // If we've been asked to continue, do so here.  Set the ID
-            // field in the _SESSION hash, so JQuery can grab it via an Ajax call.
+            // If we've been asked to continue, do so here.
             if ($submitAndContinue) {
-                $_SESSION["$this->idCol"] = $idVal;
                 $submitAndContinueUrl = urlIfy($this->submitAndContinueTarget);
                 echo ("<script type=\"text/javascript\">window.location.replace(\"$submitAndContinueUrl\");</script>");
                 exit();

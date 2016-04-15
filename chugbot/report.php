@@ -8,7 +8,7 @@
     
     // A class to generate a printable PDF report.
     class PDF extends FPDF {
-        function genTable($title, $header, $data) {
+        function GenTable($title, $header, $data) {
             $this->SetTitle($title);
             // Colors, line width and bold font
             $this->SetFillColor(255,0,0);
@@ -123,8 +123,12 @@
                         // If we have a changed new table value, close the div and
                         // previous table before starting this one.
                         $html .= "</div></table>";
+                        // Add previous table to the PDF.
+                        $pdf->AddPage();
+                        $pdf->GenTable($pdfHeader, $pdfData);
                     }
                     $html .= "<div class=zebra><table>";
+                    // Re-initialize the PDF header and data arrays.
                     $pdfHeader = array();
                     $pdfData = array();
                     if ($this->caption) {
@@ -200,10 +204,16 @@
                         $tableData = $row[$tableDataKey];
                     }
                     $html .= "<td>$tableData</td>";
+                    array_push($pdfData, $tableData);
                 }
                 $html .= "</tr>";
             }
             $html .= "</table></div>";
+            
+            if ($genPdf) {
+                $pdf->Output();
+                exit();
+            }
             
             echo $html;
         }

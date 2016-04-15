@@ -59,7 +59,7 @@
         exit();
     } else {
         // List campers in a form.
-        $editPageUrl = urlBaseText() . "editCamper.php";
+        $editPageUrl = urlIfy("editCamper.php");
         echo "<form id=\"pickCamperForm\" class=\"appnitro\" method=\"post\" action=\"$editPageUrl\"/>";
         echo "<div class=\"form_description\">";
         echo "<h3>Choose a Camper Associated with $email to Edit</h3>";
