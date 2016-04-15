@@ -8,37 +8,45 @@
     
     // A class to generate a printable PDF report.
     class PDF extends FPDF {
-        function GenTable($title, $header, $data) {
-            $this->SetTitle($title);
+        public function GenTable($title, $header, $data) {
             // Colors, line width and bold font
             $this->SetFillColor(255,0,0);
             $this->SetTextColor(255);
             $this->SetDrawColor(128,0,0);
             $this->SetLineWidth(.3);
-            $this->SetFont('','B');
+            $this->SetFont('Arial','B');
+            $this->SetTitle($title);
+            $this->Cell($this->mult * $title, 10, $title, 0, 1, 'C');
             // Header
-            $w = array(30, 30, 30, 30, 30);
-            for($i = 0; $i < count($header); $i++) {
-                $this->Cell($w[$i], 7, $header[$i], 1, 0, 'C', true);
+            for ($i = 0; $i < count($header); $i++) {
+                $this->Cell($this->columnWidths[$i], 7, $header[$i], 1, 0, 'C', true);
             }
             $this->Ln();
             // Color and font restoration
-            $this->SetFillColor(224,235,255);
+            $this->SetFillColor(224, 235, 255);
             $this->SetTextColor(0);
             $this->SetFont('');
             // Data
             $fill = false;
             foreach ($data as $row) {
-                $this->Cell($w[0],6,$row[0],'LR',0,'L',$fill);
-                $this->Cell($w[1],6,$row[1],'LR',0,'L',$fill);
-                $this->Cell($w[2],6,number_format($row[2]),'LR',0,'R',$fill);
-                $this->Cell($w[3],6,number_format($row[3]),'LR',0,'R',$fill);
+                for ($i = 0; $i < count($row); $i++) {
+                    $alignment = ($i <= count($row) / 2) ? 'L' : 'R';
+                    $this->Cell($this->columnWidths[$i], 6, $row[$i],
+                                'LR', 0, $alignment, $fill);
+                }
                 $this->Ln();
                 $fill = !$fill;
             }
                 // Closing line
-            $this->Cell(array_sum($w),0,'','T');
+            $this->Cell(array_sum($this->columnWidths), 0, '', 'T');
         }
+        
+        public function setColWidths($w) {
+            $this->columnWidths = $w;
+        }
+        
+        private $columnWidths = NULL;
+        private $mult = 3;
     }
     
     // A class to generate a zebra-striped report.
@@ -111,9 +119,13 @@
             $pdf = new PDF();
             $pdfHeader = array();
             $pdfData = array();
+            $pdfDataRow = array();
+            $pdfCaptionText = "";
+            $pdfColWidths = array();
             $html = "";
             $newTableColumnValue = NULL;
             $rowIndex = 0;
+            
             while ($row = $result->fetch_assoc()) {
                 if ($newTableColumnValue == NULL ||
                     ($this->newTableColumn != NULL &&
@@ -123,16 +135,18 @@
                         // If we have a changed new table value, close the div and
                         // previous table before starting this one.
                         $html .= "</div></table>";
-                        // Add previous table to the PDF.
+                        // Add the table we just built to the PDF.
                         $pdf->AddPage();
-                        $pdf->GenTable($pdfHeader, $pdfData);
+                        $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
                     }
                     $html .= "<div class=zebra><table>";
                     // Re-initialize the PDF header and data arrays.
                     $pdfHeader = array();
                     $pdfData = array();
+                    $pdfColWidths = array();
                     if ($this->caption) {
                         $captionText = $this->caption;
+                        $pdfCaptionText = $this->caption;
                         if ($this->newTableColumn) {
                             // If we have a new table column, create an edit link if requested.
                             if (array_key_exists($this->newTableColumn, $this->valCol2IdCol)) {
@@ -142,6 +156,7 @@
                                 $d = $row[$this->newTableColumn];
                                 $linkText = "<a href=\"$editUrl\">$d</a>";
                                 $captionText = str_replace("LINK", $linkText, $captionText);
+                                $pdfCaptionText = str_replace("LINK", $d, $pdfCaptionText);
                             }
                         }
                         // Loop through the caption text words, and check for
@@ -154,6 +169,7 @@
                                 $replaceText = $this->captionReplaceColDefault[$key];
                             }
                             $captionText = str_replace($key, $replaceText, $captionText);
+                            $pdfCaptionText = str_replace($key, $replaceText, $pdfCaptionText);
                         }
                         $html .= "<caption>$captionText</caption>";
                     }
@@ -167,6 +183,9 @@
                         }
                         $html .= "<th>$tableHeader</th>";
                         array_push($pdfHeader, $tableHeader);
+                        // Initialize the width for the column corresponding to this
+                        // header.
+                        array_push($pdfColWidths, (strlen($tableHeader) * $this->mult));
                     }
                     $html .= "</tr>";
                     
@@ -193,21 +212,30 @@
                     }
                     // If we have an ID value corresponding to this table key,
                     // display the table data as a link to the edit page.
+                    $d = $row[$tableDataKey];
                     $tableData = "";
                     if (array_key_exists($tableDataKey, $this->valCol2IdCol)) {
                         $idCol = $this->valCol2IdCol[$tableDataKey];
                         $idVal = $row[$idCol];
                         $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
-                        $d = $row[$tableDataKey];
                         $tableData = "<a href=\"$editUrl\">$d</a>";
                     } else {
-                        $tableData = $row[$tableDataKey];
+                        $tableData = $d;
                     }
                     $html .= "<td>$tableData</td>";
-                    array_push($pdfData, $tableData);
+                    array_push($pdfDataRow, $d);
+                    if ((strlen($d) * $this->mult) > $pdfColWidths[$i]) {
+                        $pdfColWidths[$i] = (strlen($d) * $this->mult);
+                    }
+                    $i++;
                 }
                 $html .= "</tr>";
+                array_push($pdfData, $pdfDataRow); // Save this row.
+                $pdfDataRow = array();             // Start a new row.
             }
+            $pdf->AddPage();
+            $pdf->setColWidths($pdfColWidths);
+            $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
             $html .= "</table></div>";
             
             if ($genPdf) {
@@ -228,6 +256,7 @@
         private $caption = NULL;
         private $newTableColumn = NULL;
         private $headerTextMap = array();
+        private $mult = 3;
     }
     
     abstract class ReportTypes
@@ -266,19 +295,7 @@
                 "edah_id", "edot");
     fillId2Name($bunkId2Name, $dbErr,
                 "bunk_id", "bunks");
-    ?>
 
-<?php
-    echo headerText("Chug Report");
-    
-    $errText = genFatalErrorReport(array($dbErr));
-    if (! is_null($errText)) {
-        echo $errText;
-        exit();
-    }
-    ?>
-
-<?php
     $errors = array();
     $reportMethod = ReportTypes::None;
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
@@ -325,11 +342,25 @@
                 $doReport = 1;
             } else if ($lhs == "block") {
                 $activeBlockIds[$cparts[1]] = 1;
+            } else if ($lhs == "print") {
+                $genPdf = $cparts[1];
             }
-            
             // Add more of these as needed.
             
         }
+    }
+    
+    if (! $genPdf) {
+        echo headerText("Chug Report");
+    }
+    
+    $errText = genFatalErrorReport(array($dbErr));
+    if (! is_null($errText)) {
+        if ($genPdf) {
+            echo headerText("Chug Report");
+        }
+        echo $errText;
+        exit();
     }
     
     // Per-chug report requires a chug ID to display.
@@ -359,7 +390,9 @@
 <ul>
     
 EOM;
-    echo $pageStart;
+    if (! $genPdf) {
+        echo $pageStart;
+    }
     
     // Always show the report method drop-down.
     $reportMethodDropDown = new FormItemDropDown("Report Type", TRUE, "report_method", 0);
@@ -371,8 +404,10 @@ EOM;
     if ($reportMethod) {
         $reportMethodDropDown->setInputValue($reportMethod);
     }
-
-    echo $reportMethodDropDown->renderHtml();
+    
+    if (! $genPdf) {
+        echo $reportMethodDropDown->renderHtml();
+    }
     
     // All report methods include a time block filter.
     $liNumCounter = 0;
@@ -381,11 +416,12 @@ EOM;
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setActiveIdHash($activeBlockIds);
         $blockChooser->setGuideText("Step 2: Choose the time block(s) you wish to display.  If you do not choose any, all blocks will be shown.");
-        echo $blockChooser->renderHtml();
-        
-        // Add a hidden field indicating that the page should display a report
-        // when this submit comes in.
-        echo "<input type=\"hidden\" name=\"do_report\" id=\"do_report\" value=\"1\" />";
+        if (! $genPdf) {
+            echo $blockChooser->renderHtml();
+            // Add a hidden field indicating that the page should display a report
+            // when this submit comes in.
+            echo "<input type=\"hidden\" name=\"do_report\" id=\"do_report\" value=\"1\" />";
+        }
     }
     
     // If we have a report method specified, display the appropriate filter fields.
@@ -397,7 +433,9 @@ EOM;
         $edahChooser->setInputSingular("edah");
         $edahChooser->setColVal($edahId);
         $edahChooser->setId2Name($edahId2Name);
-        echo $edahChooser->renderHtml();
+        if (! $genPdf) {
+            echo $edahChooser->renderHtml();
+        }
     } else if ($reportMethod == ReportTypes::ByBunk) {
         // Same as edah, but with a bunk filter.
         $bunkChooser = new FormItemDropDown("Bunk", FALSE, "bunk_id", $liNumCounter++);
@@ -406,7 +444,9 @@ EOM;
         $bunkChooser->setInputSingular("bunk");
         $bunkChooser->setColVal($bunkId);
         $bunkChooser->setId2Name($bunkId2Name);
-        echo $bunkChooser->renderHtml();
+        if (! $genPdf) {
+            echo $bunkChooser->renderHtml();
+        }
     } else if ($reportMethod == ReportTypes::ByChug) {
         // Similar to the above, but the filter is by chug.  Also, in this case, the
         // input is required.
@@ -416,7 +456,9 @@ EOM;
         $chugChooser->setInputSingular("chug");
         $chugChooser->setColVal($chugId);
         $chugChooser->setId2Name($chugId2Name);
-        echo $chugChooser->renderHtml();
+        if (! $genPdf) {
+            echo $chugChooser->renderHtml();
+        }
     } else if ($reportMethod == ReportTypes::Director) {
         // The director report shows all options, so there are no filter fields
         // except time block.
@@ -435,20 +477,22 @@ EOM;
         $buttonText = "Display";
     }
     
-    echo "<li class=\"buttons\">";
-    echo "<input id=\"submitFormButton\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
-    
-    echo "<a href=\"$cancelUrl\">Home</a>";
-    if ($doReport) {
-        echo "<br><br><input id=\"submitFormButton\" class=\"control_button\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print\" />";
+    if (! $genPdf) {
+        echo "<li class=\"buttons\">";
+        echo "<input id=\"submitFormButton\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
+        
+        echo "<a href=\"$cancelUrl\">Home</a>";
+        if ($doReport) {
+            echo "<br><br><input id=\"submitFormButton\" class=\"control_button\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print\" />";
+        }
+        echo "</li></ul></form>";
+        
+        echo "<div class=\"form_container\">";
+        echo "<form id=\"reset_form\" class=\"appnitro\" method=\"GET\" action=\"$actionTarget\">";
+        echo "<ul><li class=\"buttons\">";
+        echo "<input id=\"resetFormButton\" class=\"button_text\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
+        echo "</li></ul></form></div>";
     }
-    echo "</li></ul></form>";
-    
-    echo "<div class=\"form_container\">";
-    echo "<form id=\"reset_form\" class=\"appnitro\" method=\"GET\" action=\"$actionTarget\">";
-    echo "<ul><li class=\"buttons\">";
-    echo "<input id=\"resetFormButton\" class=\"button_text\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
-    echo "</li></ul></form></div>";
     
     if ($doReport) {
         // Prepare and display the report, setting the SQL according to the report
@@ -575,17 +619,16 @@ EOM;
         }
     }
     
+    if (! $genPdf) {
+        echo "</div>";
+        echo footerText();
+        echo "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\">";
+        echo "</body></html>";
+    }
+    
     ?>
 
-</div>
 
-<?php
-    echo footerText();
-    ?>
-
-<img id="bottom" src="images/bottom.png" alt="">
-</body>
-</html>
     
     
     
