@@ -6,17 +6,33 @@
     require_once 'fpdf/fpdf.php';
     bounceToLogin();
     
+    abstract class OutputTypes {
+        const Html = 0;
+        const Pdf = 1;
+        const Csv = 2;
+    }
+    
     // A class to generate a printable PDF report.
     class PDF extends FPDF {
         public function GenTable($title, $header, $data) {
+            // Split line break in title into two lines.
+            $titleParts = explode("<br>", $title);
+            $this->SetTitle($titleParts[0]);
             // Colors, line width and bold font
-            $this->SetFillColor(255,0,0);
-            $this->SetTextColor(255);
-            $this->SetDrawColor(128,0,0);
+            $this->SetTextColor(128, 128, 128);
             $this->SetLineWidth(.3);
             $this->SetFont('Arial','B');
-            $this->SetTitle($title);
-            $this->Cell($this->mult * $title, 10, $title, 0, 1, 'C');
+            foreach ($titleParts as $titleLine) {
+                $this->Cell(0, 10, $titleLine, 0, 2, 'C');
+            }
+            if ($this->reportedItem) {
+                $forText = "Report for " . $this->typeOfReport . " " . $this->reportedItem;
+                $this->Cell(0, 10, $forText, 0, 2, 'C');
+            }
+            $this->SetFillColor(128, 128, 128);
+            $this->SetTextColor(255);
+            $this->SetDrawColor(128,0,0);
+           
             // Header
             for ($i = 0; $i < count($header); $i++) {
                 $this->Cell($this->columnWidths[$i], 7, $header[$i], 1, 0, 'C', true);
@@ -45,15 +61,23 @@
             $this->columnWidths = $w;
         }
         
+        public function setReportTypeAndNameOfItem($t, $n) {
+            $this->typeOfReport = $t;
+            $this->reportedItem = $n;
+        }
+        
         private $columnWidths = NULL;
         private $mult = 3;
+        private $typeOfReport = NULL;
+        private $reportedItem = NULL;
     }
     
     // A class to generate a zebra-striped report.
     class ZebraReport {
-        function __construct($db, $sql) {
+        function __construct($db, $sql, $outputType) {
             $this->db = $db;
             $this->sql = $sql;
+            $this->outputType = $outputType;
         }
         
         public function addIgnoreColumn($ic) {
@@ -93,7 +117,12 @@
             return FALSE;
         }
         
-        public function renderTable($genPdf = FALSE) {
+        public function setReportTypeAndNameOfItem($t, $n) {
+            $this->typeOfReport = $t;
+            $this->reportedItem = $n;
+        }
+        
+        public function renderTable() {
             if ($this->sql == NULL) {
                 echo genFatalErrorReport(array("No table query was specified"));
                 exit();
@@ -114,9 +143,10 @@
             // have a $newDivColumn, we create a new table section each
             // time that column's value changes.
             // We also build PDF tables, in case we've been asked to generate printable
-            // output.
+            // output, and prepare to emit CSV if requested.
             $pdfTables = array();
             $pdf = new PDF();
+            $pdf->setReportTypeAndNameOfItem($this->typeOfReport, $this->reportedItem);
             $pdfHeader = array();
             $pdfData = array();
             $pdfDataRow = array();
@@ -125,7 +155,13 @@
             $html = "";
             $newTableColumnValue = NULL;
             $rowIndex = 0;
-            
+            if ($this->outputType == OutputTypes::Csv) {
+                // Output headers so that the file is downloaded rather than displayed.
+                header('Content-Type: text/csv; charset=utf-8');
+                header('Content-Disposition: attachment; filename=ChugReport.csv');
+                // Create a file pointer connected to the output stream.
+                $output = fopen('php://output', 'w');
+            }
             while ($row = $result->fetch_assoc()) {
                 if ($newTableColumnValue == NULL ||
                     ($this->newTableColumn != NULL &&
@@ -137,10 +173,17 @@
                         $html .= "</div></table>";
                         // Add the table we just built to the PDF.
                         $pdf->AddPage();
+                        $pdf->setColWidths($pdfColWidths);
                         $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
                     }
                     $html .= "<div class=zebra><table>";
                     // Re-initialize the PDF header and data arrays.
+                    if ($this->outputType == OutputTypes::Csv) {
+                        fputcsv($output, $pdfHeader);
+                        foreach ($pdfData as $pdfRow) {
+                            fputcsv($output, $pdfRow);
+                        }
+                    }
                     $pdfHeader = array();
                     $pdfData = array();
                     $pdfColWidths = array();
@@ -223,6 +266,7 @@
                         $tableData = $d;
                     }
                     $html .= "<td>$tableData</td>";
+                    error_log("DBG: Adding $d to row, for key $tableDataKey");
                     array_push($pdfDataRow, $d);
                     if ((strlen($d) * $this->mult) > $pdfColWidths[$i]) {
                         $pdfColWidths[$i] = (strlen($d) * $this->mult);
@@ -238,8 +282,16 @@
             $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
             $html .= "</table></div>";
             
-            if ($genPdf) {
+            if ($this->outputType == OutputTypes::Pdf) {
                 $pdf->Output();
+                exit();
+            }
+            if ($this->outputType == OutputTypes::Csv) {
+                fputcsv($output, $pdfHeader);
+                foreach ($pdfData as $pdfRow) {
+                    fputcsv($output, $pdfRow);
+                }
+                fclose($output);
                 exit();
             }
             
@@ -257,6 +309,9 @@
         private $newTableColumn = NULL;
         private $headerTextMap = array();
         private $mult = 3;
+        private $typeOfReport = NULL;
+        private $reportedItem = NULL;
+        private $outputType = OutputTypes::Html;
     }
     
     abstract class ReportTypes
@@ -298,6 +353,7 @@
 
     $errors = array();
     $reportMethod = ReportTypes::None;
+    $outputType = OutputTypes::Html;
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $reset = test_input($_GET["reset"]);
         $reportMethod = test_input($_GET["report_method"]);
@@ -305,8 +361,11 @@
         $bunkId = test_input($_GET["bunk_id"]);
         $chugId = test_input($_GET["chug_id"]);
         $doReport = test_input($_GET["do_report"]);
-        $genPdf = test_input($_GET["print"]);
-        
+        if (test_input($_GET["print"])) {
+            $outputType = OutputTypes::Pdf;
+        } else if (test_input($_GET["export"])) {
+            $outputType = OutputTypes::Csv;
+        }
         // Grab active block IDs.
         $activeBlockIds = array();
         populateActiveIds($activeBlockIds, "block_ids");
@@ -343,20 +402,22 @@
             } else if ($lhs == "block") {
                 $activeBlockIds[$cparts[1]] = 1;
             } else if ($lhs == "print") {
-                $genPdf = $cparts[1];
+                $outputType = OutputTypes::Pdf;
+            } else if ($lhs == "export") {
+                $outputType = OutputTypes::Csv;
             }
             // Add more of these as needed.
             
         }
     }
     
-    if (! $genPdf) {
+    if ($outputType == OutputTypes::Html) {
         echo headerText("Chug Report");
     }
     
     $errText = genFatalErrorReport(array($dbErr));
     if (! is_null($errText)) {
-        if ($genPdf) {
+        if ($outputType == OutputTypes::Html) {
             echo headerText("Chug Report");
         }
         echo $errText;
@@ -390,7 +451,7 @@
 <ul>
     
 EOM;
-    if (! $genPdf) {
+    if ($outputType == OutputTypes::Html) {
         echo $pageStart;
     }
     
@@ -405,7 +466,7 @@ EOM;
         $reportMethodDropDown->setInputValue($reportMethod);
     }
     
-    if (! $genPdf) {
+    if ($outputType == OutputTypes::Html) {
         echo $reportMethodDropDown->renderHtml();
     }
     
@@ -416,7 +477,7 @@ EOM;
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setActiveIdHash($activeBlockIds);
         $blockChooser->setGuideText("Step 2: Choose the time block(s) you wish to display.  If you do not choose any, all blocks will be shown.");
-        if (! $genPdf) {
+        if ($outputType == OutputTypes::Html) {
             echo $blockChooser->renderHtml();
             // Add a hidden field indicating that the page should display a report
             // when this submit comes in.
@@ -433,7 +494,8 @@ EOM;
         $edahChooser->setInputSingular("edah");
         $edahChooser->setColVal($edahId);
         $edahChooser->setId2Name($edahId2Name);
-        if (! $genPdf) {
+        
+        if ($outputType == OutputTypes::Html) {
             echo $edahChooser->renderHtml();
         }
     } else if ($reportMethod == ReportTypes::ByBunk) {
@@ -444,7 +506,8 @@ EOM;
         $bunkChooser->setInputSingular("bunk");
         $bunkChooser->setColVal($bunkId);
         $bunkChooser->setId2Name($bunkId2Name);
-        if (! $genPdf) {
+        
+        if ($outputType == OutputTypes::Html) {
             echo $bunkChooser->renderHtml();
         }
     } else if ($reportMethod == ReportTypes::ByChug) {
@@ -456,7 +519,8 @@ EOM;
         $chugChooser->setInputSingular("chug");
         $chugChooser->setColVal($chugId);
         $chugChooser->setId2Name($chugId2Name);
-        if (! $genPdf) {
+        
+        if ($outputType == OutputTypes::Html) {
             echo $chugChooser->renderHtml();
         }
     } else if ($reportMethod == ReportTypes::Director) {
@@ -477,13 +541,14 @@ EOM;
         $buttonText = "Display";
     }
     
-    if (! $genPdf) {
+    if ($outputType == OutputTypes::Html) {
         echo "<li class=\"buttons\">";
-        echo "<input id=\"submitFormButton\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
+        echo "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
         
         echo "<a href=\"$cancelUrl\">Home</a>";
         if ($doReport) {
-            echo "<br><br><input id=\"submitFormButton\" class=\"control_button\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print\" />";
+            echo "<br><br><input class=\"control_button\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print...\" />";
+            echo "<input class=\"control_button\" type=\"submit\" name=\"export\" title=\"Export to a file\" value=\"Export\" />";
         }
         echo "</li></ul></form>";
         
@@ -501,7 +566,7 @@ EOM;
         $db->isSelect = TRUE;
         if ($reportMethod == ReportTypes::ByEdah) {
             // Per-edah report.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, e.rosh_name rosh, e.rosh_phone roshphone, " .
             "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
             "ch.chug_id chug_id, bl.block_id block_id " .
             "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g, chug_instances i " .
@@ -517,17 +582,22 @@ EOM;
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
             
             // Create and display the report.
-            $edahReport = new ZebraReport($db, $sql);
+            $edahReport = new ZebraReport($db, $sql, $outputType);
+            $edahReport->setReportTypeAndNameOfItem("Edah", $edahId2Name[$edahId]);
             $edahReport->setNewTableColumn("edah");
-            $edahReport->setCaption("Chug Assignments by Edah for LINK");
+            $edahReport->setCaption("Chug Assignments by Edah for LINK<br>Rosh: ROSH, PHONE");
             $edahReport->addIgnoreColumn("edah_sort_order");
+            $edahReport->addIgnoreColumn("rosh");
+            $edahReport->addIgnoreColumn("roshphone");
             $edahReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
             $edahReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
             $edahReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
             $edahReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
             $edahReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
             $edahReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
-            $edahReport->renderTable($genPdf);
+            $edahReport->addCaptionReplaceColKey("ROSH", "rosh", "none listed");
+            $edahReport->addCaptionReplaceColKey("PHONE", "roshphone", "no rosh phone");
+            $edahReport->renderTable();
         } else if ($reportMethod == ReportTypes::ByBunk) {
             // Per-bunk report.  This the same as the per-edah report, except
             // organized by bunk.
@@ -547,7 +617,8 @@ EOM;
             $sql .= "ORDER BY bunk, name, edah_sort_order, edah, group_name";
             
             // Create and display the report.
-            $bunkReport = new ZebraReport($db, $sql);
+            $bunkReport = new ZebraReport($db, $sql, $outputType);
+            $bunkReport->setReportTypeAndNameOfItem("Bunk", $bunkId2Name[$bunkId]);
             $bunkReport->setNewTableColumn("bunk");
             $bunkReport->setCaption("Chug Assignments by Bunk for LINK");
             $bunkReport->addIgnoreColumn("edah_sort_order");
@@ -557,7 +628,7 @@ EOM;
             $bunkReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
             $bunkReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
             $bunkReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
-            $bunkReport->renderTable($genPdf);
+            $bunkReport->renderTable();
         } else if ($reportMethod == ReportTypes::ByChug) {
             // The chug report is meant for chug leaders.  The leaders need a separate sheet
             // for each edah that comes to the chug.  For each edah, the sheet should have:
@@ -574,7 +645,8 @@ EOM;
             }
             $sql .= "ORDER BY edah, edah_sort_order, block, camper, bunk";
             
-            $chugReport = new ZebraReport($db, $sql);
+            $chugReport = new ZebraReport($db, $sql, $outputType);
+            $chugReport->setReportTypeAndNameOfItem("Chug", $chugId2Name[$chugId]);
             $chugReport->setNewTableColumn("edah");
             $chugReport->addIgnoreColumn("edah_sort_order");
             $chugReport->addIgnoreColumn("rosh");
@@ -590,7 +662,7 @@ EOM;
             $chugReport->addCaptionReplaceColKey("ROSH", "rosh", "none listed");
             $chugReport->addCaptionReplaceColKey("PHONE", "roshphone", "no rosh phone");
             $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no block name");
-            $chugReport->renderTable($genPdf);
+            $chugReport->renderTable();
         } else if ($reportMethod == ReportTypes::Director) {
             // The director report is similar to the edah report, but unfiltered.
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
@@ -605,7 +677,7 @@ EOM;
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
             
             // Create and display the report.
-            $directorReport = new ZebraReport($db, $sql);
+            $directorReport = new ZebraReport($db, $sql, $outputType);
             $directorReport->setNewTableColumn("edah");
             $directorReport->setCaption("Chug Assignments by Edah for LINK");
             $directorReport->addIgnoreColumn("edah_sort_order");
@@ -615,11 +687,11 @@ EOM;
             $directorReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
             $directorReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
             $directorReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
-            $directorReport->renderTable($genPdf);
+            $directorReport->renderTable();
         }
     }
     
-    if (! $genPdf) {
+    if ($outputType == OutputTypes::Html) {
         echo "</div>";
         echo footerText();
         echo "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\">";
