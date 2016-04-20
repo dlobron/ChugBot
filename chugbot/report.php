@@ -156,9 +156,12 @@
             $newTableColumnValue = NULL;
             $rowIndex = 0;
             if ($this->outputType == OutputTypes::Csv) {
-                // Output headers so that the file is downloaded rather than displayed.
+                // Output headers so that the CSV is downloaded rather than displayed.
                 header('Content-Type: text/csv; charset=utf-8');
                 header('Content-Disposition: attachment; filename=ChugReport.csv');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
                 // Create a file pointer connected to the output stream.
                 $output = fopen('php://output', 'w');
             }
@@ -177,8 +180,12 @@
                         $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
                     }
                     $html .= "<div class=zebra><table>";
-                    // Re-initialize the PDF header and data arrays.
+                    // Re-initialize the PDF header and data arrays.  If we have
+                    // CSV output, write the title, column headers, and data of
+                    // the table we just built.
                     if ($this->outputType == OutputTypes::Csv) {
+                        $titleParts = explode("<br>", $pdfCaptionText);
+                        fputcsv($output, array($titleParts[0]));
                         fputcsv($output, $pdfHeader);
                         foreach ($pdfData as $pdfRow) {
                             fputcsv($output, $pdfRow);
@@ -266,7 +273,6 @@
                         $tableData = $d;
                     }
                     $html .= "<td>$tableData</td>";
-                    error_log("DBG: Adding $d to row, for key $tableDataKey");
                     array_push($pdfDataRow, $d);
                     if ((strlen($d) * $this->mult) > $pdfColWidths[$i]) {
                         $pdfColWidths[$i] = (strlen($d) * $this->mult);
@@ -287,6 +293,9 @@
                 exit();
             }
             if ($this->outputType == OutputTypes::Csv) {
+                // Write the table title, headers, and data.
+                $titleParts = explode("<br>", $pdfCaptionText);
+                fputcsv($output, array($titleParts[0]));
                 fputcsv($output, $pdfHeader);
                 foreach ($pdfData as $pdfRow) {
                     fputcsv($output, $pdfRow);
