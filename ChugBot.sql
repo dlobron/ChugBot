@@ -18,26 +18,30 @@ CREATE TABLE IF NOT EXISTS admin_data(
 admin_email varchar(50) NOT NULL,
 admin_password varchar(255) NOT NULL,
 admin_email_cc varchar(255),
+admin_email_from_name varchar(255),
 regular_user_token varchar(255) NOT NULL DEFAULT "Kayitz",
 regular_user_token_hint varchar(512) DEFAULT "Hebrew word for summer",
 pref_page_instructions varchar(2048) DEFAULT "&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose six Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;",
 camp_name varchar(255) NOT NULL DEFAULT "Camp Ramah New England",
 camp_web varchar(128) NOT NULL DEFAULT "www.campramahne.org")
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # Admin password reset codes, with expiration.
 CREATE TABLE IF NOT EXISTS password_reset_codes(
 code varchar(512) NOT NULL,
 expires DATETIME NOT NULL,
 code_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # This table holds sessions, e.g., "July", "August", "Full Summer", "Mini Bet", etc.
 CREATE TABLE IF NOT EXISTS sessions(
 session_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
 UNIQUE KEY uk_sessions(name))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # A block is a division of a session, e.g.,
 # "July 1" or "August 2".  
@@ -45,7 +49,8 @@ CREATE TABLE IF NOT EXISTS blocks(
 block_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
 UNIQUE KEY uk_blocks(name))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # A block instance is a block/session tuple.  We use this table to
 # translate the session(s) for which a camper signs up with the blocks that she
@@ -64,7 +69,8 @@ FOREIGN KEY fk_session_id(session_id) REFERENCES sessions(session_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
 PRIMARY KEY pk_block_instances(block_id, session_id))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # List all edot (Kochavim, Ilanot 1, Ilanot 2, etc).
 CREATE TABLE IF NOT EXISTS edot(
@@ -75,7 +81,8 @@ rosh_phone varchar(20) DEFAULT "",
 comments varchar(512) DEFAULT "",
 sort_order int NOT NULL DEFAULT 0,
 UNIQUE KEY uk_edot(name))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # Create a table of bunks.  Campers are optionally assigned to one bunk
 # for the summer, which can be changed as needed on the edit camper page.
@@ -83,7 +90,8 @@ CREATE TABLE IF NOT EXISTS bunks(
 bunk_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
 UNIQUE KEY uk_bunks(name))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # A bunk instance is an assignment of bunk to edah.
 CREATE TABLE IF NOT EXISTS bunk_instances(
@@ -96,7 +104,8 @@ FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
 PRIMARY KEY pk_bunk_instances(bunk_id, edah_id))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # This table stores camper registration for the summer.  Each 
 # camper signs up for one edah in a summer, and they choose
@@ -120,7 +129,8 @@ last varchar(50) NOT NULL,
 email varchar(50) NOT NULL,
 needs_first_choice bool DEFAULT 0,
 inactive bool NOT NULL DEFAULT 0)
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # Each chug instance is assigned to a group for the whole summer.
 # For example, swimming might be in group aleph.
@@ -128,7 +138,8 @@ CREATE TABLE IF NOT EXISTS groups(
 group_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL, # aleph, bet, or gimel
 UNIQUE KEY uk_groups(name))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # This table holds data on each chug.  Each chug belongs to exactly one group (aleph, bet, or gimel), and
 # the group is consistent across all edot for the whole summer.  We assume for now
@@ -147,7 +158,8 @@ min_size int NULL DEFAULT 0,
 description varchar(2048),
 UNIQUE KEY uk_chugim(name, group_id),
 chug_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # The next table maps a chug name to another chug name.  Its purpose is to prevent us
 # from pairing certain chugim to the same camper in the same block (we do this de-dup automatically
@@ -161,9 +173,9 @@ ON UPDATE CASCADE,
 right_chug_name varchar(50) NOT NULL,
 FOREIGN KEY fk_right_chug_name(right_chug_name) REFERENCES chugim(name)
 ON DELETE CASCADE
-ON UPDATE CASCADE,
-UNIQUE KEY uk_chug_dedup_instances(left_chug_name, right_chug_name))
-COLLATE utf8_unicode_ci;
+ON UPDATE CASCADE)
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # A chug instance is a concrete offering of a chug in a block.
 # For example, swimming, July first week.  Note that the chugim
@@ -180,7 +192,8 @@ ON DELETE CASCADE
 ON UPDATE CASCADE,
 UNIQUE KEY uk_chug_instances(chug_id, block_id),
 chug_instance_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # Each entry in this table represents a camper preference list for a given group of chugim in a 
 # given block.  For example, a camper would make a pref list for the aleph chugim in July, first week.
@@ -224,7 +237,8 @@ ON DELETE SET NULL
 ON UPDATE CASCADE,
 UNIQUE KEY(camper_id, group_id, block_id),
 preference_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # Assignments are done at the edah/block/group level.  This table holds beta
 # about each assignment.  The actual matches are stored in the matches table.
@@ -249,7 +263,8 @@ under_min_list varchar(512) DEFAULT "",
 over_max_list varchar(512) DEFAULT "",
 ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY pk_assignments(edah_id, block_id, group_id))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 # This table holds matches of campers to chugim.  A match is for one
 # camper to an instance of a chug.  Chugim are associated with groups,
@@ -267,7 +282,8 @@ ON DELETE CASCADE
 ON UPDATE CASCADE,
 UNIQUE KEY uk_matches(camper_id, chug_instance_id),
 match_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS edot_for_chug(
 chug_id int NOT NULL,
@@ -279,7 +295,8 @@ FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
 PRIMARY KEY pk_edot_for_chug(chug_id, edah_id))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS edot_for_block(
 block_id int NOT NULL,
@@ -291,6 +308,7 @@ FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
 PRIMARY KEY pk_edot_for_block(block_id, edah_id))
-COLLATE utf8_unicode_ci;
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
 
 SOURCE /Applications/MAMP/htdocs/SampleData.sql;
