@@ -6,7 +6,7 @@
     echo headerText("Choose Camper to Edit");
 
     $emailErr = "";
-    $dbError = FALSE;
+    $dbError = "";
     $camperId2Name = array();
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $email = test_input($_GET["email"]);

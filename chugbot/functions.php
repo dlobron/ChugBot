@@ -47,7 +47,11 @@
         // so we set the from to the admin email username (normally, the address of our email
         // account on this ISP), and we set the reply-to to whatever the administrator's
         // actual email is.
-        $mail->setFrom(ADMIN_EMAIL_USERNAME, $admin_data_row["camp_name"]);
+        $fromName = $admin_data_row["camp_name"];
+        if (array_key_exists("admin_email_from_name", $admin_data_row)) {
+            $fromName = $admin_data_row["admin_email_from_name"];
+        }
+        $mail->setFrom(ADMIN_EMAIL_USERNAME, $fromName);
         $mail->addReplyTo($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
         $sentOk = $mail->send();
         if (! $sentOk) {
@@ -82,13 +86,6 @@
             $arr = $_GET[$key];
         }
         foreach ($arr as $instance_id) {
-            $instanceId = test_input($instance_id);
-            if ($instanceId == NULL) {
-                continue;
-            }
-            $idHash[$instanceId] = 1;
-        }
-        foreach ($_GET[$key] as $instance_id) {
             $instanceId = test_input($instance_id);
             if ($instanceId == NULL) {
                 continue;

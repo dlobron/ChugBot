@@ -5,7 +5,7 @@
     include_once 'dbConn.php';
     bounceToLogin();
     
-    $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = "";
+    $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = "";
     $dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = "";
     $db = new DbConn();
     $err = "";
@@ -19,6 +19,7 @@
         $row = mysqli_fetch_assoc($result);
         $existingAdminEmail = $row["admin_email"];
         $existingAdminEmailCc = $row["admin_email_cc"];
+        $existingAdminEmailFromName = $row["admin_email_from_name"];
         $existingRegularUserToken = $row["regular_user_token"];
         $existingRegularUserTokenHint = $row["regular_user_token_hint"];
         $existingCampName = $row["camp_name"];
@@ -30,6 +31,7 @@
         // on the initial page.
         $admin_email = $existingAdminEmail;
         $admin_email_cc = $existingAdminEmailCc;
+        $admin_email_from_name = $existingAdminEmailFromName;
         $regular_user_token = $existingRegularUserToken;
         $regular_user_token_hint = $existingRegularUserTokenHint;
         $camp_name = $existingCampName;
@@ -40,6 +42,7 @@
     $staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = $existingEmailErr = "";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $admin_email = test_input($_POST["admin_email"]);
+        $admin_email_from_name = test_input($_POST["admin_email_from_name"]);
         $staff_password = test_input($_POST["staff_password"]);
         $staff_password2 = test_input($_POST["staff_password2"]);
         $admin_email_cc = test_input($_POST["admin_email_cc"]);
@@ -52,6 +55,7 @@
         // Add NULL-able column values to the DB object.
         $db = new DbConn();
         $db->addColumn("admin_email_cc", $admin_email_cc, 's');
+        $db->addColumn("admin_email_from_name", $admin_email_from_name, 's');
         $db->addColumn("camp_name", $camp_name, 's');
         $db->addColumn("camp_web", $camp_web, 's');
         $db->addColumn("pref_page_instructions", $pref_page_instructions, 's');
@@ -167,6 +171,15 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailCcField->setGuideText("Enter one or more emails to be CC'ed on camper correspondence.  Separate multiple addresses with commas.");
     $adminEmailCcField->setError($adminEmailCcErr);
     echo $adminEmailCcField->renderHtml();
+    
+    $adminEmailFromNameField = new FormItemSingleTextField("Admin Email \"From\" Name", FALSE, "admin_email_from_name", $counter++);
+    $adminEmailFromNameField->setInputValue($admin_email_from_name);
+    $adminEmailFromNameField->setInputType("text");
+    $adminEmailFromNameField->setInputClass("element text medium");
+    $adminEmailFromNameField->setInputMaxLength(255);
+    $adminEmailFromNameField->setPlaceHolder("Chug Organizer's Name");
+    $adminEmailFromNameField->setGuideText("If set, this name will appear as the \"From\" name when email is sent.  If not set, the camp name will be used.");
+    echo $adminEmailFromNameField->renderHtml();
     
     $regularUserTokenField = new FormItemSingleTextField("Camper Access Token", FALSE, "regular_user_token", $counter++);
     $regularUserTokenField->setInputValue($regular_user_token);

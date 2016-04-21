@@ -178,19 +178,20 @@
                         $pdf->AddPage();
                         $pdf->setColWidths($pdfColWidths);
                         $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
-                    }
-                    $html .= "<div class=zebra><table>";
-                    // Re-initialize the PDF header and data arrays.  If we have
-                    // CSV output, write the title, column headers, and data of
-                    // the table we just built.
-                    if ($this->outputType == OutputTypes::Csv) {
-                        $titleParts = explode("<br>", $pdfCaptionText);
-                        fputcsv($output, array($titleParts[0]));
-                        fputcsv($output, $pdfHeader);
-                        foreach ($pdfData as $pdfRow) {
-                            fputcsv($output, $pdfRow);
+                        // Re-initialize the PDF header and data arrays.  If we have
+                        // CSV output, write the title, column headers, and data of
+                        // the table we just built.
+                        if ($this->outputType == OutputTypes::Csv) {
+                            $titleParts = explode("<br>", $pdfCaptionText);
+                            $csvTitle = $titleParts[0] . ": " . $this->typeOfReport . " " . $this->reportedItem;
+                            fputcsv($output, array($csvTitle));
+                            fputcsv($output, $pdfHeader);
+                            foreach ($pdfData as $pdfRow) {
+                                fputcsv($output, $pdfRow);
+                            }
                         }
                     }
+                    $html .= "<div class=zebra><table>";
                     $pdfHeader = array();
                     $pdfData = array();
                     $pdfColWidths = array();
@@ -295,7 +296,8 @@
             if ($this->outputType == OutputTypes::Csv) {
                 // Write the table title, headers, and data.
                 $titleParts = explode("<br>", $pdfCaptionText);
-                fputcsv($output, array($titleParts[0]));
+                $csvTitle = $titleParts[0] . ": " . $this->typeOfReport . " " . $this->reportedItem;
+                fputcsv($output, array($csvTitle));
                 fputcsv($output, $pdfHeader);
                 foreach ($pdfData as $pdfRow) {
                     fputcsv($output, $pdfRow);
