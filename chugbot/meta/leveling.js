@@ -1,4 +1,20 @@
+// On page load, grab nav data, then assignments, and then get and display
+// current matches.
 $(function() {
+        $.when(
+               getNav()
+               ).then(getAssignments).then(getAndDisplayCurrentMatches);
+    });
+
+// Get the current assignment stats for this edah/block.
+function getAssignments() {
+	var edah = getParameterByName("edah");
+	var block = getParameterByName("block");
+	doAssignmentAjax("get_current_stats", "Current Stats", "fetch current assignment stats",
+			 edah, block);
+}
+
+function getNav() {
         $.ajax({
                 url: 'ajax.php',
 		    type: 'post',
@@ -8,7 +24,7 @@ $(function() {
 		    $("#nav").html(html);
 		}
 	    });
-    });
+}
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -25,6 +41,7 @@ function doAssignmentAjax(action, title, errText,
     values["block"] = block;
     	$.ajax({
                 url: 'levelingAjax.php',
+		    async: false,
                     type: 'post',
                     data: values,
                     success: function(data) {
@@ -75,6 +92,7 @@ function getAndDisplayCurrentMatches() {
 	$.ajax({
                 url: 'levelingAjax.php',
                     type: 'post',
+		    async: false,
                     data:{ matches_and_prefs: 1,
 			edah_id: edah, 
 			block_id: block },
@@ -224,14 +242,6 @@ function getAndDisplayCurrentMatches() {
 		});
 }
 
-// Get the current assignment stats for this edah/block.
-$(function() {
-	var edah = getParameterByName("edah");
-	var block = getParameterByName("block");
-	doAssignmentAjax("get_current_stats", "Current Stats", "fetch current assignment stats",
-			 edah, block);
-    });
-
 // Get the name for the current edah and block IDs, and fill them.
 $(function() {
 	var edahId = getParameterByName('edah');
@@ -239,6 +249,7 @@ $(function() {
         $.ajax({
                 url: 'levelingAjax.php',
                     type: 'post',
+		    async: false,
                     data:{ names_for_id: 1,
 		           edah_id: edahId, 
 			   block_id: blockId },
@@ -262,11 +273,6 @@ $(function() {
                 }
             })
 	    });
-
-// Display current matches when the page loads.
-$(function() {
-	getAndDisplayCurrentMatches();
-    });
 
 // Action for the Report button.
 $(function() {
@@ -319,7 +325,7 @@ $(function() {
 		var displayAction = function() {		    
 		    getAndDisplayCurrentMatches();
 		};
-		ajaxAction().done(displayAction);
+		ajaxAction().then(displayAction);
             });
     });
 
@@ -365,6 +371,7 @@ $(function() {
 		$.ajax({
 			url: 'levelingAjax.php',
 			    type: 'post',
+			    async: false,
 			    data: values,
 			    success: function(json) {
 			    doAssignmentAjax("get_current_stats", "Changes Saved! Stats:", "save your changes",
