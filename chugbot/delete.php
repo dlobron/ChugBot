@@ -7,11 +7,9 @@
     $dbErr = $itemIdErr = $qsErr = "";
     $comma_sep = $table_name = $item_id = $id_col = "";
     $deletedOk = FALSE;
+    $tryAgainUrl = NULL;
     
     $parts = explode("&", $_SERVER['QUERY_STRING']); // Expect: idCol=$idcol&tableName=$tableName
-    if (count($parts) != 2) {
-        $qsErr = errorString("Bad query string");
-    }
     foreach ($parts as $part) {
         $cparts = explode("=", $part);
         if (count($cparts) != 2) {
@@ -22,6 +20,8 @@
             $id_col = $cparts[1];
         } else if ($cparts[0] == "tableName") {
             $table_name = $cparts[1];
+        } else if ($cparts[0] == "tryAgainPage") {
+            $tryAgainUrl = urlIfy($cparts[1]);
         } else {
             $qsErr = errorString("Bad query string");
             break;
@@ -47,7 +47,7 @@
 <?php
     echo headerText("Delete Item");
     
-    $errText = genFatalErrorReport(array($dbErr, $qsErr, $itemIdErr));
+    $errText = genFatalErrorReport(array($dbErr, $qsErr, $itemIdErr), FALSE, $tryAgainUrl);
     if (! is_null($errText)) {
         echo $errText;
         exit();

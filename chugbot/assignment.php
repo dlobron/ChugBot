@@ -3,7 +3,7 @@
     include_once 'assignmentClasses.php';
     include_once 'dbConn.php';
     
-    // Require camper-level permission to run any of the functions here.
+    // Require camper-level permission to run any of these functions.
     if (! camperLoggedIn()) {
         exit();
     }
@@ -347,10 +347,10 @@
             $deDupMatrix[$rightChug][$leftChug] = 1;
         }
         
-        // Grab existing matches for this block, for *other* groups, and arrange them in a lookup table
-        // by camper ID.  We'll use this to prevent dups.  Note that when preventing
-        // dups, we compare chugim by name rather than ID, since Ropes aleph will have
-        // a different ID than Ropes bet.
+        // Grab existing matches for this block, for *other* chug groups, and
+        // arrange them in a lookup table by camper ID.  We'll use this to prevent dups.
+        // Note that when preventing dups, we compare chugim by name rather than ID,
+        // since Ropes aleph will have a different ID than Ropes bet.
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
         $existingMatches = array();
@@ -446,7 +446,7 @@
                 continue;
             }
             if (! array_key_exists($candidateChugId, $chugim)) {
-                // This could occur if the allowed edot for a chug were changed after preference were made.
+                // This could occur if the allowed edot for a chug were changed after preferences were set.
                 // We can't easily correct this, so just log an error for now.
                 error_log("ERROR: Preferred chug ID " . $candidateChugId . " not found in allowed chug set");
                 $err = "Chug choices for " . $camper->name . " contained illegal chug ID " . $candidateChugId;

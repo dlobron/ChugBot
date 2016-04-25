@@ -142,7 +142,7 @@
 <div class="error_box">
 <h3>Oops!  $desc occurred:</h3>
 EOM;
-        $backText = "Back";
+        $backText = "<a href=\"javascript:history.back()\">here</a>";
         if ($backUrl) {
             $backText = "<a href=\"$backUrl\">here</a>";
         }
@@ -158,7 +158,7 @@ EOM;
         return $retVal;
     }
     
-    function genPickListForm($id2Name, $name, $tableName) {
+    function genPickListForm($id2Name, $name, $tableName, $method = "POST") {
         $ucName = ucfirst($name);
         $ucPlural = ucfirst($tableName);
         $formName = "form_" . $name;
@@ -175,7 +175,7 @@ EOM;
             $edahExtraText = " To view the campers in an edah, select an edah and click <font color=\"red\">\"Show Campers\"</font>.";
         }
         $retVal = <<<EOM
-<form id="$formName" class="appnitro" method="post">
+<form id="$formName" class="appnitro" method="$method">
 <div class="form_description">
 <h3>$ucPlural</h3></div>
 <ul><li>
