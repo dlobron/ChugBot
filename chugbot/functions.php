@@ -2,6 +2,16 @@
     include_once 'constants.php';
     require_once 'PHPMailer/PHPMailerAutoload.php';
     
+    function startsWith($haystack, $needle) {
+        // search backwards starting from haystack length characters from the end
+        return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
+    }
+    
+    function endsWith($haystack, $needle) {
+        // search forward starting from end minus needle length characters
+        return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== false);
+    }
+    
     function forwardNoHistory($url) {
         $retVal = '<script type="text/javascript">';
         $retVal .= "window.location.replace(\"$url\")";
@@ -18,6 +28,9 @@
                       $body,
                       $admin_data_row,
                       &$error) {
+        if ($admin_data_row === NULL) {
+            return FALSE;
+        }
         // An example of the possible parameters for PHPMailer can be found here:
         // https://github.com/Synchro/PHPMailer/blob/master/examples/gmail.phps
         // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
@@ -234,7 +247,9 @@ EOM;
         foreach ($id2Name as $id => $name) {
             $selStr = "";
             $idStr = strval($id); // Use strings in forms, for consistency.
-            if (array_key_exists($idStr, $activeIds)) {
+            if ($idStr !== NULL &&
+                $activeIds !== NULL &&
+                array_key_exists($idStr, $activeIds)) {
                 $selStr = "checked=checked";
             }
             $retVal = $retVal . "<input type=\"checkbox\" name=\"${arrayName}[]\" value=\"$idStr\" $selStr />$name<br>";

@@ -98,9 +98,10 @@ EOM;
 
 <div class="right_container">
 <h3>Leveling</h3>
-<p>To level, choose a time block and edah from the drop-down lists, and click "Level."</p>
-<p>If you have an existing assignment, you will be able to edit it.  Nothing will be changed until you click
-the Save button.</p>
+<p>To view the leveling page, choose a time block and edah from the drop-down lists, and click "Go."</p>
+<p>If there is an existing saved assignment for the selected edah and block, it will be displayed.  Nothing will be 
+changed until you click the Save or Reassign buttons on the leveling page.  If there is no existing assignment, one
+will be created and then displayed.</p>
 <p>To generate a printable chug assigment report, click "Report".
 <form id="leveling_choice_form" class="appnitro" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>

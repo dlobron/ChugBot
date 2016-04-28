@@ -203,11 +203,16 @@
                             if (array_key_exists($this->newTableColumn, $this->valCol2IdCol)) {
                                 $idCol = $this->valCol2IdCol[$this->newTableColumn];
                                 $idVal = $row[$idCol];
-                                $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
                                 $d = $row[$this->newTableColumn];
-                                $linkText = "<a href=\"$editUrl\">$d</a>";
-                                $captionText = str_replace("LINK", $linkText, $captionText);
-                                $pdfCaptionText = str_replace("LINK", $d, $pdfCaptionText);
+                                if ($idVal) {
+                                    $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
+                                    $linkText = "<a href=\"$editUrl\">$d</a>";
+                                    $captionText = str_replace("LINK", $linkText, $captionText);
+                                    $pdfCaptionText = str_replace("LINK", $d, $pdfCaptionText);
+                                } else {
+                                    $captionText = str_replace("LINK", $d, $captionText);
+                                    $pdfCaptionText = str_replace("LINK", $d, $pdfCaptionText);
+                                }
                             }
                         }
                         // Loop through the caption text words, and check for
@@ -268,8 +273,12 @@
                     if (array_key_exists($tableDataKey, $this->valCol2IdCol)) {
                         $idCol = $this->valCol2IdCol[$tableDataKey];
                         $idVal = $row[$idCol];
-                        $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
-                        $tableData = "<a href=\"$editUrl\">$d</a>";
+                        if ($idVal) {
+                            $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
+                            $tableData = "<a href=\"$editUrl\">$d</a>";
+                        } else {
+                            $tableData = $d;
+                        }
                     } else {
                         $tableData = $d;
                     }
@@ -319,7 +328,7 @@
         private $caption = NULL;
         private $newTableColumn = NULL;
         private $headerTextMap = array();
-        private $mult = 3;
+        private $mult = 2.5;
         private $typeOfReport = NULL;
         private $reportedItem = NULL;
         private $outputType = OutputTypes::Html;
@@ -577,17 +586,29 @@ EOM;
         $db->isSelect = TRUE;
         if ($reportMethod == ReportTypes::ByEdah) {
             // Per-edah report.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, e.rosh_name rosh, e.rosh_phone roshphone, " .
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name,\"Not Selected\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            "e.rosh_name rosh, e.rosh_phone roshphone, " .
             "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
             "ch.chug_id chug_id, bl.block_id block_id " .
-            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g, chug_instances i " .
-            "WHERE c.bunk_id = b.bunk_id AND m.chug_instance_id = i.chug_instance_id AND i.block_id = bl.block_id AND i.block_id = bl.block_id " .
-            "AND i.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = ch.group_id ";
+            "FROM matches AS m " .
+            "JOIN chug_instances AS i ON m.chug_instance_id = i.chug_instance_id " .
+            "JOIN blocks AS bl ON i.block_id = bl.block_id " .
+            "JOIN chugim AS ch ON i.chug_id = ch.chug_id " .
+            "JOIN campers AS c ON c.camper_id = m.camper_id " .
+            "JOIN edot AS e ON c.edah_id = e.edah_id " .
+            "JOIN groups AS g ON g.group_id = ch.group_id " .
+            "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id ";
+            $haveWhere = FALSE;
             if (count($activeBlockIds) > 0) {
-                $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+                $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+                $haveWhere = TRUE;
             }
             if ($edahId) {
-                $sql .= "AND c.edah_id = ? ";
+                if (! $haveWhere) {
+                    $sql .= "WHERE c.edah_id = ? ";
+                } else {
+                    $sql .= "AND c.edah_id = ? ";
+                }
                 $db->addColVal($edahId, 'i');
             }
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
@@ -612,17 +633,28 @@ EOM;
         } else if ($reportMethod == ReportTypes::ByBunk) {
             // Per-bunk report.  This the same as the per-edah report, except
             // organized by bunk.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name,\"Not Selected\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
             "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
             "ch.chug_id chug_id, bl.block_id block_id " .
-            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g, chug_instances i " .
-            "WHERE c.bunk_id = b.bunk_id AND m.chug_instance_id = i.chug_instance_id AND i.block_id = bl.block_id AND i.block_id = bl.block_id " .
-            "AND i.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = ch.group_id ";
+            "FROM matches AS m " .
+            "JOIN chug_instances AS i ON m.chug_instance_id = i.chug_instance_id " .
+            "JOIN blocks AS bl ON i.block_id = bl.block_id " .
+            "JOIN chugim AS ch ON i.chug_id = ch.chug_id " .
+            "JOIN campers AS c ON c.camper_id = m.camper_id " .
+            "JOIN edot AS e ON c.edah_id = e.edah_id " .
+            "JOIN groups AS g ON g.group_id = ch.group_id " .
+            "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id ";
+            $haveWhere = FALSE;
             if (count($activeBlockIds) > 0) {
-                $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+                $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+                $haveWhere = TRUE;
             }
             if ($bunkId) {
-                $sql .= "AND b.bunk_id = ? ";
+                if (! $haveWhere) {
+                    $sql .= "WHERE b.bunk_id = ?";
+                } else {
+                    $sql .= "AND b.bunk_id = ? ";
+                }
                 $db->addColVal($bunkId, 'i');
             }
             $sql .= "ORDER BY bunk, name, edah_sort_order, edah, group_name";
@@ -645,12 +677,18 @@ EOM;
             // for each edah that comes to the chug.  For each edah, the sheet should have:
             // - Rosh name and phone at the top, together with the edah name.
             // - List of campers in the edah: name and bunk.
+            $db->addColVal($chugId, 'i');
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS camper, e.name edah, e.sort_order edah_sort_order, " .
-            "e.rosh_name rosh, e.rosh_phone roshphone, ch.name chug_name, b.name bunk, bl.name block, " .
+            "e.rosh_name rosh, e.rosh_phone roshphone, ch.name chug_name, IFNULL(b.name, \"Not Selected\") bunk, bl.name block, " .
             "ch.chug_id chug_id, bl.block_id block_id, b.bunk_id bunk_id, e.edah_id edah_id, c.camper_id " .
-            "FROM edot e, campers c, matches m, chug_instances i, chugim ch, bunks b, blocks bl " .
-            "WHERE e.edah_id = c.edah_id AND c.camper_id = m.camper_id AND m.chug_instance_id = i.chug_instance_id AND " .
-            "i.chug_id = ch.chug_id AND i.block_id = bl.block_id AND ch.chug_id = $chugId AND c.bunk_id = b.bunk_id ";
+            "FROM edot AS e " .
+            "JOIN campers AS c ON c.edah_id = e.edah_id " .
+            "JOIN matches AS m ON m.camper_id = c.camper_id " .
+            "JOIN chug_instances AS i ON i.chug_instance_id = m.chug_instance_id " .
+            "JOIN chugim AS ch ON ch.chug_id = i.chug_id " .
+            "JOIN blocks AS bl ON bl.block_id = i.block_id " .
+            "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id " .
+            "WHERE ch.chug_id = ? ";
             if (count($activeBlockIds) > 0) {
                 $sql .= "AND i.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
             }
@@ -676,14 +714,19 @@ EOM;
             $chugReport->renderTable();
         } else if ($reportMethod == ReportTypes::Director) {
             // The director report is similar to the edah report, but unfiltered.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, b.name bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name, \"Not Selected\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
             "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
             "ch.chug_id chug_id, bl.block_id block_id " .
-            "FROM campers c, bunks b, blocks bl, matches m, chugim ch, edot e, groups g, chug_instances i " .
-            "WHERE c.bunk_id = b.bunk_id AND m.chug_instance_id = i.chug_instance_id AND i.block_id = bl.block_id AND i.block_id = bl.block_id " .
-            "AND i.chug_id = ch.chug_id AND c.edah_id = e.edah_id AND m.camper_id = c.camper_id AND g.group_id = ch.group_id ";
+            "FROM matches AS m " .
+            "JOIN chug_instances AS i ON i.chug_instance_id = m.chug_instance_id " .
+            "JOIN blocks AS bl ON bl.block_id = i.block_id " .
+            "JOIN chugim AS ch ON ch.chug_id = i.chug_id " .
+            "JOIN campers AS c ON c.camper_id = m.camper_id " .
+            "JOIN edot AS e ON e.edah_id = c.edah_id " .
+            "JOIN groups AS g ON g.group_id = ch.group_id " .
+            "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
             if (count($activeBlockIds) > 0) {
-                $sql .= "AND bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+                $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
             }
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
             

@@ -134,6 +134,10 @@
         }
     
         public function doQuery($paramSql, &$err) {
+            if (startsWith($paramSql, "SELECT") ||
+                startsWith($paramSql, "select")) {
+                $this->isSelect = TRUE;
+            }
             $this->stmt = $this->mysqli->prepare($paramSql);
             if ($this->stmt == FALSE) {
                 $err = dbErrorString("Failed to prepare $paramSql", $this->mysqli->error);

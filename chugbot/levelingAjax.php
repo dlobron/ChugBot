@@ -292,7 +292,16 @@
         $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name);
 
         // Loop through groups, fetching matches as we go.
-        $result = getDbResult("SELECT group_id, name FROM groups");
+        $db = new DbConn();
+        $db->addColVal($edah_id, 'i');
+        $sql = "SELECT g.group_id group_id, g.name name FROM groups g, edot_for_group e " .
+        "WHERE g.group_id = e.group_id AND e.edah_id = ?";
+        $result = $db->doQuery($sql, $dbErr);
+        if ($result == FALSE) {
+            error_log("Unable to select groups: $err");
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
         $groupId2Name = array();
         $groupId2ChugId2MatchedCampers = array();
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
@@ -422,13 +431,22 @@
     // requested.
     if (isset($_POST["reassign"]) ||
         isset($_POST["get_current_stats"])) {
+        $err = "";
         $edah_id = $_POST["edah"];
         $block_id = $_POST["block"];
     
-        $result = getDbResult("SELECT group_id, name FROM groups");
+        $db = new DbConn();
+        $db->addColVal($edah_id, 'i');
+        $sql = "SELECT g.group_id group_id, g.name name FROM groups g, edot_for_group e " .
+        "WHERE g.group_id = e.group_id AND e.edah_id = ?";
+        $result = $db->doQuery($sql, $err);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        
         // Loop through groups.  Do each assignment (if requested), and grab assignment
         // stats.
-        $err = "";
         $choiceCounts = array();
         $stats = array();
         $sKeys = array("under_min_list", "over_max_list");

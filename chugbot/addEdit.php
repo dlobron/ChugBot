@@ -575,10 +575,10 @@ EOM;
             $sql = "SELECT m.match_id pk_value, legal_instances.chug_instance_id instance_id, 'match_id' pk_column, 'matches' table_name FROM " .
             "matches m LEFT OUTER JOIN " .
             "(SELECT i.chug_instance_id chug_instance_id, m.match_id match_id FROM " .
-            "matches m, chug_instances i, edot_for_block e, campers c, block_instances bi, edot_for_chug ec WHERE " .
+            "matches m, chug_instances i, edot_for_block e, campers c, block_instances bi, edot_for_chug ec, edot_for_group eg, chugim ch WHERE " .
             "m.chug_instance_id = i.chug_instance_id AND i.block_id = bi.block_id AND bi.session_id = c.session_id AND " .
-            "m.camper_id = c.camper_id AND e.block_id = i.block_id AND e.edah_id = c.edah_id AND ec.chug_id = i.chug_id	AND " .
-            "ec.edah_id = c.edah_id) legal_instances " .
+            "m.camper_id = c.camper_id AND e.block_id = i.block_id AND e.edah_id = c.edah_id AND ec.chug_id = i.chug_id	AND eg.edah_id = c.edah_id AND " .
+            "eg.group_id = ch.group_id AND i.chug_id = ch.chug_id AND eg.edah_id = c.edah_id AND ec.edah_id = c.edah_id) legal_instances " .
             "ON m.chug_instance_id = legal_instances.chug_instance_id AND m.match_id = legal_instances.match_id ORDER BY pk_value";
             $db = new DbConn();
             $result = $db->runQueryDirectly($sql, $this->dbErr);
@@ -611,17 +611,24 @@ EOM;
                     }
                 }
             }
+            //
+            // The commented-out code block that follows will delete camper preferences that have become invalid due to, e.g., a group
+            // being disallowed for that camper's edah.  After some use, I think this is actually not desirable: it's better to keep the
+            // preferences in the DB, in case we change our mind and re-allow the group (or whatever).  If this turns out to be a problem,
+            // simply un-comment the following block for invalid prefs to be deleted.
+            //
             // Our preferences table has a somewhat odd structure, so we delete items in a custom way.  This suggests that the design
             // of the table is not optimal, but for the moment I don't have time to redesign and debug, so I'm resorting to this hack.
             // CHOICECOL = "first_choice_id".
-            // TODO: Improve the preferences table structure.
             // This query has no input parameters, so we can run it directly.
+            /*
             $template = "SELECT p.preference_id pref_id, p.CHOICECOL choice_id, legal_choice_n.preference_id legal_pref_id, 'CHOICECOL' col FROM " .
             "preferences p LEFT OUTER JOIN " .
             "(SELECT p.preference_id preference_id, p.CHOICECOL CHOICECOL, p.camper_id camper_id, p.group_id group_id, p.block_id block_id FROM " .
-            "preferences p, campers c, edot_for_block eb, edot_for_chug ec, chugim ch WHERE " .
+            "preferences p, campers c, edot_for_block eb, edot_for_chug ec, chugim ch, edot_for_group eg WHERE " .
             "p.camper_id = c.camper_id AND c.edah_id = ec.edah_id AND ec.chug_id = p.CHOICECOL AND " .
             "p.block_id = eb.block_id AND eb.edah_id = c.edah_id AND eb.edah_id = c.edah_id AND " .
+            "eg.group_id = ch.group_id AND eg.edah_id = c.edah_id AND " .
             "ch.group_id = p.group_id) legal_choice_n " .
             "ON p.preference_id = legal_choice_n.preference_id AND " .
             "p.CHOICECOL = legal_choice_n.CHOICECOL AND " .
@@ -666,7 +673,8 @@ EOM;
                         error_log("Failed to remove preference: $err");
                     }
                 }
-            }            
+            }      
+             */
             
             // If we've been asked to continue, do so here.
             if ($submitAndContinue) {

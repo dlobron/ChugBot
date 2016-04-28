@@ -10,8 +10,8 @@
     $addChugPage->setAddChugPage();
     $addChugPage->addColumn("name");
     $addChugPage->addColumn("group_id");
-    $addChugPage->addColumn("min_size", FALSE, MIN_SIZE_NUM);
-    $addChugPage->addColumn("max_size", FALSE, MAX_SIZE_NUM);
+    $addChugPage->addColumn("min_size", FALSE, TRUE, MIN_SIZE_NUM);
+    $addChugPage->addColumn("max_size", FALSE, TRUE, MAX_SIZE_NUM);
     $addChugPage->addColumn("description", FALSE);
     $addChugPage->addInstanceTable("chug_instances");
     $addChugPage->fillInstanceId2Name("block_id", "blocks");

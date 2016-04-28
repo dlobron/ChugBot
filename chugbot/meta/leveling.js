@@ -129,8 +129,18 @@ function getAndDisplayCurrentMatches() {
 					  var chugMax = chugId2Beta[chugId]["max_size"];
 					  var editChugUrl = editChugBase + chugId;
 					  if (chugMax == "0" ||
-					      chugMax == "10000") {
+					      chugMax == 0 ||
+					      chugMax == "10000" ||
+					      chugMax == 10000 ||
+					      chugMax === null ||
+					      (typeof(chugMax) === 'undefined')) {
 					      chugMax = "no limit";
+					  }
+					  if (chugMin == "-1" ||
+					      chugMin == -1 ||
+					      chugMin === null ||
+					      (typeof(chugMin) === 'undefined')) {
+					      chugMin = "no minimum";
 					  }
 					  html += "<div name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
 					  if (chugName == "Not Assigned Yet") {

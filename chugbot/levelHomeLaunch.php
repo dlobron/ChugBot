@@ -39,10 +39,13 @@
     }
     
     // We're now ready to build our assignments.  We iterate over each activity
-    // group, and make an assignment for each one.
+    // group that applies to this edah, and make an assignment for each one.
     $db = new DbConn();
-    $sql = "SELECT group_id, name FROM groups";
-    $result = $db->runQueryDirectly($sql, $dbErr);
+    $db->addColVal($edah_id, 'i');
+    $db->isSelect = TRUE;
+    $sql = "SELECT g.group_id group_id, g.name name FROM groups g, edot_for_group e " .
+    "WHERE g.group_id = e.group_id AND e.edah_id = ?";
+    $result = $db->doQuery($sql, $dbErr);
     if ($result == FALSE) {
         echo genErrorPage($dbErr);
         exit;

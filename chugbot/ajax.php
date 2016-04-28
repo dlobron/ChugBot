@@ -351,7 +351,7 @@ END;
             // If we have a camper ID, use it to grab the chug lists.
             $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
             "FROM " .
-            "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb " .
+            "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb, edot_for_group eg " .
             "WHERE " .
             "cm.camper_id = ? AND " .
             "cm.session_id = bi.session_id AND " .
@@ -362,6 +362,8 @@ END;
             "e.edah_id = cm.edah_id AND " .
             "eb.edah_id = cm.edah_id AND " .
             "eb.block_id = b.block_id AND " .
+            "eg.edah_id = cm.edah_id AND " .
+            "eg.group_id = g.group_id AND " .
             "c.group_id = g.group_id ";
             $db->addColVal($camper_id, 'i');
         } else {
@@ -376,7 +378,7 @@ END;
             $edah_id = $_SESSION["edah_id"];
             $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
             "FROM " .
-            "block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb " .
+            "block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb, edot_for_group eg " .
             "WHERE " .
             "bi.session_id = ? AND " .
             "bi.block_id = b.block_id AND " .
@@ -386,13 +388,15 @@ END;
             "e.edah_id = ? AND " .
             "eb.edah_id = e.edah_id AND " .
             "eb.block_id = b.block_id AND " .
+            "eg.edah_id = e.edah_id AND " .
+            "eg.group_id = g.group_id AND " .
             "c.group_id = g.group_id ";
             $db->addColVal($session_id, 'i');
             $db->addColVal($edah_id, 'i');
         }
         // Order July ahead of August, for UI clarity.
-        $sql .= "ORDER BY CASE WHEN (blockname LIKE 'July%' OR blockname LIKE 'july%') THEN CONCAT('a', blockname) ".
-        "WHEN (blockname LIKE 'Aug%' OR blockname LIKE 'aug%') THEN CONCAT('b', blockname) ELSE blockname END, ".
+        $sql .= "ORDER BY CASE WHEN (blockname LIKE '%July%' OR blockname LIKE '%july%') THEN CONCAT('a', blockname) ".
+        "WHEN (blockname LIKE '%Aug%' OR blockname LIKE '%aug%') THEN CONCAT('b', blockname) ELSE blockname END, ".
         "groupname, chugname";
         $err = "";
         $result = $db->doQuery($sql, $err);
