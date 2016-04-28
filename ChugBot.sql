@@ -311,4 +311,17 @@ PRIMARY KEY pk_edot_for_block(block_id, edah_id))
 COLLATE utf8_unicode_ci
 ENGINE = INNODB;
 
+CREATE TABLE IF NOT EXISTS edot_for_group(
+group_id int NOT NULL,
+FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+edah_id int NOT NULL,
+FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+PRIMARY KEY pk_edot_for_group(group_id, edah_id))
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
+
 SOURCE /Applications/MAMP/htdocs/SampleData.sql;
