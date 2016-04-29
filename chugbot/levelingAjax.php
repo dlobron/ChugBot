@@ -475,6 +475,9 @@
                 die(json_encode(array("error" => $err)));
             }
             $row = mysqli_fetch_assoc($result2);
+            if ($row === NULL) {
+                continue;
+            }
             // Increment choice counts
             foreach ($choiceKeys as $choiceKey) {
                 if ($row["$choiceKey"] != NULL) {
