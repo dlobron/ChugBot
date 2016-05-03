@@ -73,13 +73,13 @@
     $editCamperPage->addFormItem($edahDropDown);
     
     $bunkIdVal = $editCamperPage->columnValue("bunk_id"); // May be NULL.
-    $bunkDropDown = new FormItemDropDown("Bunk/Tzrif", FALSE, "bunk_id", 5);
-    $bunkDropDown->setGuideText("Choose your bunk (you can leave this blank if you do not know your bunk.");
-    $bunkDropDown->setInputSingular("bunk");
+    $bunkDropDown = new FormItemConstrainedDropDown("Bunk/Tzrif", FALSE, "bunk_id", 5,
+                                                    "SELECT b.bunk_id id_val, b.name name_val FROM bunks b, " .
+                                                    "bunk_instances i WHERE b.bunk_id = i.bunk_id AND i.edah_id = ?");
+    $bunkDropDown->setGuideText("Choose your bunk (you can leave this blank if you do not know it yet!).  You must choose your Edah first.");
     $bunkDropDown->setInputClass("element select medium");
+    $bunkDropDown->setParentIdAndName("edah_id", "Edah");
     $bunkDropDown->setColVal($bunkIdVal);
-    $bunkDropDown->fillDropDownId2Name($editCamperPage->dbErr,
-                                       "bunk_id", "bunks");
     $editCamperPage->addFormItem($bunkDropDown);
     
     // Add two fields that are only visible to staff.  These apply only to the edit page, not the add

@@ -186,7 +186,7 @@
             }
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
-            $this->html .= "<select class=\"$this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\"> placeholder=\"$ph\">";
+            $this->html .= "<select class=\"$this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\">";
             $this->html .= genPickList($this->id2Name, $this->colVal, $this->inputSingular); // $inputSingular = e.g., "group"
             $this->html .= "</select>";
             if ($this->error) {
@@ -226,10 +226,122 @@
         private $colVal = "";
     }
     
-    
-
-
-
-    
+    // This class generates a drop down that depends on the choices made in
+    // a parent drop down.
+    class FormItemConstrainedDropDown extends FormItem {
+        function __construct($desc, $req, $inputName, $liNum, $sql) {
+            parent::__construct($desc, $req, $inputName, $liNum);
+            $this->sql = $sql;
+        }
+        
+        public function renderHtml() {
+            if (! $this->staffOnlyOk()) {
+                return;
+            }
+            $parentId = $this->parentId;
+            $parentName = $this->parentName;
+            $ourId = $this->inputName;
+            $ourCurrentValue = $this->colVal; // Might be empty.
+            $sql = $this->sql;
+            $javascript = <<<JS
+<script src="jquery/jquery-1.11.3.min.js"></script>
+<script src="jquery/ui/1.11.4/jquery-ui.js"></script>
+<script>
+function fillConstraints() {
+    var parent = $("#${parentId}");
+    var parentName = "$parentName";
+    var ourDropDown = $("#${ourId}");
+    var selected = "$ourCurrentValue";
+    var values = {};
+    values["get_legal_id_to_name"] = 1;
+    var curSelectedEdahId = $(parent).find(':selected').val(); // Selected value in parent drop-down.
+    var curSelectedEdahName = $(parent).find(':selected').text();
+    values["instance_id"] = curSelectedEdahId;
+    values["sql"] = "$sql";
+    $.ajax({
+         url: 'ajax.php',
+         type: 'post',
+         data: values,
+         success: function(data) {
+           ourDropDown.empty();
+           var html = "";
+           var hadSel = 0;
+           $.each(data, function(itemId, itemName) {
+                  var optionText = "<option value=\"" + itemId + "\"";
+                  if (itemId == selected) {
+                      optionText += " selected";
+                      hadSel = 1;
+                  }
+                  optionText += " >" + itemName + "</option>";
+                  html += optionText;
+           });
+           // Prepend a -- option for no bunk choice.  Make this the selected
+           // option if we didn't have one above.
+           var noBunkStr = "<option value=\"\" ";
+           if (hadSel == 0) {
+              noBunkStr += "selected";
+           }
+           noBunkStr += ">--</option>";
+           html = noBunkStr + html;
+           // Display special text if no options were found.
+           if (html.length == 0) {
+                if (curSelectedEdahId) {
+                    html = "<option value=\"\" disabled>--No Bunks Found for " + curSelectedEdahName + "--</option>";
+                } else if (parentName.length > 0) {
+                    html = "<option value=\"\" disabled>--Select " + parentName + " First--</option>";
+                } else {
+                    html = "<option value=\"\" disabled>---</option>";
+                }
+           }
+           $(ourDropDown).append(html);
+        },
+        error: function(xhr, desc, err) {
+            console.log(xhr);
+            console.log("Details: " + desc + " Error:" + err);
+        }
+    });
+}
+$(function() {
+  $("select#${parentId}").load(fillConstraints());
+  $("select#${parentId}").bind('change',fillConstraints);
+});
+            
+</script>
+JS;
+            $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
+            $this->html .= "<div>\n";
+            $this->html .= "<select class=\"$this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\">\n";
+            $this->html .= "</select>\n";
+            if ($this->error) {
+                $this->html .= "<span class=\"error\">$this->error</span>\n";
+            }
+            $this->html .= "</div>\n";
+            if ($this->guideText) {
+                $guideId = "guide_" . $this->liNum;
+                $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>\n";
+            }
+            $this->html .= "</li>\n";
+            
+            $this->html .= "\n$javascript\n";
+            
+            return $this->html;
+        }
+        
+        public function setParentIdAndName($pid, $pn) {
+            $this->parentId = $pid;
+            $this->parentName = $pn;
+        }
+        
+        public function setColVal($cv) {
+            if ($cv != NULL) {
+                $this->colVal = $cv;
+            }
+        }
+        
+        private $sql = NULL; // e.g., "SELECT b.bunk_id id_val, b.name name_val FROM bunks b, bunk_instances i WHERE b.bunk_id = i.bunk_id AND i.edah_id = ?";
+        private $parentId = NULL;
+        private $colVal = "";
+        private $parentName = "";
+    }
             
     

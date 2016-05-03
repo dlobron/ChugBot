@@ -27,6 +27,26 @@
         exit();
     }
     
+    // Get constraints for a drop-down.
+    if (isset($_POST["get_legal_id_to_name"])) {
+        $err = "";
+        $db = new DbConn();
+        $db->addColVal($_POST["instance_id"], 'i');
+        $result = $db->doQuery($_POST["sql"], $err);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        // Return a list of legal IDs.  We assume that the query maps
+        // legal IDs to their corresponding names.
+        $retVal = array();
+        while ($row = $result->fetch_row()) {
+            $retVal[$row[0]] = $row[1];
+        }
+        echo json_encode($retVal);
+        exit();
+    }
+    
     // Compute and return nav text for an HTML page.
     if (isset($_POST["get_nav"])) {
         $retVal = navText();

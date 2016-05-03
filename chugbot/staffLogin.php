@@ -20,7 +20,7 @@
     $sql = "SELECT admin_password from admin_data";
     $result = $db->runQueryDirectly($sql, $dbError);
     if ($result == FALSE) {
-        ;
+        $dbError = dbErrorString($sql, "Failed to query database: $dbError");
     } else if ($result->num_rows > 1) {
         $dbError = dbErrorString($sql, "Bad row count for admin email and password");
     } else if ($result->num_rows == 1) {
