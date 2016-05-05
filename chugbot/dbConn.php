@@ -13,6 +13,10 @@
         // Run a query directly, with no interpolation.  Use only for queries
         // without user-supplied parameters.
         public function runQueryDirectly($sql, &$err) {
+	    if (! $this->mysqli->ping()) {
+                error_log("DbConn: runQueryDirectly: database connection was dropped: trying to reconnect");
+                $this->mysqli = connect_db();
+            }
             $result = $this->mysqli->query($sql);
             if ($result == FALSE) {
                 $err = dbErrorString($sql, $this->mysqli->error);
@@ -134,6 +138,10 @@
         }
     
         public function doQuery($paramSql, &$err) {
+            if (! $this->mysqli->ping()) {
+                error_log("DbConn: doQuery: database connection was dropped: trying to reconnect");
+                $this->mysqli = connect_db();
+            }
             if (startsWith($paramSql, "SELECT") ||
                 startsWith($paramSql, "select")) {
                 $this->isSelect = TRUE;
