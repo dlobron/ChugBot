@@ -456,9 +456,7 @@
             $candidateChug =& $chugim[$candidateChugId];
             
             $camper->choice_level++; // Increment the choice level (it starts at zero).
-            // At this point, we check to see if this camper has already been assigned
-            // to this chug in this block in a different group.  We're relying on names being
-            // consistent, apart from case.
+            // At this point, we check for duplicate assignment.
             if (array_key_exists($camper->camper_id, $existingMatches)) {
                 $matchesForThisCamper = $existingMatches[$camper->camper_id];
                 debugLog("Have " . count($matchesForThisCamper) . " existing matches, trying to assign to $candidateChug->name");
