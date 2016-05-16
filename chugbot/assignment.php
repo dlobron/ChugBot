@@ -240,9 +240,8 @@
             array_push($camperIdsToAssign, $camper_id);
         }
         if (count($campers) == 0) {
-            $err = errorString("No campers found for edah $edahName, block $blockName, group $groupName");
-            error_log($err);
-            return FALSE;
+            error_log("No campers found for edah $edahName, block $blockName, group $groupName: not assigning.");
+            return TRUE; // This is not an error, so return true.
         }
         
         // Grab the chugim available for this group/block/edah.  The chug must have an
@@ -268,9 +267,8 @@
             $chugim[$c->chug_id] = $c;
         }
         if (count($chugim) == 0) {
-            $err = errorString("No chugim found for edah $edahName, block $blockName, group $groupName");
-            error_log($err);
-            return FALSE;
+            error_log("No chugim found for edah $edahName, block $blockName, group $groupName: not assigning.");
+            return TRUE; // This is not an error, so return true.
         }
         
         // Map chug ID to chug instance ID, for this block.  We'll use this when we create entries
@@ -401,7 +399,7 @@
                     $chug_id = intval($row[3]);
                     if (array_key_exists($chug_id, $prefsByChugId)) {
                         $happiness[$camper->camper_id] += $prefsByChugId[$chug_id];
-                        debugLog("Incremented happiness of $camper->name by $prefsByChugId[$chug_id] (existing match to chug ID $chug_id");
+                        debugLog("Incremented happiness of $camper->name by $prefsByChugId[$chug_id] (existing match to chug ID $chug_id)");
                     } else {
                         // In general, there should be a preference for assigned chugim.
                         error_log("WARNING: No preference found for $camper->name for assigned chug ID $chug_id");
