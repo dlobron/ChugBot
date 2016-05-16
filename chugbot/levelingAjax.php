@@ -266,6 +266,24 @@
         $edah_id = $_POST["edah_id"];
         $block_id = $_POST["block_id"];
         
+        $edah_name = "";
+        $block_name = "";
+        $err = "";
+        $db = new DbConn();
+        $db->addSelectColumn("name");
+        $db->addWhereColumn("edah_id", $edah_id, 'i');
+        $result = $db->simpleSelectFromTable("edot", $err);
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+            $edah_name = $row[0];
+        }
+        $db = new DbConn();
+        $db->addSelectColumn("name");
+        $db->addWhereColumn("block_id", $block_id, 'i');
+        $result = $db->simpleSelectFromTable("blocks", $err);
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+            $block_name = $row[0];
+        }
+        
         // Get preferences (as strings) for these campers.
         // First, map chug ID to name and min/max.  Also, define an "unassigned"
         // chug, which we will use to flag campers still needing assignment.
@@ -331,7 +349,7 @@
                 $chug_id = intval($row2[0]);
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
             }
-            $groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex] =  array();
+            $groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex] = array();
             // Get matches for this group/block/edah/session.
             $db = new DbConn();
             $db->isSelect = TRUE;
@@ -368,8 +386,11 @@
                 error_log("No match found for $unAssignedName for $group_name - flagging as unassigned");
                 array_push($groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex], $unAssignedId);
             }
-            if (count($groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex]) == 0) {
-                // Don't display the unassigned chug unless we have at least one of them.
+            if (count($groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex]) == 0 ||
+                count($groupId2ChugId2MatchedCampers[$group_id]) == 1) {
+                // Do not display unassigned campers if:
+                // a) We don't have any, or
+                // b) There were no available chugim.
                 unset($groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex]);
             }
         }
@@ -379,6 +400,8 @@
         $retVal["groupId2Name"] = $groupId2Name; // {Group ID -> Group Name}
         $retVal["camperId2Name"] = $camperId2Name; // {Camper ID -> Camper Name}
         $retVal["chugId2Beta"] = $chugId2Beta;   // {Chug ID -> Chug Name, Min and Max}
+        $retVal["edahName"] = $edah_name;
+        $retVal["blockName"] = $block_name;
         
         echo json_encode($retVal);
         exit();

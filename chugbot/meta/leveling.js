@@ -108,6 +108,8 @@ function getAndDisplayCurrentMatches() {
 		    // for the camper boxes should show an ordered list of chugim, top to bottom.  
 		    // "This, I know from nothing!" - N. Lobachevsky.
 		    var html = "";
+		    var edahName = json["edahName"];
+		    var blockName = json["blockName"];
 		    var groupId2Name = json["groupId2Name"];
 		    var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
 		    camperId2Group2PrefList = json["camperId2Group2PrefList"];
@@ -118,7 +120,12 @@ function getAndDisplayCurrentMatches() {
 			       // Add a holder for each group (aleph, bet, gimel).
 			       var groupName = groupId2Name[groupId];
 			       html += "<div class=\"groupholder\" name=\"" + groupId + "\" >\n";
-			       html += "<h3>" + groupName + " assignments</h3>\n";
+			       if (Object.keys(chugId2MatchedCampers).length > 0) {
+				   html += "<h3>" + groupName + " assignments</h3>\n";
+			       } else {
+				   html += "<h3>" + groupName + ": no chugim are available for " + edahName + 
+				       ", " + blockName + "</h3>\n";
+			       } 
 			       // Within each group, add a holder for campers, and then populate with
 			       // campers.
 			       $.each(chugId2MatchedCampers,
