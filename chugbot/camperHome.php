@@ -46,12 +46,12 @@
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
 <p>This system will let you order your chug (activity) preferences for the summer.</p>
-<p>To add a new camper to the system, please click the "Add" button.</p>
-<p>To edit existing camper information, please enter the email address associated with that camper and then click "Edit".</p>
+<p>If this is your first time picking chugim this summer, click Start.</p>
+<p>If you would like to edit existing choices, enter your email address and click "Edit".</p>
 
 <form class="appnitro" id="choiceForm" method="POST" />
 <br>
-<button title="Add a new camper" class="control_button" type="submit" name="add" formaction="addCamper.php" >Add Camper</button>
+<button title="Add a new camper" class="control_button" type="submit" name="add" formaction="addCamper.php" >Start</button>
 <input type="hidden" id="fromHome" name="fromHome" value="1" />
 </form>
 
