@@ -285,6 +285,7 @@ END;
         
         // If we have an email address, send a confirmation email listing the
         // camper's choices.
+        $sentOk = FALSE;
         if ($email) {
             $db = new DbConn();
             $sql = "SELECT * FROM admin_data";
@@ -313,13 +314,17 @@ END;
         $db->addWhereColumn("camper_id", $camper_id, 'i');
         $err = "";
         $result = $db->simpleSelectFromTable("campers", $err);
-        $retVal = array();
-        if ($result != FALSE) {
-            $row = $result->fetch_row();
-            $retVal["name"] = $row[0];
-            $retVal["email"] = $row[1];
-            $retVal["homeUrl"] = homeUrl();
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
         }
+        $retVal = array();
+        $row = $result->fetch_row();
+        $retVal["name"] = $row[0];
+        if ($sentOk) {
+            $retVal["email"] = $email;
+        }
+        $retVal["homeUrl"] = homeUrl();
         
         echo json_encode($retVal);
         exit();

@@ -116,6 +116,13 @@ $(function() {
 			    data:{submit_prefs: 1, pref_arrays: arrayOrderedLists},
 			    success: function(data) {
 			    $( "#results" ).html(function() {
+				    if (typeof data.name === "undefined") {
+					$( "#results:visible" ).removeAttr( "style" ).fadeOut();
+					$( "#results" ).text("Oops! Our system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator.");
+					$( "#results" ).show("slide", 250 );
+					console.log("Preferences submit failed: name not defined");
+					return;
+				    }
 				    txt = $(this).html().replace("NAME", data.name);
 				    if (data.hasOwnProperty('email')) {
 					var mailText = "Confirmation email sent to " + data.email + ".<br><br>";
