@@ -874,8 +874,8 @@ EOM;
             "JOIN blocks AS bl ON bl.block_id = p.block_id " .
             "JOIN edot AS e ON c.edah_id = e.edah_id " .
             "LEFT OUTER JOIN matches AS m ON m.camper_id = c.camper_id " .
-            "LEFT OUTER JOIN chug_instances AS i ON i.chug_instance_id = m.chug_instance_id " .
-            "LEFT OUTER JOIN chugim AS ch ON ch.chug_id = i.chug_id AND ch.group_id = g.group_id " .
+            "JOIN chug_instances AS i ON i.chug_instance_id = m.chug_instance_id " .
+            "JOIN chugim AS ch ON ch.chug_id = i.chug_id AND ch.group_id = g.group_id " .
             $haveWhere = FALSE;
             if (count($activeBlockIds) > 0) {
                 $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
@@ -884,6 +884,7 @@ EOM;
             if ($edahId) {
                 if (! $haveWhere) {
                     $sql .= "WHERE c.edah_id = ? ";
+                    $haveWhere = TRUE;
                 } else {
                     $sql .= "AND c.edah_id = ? ";
                 }
@@ -892,12 +893,14 @@ EOM;
             if ($groupId) {
                 if (! $haveWhere) {
                     $sql .= "WHERE g.group_id = ? ";
+                    $haveWhere = TRUE;
                 } else {
                     $sql .= "AND g.group_id = ? ";
                 }
                 $db->addColVal($groupId, 'i');
             }
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
+            error_log("DBG: $sql");
             $camperReport = new ZebraReport($db, $sql, $outputType);
             $camperReport->setIdNameMap($chugId2Name, " -");
             $camperReport->addIdNameMapCol("first_choice");
