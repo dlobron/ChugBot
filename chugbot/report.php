@@ -21,7 +21,7 @@
             // Colors, line width and bold font
             $this->SetTextColor(128, 128, 128);
             $this->SetLineWidth(.3);
-            $this->SetFont('Arial','B');
+            $this->SetFont('Arial','B',$this->fontSize);
             foreach ($titleParts as $titleLine) {
                 $this->Cell(0, 10, $titleLine, 0, 2, 'C');
             }
@@ -44,21 +44,101 @@
             $this->SetFont('');
             // Data
             $fill = false;
+            $sz = 5;
             foreach ($data as $row) {
+                // Calculate the height of the row.
+                $nb = 0;
+                for($i = 0; $i < count($row); $i++) {
+                    $nb = max($nb,
+                              $this->NbLines($this->columnWidths[$i], $row[$i]));
+                }
+                $h = $sz * $nb;
+                // Issue a page break first if needed.
+                $this->CheckPageBreak($h);
+                // Draw the cells of the row.
                 for ($i = 0; $i < count($row); $i++) {
                     $alignment = ($i <= count($row) / 2) ? 'L' : 'R';
-                    $this->Cell($this->columnWidths[$i], 6, $row[$i],
-                                'LR', 0, $alignment, $fill);
+                    $x = $this->GetX();
+                    $y = $this->GetY();
+                    $w = $this->columnWidths[$i];
+                    $this->Rect($x,$y,$w,$h);
+                    $this->MultiCell($w, $sz, $row[$i],
+                                     0,//'LR',
+                                     $alignment,
+                                     0); //$fill);
+                    $this->SetXY($x + $w, $y);
                 }
-                $this->Ln();
+                $this->Ln($h);
                 $fill = !$fill;
             }
-                // Closing line
+            // Closing line
             $this->Cell(array_sum($this->columnWidths), 0, '', 'T');
+        }
+        
+        function CheckPageBreak($h) {
+            // If the height h would cause an overflow, add a new page immediately.
+            if ($this->GetY()+$h>$this->PageBreakTrigger) {
+                $this->AddPage($this->CurOrientation);
+            }
+        }
+        
+        function NbLines($w, $txt)
+        {
+            // Computes the number of lines a MultiCell of width w will take
+            $cw=&$this->CurrentFont['cw'];
+            if($w==0)
+                $w=$this->w-$this->rMargin-$this->x;
+            $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+            $s=str_replace("\r",'',$txt);
+            $nb=strlen($s);
+            if($nb>0 and $s[$nb-1]=="\n")
+                $nb--;
+            $sep=-1;
+            $i=0;
+            $j=0;
+            $l=0;
+            $nl=1;
+            while($i<$nb)
+            {
+                $c=$s[$i];
+                if($c=="\n")
+                {
+                    $i++;
+                    $sep=-1;
+                    $j=$i;
+                    $l=0;
+                    $nl++;
+                    continue;
+                }
+                if($c==' ')
+                    $sep=$i;
+                $l+=$cw[$c];
+                if($l>$wmax)
+                {
+                    if($sep==-1)
+                    {
+                        if($i==$j)
+                            $i++;
+                    }
+                    else
+                        $i=$sep+1;
+                    $sep=-1;
+                    $j=$i;
+                    $l=0;
+                    $nl++;
+                }
+                else
+                    $i++;
+            }
+            return $nl;
         }
         
         public function setColWidths($w) {
             $this->columnWidths = $w;
+        }
+        
+        public function setFontSize($s) {
+            $this->fontSize = $s;
         }
         
         public function setReportTypeAndNameOfItem($t, $n) {
@@ -67,7 +147,7 @@
         }
         
         private $columnWidths = NULL;
-        private $mult = 3;
+        private $fontSize = 12;
         private $typeOfReport = NULL;
         private $reportedItem = NULL;
     }
@@ -102,6 +182,15 @@
             $this->valCol2IdCol[$valCol] = $idCol;
         }
         
+        public function setIdNameMap($idNameMap, $regex = NULL) {
+            $this->idNameMap = $idNameMap;
+            $this->idNameMapRegex = $regex;
+        }
+        
+        public function addIdNameMapCol($col) {
+            $this->idNameMapCols[$col] = TRUE;
+        }
+    
         private function shouldSkipColumn($col) {
             if ($this->newTableColumn &&
                 $this->newTableColumn == $col) {
@@ -120,6 +209,11 @@
         public function setReportTypeAndNameOfItem($t, $n) {
             $this->typeOfReport = $t;
             $this->reportedItem = $n;
+        }
+        
+        public function setPdfFontSizeAndMult($size, $mult) {
+            $this->pdfFontSize = $size;
+            $this->mult = $mult;
         }
         
         public function renderTable() {
@@ -145,8 +239,9 @@
             // We also build PDF tables, in case we've been asked to generate printable
             // output, and prepare to emit CSV if requested.
             $pdfTables = array();
-            $pdf = new PDF();
+            $pdf = new PDF('Landscape', 'mm', 'A4');
             $pdf->setReportTypeAndNameOfItem($this->typeOfReport, $this->reportedItem);
+            $pdf->setFontSize($this->pdfFontSize);
             $pdfHeader = array();
             $pdfData = array();
             $pdfDataRow = array();
@@ -241,7 +336,7 @@
                         array_push($pdfHeader, $tableHeader);
                         // Initialize the width for the column corresponding to this
                         // header.
-                        array_push($pdfColWidths, (strlen($tableHeader) * $this->mult));
+                        array_push($pdfColWidths, (strlen($tableHeader) * $this->mult) + $this->add);
                     }
                     $html .= "</tr>";
                     
@@ -281,11 +376,35 @@
                         }
                     } else {
                         $tableData = $d;
+                        // If this column value should be looked up, do so.
+                        if (array_key_exists($tableDataKey, $this->idNameMapCols) &&
+                            array_key_exists($tableData, $this->idNameMap)) {
+                            $tableData = $this->idNameMap[$tableData];
+                            if ($this->idNameMapRegex) {
+                                $pattern = "/" . $this->idNameMapRegex . ".*$/";
+                                $tableData = preg_replace($pattern, "", $tableData);
+                            }
+                        }
                     }
                     $html .= "<td>$tableData</td>";
+                    // Look up and replace the PDF/report column.
+                    if (array_key_exists($tableDataKey, $this->idNameMapCols) &&
+                        array_key_exists($d, $this->idNameMap)) {
+                        $d = $this->idNameMap[$d];
+                        if ($this->idNameMapRegex) {
+                            $pattern = "/" . $this->idNameMapRegex . ".*$/";
+                            $d = preg_replace($pattern, "", $d);
+                        }
+                    }
                     array_push($pdfDataRow, $d);
-                    if ((strlen($d) * $this->mult) > $pdfColWidths[$i]) {
-                        $pdfColWidths[$i] = (strlen($d) * $this->mult);
+                    //if ((strlen($d) * $this->mult) > $pdfColWidths[$i]) {
+                    //$pdfColWidths[$i] = (strlen($d) * $this->mult);
+                    //}
+                    $words = explode(" ", $d);
+                    foreach ($words as $word) {
+                        if ((strlen($word) * $this->mult) + $this->add > $pdfColWidths[$i]) {
+                            $pdfColWidths[$i] = (strlen($word) * $this->mult) + $this->add;
+                        }
                     }
                     $i++;
                 }
@@ -318,6 +437,9 @@
             echo $html;
         }
         
+        private $idNameMapRegex = NULL;
+        private $idNameMapCols = array();
+        private $idNameMap = array();
         private $captionReplaceColKeys = array();
         private $captionReplaceColDefault = array();
         private $ignoreCols = array();
@@ -328,10 +450,12 @@
         private $caption = NULL;
         private $newTableColumn = NULL;
         private $headerTextMap = array();
-        private $mult = 2.5;
+        private $mult = 3.0;
+        private $add = 2;
         private $typeOfReport = NULL;
         private $reportedItem = NULL;
         private $outputType = OutputTypes::Html;
+        private $pdfFontSize = 12;
     }
     
     abstract class ReportTypes
@@ -341,6 +465,7 @@
         const ByChug = 2;
         const ByBunk = 3;
         const Director = 4;
+        const CamperChoices = 5;
     }
 
     $dbErr = "";
@@ -351,10 +476,11 @@
     $chugId2Name = array();
     $bunkId2Name = array();
     $reportMethodId2Name = array(
-                                 ReportTypes::ByEdah    => "Yoetzet/Rosh Edah (by edah)",
-                                 ReportTypes::ByBunk    => "Madrich (by bunk)",
-                                 ReportTypes::ByChug    => "Chug Leader (by chug)",
-                                 ReportTypes::Director  => "Director (whole camp, sorted by edah)"
+                                 ReportTypes::ByEdah        => "Yoetzet/Rosh Edah (by edah)",
+                                 ReportTypes::ByBunk        => "Madrich (by bunk)",
+                                 ReportTypes::ByChug        => "Chug Leader (by chug)",
+                                 ReportTypes::Director      => "Director (whole camp, sorted by edah)",
+                                 ReportTypes::CamperChoices => "Camper Prefs and Assignment"
                                 );
     
     fillId2Name($chugId2Name, $dbErr,
@@ -380,6 +506,8 @@
         $edahId = test_input($_GET["edah_id"]);
         $bunkId = test_input($_GET["bunk_id"]);
         $chugId = test_input($_GET["chug_id"]);
+        $groupId = test_input($_GET["group_id"]);
+        $blockId = test_input($_GET["block_id"]);
         $doReport = test_input($_GET["do_report"]);
         if (test_input($_GET["print"])) {
             $outputType = OutputTypes::Pdf;
@@ -400,6 +528,8 @@
             $edahId = NULL;
             $bunkId = NULL;
             $chugId = NULL;
+            $groupId = NULL;
+            $blockId = NULL;
         } else if ($reportMethod == NULL) {
             array_push($errors, errorString("Please choose a report type"));
         }
@@ -460,7 +590,7 @@
     
     $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
     $pageStart = <<<EOM
-<div class="form_container">
+<div class="report_form_container">
     
 <h1><a>Chug Assignment Report</a></h1>
 <form id="main_form" class="appnitro" method="GET" action="$actionTarget">
@@ -477,7 +607,7 @@ EOM;
     
     // Always show the report method drop-down.
     $reportMethodDropDown = new FormItemDropDown("Report Type", TRUE, "report_method", 0);
-    $reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.");
+    $reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.");
     $reportMethodDropDown->setPlaceHolder("Choose Type");
     $reportMethodDropDown->setId2Name($reportMethodId2Name);
     $reportMethodDropDown->setColVal($reportMethod);
@@ -543,6 +673,27 @@ EOM;
         if ($outputType == OutputTypes::Html) {
             echo $chugChooser->renderHtml();
         }
+    } else if ($reportMethod == ReportTypes::CamperChoices) {
+        // The camper choices report can be filtered by edah, group, and
+        // block, e.g., Bogrim, Chug Aleph, weeks 1+2.
+        $edahChooser = new FormItemDropDown("Edah", FALSE, "edah_id", $liNumCounter++);
+        $edahChooser->setGuideText("Step 3: Choose an edah.  Leave empty to see campers in all edot.");
+        $edahChooser->setInputClass("element select medium");
+        $edahChooser->setInputSingular("edah");
+        $edahChooser->setColVal($edahId);
+        $edahChooser->setId2Name($edahId2Name);
+        
+        $groupChooser = new FormItemDropDown("Group", FALSE, "group_id", $liNumCounter++);
+        $groupChooser->setGuideText("Choose a chug group, or leave empty to see all groups.");
+        $groupChooser->setInputClass("element select medium");
+        $groupChooser->setInputSingular("group");
+        $groupChooser->setColVal($groupId);
+        $groupChooser->setId2Name($groupId2Name);
+        
+        if ($outputType == OutputTypes::Html) {
+            echo $edahChooser->renderHtml();
+            echo $groupChooser->renderHtml();
+        }
     } else if ($reportMethod == ReportTypes::Director) {
         // The director report shows all options, so there are no filter fields
         // except time block.
@@ -572,11 +723,10 @@ EOM;
         }
         echo "</li></ul></form>";
         
-        echo "<div class=\"form_container\">";
         echo "<form id=\"reset_form\" class=\"appnitro\" method=\"GET\" action=\"$actionTarget\">";
         echo "<ul><li class=\"buttons\">";
         echo "<input id=\"resetFormButton\" class=\"button_text\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
-        echo "</li></ul></form></div>";
+        echo "</li></ul></form>";
     }
     
     if ($doReport) {
@@ -692,7 +842,7 @@ EOM;
             if (count($activeBlockIds) > 0) {
                 $sql .= "AND i.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
             }
-            $sql .= "ORDER BY edah, edah_sort_order, block, camper, bunk";
+            $sql .= "ORDER BY edah_sort_order, edah, block, camper, bunk";
             
             $chugReport = new ZebraReport($db, $sql, $outputType);
             $chugReport->setReportTypeAndNameOfItem("Chug", $chugId2Name[$chugId]);
@@ -712,6 +862,61 @@ EOM;
             $chugReport->addCaptionReplaceColKey("PHONE", "roshphone", "no rosh phone");
             $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no block name");
             $chugReport->renderTable();
+        } else if ($reportMethod == ReportTypes::CamperChoices) {
+            // Report camper choices (1-6) and assignment, if any.
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            "bl.name block, g.name group_name, IFNULL(ch.name, \"-\") assignment, e.edah_id edah_id, g.group_id group_id, bl.block_id block_id, " .
+            "p.first_choice_id first_choice, p.second_choice_id second_choice, p.third_choice_id third_choice, " .
+            "p.fourth_choice_id fourth_choice, p.fifth_choice_id fifth_choice, p.sixth_choice_id sixth_choice " .
+            "FROM campers AS c " .
+            "JOIN preferences AS p ON c.camper_id = p.camper_id " .
+            "JOIN groups AS g ON g.group_id = p.group_id " .
+            "JOIN blocks AS bl ON bl.block_id = p.block_id " .
+            "JOIN edot AS e ON c.edah_id = e.edah_id " .
+            "LEFT OUTER JOIN matches AS m ON m.camper_id = c.camper_id " .
+            "LEFT OUTER JOIN chug_instances AS i ON i.chug_instance_id = m.chug_instance_id " .
+            "LEFT OUTER JOIN chugim AS ch ON ch.chug_id = i.chug_id AND ch.group_id = g.group_id " .
+            $haveWhere = FALSE;
+            if (count($activeBlockIds) > 0) {
+                $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+                $haveWhere = TRUE;
+            }
+            if ($edahId) {
+                if (! $haveWhere) {
+                    $sql .= "WHERE c.edah_id = ? ";
+                } else {
+                    $sql .= "AND c.edah_id = ? ";
+                }
+                $db->addColVal($edahId, 'i');
+            }
+            if ($groupId) {
+                if (! $haveWhere) {
+                    $sql .= "WHERE g.group_id = ? ";
+                } else {
+                    $sql .= "AND g.group_id = ? ";
+                }
+                $db->addColVal($groupId, 'i');
+            }
+            $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
+            $camperReport = new ZebraReport($db, $sql, $outputType);
+            $camperReport->setIdNameMap($chugId2Name, " -");
+            $camperReport->addIdNameMapCol("first_choice");
+            $camperReport->addIdNameMapCol("second_choice");
+            $camperReport->addIdNameMapCol("third_choice");
+            $camperReport->addIdNameMapCol("fourth_choice");
+            $camperReport->addIdNameMapCol("fifth_choice");
+            $camperReport->addIdNameMapCol("sixth_choice");
+            $camperReport->addIgnoreColumn("block");
+            $camperReport->setNewTableColumn("edah"); // Page break on edot.
+            $camperReport->setCaption("LINK Camper Preferences and Assignments for BLOCK");
+            $camperReport->addIgnoreColumn("edah_sort_order");
+            $camperReport->addIgnoreColumn("block");
+            $camperReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
+            $camperReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+            $camperReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
+            $camperReport->addCaptionReplaceColKey("BLOCK", "block", "no block name");
+            $camperReport->setPdfFontSizeAndMult(9.0,2.0);
+            $camperReport->renderTable();
         } else if ($reportMethod == ReportTypes::Director) {
             // The director report is similar to the edah report, but unfiltered.
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name, \"Not Selected\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .

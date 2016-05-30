@@ -349,6 +349,20 @@ body
         -webkit-border-radius: 10px;
 }
 
+.report_form_container
+{
+	background:#fff;
+        margin:0 auto;
+        padding-left: 25px;
+	padding-right: 25px;
+        margin-left: 280px;
+	margin-right: 50px;
+        text-align:left;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+}
+
 #top
 {
 	display:block;
