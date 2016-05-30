@@ -865,7 +865,7 @@ EOM;
         } else if ($reportMethod == ReportTypes::CamperChoices) {
             // Report camper choices (1-6) and assignment, if any.
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
-            "bl.name block, g.name group_name, IFNULL(ch.name, \"-\") assignment, e.edah_id edah_id, g.group_id group_id, bl.block_id block_id, " .
+            "bl.name block, g.name group_name, IFNULL(ma.chug_name, \"Not Assigned Yet\") assignment, e.edah_id edah_id, g.group_id group_id, bl.block_id block_id, " .
             "p.first_choice_id first_choice, p.second_choice_id second_choice, p.third_choice_id third_choice, " .
             "p.fourth_choice_id fourth_choice, p.fifth_choice_id fifth_choice, p.sixth_choice_id sixth_choice " .
             "FROM campers AS c " .
@@ -873,9 +873,12 @@ EOM;
             "JOIN groups AS g ON g.group_id = p.group_id " .
             "JOIN blocks AS bl ON bl.block_id = p.block_id " .
             "JOIN edot AS e ON c.edah_id = e.edah_id " .
-            "LEFT OUTER JOIN matches AS m ON m.camper_id = c.camper_id " .
-            "JOIN chug_instances AS i ON i.chug_instance_id = m.chug_instance_id " .
-            "JOIN chugim AS ch ON ch.chug_id = i.chug_id AND ch.group_id = g.group_id " .
+            "LEFT OUTER JOIN  " .
+            "(SELECT ma.camper_id camper_id, i.block_id block_id, ch.group_id group_id, ch.name chug_name " .
+            "FROM matches AS ma, chug_instances AS i, chugim AS ch " .
+            "WHERE ma.chug_instance_id = i.chug_instance_id " .
+            "AND i.chug_id = ch.chug_id) AS ma " .
+            "ON ma.camper_id = c.camper_id AND ma.block_id = bl.block_id AND ma.group_id = g.group_id " .
             $haveWhere = FALSE;
             if (count($activeBlockIds) > 0) {
                 $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
