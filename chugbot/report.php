@@ -164,8 +164,8 @@
             $this->ignoreCols[$ic] = 1;
         }
         
-        public function setNewTableColumn($ntc) {
-            $this->newTableColumn = $ntc;
+        public function addNewTableColumn($ntc) {
+            $this->newTableColumns[$ntc] = TRUE;
         }
         
         public function setCaption($c) {
@@ -192,9 +192,8 @@
         }
     
         private function shouldSkipColumn($col) {
-            if ($this->newTableColumn &&
-                $this->newTableColumn == $col) {
-                return TRUE; // Don't re-display the new table column.
+            if (array_key_exists($col, $this->newTableColumns)) {
+                return TRUE; // Don't re-display new table columns.
             }
             if (array_key_exists($col, $this->idCol2EditUrl)) {
                 return TRUE; // Don't display ID columns.
@@ -216,6 +215,24 @@
             $this->mult = $mult;
         }
         
+        public function needToStartNewTable($newTableColumnValues, $row) {
+            if (empty($newTableColumnValues)) {
+                // If the new-table values are not set, it's our first time
+                // through the loop, and we should always create a new table.
+                return TRUE;
+            }
+            foreach ($newTableColumnValues as $col => $val) {
+                if ($row[$col] != $val) {
+                    // If any new-table column value has changed from its
+                    // previous version, we need a new table.
+                    return TRUE;
+                }
+            }
+            
+            // None of the new-table columns has changed.
+            return FALSE;
+        }
+        
         public function renderTable() {
             if ($this->sql == NULL) {
                 echo genFatalErrorReport(array("No table query was specified"));
@@ -224,7 +241,7 @@
             $err = "";
             $result = $this->db->doQuery($this->sql, $err);
             if ($result == FALSE) {
-                echo dbErrorString($err);
+                echo dbErrorString($this->sql, $err);
                 exit();
             }
             // If no rows were found, display a message.
@@ -248,7 +265,7 @@
             $pdfCaptionText = "";
             $pdfColWidths = array();
             $html = "";
-            $newTableColumnValue = NULL;
+            $newTableColumnValues = array();
             $rowIndex = 0;
             if ($this->outputType == OutputTypes::Csv) {
                 // Output headers so that the CSV is downloaded rather than displayed.
@@ -261,13 +278,10 @@
                 $output = fopen('php://output', 'w');
             }
             while ($row = $result->fetch_assoc()) {
-                if ($newTableColumnValue == NULL ||
-                    ($this->newTableColumn != NULL &&
-                     $row[$this->newTableColumn] != $newTableColumnValue))
-                {
-                    if ($newTableColumnValue != NULL) {
+                if ($this->needToStartNewTable($newTableColumnValues, $row)) {
+                    if (! empty($newTableColumnValues)) {
                         // If we have a changed new table value, close the div and
-                        // previous table before starting this one.
+                        // previous table before starting a new one.
                         $html .= "</div></table>";
                         // Add the table we just built to the PDF.
                         $pdf->AddPage();
@@ -293,22 +307,25 @@
                     if ($this->caption) {
                         $captionText = $this->caption;
                         $pdfCaptionText = $this->caption;
-                        if ($this->newTableColumn) {
+                        $i = 0;
+                        foreach ($this->newTableColumns as $ntc => $val) {
                             // If we have a new table column, create an edit link if requested.
-                            if (array_key_exists($this->newTableColumn, $this->valCol2IdCol)) {
-                                $idCol = $this->valCol2IdCol[$this->newTableColumn];
+                            $replaceText = "LINK" . "$i";
+                            if (array_key_exists($ntc, $this->valCol2IdCol)) {
+                                $idCol = $this->valCol2IdCol[$ntc];
                                 $idVal = $row[$idCol];
-                                $d = $row[$this->newTableColumn];
+                                $d = $row[$ntc];
                                 if ($idVal) {
                                     $editUrl = $this->idCol2EditUrl[$idCol] . "?eid=$idVal";
                                     $linkText = "<a href=\"$editUrl\">$d</a>";
-                                    $captionText = str_replace("LINK", $linkText, $captionText);
-                                    $pdfCaptionText = str_replace("LINK", $d, $pdfCaptionText);
+                                    $captionText = str_replace($replaceText, $linkText, $captionText);
+                                    $pdfCaptionText = str_replace($replaceText, $d, $pdfCaptionText);
                                 } else {
-                                    $captionText = str_replace("LINK", $d, $captionText);
-                                    $pdfCaptionText = str_replace("LINK", $d, $pdfCaptionText);
+                                    $captionText = str_replace($replaceText, $d, $captionText);
+                                    $pdfCaptionText = str_replace($replaceText, $d, $pdfCaptionText);
                                 }
                             }
+                            $i++;
                         }
                         // Loop through the caption text words, and check for
                         // any that appear in captionReplaceColKeys.  For any
@@ -340,13 +357,9 @@
                     }
                     $html .= "</tr>";
                     
-                    // Set the new value.
-                    if ($this->newTableColumn != NULL) {
-                        $newTableColumnValue = $row[$this->newTableColumn];
-                    } else {
-                        // If we don't have a new-table column specified, use
-                        // a constant.
-                        $newTableColumnValue = 1;
+                    // Update new table column values.
+                    foreach ($this->newTableColumns as $ntc => $val) {
+                        $newTableColumnValues[$ntc] = $row[$ntc];
                     }
                     $rowIndex = 0; // Reset row index, so each table gets its own zebra striping.
                 }
@@ -448,7 +461,7 @@
         private $sql = NULL;
         private $db = NULL;
         private $caption = NULL;
-        private $newTableColumn = NULL;
+        private $newTableColumns = array();
         private $headerTextMap = array();
         private $mult = 3.0;
         private $add = 2;
@@ -456,6 +469,25 @@
         private $reportedItem = NULL;
         private $outputType = OutputTypes::Html;
         private $pdfFontSize = 12;
+    }
+    
+    function addWhereClause(&$sql, &$db, $idHash) {
+        $haveWhere = FALSE;
+        if (count($idHash) > 0) {
+            $sql .= " WHERE bl.block_id IN (";
+            foreach ($idHash as $activeBlockId => $val) {
+                if ($haveWhere) {
+                    $sql .= ",?";
+                } else {
+                    $sql .= "?";
+                }
+                $haveWhere = TRUE;
+                $db->addColVal($activeBlockId, 'i');
+            }
+            $sql .= ") ";
+        }
+        
+        return $haveWhere;
     }
     
     abstract class ReportTypes
@@ -748,11 +780,7 @@ EOM;
             "JOIN edot AS e ON c.edah_id = e.edah_id " .
             "JOIN groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id ";
-            $haveWhere = FALSE;
-            if (count($activeBlockIds) > 0) {
-                $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
-                $haveWhere = TRUE;
-            }
+            $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
             if ($edahId) {
                 if (! $haveWhere) {
                     $sql .= "WHERE c.edah_id = ? ";
@@ -766,8 +794,8 @@ EOM;
             // Create and display the report.
             $edahReport = new ZebraReport($db, $sql, $outputType);
             $edahReport->setReportTypeAndNameOfItem("Edah", $edahId2Name[$edahId]);
-            $edahReport->setNewTableColumn("edah");
-            $edahReport->setCaption("Chug Assignments by Edah for LINK<br>Rosh: ROSH, PHONE");
+            $edahReport->addNewTableColumn("edah");
+            $edahReport->setCaption("Chug Assignments by Edah for LINK0<br>Rosh: ROSH, PHONE");
             $edahReport->addIgnoreColumn("edah_sort_order");
             $edahReport->addIgnoreColumn("rosh");
             $edahReport->addIgnoreColumn("roshphone");
@@ -794,11 +822,7 @@ EOM;
             "JOIN edot AS e ON c.edah_id = e.edah_id " .
             "JOIN groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id ";
-            $haveWhere = FALSE;
-            if (count($activeBlockIds) > 0) {
-                $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
-                $haveWhere = TRUE;
-            }
+            $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
             if ($bunkId) {
                 if (! $haveWhere) {
                     $sql .= "WHERE b.bunk_id = ?";
@@ -812,8 +836,8 @@ EOM;
             // Create and display the report.
             $bunkReport = new ZebraReport($db, $sql, $outputType);
             $bunkReport->setReportTypeAndNameOfItem("Bunk", $bunkId2Name[$bunkId]);
-            $bunkReport->setNewTableColumn("bunk");
-            $bunkReport->setCaption("Chug Assignments by Bunk for LINK");
+            $bunkReport->addNewTableColumn("bunk");
+            $bunkReport->setCaption("Chug Assignments by Bunk for LINK0");
             $bunkReport->addIgnoreColumn("edah_sort_order");
             $bunkReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
             $bunkReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
@@ -827,7 +851,6 @@ EOM;
             // for each edah that comes to the chug.  For each edah, the sheet should have:
             // - Rosh name and phone at the top, together with the edah name.
             // - List of campers in the edah: name and bunk.
-            $db->addColVal($chugId, 'i');
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS camper, e.name edah, e.sort_order edah_sort_order, " .
             "e.rosh_name rosh, e.rosh_phone roshphone, ch.name chug_name, IFNULL(b.name, \"Not Selected\") bunk, bl.name block, " .
             "ch.chug_id chug_id, bl.block_id block_id, b.bunk_id bunk_id, e.edah_id edah_id, c.camper_id " .
@@ -837,16 +860,19 @@ EOM;
             "JOIN chug_instances AS i ON i.chug_instance_id = m.chug_instance_id " .
             "JOIN chugim AS ch ON ch.chug_id = i.chug_id " .
             "JOIN blocks AS bl ON bl.block_id = i.block_id " .
-            "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id " .
-            "WHERE ch.chug_id = ? ";
-            if (count($activeBlockIds) > 0) {
-                $sql .= "AND i.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
+            "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
+            $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
+            if ($haveWhere) {
+                $sql .= " AND ch.chug_id = ? ";
+            } else {
+                $sql .= " WHERE ch.chug_id = ? ";
             }
-            $sql .= "ORDER BY edah_sort_order, edah, block, camper, bunk";
+            $db->addColVal($chugId, 'i');
+            $sql .= " ORDER BY edah_sort_order, edah, block, camper, bunk";
             
             $chugReport = new ZebraReport($db, $sql, $outputType);
             $chugReport->setReportTypeAndNameOfItem("Chug", $chugId2Name[$chugId]);
-            $chugReport->setNewTableColumn("edah");
+            $chugReport->addNewTableColumn("edah");
             $chugReport->addIgnoreColumn("edah_sort_order");
             $chugReport->addIgnoreColumn("rosh");
             $chugReport->addIgnoreColumn("roshphone");
@@ -857,7 +883,7 @@ EOM;
             $chugReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
             $chugReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
             $chugReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
-            $chugReport->setCaption("LINK campers for BLOCK<br>Rosh: ROSH, PHONE");
+            $chugReport->setCaption("LINK0 campers for BLOCK<br>Rosh: ROSH, PHONE");
             $chugReport->addCaptionReplaceColKey("ROSH", "rosh", "none listed");
             $chugReport->addCaptionReplaceColKey("PHONE", "roshphone", "no rosh phone");
             $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no block name");
@@ -878,12 +904,8 @@ EOM;
             "FROM matches AS ma, chug_instances AS i, chugim AS ch " .
             "WHERE ma.chug_instance_id = i.chug_instance_id " .
             "AND i.chug_id = ch.chug_id) AS ma " .
-            "ON ma.camper_id = c.camper_id AND ma.block_id = bl.block_id AND ma.group_id = g.group_id " .
-            $haveWhere = FALSE;
-            if (count($activeBlockIds) > 0) {
-                $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
-                $haveWhere = TRUE;
-            }
+            "ON ma.camper_id = c.camper_id AND ma.block_id = bl.block_id AND ma.group_id = g.group_id ";
+            $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
             if ($edahId) {
                 if (! $haveWhere) {
                     $sql .= "WHERE c.edah_id = ? ";
@@ -902,8 +924,7 @@ EOM;
                 }
                 $db->addColVal($groupId, 'i');
             }
-            $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
-            error_log("DBG: $sql");
+            $sql .= "ORDER BY edah_sort_order, edah, block, name, group_name";
             $camperReport = new ZebraReport($db, $sql, $outputType);
             $camperReport->setIdNameMap($chugId2Name, " -");
             $camperReport->addIdNameMapCol("first_choice");
@@ -912,9 +933,9 @@ EOM;
             $camperReport->addIdNameMapCol("fourth_choice");
             $camperReport->addIdNameMapCol("fifth_choice");
             $camperReport->addIdNameMapCol("sixth_choice");
-            $camperReport->addIgnoreColumn("block");
-            $camperReport->setNewTableColumn("edah"); // Page break on edot.
-            $camperReport->setCaption("LINK Camper Preferences and Assignments for BLOCK");
+            $camperReport->addNewTableColumn("edah");  // New table when edah changes
+            $camperReport->addNewTableColumn("block"); // New table when block changes
+            $camperReport->setCaption("LINK0 Camper Preferences and Assignments for LINK1");
             $camperReport->addIgnoreColumn("edah_sort_order");
             $camperReport->addIgnoreColumn("block");
             $camperReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
@@ -936,15 +957,13 @@ EOM;
             "JOIN edot AS e ON e.edah_id = c.edah_id " .
             "JOIN groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
-            if (count($activeBlockIds) > 0) {
-                $sql .= "WHERE bl.block_id IN (" . implode(",", array_keys($activeBlockIds)) . ") ";
-            }
-            $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
+            addWhereClause($sql, $db, $activeBlockIds);
+            $sql .= " ORDER BY edah_sort_order, edah, name, block, group_name";
             
             // Create and display the report.
             $directorReport = new ZebraReport($db, $sql, $outputType);
-            $directorReport->setNewTableColumn("edah");
-            $directorReport->setCaption("Chug Assignments by Edah for LINK");
+            $directorReport->addNewTableColumn("edah");
+            $directorReport->setCaption("Chug Assignments by Edah for LINK0");
             $directorReport->addIgnoreColumn("edah_sort_order");
             $directorReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
             $directorReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
