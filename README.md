@@ -13,10 +13,10 @@ fact, the assignment should be treated as a "suggestion," which the camp staff w
 The application assumes that you have PHP installed in your webserver, and that you have access to a MySQL database.  To set things up,
 please follow these instructions:
 
-1. Enter the MySQL command line as root, and run "source ChugBot.sql".  Note that there is a line in the SQL that pulls in sample data: you should comment this out.
-Alternately, you can enter the database commands into an admin window.  You may have to change the name of the database to fit your ISP's conventions.
+1. Enter the MySQL command line as root, and run "source ChugBot.sql".  Note that there is a line in the SQL that pulls in sample data: you should comment that out.
+Alternately, you can enter the database commands into an admin window.  You may have to change the name of the database to fit your ISP's conventions.  The default database name is "camprama_chugbot_db".
 
-2. Update constants.php with the login information for your MySQL database and your email account.  If your ISP's email authentication is broken, you might also need to add the following to the sendMail function in functions.php:
+2. Update constants.php with the login information for your MySQL database and your email account.  If your ISP's email authentication is broken, you might also need to add the following to the sendMail function in functions.php (please see https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting for details):
 
     $mail->SMTPOptions = array(
         'ssl' => array(
@@ -26,12 +26,10 @@ Alternately, you can enter the database commands into an admin window.  You may 
         )
     );
 
-(Please see https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting for details on this).
-
 3. Copy the contents of the "chugbot" directory to the directory where you want the website to run.  For example, if your webserver
 root is /home/web/htdocs (assuming a Unix-like directory structure), and you want this application to appear in a browser as mycamp.org/leveling/, you would copy these files to /home/web/htdocs/leveling/.
 
-That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: they identify themselves by an email address.  This design favors ease of use over high security, since activity preferences are assumed not to be high-security data.  
+That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: they use a plain text token for access.  If campers need to modify their choices after entering them, they identify themselves with their email address.  This design obviously favors ease of use over high security.
 
 The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which means "circle" or "camp activity group." Some of the terms in the application are also transliterated Hebrew (our kids attend a Jewish summer camp).  Feel free to change these for your camp, or keep them as-is.  A quick glossary of terms:
 
