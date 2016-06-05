@@ -82,8 +82,7 @@
             }
         }
         
-        function NbLines($w, $txt)
-        {
+        function NbLines($w, $txt) {
             // Computes the number of lines a MultiCell of width w will take
             $cw=&$this->CurrentFont['cw'];
             if($w==0)
@@ -498,6 +497,7 @@
         const ByBunk = 3;
         const Director = 4;
         const CamperChoices = 5;
+        const AllRegisteredCampers = 6;
     }
 
     $dbErr = "";
@@ -512,7 +512,8 @@
                                  ReportTypes::ByBunk        => "Madrich (by bunk)",
                                  ReportTypes::ByChug        => "Chug Leader (by chug)",
                                  ReportTypes::Director      => "Director (whole camp, sorted by edah)",
-                                 ReportTypes::CamperChoices => "Camper Prefs and Assignment"
+                                 ReportTypes::CamperChoices => "Camper Prefs and Assignment",
+                                 ReportTypes::AllRegisteredCampers => "All Campers Who Have Submitted Preferences"
                                 );
     
     fillId2Name($chugId2Name, $dbErr,
@@ -536,6 +537,7 @@
         $reset = test_input($_GET["reset"]);
         $reportMethod = test_input($_GET["report_method"]);
         $edahId = test_input($_GET["edah_id"]);
+        $sessionId = test_input($_GET["session_id"]);
         $bunkId = test_input($_GET["bunk_id"]);
         $chugId = test_input($_GET["chug_id"]);
         $groupId = test_input($_GET["group_id"]);
@@ -562,6 +564,7 @@
             $chugId = NULL;
             $groupId = NULL;
             $blockId = NULL;
+            $sessionId = NULL;
         } else if ($reportMethod == NULL) {
             array_push($errors, errorString("Please choose a report type"));
         }
@@ -652,19 +655,22 @@ EOM;
         echo $reportMethodDropDown->renderHtml();
     }
     
-    // All report methods include a time block filter.
+    if ($reportMethod &&
+        $outputType == OutputTypes::Html) {
+        // Add a hidden field to all HTML reports, indicating that the page should display a report
+        // when this submit comes in.
+        echo "<input type=\"hidden\" name=\"do_report\" id=\"do_report\" value=\"1\" />";
+    }
+    
+    // All report methods except AllRegisteredCampers include a time block filter.
     $liNumCounter = 0;
-    if ($reportMethod) {
+    if ($reportMethod &&
+        $reportMethod != ReportTypes::AllRegisteredCampers) {
         $blockChooser = new FormItemInstanceChooser("Time Blocks", FALSE, "block_ids", $liNumCounter++);
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setActiveIdHash($activeBlockIds);
         $blockChooser->setGuideText("Step 2: Choose the time block(s) you wish to display.  If you do not choose any, all blocks will be shown.");
-        if ($outputType == OutputTypes::Html) {
-            echo $blockChooser->renderHtml();
-            // Add a hidden field indicating that the page should display a report
-            // when this submit comes in.
-            echo "<input type=\"hidden\" name=\"do_report\" id=\"do_report\" value=\"1\" />";
-        }
+        echo $blockChooser->renderHtml();
     }
     
     // If we have a report method specified, display the appropriate filter fields.
@@ -730,6 +736,27 @@ EOM;
         // The director report shows all options, so there are no filter fields
         // except time block.
         
+    } else if ($reportMethod == ReportTypes::AllRegisteredCampers) {
+        // Display optional edah and session filters.  Note that the choice level
+        // here is 2, because we did not display a block filter.
+        $edahChooser = new FormItemDropDown("Edah", FALSE, "edah_id", $liNumCounter++);
+        $edahChooser->setGuideText("Step 2: Choose an edah, or leave empty to see all edot");
+        $edahChooser->setInputClass("element select medium");
+        $edahChooser->setInputSingular("edah");
+        $edahChooser->setColVal($edahId);
+        $edahChooser->setId2Name($edahId2Name);
+        
+        $sessionChooser = new FormItemDropDown("Session", FALSE, "session_id", $liNumCounter++);
+        $sessionChooser->setGuideText("Choose a session, or leave empty to see all sessions");
+        $sessionChooser->setInputClass("element select medium");
+        $sessionChooser->setInputSingular("session");
+        $sessionChooser->setColVal($sessionId);
+        $sessionChooser->setId2Name($sessionId2Name);
+        
+        if ($outputType == OutputTypes::Html) {
+            echo $edahChooser->renderHtml();
+            echo $sessionChooser->renderHtml();
+        }
     }
     
     $cancelUrl = "";
@@ -766,7 +793,29 @@ EOM;
         // type.
         $db = new DbConn();
         $db->isSelect = TRUE;
-        if ($reportMethod == ReportTypes::ByEdah) {
+        if ($reportMethod == ReportTypes::AllRegisteredCampers) {
+            // List all campers in the system in one report, sorted by session, edah, and name.
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, s.name session, s.session_id session_id, e.name edah, e.edah_id edah_id FROM " .
+            "campers c, sessions s, edot e " .
+            "WHERE c.session_id = s.session_id AND c.edah_id = e.edah_id ";
+            if ($edahId) {
+                $sql .= "AND c.edah_id = ? ";
+                $db->addColVal($edahId, 'i');
+            }
+            if ($sessionId) {
+                $sql .= "AND c.session_id = ? ";
+                $db->addColVal($sessionId, 'i');
+            }
+            $sql .= "ORDER BY session, edah, name";
+            $allCampersReport = new ZebraReport($db, $sql, $outputType);
+            $allCampersReport->setReportTypeAndNameOfItem("All Campers", "Whole Camp");
+            $allCampersReport->addNewTableColumn("edah");
+            $allCampersReport->addNewTableColumn("session");
+            $allCampersReport->setCaption("LINK0 Campers in Session LINK1");
+            $allCampersReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+            $allCampersReport->setIdCol2EditPage("session_id", "editSession.php", "session");
+            $allCampersReport->renderTable();
+        } else if ($reportMethod == ReportTypes::ByEdah) {
             // Per-edah report.
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name,\"Not Selected\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
             "e.rosh_name rosh, e.rosh_phone roshphone, " .
@@ -825,7 +874,7 @@ EOM;
             $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
             if ($bunkId) {
                 if (! $haveWhere) {
-                    $sql .= "WHERE b.bunk_id = ?";
+                    $sql .= "WHERE b.bunk_id = ? ";
                 } else {
                     $sql .= "AND b.bunk_id = ? ";
                 }

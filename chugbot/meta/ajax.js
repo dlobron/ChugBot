@@ -135,10 +135,10 @@ $(function() {
 			},
 			    error: function(xhr, desc, err) {
 			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
-			    $( "#results" ).text("Oops! Our system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator.");
+			    var errText = "Oops! Our system was unable to record your preferences.  Please hit Submit again.  If the problem persists, please contact the administrator, noting the following details about the error: " + xhr.responseText;
+			    console.log("Error submitting preferences: " + xhr.responseText);
+			    $( "#results" ).text(errText);
 			    $( "#results" ).show("slide", 250 );
-			    console.log("Details: ", desc);
-			    console.log("Error:", err);
 			}
 		    });
 	    });
