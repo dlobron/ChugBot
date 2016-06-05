@@ -670,7 +670,9 @@ EOM;
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setActiveIdHash($activeBlockIds);
         $blockChooser->setGuideText("Step 2: Choose the time block(s) you wish to display.  If you do not choose any, all blocks will be shown.");
-        echo $blockChooser->renderHtml();
+        if ($outputType == OutputTypes::Html) {
+            echo $blockChooser->renderHtml();
+        }
     }
     
     // If we have a report method specified, display the appropriate filter fields.
