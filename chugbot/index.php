@@ -68,7 +68,7 @@
         $ccField->setInputValue($admin_email);
         $ccField->setInputType("text");
         $ccField->setInputClass("element text medium");
-        $ccField->setInputMaxLength(20);
+        $ccField->setInputMaxLength(50);
         $ccField->setPlaceHolder("Access code");
         $ccField->setGuideText("Hint: $hint");
         echo $ccField->renderHtml();

@@ -156,7 +156,7 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailField->setInputValue($admin_email);
     $adminEmailField->setInputType("email");
     $adminEmailField->setInputClass("element text medium");
-    $adminEmailField->setInputMaxLength(20);
+    $adminEmailField->setInputMaxLength(50);
     $adminEmailField->setPlaceHolder("leveling@campramahne.org");
     $adminEmailField->setGuideText("Enter the address of a person who can answer leveling questions.");
     $adminEmailField->setError($staffEmailErr);
