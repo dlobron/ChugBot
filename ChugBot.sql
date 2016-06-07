@@ -324,4 +324,21 @@ PRIMARY KEY pk_edot_for_group(group_id, edah_id))
 COLLATE utf8_unicode_ci
 ENGINE = INNODB;
 
-SOURCE /Applications/MAMP/htdocs/SampleData.sql;
+# For safety, determine which category tables, such as blocks and groups,
+# may have items deleted.
+CREATE TABLE IF NOT EXISTS category_tables(
+name varchar(50) NOT NULL,
+category_table_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+delete_ok bool NOT NULL DEFAULT 1)
+COLLATE utf8_unicode_ci
+ENGINE = INNODB;
+# Enter default values.
+INSERT INTO category_tables (name, delete_ok) VALUES ("blocks", 0);
+INSERT INTO category_tables (name, delete_ok) VALUES ("bunks", 0);
+INSERT INTO category_tables (name, delete_ok) VALUES ("campers", 1);
+INSERT INTO category_tables (name, delete_ok) VALUES ("chugim", 1);
+INSERT INTO category_tables (name, delete_ok) VALUES ("edot", 0);
+INSERT INTO category_tables (name, delete_ok) VALUES ("groups", 0);
+INSERT INTO category_tables (name, delete_ok) VALUES ("sessions", 0);
+
+# SOURCE /Applications/MAMP/htdocs/SampleData.sql;

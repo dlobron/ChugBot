@@ -172,6 +172,16 @@ EOM;
     }
     
     function genPickListForm($id2Name, $name, $tableName, $method = "POST") {
+        // Check to see if items in this table may be deleted.
+        $deleteAllowed = TRUE;
+        $mysqli = connect_db();
+        $sql = "SELECT delete_ok FROM category_tables WHERE name = \"$tableName\"";
+        $result = $mysqli->query($sql);
+        if ($result) {
+            $row = $result->fetch_assoc();
+            $deleteAllowed = intval($row["delete_ok"]);
+        }
+        $mysqli->close();
         $ucName = ucfirst($name);
         $ucPlural = ucfirst($tableName);
         $formName = "form_" . $name;
@@ -187,6 +197,13 @@ EOM;
         if ($name == "edah") {
             $edahExtraText = " To view the campers in an edah, select an edah and click <font color=\"red\">\"Show Campers\"</font>.";
         }
+        $guideText = "";
+        if ($deleteAllowed) {
+            $guideText = "To add, edit or delete $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName, Edit or Delete. $edahExtraText";
+        } else {
+            $guideText = "To add or edit $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName or Edit. Deletion of $tableName " .
+            "is currently disallowed: to allow deletion, click \"Edit Admin Settings\" at the top of this page and adjust the check boxes. $edahExtraText";
+        }
         $retVal = <<<EOM
 <form id="$formName" class="appnitro" method="$method">
 <div class="form_description">
@@ -201,12 +218,17 @@ EOM;
         }
         $formEnd = <<<EOM
 </select>
-<p class="guidelines"><small>To add or delete $article $ucName, choose from the drop-down list and click Edit or Delete.  Click Add to add a new $ucName. $edahExtraText</small></p>
+<p class="guidelines"><small>$guideText</small></p>
 <input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
 <input class="button_text" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
-<input class="button_text" type="submit" name="submit" value="Delete" onclick="return confirm('Are you sure you want to delete this $ucName?')" formaction="$deleteUrl"/>
+
 EOM;
         $retVal = $retVal . $formEnd;
+        if ($deleteAllowed) {
+            $delText = "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Delete\" " .
+            "onclick=\"return confirm('Are you sure you want to delete this $ucName?')\" formaction=\"$deleteUrl\" />";
+            $retVal = $retVal . $delText;
+        }
         if ($name == "edah") {
             $camperUrl = urlIfy("viewCampersByEdah.php");
             $retVal =

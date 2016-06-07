@@ -6,7 +6,10 @@
     bounceToLogin();
     
     $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = "";
+    $deletableTableId2Name = array();
+    $deletableTableActiveIdHash = array();
     $dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = "";
+    
     $db = new DbConn();
     $err = "";
     $sql = "SELECT * from admin_data";
@@ -38,6 +41,22 @@
         $pref_page_instructions = $existingPrefInstructions;
         $camp_web = $existingCampWeb;
     }
+    // Grab existing category_tables data, if we don't have an update below.
+    $db = new DbConn();
+    $result = $db->runQueryDirectly("SELECT * FROM category_tables", $dbError);
+    if ($result == FALSE) {
+        error_log("category_tables select failed: $dbError");
+    } else {
+        while ($row = $result->fetch_assoc()) {
+            $table = $row["name"];
+            $tableId = $row["category_table_id"];
+            $active = $row["delete_ok"];
+            if ($active) {
+                $deletableTableActiveIdHash[$tableId] = 1;
+            }
+            $deletableTableId2Name[$tableId] = $table;
+        }
+    }
     
     $staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = $existingEmailErr = "";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -51,6 +70,28 @@
         $camp_name = test_input($_POST["camp_name"]);
         $pref_page_instructions = test_input($_POST["pref_page_instructions"]);
         $camp_web = test_input($_POST["camp_web"]);
+        
+        // Update the deletable tables.  We start by setting all tables to not
+        // be editable, and then we enable ones that are active.
+        $deletableTableActiveIdHash = array(); // Reset, then populate from POST data.
+        populateActiveIds($deletableTableActiveIdHash, "deletable_tables");
+        $db = new DbConn();
+        $result = $db->runQueryDirectly("UPDATE category_tables SET delete_ok = 0",
+                                        $dbError);
+        if ($result == FALSE) {
+            error_log("category_tables reset failed: $dbError");
+        } else {
+            foreach ($deletableTableActiveIdHash as $tableId => $active) {
+                $db = new DbConn();
+                $db->addColumn("delete_ok", 1, 'i');
+                $db->addWhereColumn("category_table_id", $tableId, 'i');
+                $result = $db->updateTable("category_tables", $dbError);
+                if ($result == FALSE) {
+                    error_log("category_tables update failed: $dbError");
+                    break;
+                }
+            }
+        }
         
         // Add NULL-able column values to the DB object.
         $db = new DbConn();
@@ -207,6 +248,12 @@ Required values are marked with a <font color="red">*</font>.
     $prefInstructions->setPlaceHolder(" ");
     $prefInstructions->setGuideText("These are the instructions campers will see on the ranking page.  HTML tags are OK.");
     echo $prefInstructions->renderHtml();
+    
+    $deletableTablesField = new FormItemInstanceChooser("Allow Deletion", FALSE, "deletable_tables", $counter++);
+    $deletableTablesField->setId2Name($deletableTableId2Name);
+    $deletableTablesField->setActiveIdHash($deletableTableActiveIdHash);
+    $deletableTablesField->setGuideText("For data protection, administrators may only delete items in the checked categories.  Check a category to permit deletions.");
+    echo $deletableTablesField->renderHtml();
     
     $campNameField = new FormItemSingleTextField("Camp Name", TRUE, "camp_name", $counter++);
     $campNameField->setInputValue($camp_name);

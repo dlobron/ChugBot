@@ -275,7 +275,7 @@ function fillConstraints() {
                   optionText += " >" + itemName + "</option>";
                   html += optionText;
            });
-           // Prepend a -- option for no bunk choice.  Make this the selected
+           // Prepend a -- option for no choice.  Make this the selected
            // option if we didn't have one above.
            var noBunkStr = "<option value=\"\" ";
            if (hadSel == 0) {
@@ -286,7 +286,7 @@ function fillConstraints() {
            // Display special text if no options were found.
            if (html.length == 0) {
                 if (curSelectedEdahId) {
-                    html = "<option value=\"\" disabled>--No Bunks Found for " + curSelectedEdahName + "--</option>";
+                    html = "<option value=\"\" disabled>--None Available for " + curSelectedEdahName + "--</option>";
                 } else if (parentName.length > 0) {
                     html = "<option value=\"\" disabled>--Select " + parentName + " First--</option>";
                 } else {

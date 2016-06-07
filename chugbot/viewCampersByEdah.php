@@ -6,6 +6,14 @@
     
     $name = $edahName = "";
     $dbErr = $nameErr = "";
+    
+    $deleteOk = TRUE;
+    $db = new DbConn();
+    $result = $db->runQueryDirectly("SELECT delete_ok FROM category_tables WHERE name = \"campers\"", $dbErr);
+    if ($result) {
+        $row = mysqli_fetch_assoc($result);
+        $deleteOk = intval($row["delete_ok"]);
+    }
     $camperId2Name = array();
     $camperId2Edah = array();
     $forEdahText = "all edot";
@@ -69,9 +77,11 @@ page, click <?php echo staffHomeAnchor(); ?>.</p>
             echo "<form class=\"appnitro\" method=\"POST\" action=\"$editUrl\">";
             echo "<input type=hidden name=\"camper_id\" id=\"camper_id\" value=$camperId />";
             echo "<input type=hidden name=\"fromHome\" id=\"fromHome\" value=1 />";
-            echo "<p>$camperName ($edahName) &nbsp; &nbsp; <input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit\" /> " .
-                "<input class=\"button_text\" type=\"submit\" name=\"delete\" value=\"Delete\" onclick=\"return confirm('Are you sure you want to remove this camper?')\" " .
-                "formaction=\"$deleteUrl\"/> </p>";
+            echo "<p>$camperName ($edahName) &nbsp; &nbsp; <input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit\" /> ";
+            if ($deleteOk) {
+                echo "<input class=\"button_text\" type=\"submit\" name=\"delete\" value=\"Delete\" onclick=\"return confirm('Are you sure you want to remove this camper?')\" " .
+                    "formaction=\"$deleteUrl\"/> </p>";
+            }
             echo "</form>";
         }
     }
