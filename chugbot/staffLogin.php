@@ -149,7 +149,7 @@
         $emailField->setInputValue($staff_email);
         $emailField->setInputType("text");
         $emailField->setInputClass("element text medium");
-        $emailField->setInputMaxLength(20);
+        $emailField->setInputMaxLength(50);
         $emailField->setPlaceHolder("leveling@campramahne.org");
         $emailField->setGuideText("Please enter an email for password change/retrieval. The person at this address should also be able to answer leveling questions from campers.");
         $emailField->setError($staffEmailErr);
