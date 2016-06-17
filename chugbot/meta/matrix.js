@@ -47,15 +47,9 @@ $(function() {
 			html += "<th>" + chugNames[i] + "</th>";
 		    }
 		    html += "</tr></thead><tbody>";
-		    var rowIndex = 0;
 		    for (x = 0; x < chugNames.length; x++) {
-			// Add a row for each chug, with zebra striping.
-			oddText = "";
-			if (rowIndex++ % 2 != 0) {
-			    // Remove striping, since our library provides it.
-			    //oddText = "class=darkstripe";
-			}             
-			html += "<tr " + oddText + "><td>" + chugNames[x] + "</td>";
+			// Add a row for each chug.
+			html += "<tr><td>" + chugNames[x] + "</td>";
 			for (y = 0; y < chugNames.length; y++) {
 			    html += "<td>";
 			    var checkedText = " ";
@@ -97,8 +91,24 @@ $(function() {
 
 $(function() {
         $("#SaveChanges").click(function(event) {
+		console.log("DBG: Starting submit");
+		// Compute redirect URL.
+		var curUrl = window.location.href;
+		var homeUrl = curUrl.replace("exclusionMatrix.html", "staffHome.php");
+		// Remove query string before redir.
+		var qpos = homeUrl.indexOf("?");
+		if (qpos) {
+		    homeUrl = homeUrl.substr(0, qpos);
+		}
+		// Prepare to send ajax.  We send and reset the array when we hit our max
+		// value, because PHP only allows a configurable number of input vars in a 
+		// submit (max-input-vars, default 1,000).  See:
+		// php.net/manual/en/info.configuration.php#ini.max-input-vars
+		var maxSubmitSize = 750;
                 event.preventDefault();
 		var leftRight2Checked = {};
+		var count = 0;
+		var ajaxError = 0;
 		$('#matrix').find('input[type="checkbox"]').each(function () {
 			var $this = $(this);
 			var leftChug = $this.data('x');
@@ -107,30 +117,51 @@ $(function() {
 			    leftRight2Checked[leftChug] = {};
 			}
 			leftRight2Checked[leftChug][rightChug] = $this.prop('checked') ? 1: 0;
+			if (++count >= maxSubmitSize) {
+			    		$.ajax({
+						url: 'matrix.php',
+						    type: 'post',
+						    data: {update_table:1, checkMap:leftRight2Checked},
+						    success: function(data) {
+						    console.log("DBG: submitted 750 items OK");
+						},
+						    error: function(xhr, desc, err) {
+						    console.log(xhr);
+						    console.log("Details: " + desc + "\nError:" + err);
+						    var errHtml = "<div class=error_box><h2>Error</h2><font=red>Unable to save changes: </font>" + err + ". Please contact an administrator.</div>";
+						    $("#errors").html(errHtml);
+						    leftRight2Checked = {};
+						    ajaxError = 1;
+						    return false; // Break out of the .each loop.
+						}
+					    });
+					// Reset our counter and object, and continue the .each loop.
+					leftRight2Checked = {};
+					count = 0;
+			}
 		    });
-		// Send ajax.
-		var curUrl = window.location.href;
-		var homeUrl = curUrl.replace("exclusionMatrix.html", "staffHome.php");
-		// Remove query string before redir.
-		var qpos = homeUrl.indexOf("?");
-		if (qpos) {
-		    homeUrl = homeUrl.substr(0, qpos);
+		// Send any remaining data after the loop finishes.
+		if (! jQuery.isEmptyObject(leftRight2Checked)) {
+		    $.ajax({
+			    url: 'matrix.php',
+				type: 'post',
+				data: {update_table:1, checkMap:leftRight2Checked},
+				success: function(data) {
+				console.log("DBG: submitted final items OK");
+			    },
+				error: function(xhr, desc, err) {
+				console.log(xhr);
+				console.log("Details: " + desc + "\nError:" + err);
+				var errHtml = "<div class=error_box><h2>Error</h2><font=red>Unable to save changes: </font>" + err + ". Please contact an administrator.</div>";
+				$("#errors").html(errHtml);
+				ajaxError = 1;
+			    }
+			});
 		}
-		$.ajax({
-			url: 'matrix.php',
-			    type: 'post',
-			    data: {update_table:1, checkMap:leftRight2Checked},
-			    success: function(data) {
-			    homeUrl += "?update=ex";
-			    window.location.href = homeUrl;
-			},
-			    error: function(xhr, desc, err) {
-                            console.log(xhr);
-                            console.log("Details: " + desc + "\nError:" + err);
-			    var errHtml = "<div class=error_box><h2>Error</h2><font=red>Unable to save changes: </font>" + err + ". Please contact an administrator.</div>";
-			    $("#errors").html(errHtml);
-                        }
-                    });
+		if (! ajaxError) {
+		    homeUrl += "?update=ex";
+		    window.location.href = homeUrl;
+		}
 	    });
     });
 		    
