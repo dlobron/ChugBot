@@ -91,7 +91,6 @@ $(function() {
 
 $(function() {
         $("#SaveChanges").click(function(event) {
-		console.log("DBG: Starting submit");
 		// Compute redirect URL.
 		var curUrl = window.location.href;
 		var homeUrl = curUrl.replace("exclusionMatrix.html", "staffHome.php");
@@ -123,7 +122,6 @@ $(function() {
 						    type: 'post',
 						    data: {update_table:1, checkMap:leftRight2Checked},
 						    success: function(data) {
-						    console.log("DBG: submitted 750 items OK");
 						},
 						    error: function(xhr, desc, err) {
 						    console.log(xhr);
@@ -147,7 +145,6 @@ $(function() {
 				type: 'post',
 				data: {update_table:1, checkMap:leftRight2Checked},
 				success: function(data) {
-				console.log("DBG: submitted final items OK");
 			    },
 				error: function(xhr, desc, err) {
 				console.log(xhr);
