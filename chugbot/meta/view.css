@@ -208,6 +208,27 @@ body
 	-webkit-border-radius: 10px;
 }
 
+.message_container
+{
+	position: relative;
+        margin-top: 10px;
+	margin-bottom: 10px;
+	font-size: 1.2em; 
+	top: 2px;
+        background:#fff;
+        margin:0 auto;
+        text-align: center;
+	width:20%;
+	padding-top: 15px;
+        padding-bottom: 15px;
+	padding-left: 5px;
+	padding-right: 5px;
+	border: 2px solid red;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+}
+
 .centered_container a {
         text-decoration: none;
         border-bottom: 1px dotted #999999;

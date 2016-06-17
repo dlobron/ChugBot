@@ -1,4 +1,3 @@
-var chugNames = [];
 var chugChecked = {};
 
 $(function() {
@@ -14,6 +13,8 @@ $(function() {
     });
 
 $(function() {
+	var chugNames = [];
+	$("#SaveChanges").hide();
 	$.ajax({
                 url: 'matrix.php',
                     type: 'post',
@@ -29,7 +30,6 @@ $(function() {
 					chugChecked[leftChug] = {};
 				    }
 				    chugChecked[leftChug][rightChug] = 1;
-				    console.log("DBG: checked " + leftChug + " " + rightChug);
 				});
 			});    
 		}, error: function(xhr, desc, err) {
@@ -41,7 +41,7 @@ $(function() {
             }).then(function() {
 		    var target = $('#checkboxes');
 		    var i, x, y, checkbox, html;
-		    html = "<div class=matrix_container><table id=\"matrix\"><thead><tr><th></th>";
+		    html = "<div class=matrix_container><table id=\"matrix\" class=\"display hover compact\"><thead><tr><th></th>";
 		    // Table column headers                                                   
 		    for (i = 0; i < chugNames.length; i++) {
 			html += "<th>" + chugNames[i] + "</th>";
@@ -52,7 +52,8 @@ $(function() {
 			// Add a row for each chug, with zebra striping.
 			oddText = "";
 			if (rowIndex++ % 2 != 0) {
-			    oddText = "class=darkstripe";
+			    // Remove striping, since our library provides it.
+			    //oddText = "class=darkstripe";
 			}             
 			html += "<tr " + oddText + "><td>" + chugNames[x] + "</td>";
 			for (y = 0; y < chugNames.length; y++) {
@@ -73,7 +74,6 @@ $(function() {
 		    }
 		    html += "</tbody></table></div>";
 		    target.html(html); // Display the table.
-
 		    // For debugging: alert when a box is checked.
 		    //target.on('change', 'input:checkbox', function() {
 		    //var $this = $(this),
@@ -82,7 +82,17 @@ $(function() {
 		    //  checked = $this.prop('checked');
 		    //alert('checkbox changed chug intersection (' + x + ', ' + y + '): ' + checked);
 		    //});
-		})
+		}).then(function() {
+			$('#matrix').DataTable({
+				fixedHeader: true,
+				    fixedColumns:   true,
+				    ordering:       false,
+				    scrollY:        300,
+				    scrollX:        true,
+				    scrollCollapse: true
+				    });
+			$("#SaveChanges").toggle();
+		    })
 	    });
 
 $(function() {
