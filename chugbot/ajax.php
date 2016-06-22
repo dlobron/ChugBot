@@ -54,6 +54,20 @@
         exit();
     }
     
+    // Get pref count.
+    if (isset($_POST["get_pref_count"])) {
+        $err = "";
+        $db = new DbConn();
+        $db->addSelectColumn("pref_count");
+        $result = $db->simpleSelectFromTable("admin_data", $err);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        echo json_encode($result->fetch_assoc());
+        exit();
+    }
+    
     // Get the current set of prefs for this camper (if any), so that
     // the rank page can start with the current choices.
     if (isset($_POST["get_existing_choices"])) {

@@ -9,6 +9,7 @@ var blockGroupChugInUse = {};
 // functions can run in any order, and the user might not see any preferences).
 $(function() {
 	$.when(
+	       getPrefCount(),
 	       getExistingChoices(), 
 	       getNav()
 	       ).then(getNameAndFillChoices).then(footer);
@@ -19,6 +20,18 @@ $(function() {
 function htmlDecode(input) {
     var doc = new DOMParser().parseFromString(input, "text/html");
     return doc.documentElement.textContent;
+}
+
+function getPrefCount() {
+    $.ajax({
+	    url: 'ajax.php',
+		async: false,
+		type: 'post',
+		data: {get_pref_count: 1},
+		success: function(data) {
+		expectedChugCount = data.pref_count;
+	    }
+	});
 }
 
 function getNav() {

@@ -5,10 +5,10 @@
     include_once 'dbConn.php';
     bounceToLogin();
     
-    $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = "";
+    $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = $existingPrefCount = "";
     $deletableTableId2Name = array();
     $deletableTableActiveIdHash = array();
-    $dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = "";
+    $dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = $prefCountError = "";
     
     $db = new DbConn();
     $err = "";
@@ -28,6 +28,7 @@
         $existingCampName = $row["camp_name"];
         $existingPrefInstructions = $row["pref_page_instructions"];
         $existingCampWeb = $row["camp_web"];
+        $existingPrefCount = $row["pref_count"];
         
         // Set the admin email and password to current values.  These will be
         // clobbered if we have incoming POST data - otherwise, we'll display them
@@ -40,6 +41,7 @@
         $camp_name = $existingCampName;
         $pref_page_instructions = $existingPrefInstructions;
         $camp_web = $existingCampWeb;
+        $pref_count = $existingPrefCount;
     }
     // Grab existing category_tables data, if we don't have an update below.
     $db = new DbConn();
@@ -70,6 +72,7 @@
         $camp_name = test_input($_POST["camp_name"]);
         $pref_page_instructions = test_input($_POST["pref_page_instructions"]);
         $camp_web = test_input($_POST["camp_web"]);
+        $pref_count = test_input($_POST["pref_count"]);
         
         // Update the deletable tables.  We start by setting all tables to not
         // be editable, and then we enable ones that are active.
@@ -141,13 +144,23 @@
             $staffPasswordHashed = password_hash($staff_password, PASSWORD_DEFAULT);
             $db->addColumn("admin_password", $staffPasswordHashed, 's');
         }
-                
+        // Same, for pref count.
+        if ($pref_count) {
+            $prefCount = intval($pref_count);
+            if ($prefCount < 1 ||
+                $prefCount > 6) {
+                $prefCountError = errorString("Camper preference count must be between 1 and 6, inclusive");
+            } else {
+                $db->addColumn("pref_count", $prefCount, 'i');
+            }
+        }
         if (empty($staffEmailErr) &&
             empty($staffPasswordErr) &&
             empty($staffPasswordErr2) &&
             empty($adminEmailCcErr) &&
             empty($dbError) &&
-            empty($campNameErr)) {
+            empty($campNameErr) &&
+            empty($prefCountError)) {
             // No errors: insert the new/updated data, and then redirect
             // to the admin home page.
             $updateOk = $db->updateTable("admin_data", $dbError);
@@ -169,7 +182,7 @@
 <?php
     echo headerText("Edit Admin Data");
     
-    $errText = genFatalErrorReport(array($dbError, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr, $campNameErr));
+    $errText = genFatalErrorReport(array($dbError, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr, $campNameErr, $prefCountError));
     if (! is_null($errText)) {
         echo $errText;
         exit();
@@ -248,6 +261,15 @@ Required values are marked with a <font color="red">*</font>.
     $prefInstructions->setPlaceHolder(" ");
     $prefInstructions->setGuideText("These are the instructions campers will see on the ranking page.  HTML tags are OK.");
     echo $prefInstructions->renderHtml();
+    
+    $prefCount = new FormItemSingleTextField("Number of Chug Preferences", FALSE, "pref_count", $counter++);
+    $prefCount->setInputValue($pref_count);
+    $prefCount->setInputType("number");
+    $prefCount->setInputClass("element textarea medium");
+    $prefCount->setInputClass("element text medium");
+    $prefCount->setInputMaxLength(2);
+    $prefCount->setGuideText("Select the number of chug preferences a camper should select (values between 1 and 6, inclusive, are supported).");
+    echo $prefCount->renderHtml();
     
     $deletableTablesField = new FormItemInstanceChooser("Allow Deletion", FALSE, "deletable_tables", $counter++);
     $deletableTablesField->setId2Name($deletableTableId2Name);
