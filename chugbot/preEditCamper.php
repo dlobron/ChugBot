@@ -55,7 +55,9 @@
         exit();
     }
     if (count($camperId2Name) == 0) {
-        echo genFatalErrorReport(array("No camper assignments were found for email $email."));
+        echo genFatalErrorReport(array("No camper assignments were found for email $email."),
+                                 FALSE,
+                                 $camperHomeUrl);
         exit();
     } else {
         // List campers in a form.

@@ -23,7 +23,6 @@
     font-weight: bold;
     text-shadow: 1px 1px 0 #fff;
     }
-
     .pref_submit {
     position: relative;
     margin: auto;
@@ -47,28 +46,21 @@
     border-radius: 5px; 
     font-size: 2.02em;    
     }
-    .pref_submit_bottom {
-    position: relative;
-    margin: auto;
-    margin-top: 3px;
-    margin-left: 45%;
-    text-align: center;
-    width:10%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    }
     .pref_submit_bottom input[type=submit] {
+    position:absolute;
+    left:50%;
+    margin-top: 15px;
+    margin-bottom: 25px;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
     color:white;
     background-color:green;
-    border:2px solid #336600;
     cursor:pointer;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px; 
     font-size: 2.02em;    
+    border: 2px dotted silver;
     }
     #sortable1, #sortable2 {
     border: 2px dotted silver;
@@ -139,14 +131,11 @@
 <div id="error" class="error_box" style="display:none"></div>
 
 <div id="filltarget"></div>
-
-<div class="stand_alone_button_container">
 <div class="pref_submit_bottom">
 <form>
 <input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit"
        class="SubmitPrefsButton" />
 </form>
-</div>
 </div>
 
 </body>
