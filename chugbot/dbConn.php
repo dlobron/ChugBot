@@ -1,5 +1,13 @@
 <?php
-    include_once 'functions.php';
+    include_once 'constants.php';
+    
+    function connect_db() {
+        $mysqli = new mysqli(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWD, MYSQL_DB);
+        if (mysqli_connect_error()) {
+            die('Connect Error: ('.mysqli_connect_errno().') '.mysqli_connect_error());
+        }
+        return $mysqli;
+    }
 
     class DbConn {
         function __construct() {

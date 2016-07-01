@@ -1,5 +1,6 @@
 <?php
     include_once 'constants.php';
+    include_once 'functions.php';
     require_once 'PHPMailer/PHPMailerAutoload.php';
     
     function startsWith($haystack, $needle) {
@@ -173,15 +174,16 @@ EOM;
     
     function genPickListForm($id2Name, $name, $tableName, $method = "POST") {
         // Check to see if items in this table may be deleted.
+        $err = "";
         $deleteAllowed = TRUE;
-        $mysqli = connect_db();
-        $sql = "SELECT delete_ok FROM category_tables WHERE name = \"$tableName\"";
-        $result = $mysqli->query($sql);
+        $db = new DbConn();
+        $db->addSelectColumn('delete_ok');
+        $db->addWhereColumn('name', $tableName, 's');
+        $result = $db->simpleSelectFromTable('category_tables', $err);
         if ($result) {
             $row = $result->fetch_assoc();
             $deleteAllowed = intval($row["delete_ok"]);
         }
-        $mysqli->close();
         $ucName = ucfirst($name);
         $ucPlural = ucfirst($tableName);
         $formName = "form_" . $name;
@@ -418,10 +420,11 @@ EOM;
             $retVal .= "<a class=\"$aclass\" href=\"$camperUrl\">Camper Home</a>";
         } else {
             $retVal .= "<a class=\"$aclass\" href=\"$homeUrl\">Camper Home</a>";
-        }        
-        $mysqli = connect_db();
-        $sql = "SELECT camp_name, camp_web FROM admin_data";
-        $result = $mysqli->query($sql);
+        }
+        $db = new DbConn();
+        $db->addSelectColumn('camp_name');
+        $db->addSelectColumn('camp_web');
+        $result = $db->simpleSelectFromTable('admin_data', $err);
         if ($result) {
             $row = $result->fetch_assoc();
             $campUrl = $row["camp_web"];
@@ -431,7 +434,6 @@ EOM;
                 $retVal .= "<a class=\"$aclass\" href=\"http://$campUrl/\">$campName Home</a>";
             }
         }
-        $mysqli->close();
         
         return $retVal;
     }
@@ -489,14 +491,6 @@ EOM;
             $retVal .= "Error: " . $sql . "<br>";
         }
 	return $retVal;
-    }
-    
-    function connect_db() {
-        $mysqli = new mysqli(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWD, MYSQL_DB);
-        if (mysqli_connect_error()) {
-            die('Connect Error: ('.mysqli_connect_errno().') '.mysqli_connect_error());
-        }
-        return $mysqli;
     }
     
     function yearOfUpcomingSummer() {
