@@ -1,6 +1,7 @@
 <?php
     include_once 'dbConn.php';
     include_once 'functions.php';
+    include_once 'formItem.php';
     session_start();
     
     echo headerText("Camper/Family Home");
@@ -51,21 +52,58 @@
 
 <form class="appnitro" id="choiceForm" method="POST" />
 <br>
-<button title="Add a new camper" class="control_button" type="submit" name="add" formaction="addCamper.php" >Start</button>
+<button title="Add a camper" class="control_button" type="submit" name="add" formaction="addCamper.php" >Start</button>
 <input type="hidden" id="fromHome" name="fromHome" value="1" />
 </form>
 
 <form class="appnitro" id="choiceForm" method="GET" />
-<button title="Edit existing camper info" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
-<span>
-<input placeholder="Email associated with camper" id="email" name="email" class="element text" maxlength="255" size="50"
-class="masterTooltip" title="Enter the email associated with the camper you would like to edit">
-</span>
+<div class="form_description">
+<p>To update info or chugim for a campuer already in the system, enter the email associated with that camper, or the camper's name and current edah (or both), and then click "Edit Camper".</p>
+</div>
+<ul>
 
+<?php
+    $counter = 0;
+    $camperEmailField = new FormItemSingleTextField("Email address associated with camper", FALSE, "email", $counter++);
+    $camperEmailField->setInputType("email");
+    $camperEmailField->setInputClass("element text medium");
+    $camperEmailField->setInputMaxLength(50);
+    $camperEmailField->setPlaceHolder("Email address");
+    $camperEmailField->setGuideText("Enter the email associated with the camper you would like to edit.");
+    echo $camperEmailField->renderHtml();
+    
+    echo "<li><b>OR</b></li>";
+    
+    $firstNameField = new FormItemSingleTextField("Camper First Name", FALSE, "first", $counter++);
+    $firstNameField->setInputType("text");
+    $firstNameField->setInputClass("element text medium");
+    $firstNameField->setInputMaxLength(255);
+    $firstNameField->setPlaceHolder("First Name");
+    echo $firstNameField->renderHtml();
+    
+    $lastNameField = new FormItemSingleTextField("Camper Last Name", FALSE, "last", $counter++);
+    $lastNameField->setInputType("text");
+    $lastNameField->setInputClass("element text medium");
+    $lastNameField->setInputMaxLength(255);
+    $lastNameField->setPlaceHolder("Last Name");
+    echo $lastNameField->renderHtml();
+    
+    $err = "";
+    $edahField = new FormItemDropDown("Edah", FALSE, "edah_id", $counter++);
+    $edahField->setGuideText("Choose this camper's current edah");
+    $edahField->setInputClass("element select medium");
+    $edahField->setInputSingular("edah");
+    $edahField->fillDropDownId2Name($err,
+                                    "edah_id", "edot");
+    echo $edahField->renderHtml();
+    ?>
+
+<li class="buttons">
+<button title="Edit existing camper info" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
+</li>
+</ul>
 <input type="hidden" id="fromHome" name="fromHome" value="1" />
 </form>
-
-</div>
 
 <?php
     echo footerText();

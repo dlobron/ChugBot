@@ -148,7 +148,7 @@
             if (array_key_exists("bunk_id", $_SESSION)) {
                 $bunkIdVal = intval($_SESSION["bunk_id"]);
             }
-            $db->addColumn("bunk_id", $bunkIdVal, i);
+            $db->addColumn("bunk_id", $bunkIdVal, 'i');
             if (! $db->insertIntoTable("campers", $err)) {
                 header('HTTP/1.1 500 Internal Server Error');
                 die(json_encode(array("error" => $err)));
@@ -381,6 +381,7 @@ END;
     
     // Get the chug lists corresponding to a camper's edah and session.  When we select, sort
     // July ahead of August.
+    // Only select camper-visible blocks.
     if (isset($_POST["get_chug_info"])) {
         $camper_id = getCamperId();
         $db = new DbConn();
@@ -396,6 +397,7 @@ END;
             "cm.session_id = bi.session_id AND " .
             "bi.block_id = b.block_id AND " .
             "b.block_id = ci.block_id AND " .
+            "b.visible_to_campers = 1 AND " .
             "ci.chug_id = c.chug_id AND " .
             "e.chug_id = c.chug_id AND " .
             "e.edah_id = cm.edah_id AND " .
@@ -422,6 +424,7 @@ END;
             "bi.session_id = ? AND " .
             "bi.block_id = b.block_id AND " .
             "b.block_id = ci.block_id AND " .
+            "b.visible_to_campers = 1 AND " .
             "ci.chug_id = c.chug_id AND " .
             "e.chug_id = c.chug_id AND " .
             "e.edah_id = ? AND " .

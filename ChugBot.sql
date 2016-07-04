@@ -49,6 +49,7 @@ ENGINE = INNODB;
 CREATE TABLE IF NOT EXISTS blocks(
 block_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
+visible_to_campers boolean NOT NULL DEFAULT 0,
 UNIQUE KEY uk_blocks(name))
 COLLATE utf8_unicode_ci
 ENGINE = INNODB;

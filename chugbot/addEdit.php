@@ -396,10 +396,7 @@ EOM;
                 // For security, we only do this if the user is logged in as an
                 // administrator (otherwise, a camper could put eid=SomeOtherCamperId, and
                 // edit that other camper's data).
-                $parts = array();
-                if (adminLoggedIn()) {
-                    $parts = explode("&", $_SERVER['QUERY_STRING']);
-                }
+                $parts =  explode("&", $_SERVER['QUERY_STRING']);
                 foreach ($parts as $part) {
                     $cparts = explode("=", $part);
                     if (count($cparts) != 2) {
@@ -559,7 +556,7 @@ EOM;
                 "<h3><font color=\"green\">$name added successfully!</font> $additionalText</h3>";
             }
             
-            // Edits to certain tables and columns might render other items invalid.  For
+            // Edits to certain tables and columns might render certain chug assignments items invalid.  For
             // example, if the user changes the edot allowed for a chug, then we need to remove
             // matches to that chug for campers in that edah.
             // We construct a query that returns the primary key and table name for
@@ -572,6 +569,13 @@ EOM;
             // valid instances in that table.  Then, iterate through the result, and delete any rows that have a NULL value in the right-hand
             // table from the join.
             // This query has no parameters, so we can run it directly.
+            // NOTE: This action is potentially dangerous, because if the staff disallows a session or edah for a block, then matches
+            // will be deleted.  For example, I tried disallowing First Session for Weeks 1+2, and all those matches were deleted.  Need
+            // to think about whether we really want this block.
+            // Commenting out for now.
+            // TODO: Move to a dedicated "cleanup" page.  The page should first show what would be deleted, and then
+            // ask the user to confirm before actually doing the deletions.
+            /*
             $sql = "SELECT m.match_id pk_value, legal_instances.chug_instance_id instance_id, 'match_id' pk_column, 'matches' table_name FROM " .
             "matches m LEFT OUTER JOIN " .
             "(SELECT i.chug_instance_id chug_instance_id, m.match_id match_id FROM " .
@@ -611,6 +615,8 @@ EOM;
                     }
                 }
             }
+             */
+             
             //
             // The commented-out code block that follows will delete camper preferences that have become invalid due to, e.g., a group
             // being disallowed for that camper's edah.  After some use, I think this is actually not desirable: it's better to keep the
