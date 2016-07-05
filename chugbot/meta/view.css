@@ -161,6 +161,18 @@ body
         -webkit-border-radius: 10px;
 }
 
+.confirm_delete_box
+{
+	position: relative;
+	width: 100%;
+	text-align: left;
+	border: 1px solid #33ffff;
+	margin-bottom: 15px;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+}
+
 .image_container
 {
 	position: relative;
