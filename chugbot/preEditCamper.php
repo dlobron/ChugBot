@@ -8,87 +8,68 @@
     $emailErr = "";
     $dbError = "";
     $camperId2Name = array();
-    $haveNameInfo = FALSE;
-    $edahName = "the selected edah"; // Default
+    $camperId2Edah = array();
+    $edahId2Name = array();
+    
+    fillId2Name($edahId2Name, $dbError,
+                "edah_id", "edot");
+    
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $email = test_input($_GET["email"]);
         $first = test_input($_GET["first"]);
         $last = test_input($_GET["last"]);
         $edah_id = test_input($_GET["edah_id"]);
-        if (! empty($first) && ! empty($last) && ! empty($edah_id)) {
-            $haveNameInfo = TRUE;
-        }
+        
+        // Sanity checks.
         if (! empty($email) &&
             filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE) {
             $emailErr = errorString("\"$email\" is not a valid email address.");
         }
-        if (! empty($edah_id)) {
-            // Get the name for the edah, if any, in case we need to display
-            // an error message.
-            $db = new DbConn();
-            $db->isSelect = TRUE;
-            $db->addSelectColumn("name");
-            $db->addWhereColumn("edah_id", $edah_id, 'i');
-            $err = "";
-            $result = $db->simpleSelectFromTable("edot", $err);
-            if ($result) {
-                $row = $result->fetch_row();
-                $edahName = $row[0];
-            }
-            mysqli_free_result($result);
-        }
-        // In order to find a camper, we need either an email address or the
-        // camper's name and edah.
-        if (empty($email) &&
-            ! $haveNameInfo) {
-            $notEnoughInputError = "To edit a camper, you must give either the email for that camper or the camper's name and edah.";
+        if (empty($email) && empty($first) && empty($last) && empty($edah_id)) {
+            $notEnoughInputError = "Please choose at least one search term.";
         }
         
-        if (empty($emailErr) &&
-            empty($notEnoughInputError)) {
+        if (empty($emailErr) && empty($notEnoughInputError)) {
+            $db = new DbConn();
+            $db->isSelect = TRUE;
+            $db->addSelectColumn("camper_id");
+            $db->addSelectColumn("first");
+            $db->addSelectColumn("last");
+            $db->addSelectColumn("edah_id");
+            // Search by whichever terms we were given.
+            $orderBy = NULL;
             if (! empty($email)) {
-                // If we got an email address, grab the camper(s) associated with it,
-                // and store them associatively by ID in $camperId2Name.
-                $db = new DbConn();
-                $db->isSelect = TRUE;
-                $db->addSelectColumn("camper_id");
-                $db->addSelectColumn("first");
-                $db->addSelectColumn("last");
                 $db->addWhereColumn("email", $email, 's');
-                $err = "";
-                $result = $db->simpleSelectFromTable("campers", $err);
-                if ($result == FALSE) {
-                    error_log(dbErrorString($sql, $err));
-                    $dbError = TRUE;
-                } else {
-                    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-                        $camperId2Name[$row[0]] = $row[1] . " " . $row[2];
-                    }
-                }
-                mysqli_free_result($result);
             }
-            if ($haveNameInfo &&
-                count($camperId2Name) == 0) {
-                // As above, but select camper ID by first, last, and edah.  We
-                // only use the name if the email did not find any campers.
-                $db = new DbConn();
-                $db->isSelect = TRUE;
-                $db->addSelectColumn("camper_id");
+            if (! empty($first)) {
                 $db->addWhereColumn("first", $first, 's');
-                $db->addWhereColumn("last", $last, 's');
-                $db->addWhereColumn("edah_id", $edah_id, 'i');
-                $err = "";
-                $result = $db->simpleSelectFromTable("campers", $err);
-                if ($result == FALSE) {
-                    error_log(dbErrorString($sql, $err));
-                    $dbError = TRUE;
-                } else {
-                    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-                        $camperId2Name[$row[0]] = $first . " " . $last;
-                    }
-                }
-                mysqli_free_result($result);
+                $orderBy = "ORDER BY first";
             }
+            if (! empty($last)) {
+                $db->addWhereColumn("last", $last, 's');
+                $orderBy = "ORDER BY last";
+                if (! empty($first)) {
+                    $orderBy .= ", first";
+                }
+            }
+            if (! empty($edah_id)) {
+                $db->addWhereColumn("edah_id", $edah_id, 'i');
+            }
+            if (! is_null($orderBy)) {
+                $db->addOrderByClause($orderBy);
+            }
+            $err = "";
+            $result = $db->simpleSelectFromTable("campers", $err);
+            if ($result == FALSE) {
+                error_log(dbErrorString($sql, $err));
+                $dbError = TRUE;
+            } else {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $camperId2Name[$row["camper_id"]] = $row["last"] . ", " . $row["first"];
+                    $camperId2Edah[$row["camper_id"]] = $edahId2Name[$row["edah_id"]];
+                }
+            }
+            mysqli_free_result($result);
         }
     }
     // Special case: if exactly one camper ID was found, we can redirect immediately
@@ -112,23 +93,15 @@
     // and offer an Add link.  Otherwise, list each camper in the form, with the submit going to
     // the edit page and camper_id set to the camper's ID.
     $camperHomeUrl = urlIfy("camperHome.php");
-    $errText = genFatalErrorReport(array($dbErr, $emailErr, $notEnoughInputError));
+    $errText = genFatalErrorReport(array($dbErr, $emailErr, $notEnoughInputError),
+                                   FALSE,
+                                   $camperHomeUrl);
     if (! is_null($errText)) {
         echo $errText;
         exit();
     }
     if (count($camperId2Name) == 0) {
-        $errText = "";
-        if (! empty($email)) {
-            $errText = "No campers were found for email $email";
-            if ($haveNameInfo) {
-                $errText .= ", or named $first $last in $edahName.";
-            } else {
-                $errText .= ".";
-            }
-        } else {
-             $errText = "No campers named $first $last were found in $edahName.";
-        }        
+        $errText = "No campers were found - please try again. Tip: you only need to enter one term - the system will find all matches.";
         echo genFatalErrorReport(array($errText),
                                  FALSE,
                                  $camperHomeUrl);
@@ -137,20 +110,18 @@
         // At this point, we've got more than one
         echo "<form id=\"pickCamperForm\" class=\"appnitro\" method=\"post\" action=\"$editPageUrl\"/>";
         echo "<div class=\"form_description\">";
-        if (! empty($email)) {
-            echo "<h3>Choose a Camper Associated with $email to Edit</h3>";
-        } else {
-            // If more than one camper is found with the same name and edah,
-            // note this here and just show the drop-down.
-            $ct = count($camperId2Name);
-            echo "<h3>$ct campers named $first $last were found! Please choose one to edit, and check his/her details to see if it's you!</h3>";
-        }
+        echo "<h4>Your search matched more than one camper! Please choose your camper profile from the list of matches.</h4>";
         echo "</div>";
         echo "<ul>";
         echo "<li>";
         echo "<select class=\"element select medium\" id=\"camper_id\" name=\"camper_id\">";
+        asort($camperId2Name);
         foreach ($camperId2Name as $camperId => $camperName) {
-            echo("<option value=\"$camperId\" >$camperName</option>");
+            $edah = "-";
+            if (array_key_exists($camperId, $camperId2Edah)) {
+                $edah = $camperId2Edah[$camperId];
+            }
+            echo("<option value=\"$camperId\" >$camperName ($edah)</option>");
         }
         echo "</select>";
         echo "<p class=\"guidelines\" id=\"guide_camper\"><small>Please choose the camper you want to edit, then click \"Edit Camper\".</small></p>";

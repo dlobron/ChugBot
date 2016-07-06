@@ -47,8 +47,7 @@
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
 <p>This system will let you order your chug (activity) preferences for the summer.</p>
-<p>If this is your first time picking chugim this summer, click Start.</p>
-<p>If you would like to edit existing choices, enter your email address and click "Edit".</p>
+<p>If this is your <b>first time</b> ever picking chugim this summer, click Start.</p>
 
 <form class="appnitro" id="choiceForm" method="POST" />
 <br>
@@ -58,7 +57,7 @@
 
 <form class="appnitro" id="choiceForm" method="GET" />
 <div class="form_description">
-<p>To update info or chugim for a campuer already in the system, enter the email associated with that camper, or the camper's name and current edah (or both), and then click "Edit Camper".</p>
+<p>If you have chosen chugim this year, enter some information to find your record, and then click "Edit Camper". You can search by any combination of boxes.</p>
 </div>
 <ul>
 
@@ -71,8 +70,6 @@
     $camperEmailField->setPlaceHolder("Email address");
     $camperEmailField->setGuideText("Enter the email associated with the camper you would like to edit.");
     echo $camperEmailField->renderHtml();
-    
-    echo "<li><b>OR</b></li>";
     
     $firstNameField = new FormItemSingleTextField("Camper First Name", FALSE, "first", $counter++);
     $firstNameField->setInputType("text");
