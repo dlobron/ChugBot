@@ -29,7 +29,9 @@
             $loginMessage = "<h3><font color=\"green\">Login successful!</font></h3>";
         } else {
             $homeUrl = urlIfy("index.php?retry=1");
-            $errText = genFatalErrorReport(array("Camper access code missing or incorrect.<br><br><b>Hint: $hint</b>"));
+            $errText = genFatalErrorReport(array("Camper access code missing or incorrect.<br><br><b>Hint: $hint</b>"),
+                                           FALSE,
+                                           $homeUrl);
             echo $errText;
             exit();
         }
@@ -40,25 +42,20 @@
 <script type="text/javascript" src="jquery/jquery-1.11.3.min.js"></script>
 <script type="text/javascript" src="meta/tooltip.js"></script>
 
-<img id="top" src="images/top.png" alt="">
 <div class="form_container">
-
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
 <p>This system will let you order your chug (activity) preferences for the summer.</p>
-<p>If this is your <b>first time</b> ever picking chugim this summer, click Start.</p>
+<p>If this is your <b>first time</b> picking chugim for Kayitz <?php echo yearOfUpcomingSummer(); ?>, click Start.</p>
 
 <form class="appnitro" id="choiceForm" method="POST" />
-<br>
 <button title="Add a camper" class="btn btn-primary" type="submit" name="add" formaction="addCamper.php" >Start</button>
 <input type="hidden" id="fromHome" name="fromHome" value="1" />
 </form>
 
 <form class="appnitro" id="choiceForm" method="GET" />
-<div class="form_description">
-<p>If you have chosen chugim this year, enter some information to find your record, and then click "Edit Camper". You can search by any combination of boxes.</p>
-</div>
+<p>If <b>you have used this system this year</b>, enter some information to find your record, and then click "Edit Camper". You can search by any combination of boxes.</p>
 <ul>
 
 <?php

@@ -164,11 +164,8 @@
     }
 ?>
 
-<img id="top" src="images/top.png" alt="">
 <div class="form_container">
-
 <h1><a>Advanced Edit</a></h1>
-
 <form id="editForm" class="appnitro"  method="GET" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <div class="form_description">
 <h2>Choose Categories to Prune</h2>

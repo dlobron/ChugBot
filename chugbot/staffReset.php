@@ -189,7 +189,7 @@
     }
     ?>
 
-<img id="top" src="images/top.png" alt="">
+
 <div class="form_container">
 
 <h1><a>Edit Admin Data</a></h1>

@@ -121,9 +121,7 @@
     }
     ?>
 
-<img id="top" src="images/top.png" alt="">
 <div class="form_container">
-
 <h1><a>Staff Login</a></h1>
 
 <form id="loginForm" class="appnitro"  method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">

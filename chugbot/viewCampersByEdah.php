@@ -4,9 +4,7 @@
     include_once 'functions.php';
     bounceToLogin();
     
-    $name = $edahName = "";
-    $dbErr = $nameErr = "";
-    
+    $dbErr = "";
     $deleteOk = TRUE;
     $db = new DbConn();
     $result = $db->runQueryDirectly("SELECT delete_ok FROM category_tables WHERE name = \"campers\"", $dbErr);
@@ -16,6 +14,9 @@
     }
     $camperId2Name = array();
     $camperId2Edah = array();
+    $edahId2Name = array();
+    fillId2Name($edahId2Name, $dbErr, "edah_id", "edot");
+    
     $forEdahText = "all edot";
     $sql = "SELECT c.camper_id camper_id, c.first first, c.last last, e.name edah_name, e.sort_order edah_sort_order FROM campers c, edot e WHERE c.edah_id = e.edah_id";
     $edah_id = NULL;
@@ -26,6 +27,7 @@
     }
     if ($edah_id) {
         $sql .= " AND e.edah_id = \"$edah_id\"";
+        $forEdahText = $edahId2Name[$edah_id];
     }
     $sql .= " ORDER BY last, edah_sort_order, edah_name";
     $db = new DbConn();
@@ -34,11 +36,7 @@
         $camperId = $row["camper_id"];
         $last = $row["last"];
         $first = $row["first"];
-        $edahName = $row["edah_name"];
-        $camperId2Edah[$camperId] = $edahName;
-        if ($edah_id) {
-            $forEdahText = "$edahName";
-        }
+        $camperId2Edah[$camperId] = $row["edah_name"];
         $camperId2Name[$camperId] = "$last, $first";
     }
     ?>
@@ -46,7 +44,7 @@
 <?php
     echo headerText("View Campers");
     
-    $errText = genFatalErrorReport(array($dbErr, $nameErr));
+    $errText = genFatalErrorReport(array($dbErr));
     if (! is_null($errText)) {
         echo $errText;
         exit();
@@ -55,7 +53,7 @@
 
 <div class="centered_container">
 <h1>View Campers</a></h1>
-<h2>Campers for <?php echo $edahName; ?></h2>
+<h2>Campers for <?php echo $forEdahText; ?></h2>
 <p>This page lists campers in <?php echo $forEdahText; ?> who have entered chug preferences.  To update
 information or settings for a camper, click the Edit button next to that camper's name.  To return to the staff admin
 page, click <?php echo staffHomeAnchor(); ?>.</p>
@@ -65,7 +63,11 @@ page, click <?php echo staffHomeAnchor(); ?>.</p>
 <div class="multi_form_container">
 <?php
     if (count($camperId2Name) == 0) {
-        echo "<h3>No $name campers were found in the system.</h3>";
+        if ($edah_id) {            
+            echo "<h3>No $forEdahText campers were found in the system.</h3>";
+        } else {
+            echo "<h3>No campers were found in the system.</h3>";
+        }
     } else {
         asort($camperId2Name);
         $editUrl = urlIfy("editCamper.php");

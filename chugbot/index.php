@@ -43,16 +43,14 @@
             if ($adminEmail) {
                 $contactText = "<a href=\"mailto:$adminEmail?Subject=Access%20code%20help%20needed\">email us</a>";
             }
-            $codeMessage = "Please try the camper code again, and click \"Go!\".  If you still cannot log in, please $contextText for help.  Hint: $hint";
+            $codeMessage = "Please try the camper code again, and click \"Go!\".  If you still cannot log in, please $contactText for help.  Hint: $hint";
         }
     }
     
     echo headerText("Welcome");
 ?>
 
-<img id="top" src="images/top.png" alt="">
 <div class="form_container">
-
 <h1><a>Welcome</a></h1>
 
 <form id="camperForm" class="appnitro form-group" method="post">

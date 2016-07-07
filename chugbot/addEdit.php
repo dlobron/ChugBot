@@ -134,9 +134,7 @@
                 $secondParagraphHtml = "<p>$this->secondParagraph</p>";
             }
             $html .= <<<EOM
-<img id="top" src="images/top.png" alt="">
 <div class="form_container">
-            
 <h1><a>$this->title</a></h1>
 <form id="$formId" class="appnitro" method="post" action="$actionTarget">
 <div class="form_description">
