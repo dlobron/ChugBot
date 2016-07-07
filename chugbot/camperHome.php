@@ -51,7 +51,7 @@
 
 <form class="appnitro" id="choiceForm" method="POST" />
 <br>
-<button title="Add a camper" class="control_button" type="submit" name="add" formaction="addCamper.php" >Start</button>
+<button title="Add a camper" class="btn btn-primary" type="submit" name="add" formaction="addCamper.php" >Start</button>
 <input type="hidden" id="fromHome" name="fromHome" value="1" />
 </form>
 
@@ -96,7 +96,7 @@
     ?>
 
 <li class="buttons">
-<button title="Edit existing camper info" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
+<button title="Edit existing camper info" class="btn btn-primary" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
 </li>
 </ul>
 <input type="hidden" id="fromHome" name="fromHome" value="1" />

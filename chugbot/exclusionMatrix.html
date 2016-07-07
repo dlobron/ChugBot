@@ -11,6 +11,8 @@
   <script src="meta/matrix.js"></script>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/u/dt/jqc-1.12.3,dt-1.10.12,fc-3.2.2,fh-3.1.2/datatables.min.css"/>
   <script type="text/javascript" src="https://cdn.datatables.net/u/dt/jqc-1.12.3,dt-1.10.12,fc-3.2.2,fh-3.1.2/datatables.min.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  <link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>
   <link rel="stylesheet" href="meta/view.css" />
   <style>
     .control_buttons {
@@ -19,20 +21,9 @@
     margin-top: 20px;
     text-align: center;
     width:35%;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
     }
     .control_buttons input[type=submit] {
     padding:3px 8px;
-    color:black;
-    background-color: #cccccc;
-    border:1px solid grey;
-    box-shadow: 2px 2px grey;
-    cursor:pointer;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px; 
-    font-size: 1.5em;    
     }
     .matrix_container
     {
@@ -79,7 +70,7 @@
     </div>
     
     <div class="control_buttons">
-      <input title="Save changes and exit this page"  type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
+      <input title="Save changes and exit this page" class="btn btn-default" type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
     </div>
     
   </body>

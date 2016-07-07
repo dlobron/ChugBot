@@ -313,7 +313,7 @@ Required values are marked with a <font color="red">*</font>.
     ?>
 
 <li class="buttons">
-<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<input id="saveForm" class="btn btn-primary" type="submit" name="submit" value="Submit" />
 <?php
     $cancelUrl = urlIfy("staffHome.php");
     echo "<a href=\"$cancelUrl\">Cancel</a>";

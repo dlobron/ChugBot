@@ -152,8 +152,11 @@
             $desc = "An error";
         }
         $retVal = <<<EOM
-<div class="error_box">
+<div class="panel panel-danger col-lg-6 col-lg-offset-3">
+<div class="panel-heading">
 <h3>Oops!  $desc occurred:</h3>
+</div>
+<div class="panel-body">
 EOM;
         $backText = "<a href=\"javascript:history.back()\">here</a>";
         if ($backUrl) {
@@ -161,9 +164,9 @@ EOM;
         }
         $retVal = $retVal . $errorHtml;
         if ($fixOnSamePage) {
-            $retVal = $retVal . "<p>Please fix the errors and try again.</p></div>";
+            $retVal = $retVal . "<p>Please fix the errors and try again.</p></div></div>";
         } else {
-            $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div>";
+            $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div>";
         }
         $retVal = $retVal . footerText();
         $retVal = $retVal . "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\"></body></html>";
@@ -210,7 +213,7 @@ EOM;
 <h3>$ucPlural</h3></div>
 <ul><li>
 <div>
-<select class="element select medium" id="$idCol" name="$idCol">
+<select class="form-control" id="$idCol" name="$idCol">
 <option value="" disabled=disabled selected>---</option>
 EOM;
         foreach ($id2Name as $itemId => $itemName) {
@@ -220,26 +223,26 @@ EOM;
 </select>
 <p class="guidelines"><small>$guideText</small></p>
 <input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
-<input class="button_text" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
+<input class="btn btn-default btn-sm" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
 
 EOM;
         $retVal = $retVal . $formEnd;
         if ($deleteAllowed) {
-            $delText = "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Delete\" " .
+            $delText = "<input class=\"btn btn-default btn-sm\" type=\"submit\" name=\"submit\" value=\"Delete\" " .
             "onclick=\"return confirm('Are you sure you want to delete this $ucName?')\" formaction=\"$deleteUrl\" />";
             $retVal = $retVal . $delText;
         }
         if ($name == "edah") {
             $camperUrl = urlIfy("viewCampersByEdah.php");
             $retVal =
-                $retVal . "<input class=\"button_text\" style=\"color:red\" type=\"submit\" name=\"submit\" value=\"Show Campers\" formaction=\"$camperUrl\"/>";
+                $retVal . "<input class=\"btn btn-danger btn-sm\" type=\"submit\" name=\"submit\" value=\"Show Campers\" formaction=\"$camperUrl\"/>";
         }
         $formEnd = <<<EOM
 </li>
 <li>
 </form>
 <form>
-<input type=button onClick="location.href='$addUrl'" value='Add New $ucName'>
+<input type=button class='btn btn-primary' onClick="location.href='$addUrl'" value='Add New $ucName'>
 </form>
 </li></ul>
 </div>
@@ -406,10 +409,11 @@ EOM;
     function navText($bottom = FALSE) {
         $retVal = "";
         $baseUrl = baseUrl();
-        $aclass = "nav_anchor";
+        $aclass = "nav_anchor btn btn-default";
         if ($bottom) {
             $aclass = "hnav_anchor";
-        }
+	}
+        $retVal .= "<div class=\"btn-group-vertical\">";
         $retVal .= "<a class=\"$aclass\" href=\"$baseUrl\">Site Home</a>";
         $homeUrl = homeUrl();
         if (adminLoggedIn()) {
@@ -432,6 +436,7 @@ EOM;
             }
         }
         $mysqli->close();
+        $retVal .= "</div>";
         
         return $retVal;
     }
@@ -454,6 +459,8 @@ EOM;
 <title>$title</title>
 <script type="text/javascript" src="meta/view.js"></script>
 <link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>
 </head>
 
 <body id="main_body">
