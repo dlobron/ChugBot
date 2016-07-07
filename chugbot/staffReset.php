@@ -189,7 +189,7 @@
     }
     ?>
 
-<img id="top" src="images/top.png" alt="">
+
 <div class="form_container">
 
 <h1><a>Edit Admin Data</a></h1>
@@ -313,7 +313,7 @@ Required values are marked with a <font color="red">*</font>.
     ?>
 
 <li class="buttons">
-<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+<input id="saveForm" class="btn btn-primary" type="submit" name="submit" value="Submit" />
 <?php
     $cancelUrl = urlIfy("staffHome.php");
     echo "<a href=\"$cancelUrl\">Cancel</a>";

@@ -83,9 +83,7 @@
     echo headerText("Choose Camper to Edit");
 ?>
 
-<img id="top" src="images/top.png" alt="">
 <div class="form_container">
-
 <h1><a>Choose Camper to Edit</a></h1>
 
 <?php

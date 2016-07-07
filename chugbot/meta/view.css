@@ -110,7 +110,7 @@ body
 	margin-top: 20px;
 	margin-left: 10px;
         width: 35%;
-	font-size: 1.2em;
+	font-size: 1.1em;
 	background: #fff;
 	padding-bottom: 1px;
 	border: 2px dotted silver;
@@ -270,28 +270,11 @@ body
 	background-color: transparent;
 }
 
-.nav_anchor:hover {
-  background-color:#ffffff;
-  text-decoration:none;
-  color:black;
-}
-
 .nav_anchor {
   vertical-align:center;
-  font-size: 1.2em;
-  cursor:pointer;
-  background-color:#66ccff;
-  color:white;
-  display:block;
-  text-decoration: none;
   text-align:center;
-  margin-top:8px;
   width:90%;
-  height:40px;
-  border-radius:5px;
-  border-width:1px;
-  border-style:solid;
-  border-color:#E70000;
+  white-space: normal !important;
 }
 
 .hnav_container

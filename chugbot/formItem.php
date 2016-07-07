@@ -111,7 +111,7 @@
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
             $this->html .= "<input id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\" " .
-            "class=\"$this->inputClass\" type=\"$this->inputType\" $this->inputMaxLengthHtml " .
+            "class=\"form-control $this->inputClass\" type=\"$this->inputType\" $this->inputMaxLengthHtml " .
             "value=\"$this->inputValue\"/>\n";
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>\n";
@@ -135,7 +135,7 @@
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
             $this->html .= "<textarea id=\"$this->inputName\" name=\"$this->inputName\" \"$this->inputName\" placeholder=\"$ph\" " .
-            "class=\"$this->inputClass\" $this->inputMaxLengthHtml >$this->inputValue</textarea>\n";
+            "class=\"form-control $this->inputClass\" $this->inputMaxLengthHtml >$this->inputValue</textarea>\n";
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>\n";
             }
@@ -186,7 +186,7 @@
             }
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
-            $this->html .= "<select class=\"$this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\">";
+            $this->html .= "<select class=\"form-control $this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\">";
             $this->html .= genPickList($this->id2Name, $this->colVal, $this->inputSingular); // $inputSingular = e.g., "group"
             $this->html .= "</select>";
             if ($this->error) {

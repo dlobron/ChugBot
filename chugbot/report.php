@@ -775,18 +775,18 @@ EOM;
     
     if ($outputType == OutputTypes::Html) {
         echo "<li class=\"buttons\">";
-        echo "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
+        echo "<input class=\"btn btn-primary\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
         
         echo "<a href=\"$cancelUrl\">Home</a>";
         if ($doReport) {
-            echo "<br><br><input class=\"control_button\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print...\" />";
-            echo "<input class=\"control_button\" type=\"submit\" name=\"export\" title=\"Export to a file\" value=\"Export\" />";
+            echo "<br><br><input class=\"btn btn-default\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print...\" />";
+            echo "<input class=\"btn btn-default\" type=\"submit\" name=\"export\" title=\"Export to a file\" value=\"Export\" />";
         }
         echo "</li></ul></form>";
         
         echo "<form id=\"reset_form\" class=\"appnitro\" method=\"GET\" action=\"$actionTarget\">";
         echo "<ul><li class=\"buttons\">";
-        echo "<input id=\"resetFormButton\" class=\"button_text\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
+        echo "<input id=\"resetFormButton\" class=\"btn btn-default\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
         echo "</li></ul></form>";
     }
     

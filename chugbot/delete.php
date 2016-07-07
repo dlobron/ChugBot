@@ -62,7 +62,7 @@
         echo "<p>Deletion successful.  Please click <a href=\"$homeUrl\">here</a> to go back, or wait to be redirected.<p>";
         echo "</div>";
         echo "<script type=\"text/javascript\">";
-        echo "setTimeout(function () { window.location.href= '$homeUrl'; },1000);";
+        echo "setTimeout(function () { window.location.href= '$homeUrl'; },3000);";
         echo "</script>";
     }
     ?>

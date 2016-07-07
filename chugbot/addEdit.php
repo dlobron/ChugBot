@@ -134,9 +134,7 @@
                 $secondParagraphHtml = "<p>$this->secondParagraph</p>";
             }
             $html .= <<<EOM
-<img id="top" src="images/top.png" alt="">
 <div class="form_container">
-            
 <h1><a>$this->title</a></h1>
 <form id="$formId" class="appnitro" method="post" action="$actionTarget">
 <div class="form_description">
@@ -170,20 +168,20 @@ EOM;
                 // Set the ID column in the session status so we
                 // can pick it up if needed.
                 $label = $this->submitAndContinueLabel;
-                $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"control_button\" type=\"submit\" name=\"submitAndContinue\" value=\"$label\" />";
+                $submitAndContinueText = "<input id=\"submitAndContinue\" class=\"btn btn-primary\" type=\"submit\" name=\"submitAndContinue\" value=\"$label\" />";
                 $idCol = $this->idCol;
                 $val = $this->col2Val[$this->idCol];
                 $cancelText = "";
             } else {
                 // If we don't have submitAndContinueTarget, display a submit
                 // in regular typeface.
-                $submitText = "<input id=\"saveForm\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
+                $submitText = "<input id=\"saveForm\" class=\"btn btn-primary\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
             }
             if (! is_null($this->saveAndReturnLabel)) {
                 // If we have a saveAndReturnLabel, create a button to save and return to the
                 // home page.
                 $label = $this->saveAndReturnLabel;
-                $saveAndReturnText = "<input id=\"saveAndReturn\" class=\"control_button\" type=\"submit\" name=\"saveAndReturn\" value=\"$label\" />";
+                $saveAndReturnText = "<input id=\"saveAndReturn\" class=\"btn btn-primary\" type=\"submit\" name=\"saveAndReturn\" value=\"$label\" />";
             }
             if ($this->editPage) {
                 $val = $this->col2Val[$this->idCol];

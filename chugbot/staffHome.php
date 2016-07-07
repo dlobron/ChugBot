@@ -87,11 +87,11 @@ EOM;
 <p>To prune obsolete items, such as chug assignments that are no longer valid because of changes to chugim, blocks, or groups, click <a href="<?php echo $advancedUrl; ?>">here</a>.</p>
 
 <form class="appnitro" action="<?php echo $resetUrl; ?>">
-<button title="Click here to update the administrative settings, including staff password and camper code" class="cb_smaller" type="submit" value="1">Edit Admin Settings</button>
+<button title="Click here to update the administrative settings, including staff password and camper code" class="btn btn-primary" type="submit" value="1">Edit Admin Settings</button>
 </form>
 
 <form class="appnitro" action="<?php echo $matrixUrl; ?>">
-<button title="Click here to update the de-duplication settings" class="cb_even_smaller" type="submit" value="1">De-Duplication Matrix</button>
+<button title="Click here to update the de-duplication settings" class="btn btn-primary" type="submit" value="1">De-Duplication Matrix</button>
 </form>
 
 </div>
@@ -108,7 +108,7 @@ will be created and then displayed.</p>
 <li>
 <label class="description" for="edah">Edah</label>
 <div>
-<select class="element select medium" id="edah" name="edah">
+<select class="form-control" id="edah" name="edah">
 <?php
     echo genPickList($edahId2Name, "", "edah");
     ?>
@@ -118,7 +118,7 @@ will be created and then displayed.</p>
 <li>
 <label class="description" for="block">Block</label>
 <div>
-<select class="element select medium" id="block" name="block">
+<select class="form-control" id="block" name="block">
 <?php
     echo genPickList($blockId2Name, "", "block");
     ?>
@@ -126,7 +126,7 @@ will be created and then displayed.</p>
 </div><p class="guidelines" id="guide_2"><small>Choose a Block.</small></p>
 </li>
 <li>
-<input title="Launch the leveling page" class="control_button" type="submit" value="Level" />
+<input title="Launch the leveling page" class="btn btn-primary" type="submit" value="Level" />
 </li>
 </ul>
 </form>
@@ -135,7 +135,7 @@ will be created and then displayed.</p>
 <div class="form_description">
 <p>Click "Report" to go to the camper assigment report page.</p>
 </div>
-<button title="Go to the Report page" class="control_button" type="submit">Report</button>
+<button title="Go to the Report page" class="btn btn-primary" type="submit">Report</button>
 <input type="hidden" name="reset" id="reset" value="1" />
 </form>
 
