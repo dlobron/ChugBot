@@ -27,7 +27,8 @@
                       $subject,
                       $body,
                       $admin_data_row,
-                      &$error) {
+                      &$error,
+                      $confirmationMessage = FALSE) {
         if ($admin_data_row === NULL) {
             return FALSE;
         }
@@ -39,13 +40,31 @@
         // JQuery is unable to parse our JSON if an email error
         // occurs when SMTPDebug is enabled, so I'm not using it for now.  
         //$mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
-        $mail->addAddress($address);
+        $toAddress = NULL;
+        $sendToCamper = $admin_data_row["send_confirm_email"];
+        if ($confirmationMessage == FALSE ||
+            $sendToCamper == TRUE) {
+            // If this is not a confirmation message, or if we're configured to
+            // send camper confirmations, use the main address as the TO.
+            $mail->addAddress($address);
+            $toAddress = $address;
+        }
         if ($admin_data_row["admin_email_cc"] != NULL &&
             (! empty($admin_data_row["admin_email_cc"]))) {
             $ccs = preg_split("/[,:; ]/", $admin_data_row["admin_email_cc"]);
             foreach ($ccs as $cc) {
-                $mail->AddCC($cc);
+                if ($toAddress === NULL) {
+                    // If we did not use the main address as the TO, use the first
+                    // CC as the TO.
+                    $mail->addAddress($cc);
+                    $toAddress = $cc;
+                } else {
+                    $mail->AddCC($cc);
+                }
             }
+        }
+        if ($toAddress === NULL) {
+            return FALSE; // We need at least a TO address.
         }
         $mail->Subject = $subject;
         $mail->Body = $body;
@@ -68,11 +87,11 @@
         $mail->addReplyTo($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
         $sentOk = $mail->send();
         if (! $sentOk) {
-            error_log("Failed to send email to $address");
+            error_log("Failed to send email to $toAddress");
             error_log("Mailer error: " . $mail->ErrorInfo);
             $error = $mail->ErrorInfo;
         } else {
-            error_log("Mail sent to $address OK");
+            error_log("Mail sent to $toAddress OK");
         }
         
         return $sentOk;

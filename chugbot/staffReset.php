@@ -5,7 +5,7 @@
     include_once 'dbConn.php';
     bounceToLogin();
     
-    $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = $existingPrefCount = "";
+    $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = $existingPrefCount = $existingSendConfirmEmail = "";
     $deletableTableId2Name = array();
     $deletableTableActiveIdHash = array();
     $dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = $prefCountError = "";
@@ -23,6 +23,7 @@
         $existingAdminEmail = $row["admin_email"];
         $existingAdminEmailCc = $row["admin_email_cc"];
         $existingAdminEmailFromName = $row["admin_email_from_name"];
+        $existingSendConfirmEmail = $row["send_confirm_email"];
         $existingRegularUserToken = $row["regular_user_token"];
         $existingRegularUserTokenHint = $row["regular_user_token_hint"];
         $existingCampName = $row["camp_name"];
@@ -36,6 +37,7 @@
         $admin_email = $existingAdminEmail;
         $admin_email_cc = $existingAdminEmailCc;
         $admin_email_from_name = $existingAdminEmailFromName;
+        $send_confirm_email = $existingSendConfirmEmail;
         $regular_user_token = $existingRegularUserToken;
         $regular_user_token_hint = $existingRegularUserTokenHint;
         $camp_name = $existingCampName;
@@ -64,6 +66,7 @@
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $admin_email = test_input($_POST["admin_email"]);
         $admin_email_from_name = test_input($_POST["admin_email_from_name"]);
+        $send_confirm_email = boolval(test_input($_POST["send_confirm_email"]));
         $staff_password = test_input($_POST["staff_password"]);
         $staff_password2 = test_input($_POST["staff_password2"]);
         $admin_email_cc = test_input($_POST["admin_email_cc"]);
@@ -73,6 +76,8 @@
         $pref_page_instructions = test_input($_POST["pref_page_instructions"]);
         $camp_web = test_input($_POST["camp_web"]);
         $pref_count = test_input($_POST["pref_count"]);
+        
+        error_log("DBG: Got send_confirm_email $send_confirm_email");
         
         // Update the deletable tables.  We start by setting all tables to not
         // be editable, and then we enable ones that are active.
@@ -105,6 +110,7 @@
         $db->addColumn("pref_page_instructions", $pref_page_instructions, 's');
         $db->addColumn("regular_user_token", $regular_user_token, 's');
         $db->addColumn("regular_user_token_hint", $regular_user_token_hint, 's');
+        $db->addColumn("send_confirm_email", $send_confirm_email, 'i');
         
         // Assume the email is never empty.  Only update it if a valid address was
         // given.
@@ -234,6 +240,11 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailFromNameField->setPlaceHolder("Chug Organizer's Name");
     $adminEmailFromNameField->setGuideText("If set, this name will appear as the \"From\" name when email is sent.  If not set, the camp name will be used.");
     echo $adminEmailFromNameField->renderHtml();
+    
+    $sendConfirmEmailField = new FormItemCheckBox("Email Ranking Confirmation to Campers", FALSE, "send_confirm_email", $counter++);
+    $sendConfirmEmailField->setInputValue($send_confirm_email);
+    $sendConfirmEmailField->setGuideText("If this box is checked, confirmation of chug choices will be sent to campers.  If not checked, confirmation email will only be sent to the Admin Email CC address(es), if configured.");
+    echo $sendConfirmEmailField->renderHtml();
     
     $regularUserTokenField = new FormItemSingleTextField("Camper Access Token", FALSE, "regular_user_token", $counter++);
     $regularUserTokenField->setInputValue($regular_user_token);

@@ -312,10 +312,11 @@ END;
             $row = $result->fetch_assoc();
             $mailError = "";
             $sentOk = sendMail($email,
-                             "Camp Ramah chug preferences for $first $last",
-                             $email_text,
-                             $row,
-                             $mailError);
+                               "Camp Ramah chug preferences for $first $last",
+                               $email_text,
+                               $row,
+                               $mailError,
+                               TRUE);
         } else {
             error_log("No email is configured for $first $last: Not sending confirmation");
         }
@@ -335,7 +336,8 @@ END;
         $retVal = array();
         $row = $result->fetch_row();
         $retVal["name"] = $row[0];
-        if ($sentOk) {
+        if ($sentOk &&
+            $row["send_confirm_email"]) {
             $retVal["email"] = $email;
         }
         $retVal["homeUrl"] = homeUrl();
