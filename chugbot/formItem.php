@@ -102,6 +102,35 @@
             return $this->html;
         }
     }
+    
+    class FormItemRadio extends FormItem {
+        public function renderHtml() {
+            if (! $this->staffOnlyOk()) {
+                return;
+            }
+            $this->html .= "<input name=\"$this->inputName\" value=\"$this->inputValue\" type=\"radio\"";
+            if ($this->checked) {
+                $this->html .= " checked";
+            }
+            $this->html .= ">";
+            if ($this->error) {
+                $this->html .= "<span class=\"error\">$this->error</span>\n";
+            }
+            if ($this->guideText) {
+                $guideId = "guide_" . $this->liNum;
+                $this->html .= "<p class=\"guidelines\" id=\"$guideId\"><small>$this->guideText</small></p>\n";
+            }
+            $this->html .= "</li>\n";
+            
+            return $this->html;
+        }
+        
+        public function radioSetChecked() {
+            $this->checked = TRUE;
+        }
+        
+        protected $checked = FALSE;
+    }
 
     class FormItemSingleTextField extends FormItem {
         public function renderHtml() {

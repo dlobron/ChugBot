@@ -5,19 +5,96 @@
     include_once 'formItem.php';
     bounceToLogin();
     
+    $edahId2Name = array();
+    fillId2Name($edahId2Name, $dbErr,
+                "edah_id", "edot");
+    class Camper {
+        function __construct($first, $last, $edah_id, $camper_id, $email, $edahId2Name) {
+            $this->first = strtolower($first);
+            $this->last = strtolower($last);
+            $this->printableName = $first . " " . $last;
+            $this->edah_id = $edah_id;
+            if (array_key_exists($edah_id, $edahId2Name)) {
+                $this->edah = $edahId2Name[$edah_id];
+            } else {
+                $this->edah = "-";
+            }
+            $this->camper_id = $camper_id;
+            $this->email = strtolower($email);
+        }
+        
+        function desc() {
+            return $this->printableName .
+            " (" . $this->edah . ")";
+        }
+        
+        function debugDesc() {
+            return $this->printableName .
+            " (" . $this->edah . ", ID " . $this->camper_id . ")";
+        }
+        public $first;
+        public $last;
+        public $printableName;
+        public $edah_id;
+        public $edah;
+        public $camper_id;
+        public $email;
+    }
+    
+    function potentialDup($prevCamper, $curCamper) {
+        if ($prevCamper === NULL ||
+            $curCamper === NULL) {
+            return FALSE;
+        }
+        // If campers are in the same edah or have the same email, make the last name
+        // match more permissive.  These required distances can be tweaked based
+        // on performance.
+        $maxLev = 1;
+        if ($prevCamper->edah_id == $curCamper->edah_id ||
+            $prevCamper->email == $curCamper->email) {
+            $maxLev = 2;
+        }
+        // Compare Levenshtein string distance.
+        $lev = levenshtein($prevCamper->last, $curCamper->last);
+        if ($lev > $maxLev) {
+            return FALSE;
+        }
+        // Insist on either the same first initial or a close Lev distance.
+        $flev = levenshtein($prevCamper->first, $curCamper->first);
+        if (substr($prevCamper->first, 0, 1) != substr($curCamper->first, 0, 1) &&
+            $flev > $maxLev) {
+            return FALSE;
+        }
+        
+        return TRUE;
+    }
+    
     $homeUrl = urlIfy("staffHome.php");
-    $dbErr = "";
+    $dbErr = $nothingToDeleteError = "";
     $numDeleted = 0;
     $pruneMatches = FALSE;
-    $prunePrefs = FALSE;
+    $pruneCamperDups = FALSE;
     $confirmDelete = FALSE;
     $didDeleteOk = FALSE;
+    $didMergeOk = FALSE;
+    $potentialCamperDups = array();
     $wouldBeDeleted = array();
     $deleteFromMatchesIds = array();
+    $dupIndices = array();
     if ($_GET) {
-        $pruneMatches = test_input($_GET["prune_matches"]);
-        $prunePrefs = test_input($_GET["prune_prefs"]);
+        $action = test_input($_GET["radioGroup"]);
+        if ($action == "prune_matches") {
+            $pruneMatches = TRUE;
+        } else if ($action == "prune_camper_dups") {
+            $pruneCamperDups = TRUE;
+        }
         $confirmDelete = test_input($_GET["confirm_delete"]);
+        if (! empty($_GET["dup_index"])) {
+            foreach ($_GET["dup_index"] as $dup_index) {
+                $dupIndex = intval(test_input($dup_index));
+                array_push($dupIndices, $dupIndex);
+            }
+        }
     }
     if ($pruneMatches) {
         // Select matches that are not valid due to changes in allowed edot,
@@ -53,6 +130,9 @@
             }
         }
         if ($confirmDelete) {
+            if (count($deleteFromMatchesIds) == 0) {
+                $nothingToDeleteError = "No items to delete were checked";
+            }
             foreach ($deleteFromMatchesIds as $delId) {
                 $db = new DbConn();
                 $err = "";
@@ -69,91 +149,97 @@
             }
         }
     }
-    // The query below finds illegal camper prefs, but it takes a very long time to run: each choice level took about 40
-    // seconds on my laptop, with about 3300 prefs in the system.  I don't think there's ever much reason to prune illegal
-    // preferences, so I'm commenting this out for now.  If we ever decide we need to be able to prune illegal prefs, we
-    // should work to make this query faster, and then uncomment this section and also the prunePrefsCheckBox section below.
-    /*
-    if ($prunePrefs && empty($dbErr)) {
-        $template = "SELECT p.preference_id pref_id, p.CHOICECOL choice_id, legal_choice_n.preference_id legal_pref_id, 'CHOICECOL' col, " .
-        "CONCAT(c.first, ' ', c.last) camper_name, b.name block_name, g.name group_name " .
-        "FROM " .
-        "preferences p " .
-        "JOIN campers c ON c.camper_id = p.camper_id " .
-        "JOIN groups g ON g.group_id = p.group_id " .
-        "JOIN blocks b ON b.block_id = p. block_id " .
-        "LEFT OUTER JOIN " .
-        "(SELECT p.preference_id preference_id, p.CHOICECOL CHOICECOL, p.camper_id camper_id, p.group_id group_id, p.block_id block_id FROM " .
-        "preferences p, campers c, edot_for_block eb, edot_for_chug ec, chugim ch, edot_for_group eg WHERE " .
-        "p.camper_id = c.camper_id AND c.edah_id = ec.edah_id AND ec.chug_id = p.CHOICECOL AND " .
-        "p.block_id = eb.block_id AND eb.edah_id = c.edah_id AND eb.edah_id = c.edah_id AND " .
-        "eg.group_id = ch.group_id AND eg.edah_id = c.edah_id AND " .
-        "ch.group_id = p.group_id) legal_choice_n " .
-        "ON p.preference_id = legal_choice_n.preference_id AND " .
-        "p.CHOICECOL = legal_choice_n.CHOICECOL AND " .
-        "p.camper_id = legal_choice_n.camper_id AND " .
-        "p.group_id = legal_choice_n.group_id AND " .
-        "p.block_id = legal_choice_n.block_id " .
-        "GROUP BY pref_id";
-        $choices = array("first_choice_id", "second_choice_id", "third_choice_id", "fourth_choice_id", "fifth_choice_id", "sixth_choice_id");
-        $deleteHash = array();
-        foreach ($choices as $choice) {
-            $sql = preg_replace('/CHOICECOL/', $choice, $template);
-            $db = new DbConn();
-            error_log("DBG: Running $sql");
-            $result = $db->runQueryDirectly($sql, $dbErr);
-            if ($result) {
-                while ($row = $result->fetch_assoc()) {
-                    $pref_id = $row["pref_id"];
-                    $choice_id = $row["choice_id"];
-                    $legal_pref_id = $row["legal_pref_id"];
-                    $camper_name = $row["camper_name"];
-                    $block_name = $row["block_name"];
-                    $group_name = $row["group_name"];
-                    $col = $row["col"];
-                    // Look for rows where choice_id is not NULL, but legal_pref_id is NULL.
-                    if ($choice_id !== NULL &&
-                        $legal_pref_id === NULL) {
-                        if (! array_key_exists($pref_id, $deleteHash)) {
-                            $deleteHash[$pref_id] = array();
-                        }
-                        array_push($deleteHash[$pref_id], $col);
-                        array_push($wouldBeDeleted, "$camper_name: $col ($block_name, $group_name)");
+    if ($pruneCamperDups && empty($dbErr)) {
+        // Grab camper data, and look for possible duplicates.
+        $db = new DbConn();
+        $result = $db->runQueryDirectly("SELECT * FROM campers ORDER BY edah_id, last, first, camper_id", $dbErr);
+        if ($result) {
+            $curMatchBases = array();
+            while ($row = $result->fetch_assoc()) {
+                $thisCamper = new Camper($row["first"], $row["last"], $row["edah_id"], $row["camper_id"], $row["email"], $edahId2Name);
+                // Step through the current match bases, and compare to this camper.  If
+                // a base does not match, remove it from the current bases.  Otherwise, add the
+                // potential match to the main list.
+                $newMatchBases = array();
+                for ($i = 0; $i < count($curMatchBases); $i++) {
+                    $cmb = $curMatchBases[$i];
+                    if (potentialDup($cmb, $thisCamper)) {
+                        array_push($potentialCamperDups, array($cmb, $thisCamper));
+                        array_push($newMatchBases, $cmb);
                     }
                 }
+                array_push($newMatchBases, $thisCamper);
+                $curMatchBases = $newMatchBases;
             }
         }
         if ($confirmDelete) {
-            foreach ($deleteHash as $pref_id => $cols_to_null) {
-                foreach ($cols_to_null as $col) {
-                    $db = new DbConn();
-                    $db->addColumn($col, NULL, 's');
-                    $db->addWhereColumn("preference_id", $pref_id, 'i');
-                    if ($db->updateTable("preferences", $dbErr)) {
-                        error_log("Removed preference OK");
-                        $didDeleteOk = TRUE;
-                    } else {
-                        error_log("Failed to delete obsolete preference: $dbErr");
-                        $didDeleteOk = FALSE;
-                        break;
-                    }
+            // The values in $dupIndices correspond to indices into the
+            // $potentialCamperDups array.
+            if (count($dupIndices) == 0) {
+                $nothingToDeleteError = "No potential duplicates were checked.";
+            }
+            foreach ($dupIndices as $idx) {
+                $zug = $potentialCamperDups[$idx];
+                // The car of the pair is the original registration, and the cdr
+                // is the duplicate.  We want to merge the duplicate back to the
+                // original.
+                $orig = $zug[0];
+                $dup = $zug[1];
+                error_log("Merging dup ID " . $dup->camper_id . " for " .
+                          $dup->printableName . " with " . $orig->camper_id .
+                          " for " . $orig->printableName);
+                // Step 1: merge dup prefs to orig.
+                $db = new DbConn();
+                $db->addColumn("camper_id", $orig->camper_id, 'i');
+                $db->addWhereColumn("camper_id", $dup->camper_id, 'i');
+                if (! $db->updateTable("preferences", $dbErr)) {
+                    error_log("Failed to update preferences: $dbErr");
+                    $didMergeOk = FALSE;
+                    break;
                 }
+                // Step 2: merge dup matches to orig.
+                $db = new DbConn();
+                $db->addColumn("camper_id", $orig->camper_id, 'i');
+                $db->addWhereColumn("camper_id", $dup->camper_id, 'i');
+                if (! $db->updateTable("matches", $dbErr)) {
+                    error_log("Failed to update matches: $dbErr");
+                    $didMergeOk = FALSE;
+                    break;
+                }
+                // Step 3: delete dup.
+                $db = new DbConn();
+                $db->addWhereColumn("camper_id", $dup->camper_id, 'i');
+                if (! $db->deleteFromTable("campers", $dbErr)) {
+                    error_log("Failed to delete from campers: $dbErr");
+                    $didMergeOk = FALSE;
+                    break;
+                }
+                $didMergeOk = TRUE;
+                $numDeleted++;
             }
         }
     }
-     */
-    
+
     echo headerText("Advanced Edit Page");
-    $errText = genFatalErrorReport(array($dbErr));
+    $errText = genFatalErrorReport(array($dbErr, $nothingToDeleteError));
     if (! is_null($errText)) {
         echo $errText;
         exit();
     }
     
-    if ($didDeleteOk) {
+    $pl = "s";
+    if ($numDeleted == 1) {
+        $pl = "";
+    }
+    if ($didDeleteOk || $didMergeOk) {
         echo "<div class=\"centered_container\">";
         echo "<h3>Deletion Successful!</h3>";
-        echo "<p>Successfully deleted $numDeleted obsolete entries.  Please click <a href=\"$homeUrl\">here</a> to exit, or wait 5 seconds to be automatically redirected.<p>";
+        if ($didDeleteOk) {
+            echo "<p>Successfully deleted $numDeleted obsolete assignment" . $pl . ".  ";
+        } else if ($didMergeOk) {
+            echo "<p>Successfully merged and deleted $numDeleted duplicate camper" . $pl . ".  ";
+        }
+        echo "Please click <a href=\"$homeUrl\">here</a> to exit, or wait 5 seconds to be automatically redirected.<p>";
         echo "</div>";
         echo "<script type=\"text/javascript\">";
         echo "setTimeout(function () { window.location.href= '$homeUrl'; },5000);";
@@ -166,29 +252,38 @@
 
 <div class="form_container">
 <h1><a>Advanced Edit</a></h1>
-<form id="editForm" class="appnitro"  method="GET" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<form id="editForm" method="GET" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <div class="form_description">
 <h2>Choose Categories to Prune</h2>
-<p>Choose the categories from which you would like to prune obsolete items.  You will be prompted to confirm before the system deletes anything.</p>
+<p>Choose the category from which you would like to prune obsolete items.  You will be prompted to confirm before the system deletes anything.</p>
 </div>
 
 <?php
-    $pruneMatchesCheckBox = new FormItemCheckBox("Chug Assignments", FALSE, "prune_matches", 0);
+    $checkDefault = FALSE;
+    if ($pruneMatches == FALSE &&
+        $pruneCamperDups == FALSE) {
+        $checkDefault = TRUE;
+    }
+    $pruneMatchesCheckBox = new FormItemRadio("Illegal Chug Assignments", FALSE, "radioGroup", 0);
     $pruneMatchesCheckBox->setGuideText("Check this box to delete chug matches that are not valid.");
-    $pruneMatchesCheckBox->setInputValue($pruneMatches);
+    if ($pruneMatches || $checkDefault) {
+        $pruneMatchesCheckBox->radioSetChecked();
+    }
+    $pruneMatchesCheckBox->setInputValue("prune_matches");
     echo $pruneMatchesCheckBox->renderHtml();
     
-    /*
-    $prunePrefsCheckBox = new FormItemCheckBox("Preferences", FALSE, "prune_prefs", 1);
-    $prunePrefsCheckBox->setGuideText("Check this box to delete chug preferences that are not valid.");
-    $prunePrefsCheckBox->setInputValue($prunePrefs);
-    echo $prunePrefsCheckBox->renderHtml();
-     */
+    $pruneCamperDupsCheckBox = new FormItemRadio("Duplicate Campers", FALSE, "radioGroup", 1);
+    $pruneCamperDupsCheckBox->setGuideText("Check this box to compact and prune potential camper dups.");
+    if ($pruneCamperDups) {
+        $pruneCamperDupsCheckBox->radioSetChecked();
+    }
+    $pruneCamperDupsCheckBox->setInputValue("prune_camper_dups");
+    echo $pruneCamperDupsCheckBox->renderHtml();
     
     // If we have data to confirm, display the data here.
     if (count($wouldBeDeleted) > 0) {
         echo "<li>";
-        echo "<h3>The following chug assignments would be permanently deleted. Hit \"Confirm Delete\" to delete them, or \"Cancel\" to exit this page without deleting anything.</h3>";
+        echo "<p><h3>Found the following illegal chug assignments.</h3> Hit \"Confirm Delete\" to remove them, or \"Cancel\" to exit.</p>";
         echo "<div class=\"confirm_delete_box\" >";
         foreach ($wouldBeDeleted as $wouldDelText) {
             echo "$wouldDelText<br>";
@@ -198,23 +293,45 @@
     } else if ($pruneMatches) {
         echo "<li>";
         echo "<div class=\"confirm_delete_box\" >";
-        echo "<h3>No obsolete items were found to delete.</h3>";
+        echo "<h3>No obsolete assignments were found to delete.</h3>";
         echo "</div>";
-        echo "Click <a href=\"$homeUrl\">here</a> to exit.";
+        echo "</li>";
+    } else if (count($potentialCamperDups) > 0) {
+        echo "<li>";
+        echo "<div class=\"checkbox checkbox-primary\">";
+        echo "<p><h3>The following camper registrations might be duplicates.</h3> Check the ones that really are duplicates, then click \"Merge and Prune\", or click \"Cancel\" to exit.</p>";
+        echo "<ul>";
+        for ($i = 0; $i < count($potentialCamperDups); $i++) {
+            $zug = $potentialCamperDups[$i];
+            $c1 = $zug[0];
+            $c2 = $zug[1];
+            echo "<li><input type=\"checkbox\" name=\"dup_index[]\" value=\"$i\" >" . $c1->desc() . "  <b>-></b>  " . $c2->desc() . "</li>";
+        }
+        echo "</ul>";
+        echo "</div>";
+        echo "</li>";
+    } else if ($pruneCamperDups) {
+        echo "<li>";
+        echo "<div class=\"confirm_delete_box\" >";
+        echo "<h3>No duplicate camper registrations were found.</h3>";
+        echo "</div>";
         echo "</li>";
     }
     
     echo "<li class=\"buttons\">";
     $cancelUrl = homeUrl();
     if (count($wouldBeDeleted) > 0) {
-        echo "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Confirm Delete\" />";
+        echo "<input class=\"btn btn-default\" type=\"submit\" name=\"submit\" value=\"Confirm Delete\" />";
+        echo "<input type=\"hidden\" name=\"confirm_delete\" value=\"1\" />";
+    } else if (count($potentialCamperDups) > 0) {
+        echo "<input class=\"btn btn-default\" type=\"submit\" name=\"submit\" value=\"Merge and Prune\" />";
         echo "<input type=\"hidden\" name=\"confirm_delete\" value=\"1\" />";
     } else {
-        echo "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
+        echo "<input class=\"btn btn-default\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
         echo "<input type=\"hidden\" name=\"confirm_delete\" value=\"0\" />";
     }
     echo "<a href=\"$cancelUrl\">Cancel</a>";
-    echo "</li></ul>";
+    echo "<br><br></li></ul>";
     echo "</form></div>";
     echo footerText();
 ?>

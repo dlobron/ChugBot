@@ -169,6 +169,9 @@ body
 	border: 1px solid #33ffff;
 	margin-bottom: 15px;
         border-radius: 10px;
+	padding-left: 10px;
+	padding-bottom: 5px;
+	padding-top: 5px;
         -moz-border-radius: 10px;
         -webkit-border-radius: 10px;
 }
