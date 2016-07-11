@@ -39,6 +39,8 @@ The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which m
 - session: A session for which campers can register, such as July or August.
 - block: A time block within a session, such as July 1 or August 2.  This is the unit within which the bot does camper/chug assignment.
 
+This project is affectionately dedicated to Danny Lewin (1970-2001), co-founder of [Akamai Technologies](http://www.akamai.com), whose algorithms were an inspiration for this work (the code here only uses the publicly-available Gale-Shapely algorithm).
+
 My daughter drew a picture of what the bot might look like in real life.  He's pretty cool:
 
 ![bot image](chugbot/images/ChugBot.JPG?raw=true)
