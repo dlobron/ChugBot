@@ -110,7 +110,7 @@
             }
             $this->buildWhereClause();
             
-            return $this->doQuery("UPDATE $table $setClause $this->whereClause", $err);
+            return $this->doQuery("UPDATE $this->ignore $table $setClause $this->whereClause", $err);
         }
         
         public function insertIntoTable($table, &$err) {

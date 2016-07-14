@@ -188,25 +188,44 @@
                 error_log("Merging dup ID " . $dup->camper_id . " for " .
                           $dup->printableName . " with " . $orig->camper_id .
                           " for " . $orig->printableName);
-                // Step 1: merge dup prefs to orig.
+                // Step 1: merge dup prefs to orig, and then delete any remaining
+                // prefs still assigned to the dup ID (this can happen if a pref
+                // is repeated in both IDs, since there is a unique key- that's
+                // also why we add IGNORE to the first query).
                 $db = new DbConn();
                 $db->addColumn("camper_id", $orig->camper_id, 'i');
                 $db->addWhereColumn("camper_id", $dup->camper_id, 'i');
+                $db->addIgnore();
                 if (! $db->updateTable("preferences", $dbErr)) {
                     error_log("Failed to update preferences: $dbErr");
                     $didMergeOk = FALSE;
                     break;
                 }
-                // Step 2: merge dup matches to orig.
+                $db = new DbConn();
+                $db->addWhereColumn("camper_id", $dup->camper_id, 'i');
+                if (! $db->deleteFromTable("preferences", $dbErr)) {
+                    error_log("Failed to clean up preferences: $dbErr");
+                    $didMergeOk = FALSE;
+                    break;
+                }
+                // Step 2: merge dup matches to orig, and clean up.
                 $db = new DbConn();
                 $db->addColumn("camper_id", $orig->camper_id, 'i');
                 $db->addWhereColumn("camper_id", $dup->camper_id, 'i');
+                $db->addIgnore();
                 if (! $db->updateTable("matches", $dbErr)) {
                     error_log("Failed to update matches: $dbErr");
                     $didMergeOk = FALSE;
                     break;
                 }
-                // Step 3: delete dup.
+                $db = new DbConn();
+                $db->addWhereColumn("camper_id", $dup->camper_id, 'i');
+                if (! $db->deleteFromTable("matches", $dbErr)) {
+                    error_log("Failed to clean up matches: $dbErr");
+                    $didMergeOk = FALSE;
+                    break;
+                }
+                // Step 3: delete duplicate camper registration.
                 $db = new DbConn();
                 $db->addWhereColumn("camper_id", $dup->camper_id, 'i');
                 if (! $db->deleteFromTable("campers", $dbErr)) {
