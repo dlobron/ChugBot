@@ -495,11 +495,11 @@ EOM;
     
     function yearOfUpcomingSummer() {
         $month = date('n'); // Month, 1-12
-        if ($month >= 9) {
-            // September or later: return next year
+        if ($month >= 7) {
+            // Jul or later: return next year
             return strval((intval(date('Y')) + 1));
         } else {
-            // Jan-Aug: return current year.
+            // Jan-Jun: return current year.
             return date('Y');
         }
     }
