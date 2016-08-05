@@ -224,7 +224,6 @@
     }
 ?>
 
-<img id="top" src="images/top.png" alt="">
 <div class="form_container">
 
 <h1><a>Archive Page</a></h1>
@@ -283,7 +282,7 @@ EOM;
         $formHtml = <<<EOM
         </li>
         <li class="buttons">
-        <input class="button_text" type="submit" name="submit" value="Archive" onclick="return confirm(\"Please confirm you wish "
+        <input class="btn btn-primary" type="submit" name="submit" value="Archive" onclick="return confirm(\"Please confirm you wish "
             "to archive your $curCampYear data\")" />
         <input type="hidden" name="archive" value="1" />
         </li>
