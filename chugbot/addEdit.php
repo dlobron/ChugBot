@@ -95,14 +95,14 @@
         }
         
         public function fillInstanceId2Name($instanceIdCol, $instanceTable) {
-            fillId2Name($this->instanceId2Name, $this->dbErr,
+            fillId2Name(NULL, $this->instanceId2Name, $this->dbErr,
                         $instanceIdCol, $instanceTable);
             $this->instanceIdCol = $instanceIdCol;
             $this->instanceIdsIdentifier = $instanceIdCol . "s";
         }
         
         public function setActiveEdotFilterBy($filterBy) {
-            fillId2Name($this->activeEdotFilterId2Name, $this->dbErr,
+            fillId2Name(NULL, $this->activeEdotFilterId2Name, $this->dbErr,
                         "edah_id", "edot");
             $this->activeEdotFilterBy = $filterBy;
             $this->activeEdotFilterTable = "edot_for_" . $filterBy;

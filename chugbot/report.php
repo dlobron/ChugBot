@@ -516,19 +516,23 @@
                                  ReportTypes::AllRegisteredCampers => "All Campers Who Have Submitted Preferences"
                                 );
     
-    fillId2Name($chugId2Name, $dbErr,
-                "chug_id", "chugim", "group_id",
-                "groups");
-    fillId2Name($sessionId2Name, $dbErr,
-                "session_id", "sessions");
-    fillId2Name($blockId2Name, $dbErr,
-                "block_id", "blocks");
-    fillId2Name($groupId2Name, $dbErr,
-                "group_id", "groups");
-    fillId2Name($edahId2Name, $dbErr,
-                "edah_id", "edot");
-    fillId2Name($bunkId2Name, $dbErr,
-                "bunk_id", "bunks");
+    // Check for archived databases.
+    $availableArchiveYears = array();
+    $db = new DbConn();
+    $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        // Archive databases have the same name as our regular database that
+        // the MYSQL_DB identifies, but with the year of the archive appended
+        // after an underscore, e.g., camprama_chugbot_db_2016.
+        $matched = array();
+        $archiveDbPattern = "/^" . MYSQL_DB . "_(?<dbyear>\d+)$/";
+        if (preg_match($archiveDbPattern, $row[0], $matched)) {
+            // We store the years in a hash that maps year to year, because we
+            // want to use it in a drop-down menu.
+            $availableArchiveYears[$matched["dbyear"]] = $matched["dbyear"];
+        }
+    }
+    asort($availableArchiveYears);
 
     $errors = array();
     $reportMethod = ReportTypes::None;
@@ -543,6 +547,7 @@
         $groupId = test_input($_GET["group_id"]);
         $blockId = test_input($_GET["block_id"]);
         $doReport = test_input($_GET["do_report"]);
+        $archiveYear = test_input($_GET["archive_year"]);
         if (test_input($_GET["print"])) {
             $outputType = OutputTypes::Pdf;
         } else if (test_input($_GET["export"])) {
@@ -565,8 +570,6 @@
             $groupId = NULL;
             $blockId = NULL;
             $sessionId = NULL;
-        } else if ($reportMethod == NULL) {
-            array_push($errors, errorString("Please choose a report type"));
         }
     } else {
         // Check for a query string like ?edah=1&block=1.  Use that to deduce
@@ -594,6 +597,10 @@
             // Add more of these as needed.
             
         }
+    }
+    if ($doReport && ($reportMethod === NULL)) {
+        // The user must specify the type for a report.
+        array_push($errors, errorString("Please choose a report type"));
     }
     
     if ($outputType == OutputTypes::Html) {
@@ -623,6 +630,28 @@
         exit(); 
     }
     
+    
+    // Fill the ID -> name hashes that will populate the drop-down
+    // menus.
+    fillId2Name($archiveYear, $chugId2Name, $dbErr,
+                "chug_id", "chugim", "group_id",
+                "groups");
+    fillId2Name($archiveYear, $sessionId2Name, $dbErr,
+                "session_id", "sessions");
+    fillId2Name($archiveYear, $blockId2Name, $dbErr,
+                "block_id", "blocks");
+    fillId2Name($archiveYear, $groupId2Name, $dbErr,
+                "group_id", "groups");
+    fillId2Name($archiveYear, $edahId2Name, $dbErr,
+                "edah_id", "edot");
+    fillId2Name($archiveYear, $bunkId2Name, $dbErr,
+                "bunk_id", "bunks");
+    
+    $archiveText = "";
+    if (! empty($availableArchiveYears)) {
+        $archiveText = "<p>To view data from previous summers, choose a year from the Archive Year drop-down menu</p>";
+    }
+    
     $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
     $pageStart = <<<EOM
 <div class="report_form_container">
@@ -632,6 +661,7 @@
 <div class="form_description">
 <h2>Chug Assignment Report</h2>
 <p>Start by choosing a report type, then select filters as needed.  Required options are marked with a <font color="red">*</font>.</p>
+$archiveText
 </div>
 <ul>
     
@@ -640,7 +670,7 @@ EOM;
         echo $pageStart;
     }
     
-    // Always show the report method drop-down.
+    // Always show the report method drop-down and archive year menu (if any).
     $reportMethodDropDown = new FormItemDropDown("Report Type", TRUE, "report_method", 0);
     $reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.");
     $reportMethodDropDown->setPlaceHolder("Choose Type");
@@ -651,8 +681,24 @@ EOM;
         $reportMethodDropDown->setInputValue($reportMethod);
     }
     
+    $archiveYearDropDown = NULL;
+    if (! empty($availableArchiveYears)) {
+        $archiveYearDropDown = new FormItemDropDown("Archive Year", FALSE, "archive_year", 1);
+        $archiveYearDropDown->setGuideText("Optional: To view archived data from a previous summer, choose the year here.");
+        $archiveYearDropDown->setPlaceHolder("Current Year");
+        $archiveYearDropDown->setId2Name($availableArchiveYears);
+        $archiveYearDropDown->setColVal($archiveYear);
+        $archiveYearDropDown->setInputSingular("Archive Year");
+        if ($archiveYear) {
+            $archiveYearDropDown->setInputValue($archiveYear);
+        }
+    }
+    
     if ($outputType == OutputTypes::Html) {
         echo $reportMethodDropDown->renderHtml();
+        if (! is_null($archiveYearDropDown)) {
+            echo $archiveYearDropDown->renderHtml();
+        }
     }
     
     if ($reportMethod &&
@@ -792,8 +838,8 @@ EOM;
     
     if ($doReport) {
         // Prepare and display the report, setting the SQL according to the report
-        // type.
-        $db = new DbConn();
+        // type.  If we have an archive year, pull from that database.
+        $db = new DbConn($archiveYear);
         $db->isSelect = TRUE;
         if ($reportMethod == ReportTypes::AllRegisteredCampers) {
             // List all campers in the system in one report, sorted by session, edah, and name.

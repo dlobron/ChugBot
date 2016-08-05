@@ -43,18 +43,18 @@
     $chugId2Name = array();
     $bunkId2Name = array();
     
-    fillId2Name($chugId2Name, $dbErr,
+    fillId2Name(NULL, $chugId2Name, $dbErr,
                 "chug_id", "chugim", "group_id",
                 "groups");
-    fillId2Name($sessionId2Name, $dbErr,
+    fillId2Name(NULL, $sessionId2Name, $dbErr,
                 "session_id", "sessions");
-    fillId2Name($blockId2Name, $dbErr,
+    fillId2Name(NULL, $blockId2Name, $dbErr,
                 "block_id", "blocks");
-    fillId2Name($groupId2Name, $dbErr,
+    fillId2Name(NULL, $groupId2Name, $dbErr,
                 "group_id", "groups");
-    fillId2Name($edahId2Name, $dbErr,
+    fillId2Name(NULL, $edahId2Name, $dbErr,
                 "edah_id", "edot");
-    fillId2Name($bunkId2Name, $dbErr,
+    fillId2Name(NULL, $bunkId2Name, $dbErr,
                 "bunk_id", "bunks");
     ?>
 
