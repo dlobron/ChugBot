@@ -232,7 +232,7 @@
         }
         
         public function fillDropDownId2Name(&$dbErr, $idCol, $table) {
-            fillId2Name($this->id2Name, $dbErr,
+            fillId2Name(NULL, $this->id2Name, $dbErr,
                         $idCol, $table);
         }
         

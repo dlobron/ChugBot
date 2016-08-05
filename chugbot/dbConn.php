@@ -1,9 +1,22 @@
 <?php
-    include_once 'functions.php';
+    include_once 'constants.php';
+    
+    function connect_db($archiveYear = NULL) {
+        $dbName = MYSQL_DB;
+        if (! is_null($archiveYear)) {
+            $dbName .= "_" . $archiveYear;
+        }
+        $mysqli = new mysqli(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWD, $dbName);
+        if (mysqli_connect_error()) {
+            die('Connect Error: ('.mysqli_connect_errno().') '.mysqli_connect_error());
+        }
+        return $mysqli;
+    }
 
     class DbConn {
-        function __construct() {
-            $this->mysqli = connect_db();
+        function DbConn($archiveYear = NULL) {
+            $this->archiveYear = $archiveYear;
+            $this->mysqli = connect_db($this->archiveYear);
         }
     
         function __destruct() {
@@ -15,7 +28,7 @@
         public function runQueryDirectly($sql, &$err) {
 	    if (! $this->mysqli->ping()) {
                 error_log("DbConn: runQueryDirectly: database connection was dropped: trying to reconnect");
-                $this->mysqli = connect_db();
+                $this->mysqli = connect_db($this->archiveYear);
             }
             $result = $this->mysqli->query($sql);
             if ($result == FALSE) {
@@ -140,7 +153,7 @@
         public function doQuery($paramSql, &$err) {
             if (! $this->mysqli->ping()) {
                 error_log("DbConn: doQuery: database connection was dropped: trying to reconnect");
-                $this->mysqli = connect_db();
+                $this->mysqli = connect_db($this->archiveYear);
             }
             if (startsWith($paramSql, "SELECT") ||
                 startsWith($paramSql, "select")) {
@@ -185,6 +198,7 @@
             return $this->insert_id;
         }
         
+        private $archiveYear;
         private $insert_id;
         private $mysqli;
         private $stmt;
@@ -198,11 +212,13 @@
         public $isSelect = FALSE;
     }
     
-    // Utility function
-    function fillId2Name(&$id2Name, &$dbErr,
+    // Utility function.  Pass NULL for the $archiveYear argument to use
+    // the current database.
+    function fillId2Name($archiveYear,
+                         &$id2Name, &$dbErr,
                          $idColumn, $table, $secondIdColumn = NULL,
                          $secondTable = NULL) {
-        $db = new DbConn();
+        $db = new DbConn($archiveYear);
         $db->isSelect = TRUE;
         $db->addSelectColumn($idColumn);
         if ($secondIdColumn) {
@@ -230,7 +246,9 @@
             }
         }
         while ($row = $result->fetch_array(MYSQLI_NUM)) {
-            if ($secondIdColumn) {
+            if ($secondIdColumn &&
+                defined($row[2]) &&
+                defined($secondId2Name[$row[1]])) {
                 $id2Name[$row[0]] = $row[2] . " - " . $secondId2Name[$row[1]];
             } else {
                 $id2Name[$row[0]] = $row[1];
