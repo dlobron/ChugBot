@@ -148,6 +148,7 @@
     "overwrite any data in the current database.  This action cannot be undone.</p>";
     $thisYearArchive = MYSQL_DB . "_" . $curCampYear;
     $dbErr = "";
+    $permissionsError = "";
     $db = new DbConn();
     $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
     while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
@@ -156,6 +157,27 @@
             break;
         }
     }
+    $requiredPermissions = array("CREATE" => 0, "DROP" => 0, "LOCK TABLES" => 0);
+    $db = new DbConn();
+    $result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'@'" . MYSQL_HOST . "'", $dbErr);
+    while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        foreach ($requiredPermissions as $rp => $count) {
+            if (strpos($row[0], $rp) !== FALSE) {
+                $requiredPermissions[$rp]++;
+            }
+        }
+    }
+    $missingPerms = "";
+    foreach ($requiredPermissions as $rp => $count) {
+        if ($count === 0) {
+            $missingPerms .= empty($missingPerms) ? $rp : ", $rp";
+        }
+    }
+    if (! empty($missingPerms)) {
+        $permissionsError = "The archive operation requires the following missing permissions: $missingPerms. " .
+        "Please check with your site administrator, who should be able to grant these.";
+    }
+    
     $binaryNotFoundError = "";
     $mysqldump = MYSQL_PATH . "/mysqldump";
     $mysql = MYSQL_PATH . "/mysql";
@@ -195,7 +217,7 @@
 
 <?php
     echo headerText("Archive Data");
-    $errText = genFatalErrorReport(array($dbErr, $binaryNotFoundError));
+    $errText = genFatalErrorReport(array($dbErr, $binaryNotFoundError, $permissionsError));
     if (! is_null($errText)) {
         echo $errText;
         exit();
@@ -251,8 +273,7 @@ EOM;
         <p>To archive data for summer $curCampYear and prepare the database for $nextCampYear, please click the "Archive"
             button below.</p>
         <p>Before you archive, use the checkboxes to choose those items from $curCampYear that you'd like to keep in the database
-            for $nextCampYear (if any).
-        </p>
+            for $nextCampYear (if any).</p>
         </div>
         <ul>
         <li>
