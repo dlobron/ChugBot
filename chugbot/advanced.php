@@ -6,7 +6,7 @@
     bounceToLogin();
     
     $edahId2Name = array();
-    fillId2Name($edahId2Name, $dbErr,
+    fillId2Name(NULL, $edahId2Name, $dbErr,
                 "edah_id", "edot");
     class Camper {
         function __construct($first, $last, $edah_id, $camper_id, $email, $edahId2Name) {

@@ -15,7 +15,7 @@
     $camperId2Name = array();
     $camperId2Edah = array();
     $edahId2Name = array();
-    fillId2Name($edahId2Name, $dbErr, "edah_id", "edot");
+    fillId2Name(NULL, $edahId2Name, $dbErr, "edah_id", "edot");
     
     $forEdahText = "all edot";
     $sql = "SELECT c.camper_id camper_id, c.first first, c.last last, e.name edah_name, e.sort_order edah_sort_order FROM campers c, edot e WHERE c.edah_id = e.edah_id";

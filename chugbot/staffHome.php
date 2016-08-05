@@ -33,6 +33,7 @@
 
     $matrixUrl = urlIfy("exclusionMatrix.html");
     $advancedUrl = urlIfy("advanced.php");
+    $archiveUrl = urlIfy("archive.php");
     $resetUrl = urlIfy("staffReset.php");
     $levelingUrl = urlIfy("levelHomeLaunch.php");
     $reportUrl = urlIfy("report.php");
@@ -84,7 +85,7 @@ EOM;
 <p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
 <p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>
 <p>For help with a field or button, hover your mouse over the item.<p>
-<p>To prune obsolete items, such as chug assignments that are no longer valid because of changes to chugim, blocks, or groups, click <a href="<?php echo $advancedUrl; ?>">here</a>.</p>
+<p>To prune obsolete items, such as chug assignments that are no longer valid because of changes to chugim, blocks, or groups, click <a href="<?php echo $advancedUrl; ?>">here</a>. To archive your data at the end of a summer, and prepare the database for the next summer, please click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
 
 <form class="appnitro" action="<?php echo $resetUrl; ?>">
 <button title="Click here to update the administrative settings, including staff password and camper code" class="btn btn-primary" type="submit" value="1">Edit Admin Settings</button>

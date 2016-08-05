@@ -457,7 +457,6 @@ EOM;
                 $retVal .= "<a class=\"$aclass\" href=\"http://$campUrl/\">$campName Home</a>";
             }
         }
-        $mysqli->close();
         $retVal .= "</div>";
         
         return $retVal;

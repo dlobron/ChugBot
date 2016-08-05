@@ -11,7 +11,7 @@
     $camperId2Edah = array();
     $edahId2Name = array();
     
-    fillId2Name($edahId2Name, $dbError,
+    fillId2Name(NULL, $edahId2Name, $dbError,
                 "edah_id", "edot");
     
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
