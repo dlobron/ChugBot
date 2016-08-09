@@ -141,6 +141,7 @@
     // the database.
     $curYearHasBeenArchived = FALSE;
     $didRestoreDb = FALSE;
+    $homeUrl = homeUrl();
     $nextCampYear = yearOfUpcomingSummer();
     $curCampYear = $nextCampYear - 1;
     $restoreText = "<p>Our database shows that you have already archived the database for Kayitz $curCampYear. " .
@@ -202,7 +203,7 @@
             if (empty($dbErr)) {
                 $curYearHasBeenArchived = TRUE;
                 $restoreText = "<p>Archive successful! Click \"Restore\" to undo the archive operation, " .
-                "or click \"Staff Home\" at left to exit this page.</p>";
+                "or click \"Cancel\" to exit.</p>";
             }
         } else if ($restoreFromArchive) {
             restoreCurrentDb($dbErr, $mysql, $mysqldump, $thisYearArchive);
@@ -234,14 +235,13 @@
 </div>
 <?php
     if ($didRestoreDb) {
-        $homeUrl = homeUrl();
         $formHtml = <<<EOM
         <div class="form_description">
         $restoreText
         </div>
         <ul>
         <li class="buttons">
-        <input type="button" value="Done" onclick="window.location.href='$homeUrl'" />
+        <button class="btn btn-success" type="button" data-toggle="tooltip" title="Return to staff home page" onclick="window.location.href='$homeUrl'">Done</button>
         </li>
         </ul>
 EOM;
@@ -253,8 +253,8 @@ EOM;
         </div>
         <ul>
         <li class="buttons">
-        <input class="button_text" type="submit" name="submit" value="Restore" onclick="return confirm(\"Please confirm you wish "
-            "to replace the current database with the archived $curCampYear database\")" />
+        <button class="btn btn-warning" type="submit" name="submit" data-toggle="tooltip" title="Replace the current database with the archived $curCampYear database">Restore</button>
+        <button class="btn btn-link" type="button" data-toggle="tooltip" title="Exit with no changes" onclick="window.location.href='$homeUrl'">Cancel</button>
         <input type="hidden" name="restore" value="1" />
         </li>
         </ul>
@@ -271,7 +271,7 @@ EOM;
         <div class="form_description">
         <p>To archive data for summer $curCampYear and prepare the database for $nextCampYear, please click the "Archive"
             button below.</p>
-        <p>Before you archive, use the checkboxes to choose those items from $curCampYear that you'd like to keep in the database
+        <p>Before you archive, use the checkboxes to choose those items from $curCampYear that you would like to keep in the database
             for $nextCampYear (if any).</p>
         </div>
         <ul>
@@ -282,8 +282,8 @@ EOM;
         $formHtml = <<<EOM
         </li>
         <li class="buttons">
-        <input class="btn btn-primary" type="submit" name="submit" value="Archive" onclick="return confirm(\"Please confirm you wish "
-            "to archive your $curCampYear data\")" />
+        <input class="btn btn-primary" type="submit" name="submit" value="Archive" data-toggle="tooltip" title="Archive your $curCampYear data" />
+        <button class="btn btn-link" type="button" data-toggle="tooltip" title="Exit with no changes" onclick="window.location.href='$homeUrl'">Cancel</button>
         <input type="hidden" name="archive" value="1" />
         </li>
         </ul>
