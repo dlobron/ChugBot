@@ -216,7 +216,7 @@
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
             $this->html .= "<select class=\"form-control $this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\">";
-            $this->html .= genPickList($this->id2Name, $this->colVal, $this->inputSingular); // $inputSingular = e.g., "group"
+            $this->html .= genPickList($this->id2Name, $this->colVal, $this->inputSingular, $this->defaultMsg); // $inputSingular = e.g., "group"
             $this->html .= "</select>";
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>";
@@ -250,9 +250,14 @@
             }
         }
         
+        public function setDefaultMsg($msg) {
+            $this->defaultMsg = $msg;
+        }
+        
         private $id2Name = array();
         private $inputSingular = "";
         private $colVal = "";
+        private $defaultMsg = NULL;
     }
     
     // This class generates a drop down that depends on the choices made in

@@ -684,11 +684,12 @@ EOM;
     $archiveYearDropDown = NULL;
     if (! empty($availableArchiveYears)) {
         $archiveYearDropDown = new FormItemDropDown("Archive Year", FALSE, "archive_year", 1);
-        $archiveYearDropDown->setGuideText("Optional: To view archived data from a previous summer, choose the year here.");
+        $archiveYearDropDown->setGuideText("Optional: To view archived data from a previous summer, choose the year here. To see current data, leave this option set to \"Current Year\".");
         $archiveYearDropDown->setPlaceHolder("Current Year");
         $archiveYearDropDown->setId2Name($availableArchiveYears);
         $archiveYearDropDown->setColVal($archiveYear);
         $archiveYearDropDown->setInputSingular("Archive Year");
+        $archiveYearDropDown->setDefaultMsg("Current Year");
         if ($archiveYear) {
             $archiveYearDropDown->setInputValue($archiveYear);
         }

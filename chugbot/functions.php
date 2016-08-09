@@ -273,9 +273,13 @@ EOM;
         return $retVal;
     }
     
-    function genPickList($id2Name, $selected_id, $name) {
+    function genPickList($id2Name, $selected_id, $name, $defaultMessage = NULL) {
         $ucName = ucfirst($name);
-        $retVal = "<option value=\"\" >-- Choose $ucName --</option>";
+        $ddMsg = "Choose $ucName";
+        if ($defaultMessage !== NULL) {
+            $ddMsg = $defaultMessage;
+        }
+        $retVal = "<option value=\"\" >-- $ddMsg --</option>";
         asort($id2Name);
         foreach ($id2Name as $id => $name) {
             $selStr = "";
