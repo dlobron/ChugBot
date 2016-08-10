@@ -174,7 +174,7 @@
         $retVal = <<<EOM
 <div class="panel panel-danger col-lg-6 col-lg-offset-3">
 <div class="panel-heading">
-<h3>Oops!  $desc occurred:</h3>
+<h3>Oops! $desc occurred:</h3>
 </div>
 <div class="panel-body">
 EOM;
@@ -189,7 +189,7 @@ EOM;
             $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div>";
         }
         $retVal = $retVal . footerText();
-        $retVal = $retVal . "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\"></body></html>";
+        $retVal = $retVal . "</body></html>";
         
         return $retVal;
     }

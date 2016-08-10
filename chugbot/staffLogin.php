@@ -115,9 +115,10 @@
     echo headerText("Staff Login");
     $staffUrl = urlIfy("staffLogin.php");
     $errText = genFatalErrorReport(array($dbError, $staffPasswordErr, $staffPasswordErr2),
-                                   TRUE);
+                                   FALSE);
     if (! is_null($errText)) {
         echo $errText;
+        exit();
     }
     ?>
 
@@ -189,6 +190,5 @@
     echo footerText();
 ?>
 
-<img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>

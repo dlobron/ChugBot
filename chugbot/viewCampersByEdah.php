@@ -95,7 +95,6 @@ page, click <?php echo staffHomeAnchor(); ?>.</p>
     echo footerText();
     ?>
 
-<img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>
 

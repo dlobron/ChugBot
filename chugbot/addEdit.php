@@ -122,6 +122,7 @@
             $errText = genFatalErrorReport($allErrors, TRUE);
             if (! is_null($errText)) {
                 echo $errText;
+                exit();
             }
             $formId = "main_form";
             $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
@@ -208,7 +209,6 @@ $cancelText
 </form>
 </div>
 $footerText
-<img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>
 EOM;

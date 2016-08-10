@@ -246,9 +246,9 @@
             }
         }
         while ($row = $result->fetch_array(MYSQLI_NUM)) {
-            if ($secondIdColumn &&
-                defined($row[2]) &&
-                defined($secondId2Name[$row[1]])) {
+            if ($secondIdColumn !== NULL &&
+                array_key_exists(1, $row) &&
+                array_key_exists($row[1], $secondId2Name)) {
                 $id2Name[$row[0]] = $row[2] . " - " . $secondId2Name[$row[1]];
             } else {
                 $id2Name[$row[0]] = $row[1];

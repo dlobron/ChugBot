@@ -1077,7 +1077,6 @@ EOM;
     if ($outputType == OutputTypes::Html) {
         echo "</div>";
         echo footerText();
-        echo "<img id=\"bottom\" src=\"images/bottom.png\" alt=\"\">";
         echo "</body></html>";
     }
     

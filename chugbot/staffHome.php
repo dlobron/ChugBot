@@ -170,6 +170,5 @@ will be created and then displayed.</p>
     echo footerText();
 ?>
 
-<img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>

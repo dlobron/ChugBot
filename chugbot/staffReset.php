@@ -77,8 +77,6 @@
         $camp_web = test_input($_POST["camp_web"]);
         $pref_count = test_input($_POST["pref_count"]);
         
-        error_log("DBG: Got send_confirm_email $send_confirm_email");
-        
         // Update the deletable tables.  We start by setting all tables to not
         // be editable, and then we enable ones that are active.
         $deletableTableActiveIdHash = array(); // Reset, then populate from POST data.
@@ -338,6 +336,5 @@ Required values are marked with a <font color="red">*</font>.
     echo footerText();
 ?>
 
-<img id="bottom" src="images/bottom.png" alt="">
 </body>
 </html>
