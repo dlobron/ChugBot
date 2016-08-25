@@ -51,15 +51,14 @@
     }
     ?>
 
-<div class="centered_container">
-<h1>View Campers</a></h1>
+<div class="container centered_container">
 <h2>Campers for <?php echo $forEdahText; ?></h2>
 <p>This page lists campers in <?php echo $forEdahText; ?> who have entered chug preferences.  To update
 information or settings for a camper, click the Edit button next to that camper's name.  To return to the staff admin
 page, click <?php echo staffHomeAnchor(); ?>.</p>
 </div>
 
-<br><br>
+<br>
 <div class="multi_form_container">
 <?php
     if (count($camperId2Name) == 0) {

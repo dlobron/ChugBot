@@ -518,19 +518,11 @@
     
     // Check for archived databases.
     $availableArchiveYears = array();
-    $db = new DbConn();
-    $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
-    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-        // Archive databases have the same name as our regular database that
-        // the MYSQL_DB identifies, but with the year of the archive appended
-        // after an underscore, e.g., camprama_chugbot_db_2016.
-        $matched = array();
-        $archiveDbPattern = "/^" . MYSQL_DB . "_(?<dbyear>\d+)$/";
-        if (preg_match($archiveDbPattern, $row[0], $matched)) {
-            // We store the years in a hash that maps year to year, because we
-            // want to use it in a drop-down menu.
-            $availableArchiveYears[$matched["dbyear"]] = $matched["dbyear"];
-        }
+    $yearList = getArchiveYears($dbErr);
+    foreach ($yearList as $year) {
+        // We store the years in a hash that maps year to year, because we
+        // want to use it in a drop-down menu.
+        $availableArchiveYears[$year] = $year;
     }
     asort($availableArchiveYears);
 

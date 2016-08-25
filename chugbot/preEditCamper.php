@@ -6,12 +6,12 @@
     $editPageUrl = urlIfy("editCamper.php");
     $notEnoughInputError = "";
     $emailErr = "";
-    $dbError = "";
+    $dbErr = "";
     $camperId2Name = array();
     $camperId2Edah = array();
     $edahId2Name = array();
     
-    fillId2Name(NULL, $edahId2Name, $dbError,
+    fillId2Name(NULL, $edahId2Name, $dbErr,
                 "edah_id", "edot");
     
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
@@ -58,11 +58,9 @@
             if (! is_null($orderBy)) {
                 $db->addOrderByClause($orderBy);
             }
-            $err = "";
-            $result = $db->simpleSelectFromTable("campers", $err);
+            $result = $db->simpleSelectFromTable("campers", $dbErr);
             if ($result == FALSE) {
-                error_log(dbErrorString($sql, $err));
-                $dbError = TRUE;
+                error_log(dbErrorString($sql, $dbErr));
             } else {
                 while ($row = mysqli_fetch_assoc($result)) {
                     $camperId2Name[$row["camper_id"]] = $row["last"] . ", " . $row["first"];
@@ -127,7 +125,7 @@
         echo "</ul>";
         
         echo "<input type=\"hidden\" id=\"fromHome\" name=\"fromHome\" value=\"1\" />";
-        echo "<input class=\"control_button\" id=\"saveForm\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit Camper\" />";
+        echo "<input class=\"btn btn-success\" id=\"saveForm\" class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit Camper\" />";
         echo "</form>";
     }
     

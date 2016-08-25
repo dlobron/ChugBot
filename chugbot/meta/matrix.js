@@ -6,8 +6,7 @@ $(function() {
 		    type: 'post',
 		    data: {get_nav: 1},
 		    success: function(txt) {
-		    var html = "<div class=\"nav_container\">" + txt + "</div>";
-		    $("#nav").html(html);
+		    $("#nav").html(txt);
 		}
 	    });
     });
@@ -35,7 +34,7 @@ $(function() {
 		}, error: function(xhr, desc, err) {
 		    console.log(xhr);
 		    console.log("Details: " + desc + "\nError:" + err);
-		    var errHtml = "<div class=error_box><h2>Error</h2><font=red>Unable to save changes: </font>" + err + ". Please contact an administrator.</div>";
+		    var errHtml = "<div class=panel_heading><h3>Unable to save changes:</h3></div><div class=\"panel-body\">" + err + ". Please contact an administrator.</div>";
 		    $("#errors").html(errHtml);
                 }
             }).then(function() {
@@ -96,7 +95,7 @@ $(function() {
 		var homeUrl = curUrl.replace("exclusionMatrix.html", "staffHome.php");
 		// Remove query string before redir.
 		var qpos = homeUrl.indexOf("?");
-		if (qpos) {
+		if (qpos > 0) {
 		    homeUrl = homeUrl.substr(0, qpos);
 		}
 		// Prepare to send ajax.  We send and reset the array when we hit our max
@@ -126,7 +125,7 @@ $(function() {
 						    error: function(xhr, desc, err) {
 						    console.log(xhr);
 						    console.log("Details: " + desc + "\nError:" + err);
-						    var errHtml = "<div class=error_box><h2>Error</h2><font=red>Unable to save changes: </font>" + err + ". Please contact an administrator.</div>";
+						    var errHtml = "<div class=panel_heading><h3>Unable to save changes:</h3></div><div class=\"panel-body\">" + err + ". Please contact an administrator.</div>";
 						    $("#errors").html(errHtml);
 						    leftRight2Checked = {};
 						    ajaxError = 1;
@@ -149,7 +148,7 @@ $(function() {
 				error: function(xhr, desc, err) {
 				console.log(xhr);
 				console.log("Details: " + desc + "\nError:" + err);
-				var errHtml = "<div class=error_box><h2>Error</h2><font=red>Unable to save changes: </font>" + err + ". Please contact an administrator.</div>";
+				var errHtml = "<div class=panel_heading><h3>Unable to save changes:</h3></div><div class=\"panel-body\">" + err + ". Please contact an administrator.</div>";
 				$("#errors").html(errHtml);
 				ajaxError = 1;
 			    }

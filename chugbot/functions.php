@@ -3,6 +3,51 @@
     include_once 'functions.php';
     require_once 'PHPMailer/PHPMailerAutoload.php';
     
+    function getArchiveYears(&$dbErr) {
+        $retVal = array();
+        $db = new DbConn();
+        $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
+        if ($result === NULL) {
+            return retVal;
+        }
+        $years = array();
+        $matched = array();
+        $archiveDbPattern = "/^" . MYSQL_DB . "(?<dbyear>\d+)$/";
+        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+            // Expected format: MYSQL_DB . YEAR
+            if (preg_match($archiveDbPattern, $row[0], $matched)) {
+                array_push($years, $matched["dbyear"]);
+            }
+        }
+        // Next, for each configured year, check to see if the archive contains
+        // campers.
+        foreach ($years as $year) {
+            $db = new DbConn($year);
+            $result = $db->runQueryDirectly("SHOW TABLES", $dbErr);
+            $rc = 0;
+            while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+                $rc++;
+            }
+            if ($rc === 0) {
+                continue;
+            }
+            $db = new DbConn($year);
+            $db->addSelectColumn("count(*)");
+            $result = $db->simpleSelectFromTable("campers", $dbErr);
+            if ($result === NULL) {
+                return $retVal;
+            }
+            while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+                
+                if (intval($row[0]) > 0) {
+                    array_push($retVal, $year);
+                }
+            }
+        }
+        
+        return $retVal;
+    }
+    
     function startsWith($haystack, $needle) {
         // search backwards starting from haystack length characters from the end
         return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
@@ -229,22 +274,29 @@ EOM;
             "is currently disallowed: to allow deletion, click \"Edit Admin Settings\" at the top of this page and adjust the check boxes. $edahExtraText";
         }
         $retVal = <<<EOM
-<form id="$formName" class="appnitro" method="$method">
-<div class="form_description">
-<h3>$ucPlural</h3></div>
-<ul><li>
-<div>
-<select class="form-control" id="$idCol" name="$idCol">
-<option value="" disabled=disabled selected>---</option>
+<div class="panel panel-default">
+ <div class="panel-heading">
+  <h4 class="panel-title">
+   <a data-toggle="collapse" data-parent="#accordion" href="#$formName">Manage $ucPlural</a>
+  </h4>
+ </div>
+<div id="$formName" class="panel-collapse collapse ">
+ <form class="appnitro" method="$method">
+ <div class="form_description">
+ <h3>$ucPlural</h3></div>
+ <ul><li>
+ <div>
+ <select class="form-control" id="$idCol" name="$idCol">
+ <option value="" disabled=disabled selected>---</option>
 EOM;
         foreach ($id2Name as $itemId => $itemName) {
             $retVal  = $retVal . "<option value=\"$itemId\">$itemName</option>";
         }
         $formEnd = <<<EOM
-</select>
-<p class="guidelines"><small>$guideText</small></p>
-<input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
-<input class="btn btn-default btn-sm" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
+ </select>
+ <p class="guidelines"><small>$guideText</small></p>
+ <input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
+ <input class="btn btn-default btn-sm" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
 
 EOM;
         $retVal = $retVal . $formEnd;
@@ -259,13 +311,14 @@ EOM;
                 $retVal . "<input class=\"btn btn-danger btn-sm\" type=\"submit\" name=\"submit\" value=\"Show Campers\" formaction=\"$camperUrl\"/>";
         }
         $formEnd = <<<EOM
-</li>
-<li>
-</form>
-<form>
-<input type=button class='btn btn-primary' onClick="location.href='$addUrl'" value='Add New $ucName'>
-</form>
-</li></ul>
+ </li>
+ <li>
+ </form>
+ <form>
+ <input type=button class='btn btn-primary' onClick="location.href='$addUrl'" value='Add New $ucName'>
+ </form>
+ </li></ul>
+ </div>
 </div>
 EOM;
         $retVal = $retVal . $formEnd;
@@ -431,23 +484,25 @@ EOM;
         return $url;
     }
     
-    function navText($bottom = FALSE) {
-        $retVal = "";
-        $baseUrl = baseUrl();
-        $aclass = "nav_anchor btn btn-default";
-        if ($bottom) {
-            $aclass = "hnav_anchor";
-	}
-        $retVal .= "<div class=\"btn-group-vertical\">";
-        $retVal .= "<a class=\"$aclass\" href=\"$baseUrl\">Site Home</a>";
+    function navText() {
         $homeUrl = homeUrl();
+        $retVal = "<nav class=\"navbar navbar-default\">";
+        $baseUrl = baseUrl();
+        $retVal .= "<div class=\"container-fluid\">";
+        $retVal .= "<div class=\"navbar-header\">";
+        $retVal .= "<button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#myNavbar\">";
+        $retVal .= "<span class=\"icon-bar\"></span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span></button>";
         if (adminLoggedIn()) {
-            $retVal .= "<a class=\"$aclass\" href=\"$homeUrl\">Staff Home</a>";
+            $retVal .= "<a class=\"navbar-brand\" href=\"$homeUrl\">Staff Home</a></div>";
+            $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
             $camperUrl = urlIfy("camperHome.php");
-            $retVal .= "<a class=\"$aclass\" href=\"$camperUrl\">Camper Home</a>";
+            $retVal .= "<li><a href=\"$camperUrl\">Camper Home</a></li>";
         } else {
-            $retVal .= "<a class=\"$aclass\" href=\"$homeUrl\">Camper Home</a>";
+            $retVal .= "<a class=\"navbar-brand\" href=\"$homeUrl\">Camper Home</a></div>";
+            $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
         }
+        $retVal .= "<li><a href=\"$baseUrl\">Site Home</a></li>";
+        
         $db = new DbConn();
         $db->addSelectColumn('camp_name');
         $db->addSelectColumn('camp_web');
@@ -458,19 +513,15 @@ EOM;
             $campName = $row["camp_name"];
             if ((! empty($campUrl)) &&
                 (! empty($campName))) {
-                $retVal .= "<a class=\"$aclass\" href=\"http://$campUrl/\">$campName Home</a>";
+                $retVal .= "<li><a href=\"http://$campUrl/\">$campName Home</a></li>";
             }
         }
-        $retVal .= "</div>";
+        $retVal .= "</ul></div></div></nav>";
         
         return $retVal;
     }
     
     function footerText() {
-            //$retVal = "<div class=\"hnav_container\">";
-            //$retVal .= navText(TRUE);
-            //$retVal .= "</div>";
-        
         return "";
     }
     
@@ -481,18 +532,17 @@ EOM;
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>$title</title>
 <script type="text/javascript" src="meta/view.js"></script>
 <link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
+<script src="jquery/jquery-1.11.3.min.js"></script>
+<script src="jquery/ui/1.11.4/jquery-ui.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>
 </head>
-
 <body id="main_body">
-        
-<div class="nav_container">
 $navText
-</div>
 EOM;
         return $retVal;
     }

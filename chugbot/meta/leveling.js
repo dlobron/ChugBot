@@ -20,8 +20,7 @@ function getNav() {
 		    type: 'post',
 		    data: {get_nav: 1},
 		    success: function(txt) {
-		    var html = "<div class=\"nav_container\">" + txt + "</div>";
-		    $("#nav").html(html);
+		    $("#nav").html(txt);
 		}
 	    });
 }
@@ -315,7 +314,7 @@ $(function() {
 		var homeUrl = curUrl.replace("levelHome.html", "staffHome.php");
 		// Remove query string before redir.
 		var qpos = homeUrl.indexOf("?");
-		if (qpos) {
+		if (qpos > 0) {
 		    homeUrl = homeUrl.substr(0, qpos);
 		}
 		window.location.href = homeUrl;

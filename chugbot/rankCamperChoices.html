@@ -2,66 +2,34 @@
 	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
   <title>Preference Page</title>
-  <link rel="stylesheet"
-	href="jquery/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="jquery/ui/1.11.4/themes/smoothness/jquery-ui.css">
   <script src="jquery/jquery-1.11.3.min.js"></script>
   <script src="jquery/ui/1.11.4/jquery-ui.js"></script>
   <script src="meta/ajax.js"></script>
-  <link rel="stylesheet" href="meta/view.css">  
+  <link rel="stylesheet" href="meta/view.css">
+  <script src="jquery/ui/jquery.ui.touch-punch.min.js"></script>
   <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
   <style>
     .ui-progressbar {
     position: absolute;
-    top: 10px;
-    right: 15px;
+    top: 3%;
+    right: 3%;
     }
     .progress-label {
-    top: 8px;
-    left: 40px;
+    top: 20%;
+    left: 38%;
+    right: 5%;
     position: absolute;
     font-weight: bold;
     text-shadow: 1px 1px 0 #fff;
     }
-    .pref_submit {
-    position: relative;
-    margin: auto;
-    margin-top: 3px;
-    margin-left: 45%;
-    text-align: center;
-    width:10%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    }
-    .pref_submit input[type=submit] {
-    color:white;
-    background-color:green;
-    border:2px solid #336600;
-    cursor:pointer;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px; 
-    font-size: 2.02em;    
-    }
-    .pref_submit_bottom input[type=submit] {
-    position:absolute;
-    left:50%;
-    margin-top: 15px;
-    margin-bottom: 25px;
-    transform: translateX(-50%);
-    -webkit-transform: translateX(-50%);
-    color:white;
-    background-color:green;
-    cursor:pointer;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px; 
-    font-size: 2.02em;    
-    border: 2px dotted silver;
+    .center-block {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
     }
     #sortable1, #sortable2 {
     border: 2px dotted silver;
@@ -72,7 +40,7 @@
     padding: 5px 0 0 0;
     float: left;
     margin-right: 10px;
-    margin-left: 20px;
+    margin-left: 40px;
     margin-top: 5px;
     margin-bottom: 10px;
     border-radius: 5px;
@@ -89,14 +57,38 @@
     -webkit-border-radius: 5px;
     }
     label {
-      display: inline-block;
-      width: 5em;
-  }
+    display: inline-block;
+    width: 5em;
+    }
+@media all and (max-device-width: 750px) {
+.ui-progressbar {
+    position: absolute;
+    top: 10%;
+    left: 3%;
+}
+#sortable1, #sortable2 {
+    width: 35%;    
+    margin-top: 20%;
+    margin-bottom: 2%;
+}
+#sortable1 li, #sortable2 li {
+    width: 90%;
+    font-size: 1.0em;
+}
+#sortable1 {
+    margin-left: 1%;
+    margin-right: 5%;
+}
+#sortable2 {
+    margin-left: 5%;
+    margin-right: 1%;
+}
+}
   </style>
   <script>
-    $(document).tooltip({
-      position: { my: "left+350 center", at: "right center" }
-    });
+  $(document).tooltip({
+     position: { my: "left+350 center", at: "right center" }
+  });
   function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -110,7 +102,7 @@
 
 <div id="nav"></div>
 
-<div class="centered_container">
+<div class="container centered_container">
 <h2>Welcome, <div class="firstname">Ramahniks!</div></h2>
 <div class="pref_page_instructions">INSTRUCTIONS</div>
 <div class="toggler">
@@ -122,22 +114,26 @@
   </div>
 </div>
 
-<div class="pref_submit">
-<form>
-<input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit" class="SubmitPrefsButton" />
-</form>
-</div>
-</div>
-
-<div id="error" class="error_box" style="display:none"></div>
-
-<div id="filltarget"></div>
-<div class="pref_submit_bottom">
+<div class="center_block">
 <form>
 <input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit"
-       class="SubmitPrefsButton" />
+       class="SubmitPrefsButton btn btn-success btn-lg" />
 </form>
 </div>
+
+<div id="error" class="panel panel-danger col-lg-6 col-lg-offset-3" style="display:none"></div>
+<div id="exit_button" class="exit_button_holder" style="display:none">
+<form>
+<input type="submit" name="Exit" id="Exit" value="Exit" class="btn btn-info btn-lg" />
+</form>
+</div>
+
+<div id="filltarget" class="panel-group" id="accordion"></div>
+<div class="center_block">
+<form>
+<input type="submit" name="SubmitPrefs" id="SubmitPrefs" value="Submit"
+       class="SubmitPrefsButton btn btn-success btn-lg" />
+</form>
 
 </body>
 </html>

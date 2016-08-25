@@ -72,7 +72,7 @@
 <?php
     if ($message) {
         $messageText = <<<EOM
-<div class="centered_container">
+<div class="container centered_container">
 <h2>$message</h2>
 </div>
 EOM;
@@ -80,12 +80,12 @@ EOM;
     }
     ?>
 
-<div class="centered_container">
+<div class="centered_container container-fluid">
 <h2>Camp Staff Control Panel</h2>
-<p>From the left menus, you may add and edit Edot, Sessions, Blocks, Groups, and Chugim.  You may also view and edit campers according to edah.</p>
-<p>The right menu launches the leveling bot for a specific Edah/Block/Group combination.</p>
-<p>For help with a field or button, hover your mouse over the item.<p>
-<p>To prune obsolete items, such as chug assignments that are no longer valid because of changes to chugim, blocks, or groups, click <a href="<?php echo $advancedUrl; ?>">here</a>. To archive your data at the end of a summer, and prepare the database for the next summer, please click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
+<p>To add and edit Edot, Sessions, Blocks, Groups, and Chugim, expand the relevant group below.  You may also view and edit campers according to edah.</p>
+<p>Use the Leveling section to run the leveling algorithm.</p>
+<p>For help, hover your mouse over an item, or press on mobile.<p>
+<p>To prune obsolete items and merge duplicate camper registrations, click <a href="<?php echo $advancedUrl; ?>">here</a>. To archive your data at the end of a summer, and prepare the database for the next summer, click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
 
 <form class="appnitro" action="<?php echo $resetUrl; ?>">
 <button title="Click here to update the administrative settings, including staff password and camper code" class="btn btn-primary" type="submit" value="1">Edit Admin Settings</button>
@@ -97,10 +97,36 @@ EOM;
 
 </div>
 
-<div class="right_container">
+<div class="panel-group" id="accordion">
+<div class="multi_form_container">
+<?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
+</div>
+
+<div class="multi_form_container">
+<?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
+</div>
+
+<div class="multi_form_container">
+<?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
+</div>
+
+<div class="multi_form_container">
+<?php echo genPickListForm($groupId2Name, "group", "groups"); ?>
+</div>
+
+<div class="multi_form_container">
+<?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
+</div>
+
+<div class="multi_form_container">
+<?php echo genPickListForm($bunkId2Name, "bunk", "bunks"); ?>
+</div>
+</div>
+
+<div class="multi_form_container">
 <h3>Leveling</h3>
 <p>To view the leveling page, choose a time block and edah from the drop-down lists, and click "Go."</p>
-<p>If there is an existing saved assignment for the selected edah and block, it will be displayed.  Nothing will be 
+<p>If there is an existing saved assignment for the selected edah and block, it will be displayed.  Nothing will be
 changed until you click the Save or Reassign buttons on the leveling page.  If there is no existing assignment, one
 will be created and then displayed.</p>
 <p>To generate a printable chug assigment report, click "Report".
@@ -139,31 +165,6 @@ will be created and then displayed.</p>
 <button title="Go to the Report page" class="btn btn-primary" type="submit">Report</button>
 <input type="hidden" name="reset" id="reset" value="1" />
 </form>
-
-</div>
-
-<div class="multi_form_container">
-<?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
-</div>
-
-<div class="multi_form_container">
-<?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
-</div>
-
-<div class="multi_form_container">
-<?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
-</div>
-
-<div class="multi_form_container">
-<?php echo genPickListForm($groupId2Name, "group", "groups"); ?>
-</div>
-
-<div class="multi_form_container">
-<?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
-</div>
-
-<div class="multi_form_container">
-<?php echo genPickListForm($bunkId2Name, "bunk", "bunks"); ?>
 </div>
 
 <?php

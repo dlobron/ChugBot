@@ -251,7 +251,7 @@
         $pl = "";
     }
     if ($didDeleteOk || $didMergeOk) {
-        echo "<div class=\"centered_container\">";
+        echo "<div class=\"container centered_container\">";
         echo "<h3>Deletion Successful!</h3>";
         if ($didDeleteOk) {
             echo "<p>Successfully deleted $numDeleted obsolete assignment" . $pl . ".  ";

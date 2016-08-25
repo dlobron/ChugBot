@@ -2,12 +2,14 @@
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
   <title>Exclusion Matrix</title>
   <link rel="stylesheet"
         href="jquery/ui/1.11.4/themes/smoothness/jquery-ui.css" />
   <script src="jquery/jquery-1.11.3.min.js"></script>
   <script src="jquery/ui/1.11.4/jquery-ui.js"></script>
+  <script src="jquery/ui/jquery.ui.touch-punch.min.js"></script>
   <script src="meta/matrix.js"></script>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/u/dt/jqc-1.12.3,dt-1.10.12,fc-3.2.2,fh-3.1.2/datatables.min.css"/>
   <script type="text/javascript" src="https://cdn.datatables.net/u/dt/jqc-1.12.3,dt-1.10.12,fc-3.2.2,fh-3.1.2/datatables.min.js"></script>
@@ -21,9 +23,6 @@
     margin-top: 20px;
     text-align: center;
     width:35%;
-    }
-    .control_buttons input[type=submit] {
-    padding:3px 8px;
     }
     .matrix_container
     {
@@ -49,7 +48,7 @@
     
     <div id="nav"></div>
 
-    <div class="centered_container">
+    <div class="container centered_container">
       <h2>De-Duplication Matrix</h2>
       <p>This page lets you tell the system that certain chugim should not be
 	assigned to the same camper in the same block as certain other chugim.
@@ -70,7 +69,7 @@
     </div>
     
     <div class="control_buttons">
-      <input title="Save changes and exit this page" class="btn btn-default" type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
+      <input title="Save changes and exit this page" class="btn btn-primary btn-lg" type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
     </div>
     
   </body>

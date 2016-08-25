@@ -150,12 +150,12 @@ EOM;
     echo headerText("Admin Password Reset Page");
     
     if ($emailSent) {
-        echo "<div class=\"centered_container\">";
+        echo "<div class=\"container centered_container\">";
         echo "<h2>Mail Sent</h2>";
         echo "<p>An email has been sent to $adminEmail.  Please check your Inbox and follow the instructions in the message to reset the administrative password.</p>";
         echo "</div>";
     } else if ($_SESSION['reset_password_ok']) {
-        echo "<div class=\"centered_container\">";
+        echo "<div class=\"container centered_container\">";
         echo "<h2>Enter New Password</h2>";
         echo "<p>Please enter a new administrative password.  Passwords must be at least 5 characters.</p>";
         echo "</div>";

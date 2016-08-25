@@ -4,7 +4,7 @@
     function connect_db($archiveYear = NULL) {
         $dbName = MYSQL_DB;
         if (! is_null($archiveYear)) {
-            $dbName .= "_" . $archiveYear;
+            $dbName .= $archiveYear;
         }
         $mysqli = new mysqli(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWD, $dbName);
         if (mysqli_connect_error()) {
@@ -245,13 +245,13 @@
                 $secondId2Name[$row[0]] = $row[1];
             }
         }
-        while ($row = $result->fetch_array(MYSQLI_NUM)) {
+        while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
             if ($secondIdColumn !== NULL &&
-                array_key_exists(1, $row) &&
-                array_key_exists($row[1], $secondId2Name)) {
-                $id2Name[$row[0]] = $row[2] . " - " . $secondId2Name[$row[1]];
+                array_key_exists($secondIdColumn, $row) &&
+                array_key_exists($row[$secondIdColumn], $secondId2Name)) {
+                $id2Name[$row[$idColumn]] = $row["name"] . " - " . $secondId2Name[$row[$secondIdColumn]];
             } else {
-                $id2Name[$row[0]] = $row[1];
+                $id2Name[$row[$idColumn]] = $row["name"];
             }
         }
     }

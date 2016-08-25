@@ -15,46 +15,6 @@ body
     cursor:move;
 }
 
-.control_button {
-    font-size: 1.2em;
-    padding:3px 8px;
-    color:black;
-    background-color: #cccccc;
-    border:1px solid grey;
-    box-shadow: 2px 2px grey;
-    cursor:pointer;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-    font-size: 1.2em;
-}
-
-.cb_smaller {
-    padding:3px 5px;
-    color:black;
-    background-color: #cccccc;
-    border:1px solid grey;
-    box-shadow: 2px 2px grey;
-    cursor:pointer;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-    font-size: 1.2em;
-}
-
-.cb_even_smaller {
-    font-size: 0.9em;
-    padding:3px 5px;
-    color:black;
-    background-color: #cccccc;
-    border:1px solid grey;
-    box-shadow: 2px 2px grey;
-    cursor:pointer;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-}
-
 .toggler 
 {
     position: relative;
@@ -68,48 +28,19 @@ body
     font-size: 1.2em;    
  }
 
-.right_container
+.exit_button_holder
 {
-	position: absolute;
-	right: 10%;
-	margin-top: 10px;
-	width:30%;
-        font-size: 1.2em;
-        background:#fff;
-        padding-bottom: 1px;
-	padding-left: 10px;
-        padding-right: 10px;
-        border: 2px dotted silver;
-        border-radius: 10px;
-        -moz-border-radius: 10px;
-        -webkit-border-radius: 10px;
+     margin-top: 2%;
+     margin-bottom: 2%;
 }
-
-.top_container
-{
-	position: relative;
-        margin-top: 5px;
-	top: 2px;
-        background:#fff;
-        margin:0 auto;
-        text-align: left;
-	width:15%;
-        padding-bottom: 3px;
-	padding-left: 5px;
-	padding-right: 5px;
-	border: 1px solid silver;
-        border-radius: 10px;
-        -moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-}	
 
 .chug_choice_container
 {
 	position: relative;
 	overflow: auto;
 	margin-top: 20px;
-	margin-left: 10px;
-        width: 35%;
+	margin-left: 10px;	
+        width: 50%;
 	font-size: 1.1em;
 	background: #fff;
 	padding-bottom: 1px;
@@ -122,14 +53,14 @@ body
 .chug_choice_container > h3
 {
 	text-align: left;
-	margin-left: 50px;
+	margin-left: 15%;
 }
 
 .centered_invisible
 {
 	position: absolute;
-	top: 150px;
-	left: 163px;
+	top: 30%;
+	left: 28.5%;
 	text-align: center;
 	margin: 0 auto;
 }
@@ -137,8 +68,8 @@ body
 .right_invisible
 {
 	position: absolute;
-	top: 130px;
-	left: 340px;
+	top: 27%;
+	left: 57%;
 	text-align: center;
 	margin: 0 auto;
 }
@@ -146,13 +77,10 @@ body
 .error_box
 {
 	position: relative;
-        margin-top: 5px;
-        top: 1px;
         background:#fff;
         margin:0 auto;
         text-align: left;
-        width:35%;
-        padding-bottom: 3px;
+	width: 80%;
         padding-left: 5px;
         padding-right: 5px;
         border: 2px solid red;
@@ -188,39 +116,16 @@ body
 	padding-right: 5px;
 }
 
-.stand_alone_button_container
-{
-	position: relative;
-        margin-top: 15px;
-	background:#fff;
-	width: 200px;
-        margin:0 auto;
-        text-align: center;
-        padding-bottom: 3px;
-	padding-left: 5px;
-	padding-right: 5px;
-	border: 1px solid silver;
-        border-radius: 10px;
-        -moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-}
-
 .centered_container
 {
-	position: relative;
-        margin-top: 5px;
-	top: 2px;
-        background:#fff;
-        margin:0 auto;
-        text-align: center;
-	width:35%;
-        padding-bottom: 3px;
-	padding-left: 5px;
-	padding-right: 5px;
-	border: 1px solid silver;
-        border-radius: 10px;
-        -moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
+	width: 90%;
+	background-color: rgba(245, 245, 245, 0.4);
+	padding-top: 2%;
+	padding-bottom: 2%;
+	margin-bottom: 2%;
+        border-radius: 2%;
+        -moz-border-radius: 2%;
+	-webkit-border-radius: 2%;
 }
 
 .message_container
@@ -244,84 +149,6 @@ body
 	-webkit-border-radius: 10px;
 }
 
-.centered_container a {
-        text-decoration: none;
-        border-bottom: 1px dotted #999999;
-}
-
-.centered_container ol {
-        font-size: 1.2em; 	
-}
-
-.centered_container li {
-        margin: 0 0 10px 0;
-}
-
-.nav_container
-{
-	position: absolute;
-	left: 30px;
-	top: 2px;
-        margin:0 auto;
-        text-align: center;
-	width:15%;
-        margin-top: 5px;
-	padding-top: 40px;
-        padding-bottom: 10px;
-	padding-left: 45px;
-	padding-right: 5px;
-	background-color: transparent;
-}
-
-.nav_anchor {
-  vertical-align:center;
-  text-align:center;
-  width:90%;
-  white-space: normal !important;
-}
-
-.hnav_container
-{
-	margin: auto;
-	position: relative;
-        margin-top: 5px;
-	top: 2px;
-        background-color: transparent;
-	margin-top: 30px;
-        text-align: center;
-	width: 60%;
-
-	padding-top: 10px;
-        padding-bottom: 10px;
-	padding-left: 5px;
-	padding-right: 5px;
-}
-
-.hnav_anchor:hover {
-  background-color:#ffffff;
-  text-decoration:none;
-  color:black;
-}
-
-.hnav_anchor {
-  font-size: 1.2em;
-  cursor:pointer;
-  background-color:#66FF33;
-  color:white;
-  display:block;
-  text-decoration: none;
-  text-align:center;
-  width:20%;
-  height:40px;
-  border-radius:5px;
-  border-width:1px;
-  border-style:solid;
-  border-color:#E70000;
-  display: table-cell;
-  margin-right: 5px;
-  margin-left: 5px;
-}
-
 .multi_form_container
 {
 	position: relative;
@@ -331,8 +158,9 @@ body
 	background:#fff;
 	margin:5 auto;
 	text-align:left;
-	width:45%;
-	padding-bottom: 1px;
+	width:55%;
+	padding-bottom: 1%;
+	padding-left: 2%;
 	border: 1px solid silver;
 	border-radius: 10px;
     	-moz-border-radius: 10px;
@@ -362,8 +190,24 @@ body
 	margin:0 auto;
 	padding-left: 5px;
 	text-align:left;
-	width:640px;
+	width:60%;
 	border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+}
+
+.archive_form_container
+{
+	background:#fff;
+        margin:0 auto;
+        margin-left: 2%;
+	margin-right: 2%;
+	margin-top: 2%;
+	margin-bottom: 2%;
+	padding: 2%;
+        text-align:left;
+	border: 2px dotted silver;
+        border-radius: 10px;
         -moz-border-radius: 10px;
         -webkit-border-radius: 10px;
 }
@@ -372,14 +216,47 @@ body
 {
 	background:#fff;
         margin:0 auto;
-        padding-left: 25px;
-	padding-right: 25px;
-        margin-left: 280px;
-	margin-right: 50px;
+        margin-left: 2%;
+	margin-right: 2%;
         text-align:left;
         border-radius: 10px;
         -moz-border-radius: 10px;
         -webkit-border-radius: 10px;
+}
+
+@media all and (max-device-width: 750px) {
+.toggler
+{
+	width: 90%;
+}
+.centered_invisible
+{
+	left: 36%;
+}
+.right_invisible
+{
+	left: 80%;
+}
+.chug_choice_container
+{
+	width: 90%;
+}
+.archive_form_container
+{
+	width: 90%;
+}
+.form_container
+{
+	width:90%;
+}
+.multi_form_container
+{
+	width:90%;
+}
+.report_form_container
+{
+	width:90%;	
+}
 }
 
 #top
@@ -672,26 +549,6 @@ form .section_break p
 	margin:0 0 10px;
 }
 
-/**** Buttons ****/
-input.button_text
-{
-	overflow:visible;
-	padding:0 7px;
-	width:auto;
-}
-
-.buttons button
-{
-	font-size:100%;
-	margin-right:5px;
-}
-
-.buttons input
-{
-	font-size:120%;
-	margin-right:5px;
-}
-
 /**** Inputs and Labels ****/
 label.description
 {
@@ -756,7 +613,6 @@ select.select
 	border-right:1px solid #c3c3c3;
 	border-top:1px solid #7c7c7c;
 }
-
 
 input.currency
 {
@@ -1088,198 +944,3 @@ div.zebra { position: relative; }
 .zebra th {
   width: 25%;
 }
-
-/*** Calendar **********************/
-div.calendar { position: relative; }
-
-.calendar table {
-cursor:pointer;
-border:1px solid #ccc;
-font-size: 11px;
-color: #000;
-background: #fff;
-font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
-}
-
-.calendar .button { 
-text-align: center;    
-padding: 2px;          
-}
-
-.calendar .nav {
-background:#f5f5f5;
-}
-
-.calendar thead .title { 
-font-weight: bold;      
-text-align: center;
-background: #dedede;
-color: #000;
-padding: 2px 0 3px 0;
-}
-
-.calendar thead .headrow { 
-background: #f5f5f5;
-color: #444;
-font-weight:bold;
-}
-
-.calendar thead .daynames { 
-background: #fff;
-color:#333;
-font-weight:bold;
-}
-
-.calendar thead .name { 
-border-bottom: 1px dotted #ccc;
-padding: 2px;
-text-align: center;
-color: #000;
-}
-
-.calendar thead .weekend { 
-color: #777;
-}
-
-.calendar thead .hilite { 
-background-color: #444;
-color: #fff;
-padding: 1px;
-}
-
-.calendar thead .active { 
-background-color: #d12f19;
-color:#fff;
-padding: 2px 0px 0px 2px;
-}
-
-
-.calendar tbody .day { 
-width:1.8em;
-color: #222;
-text-align: right;
-padding: 2px 2px 2px 2px;
-}
-.calendar tbody .day.othermonth {
-font-size: 80%;
-color: #bbb;
-}
-.calendar tbody .day.othermonth.oweekend {
-color: #fbb;
-}
-
-.calendar table .wn {
-padding: 2px 2px 2px 2px;
-border-right: 1px solid #000;
-background: #777;
-}
-
-.calendar tbody .rowhilite td {
-background: #FFF1AF;
-}
-
-.calendar tbody .rowhilite td.wn {
-background: #FFF1AF;
-}
-
-.calendar tbody td.hilite { 
-padding: 1px 1px 1px 1px;
-background:#444 !important;
-color:#fff !important;
-}
-
-.calendar tbody td.active { 
-color:#fff;
-background: #529214 !important;
-padding: 2px 2px 0px 2px;
-}
-
-.calendar tbody td.selected { 
-font-weight: bold;
-border: 1px solid #888;
-padding: 1px 1px 1px 1px;
-background: #f5f5f5 !important;
-color: #222 !important;
-}
-
-.calendar tbody td.weekend { 
-color: #777;
-}
-
-.calendar tbody td.today { 
-font-weight: bold;
-color: #529214;
-background:#D9EFC2;
-}
-
-.calendar tbody .disabled { color: #999; }
-
-.calendar tbody .emptycell { 
-visibility: hidden;
-}
-
-.calendar tbody .emptyrow { 
-display: none;
-}
-
-.calendar tfoot .footrow { 
-text-align: center;
-background: #556;
-color: #fff;
-}
-
-.calendar tfoot .ttip { 
-background: #222;
-color: #fff;
-font-size:10px;
-border-top: 1px solid #dedede;
-padding: 3px;
-}
-
-.calendar tfoot .hilite { 
-background: #aaf;
-border: 1px solid #04f;
-color: #000;
-padding: 1px;
-}
-
-.calendar tfoot .active { 
-background: #77c;
-padding: 2px 0px 0px 2px;
-}
-
-.calendar .combo {
-position: absolute;
-display: none;
-top: 0px;
-left: 0px;
-width: 4em;
-border: 1px solid #ccc;
-background: #f5f5f5;
-color: #222;
-font-size: 90%;
-z-index: 100;
-}
-
-.calendar .combo .label,
-.calendar .combo .label-IEfix {
-text-align: center;
-padding: 1px;
-}
-
-.calendar .combo .label-IEfix {
-width: 4em;
-}
-
-.calendar .combo .hilite {
-background: #444;
-color:#fff;
-}
-
-.calendar .combo .active {
-border-top: 1px solid #999;
-border-bottom: 1px solid #999;
-background: #dedede;
-font-weight: bold;
-}
-

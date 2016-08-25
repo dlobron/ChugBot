@@ -12,16 +12,14 @@
     $preserveTableId2Name = array();
     $preserveTableId2Name[1] = "blocks";
     $preserveTableId2Name[2] = "bunks";
-    $preserveTableId2Name[3] = "chugim";
+    $preserveTableId2Name[3] = "chugim + groups";
     $preserveTableId2Name[4] = "edot";
-    $preserveTableId2Name[5] = "groups";
-    $preserveTableId2Name[6] = "sessions";
+    $preserveTableId2Name[5] = "sessions";
+    $preserveTableId2Name[6] = "campers";
     
     function restoreCurrentDb(&$dbErr, $mysql, $mysqldump, $thisYearArchive) {
-        // 1. Dump the archive database.  Important: the database user must
-        // have adequate permission, including LOCK permission, to do these
-        // operations.
-        error_log("Writing out archive DB contents");
+        // 1. Dump the archive database.
+        error_log("Writing out archive DB");
         $dbPath = "/tmp/ardb.sql";
         error_log("Dumping archive database to $dbPath using $mysqldump");
         $cmd = "$mysqldump --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " $thisYearArchive > $dbPath";
@@ -35,19 +33,8 @@
             }
             return;
         }
-        // 2. Drop/create the current DB.
-        error_log("Creating current DB");
-        $db = new DbConn();
-        $result = $db->runQueryDirectly("DROP DATABASE IF EXISTS " . MYSQL_DB, $dbErr);
-        if ($result === NULL) {
-            return;
-        }
-        $result = $db->runQueryDirectly("CREATE DATABASE " . MYSQL_DB . " COLLATE utf8_unicode_ci", $dbErr);
-        if ($result === NULL) {
-            return;
-        }
-        // 3. Import dumped data into current DB.
-        error_log("Importing data to current DB");
+        // 2. Import the archive DB data into the current DB.
+        error_log("Importing archive DB to current DB");
         $cmd = $mysql . " --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " " . MYSQL_DB . " < $dbPath";
         $retVal;
         $result = exec($cmd, $output, $retVal);
@@ -58,16 +45,12 @@
             }
             return;
         }
-        // 4. Drop the backup DB.
-        $db = new DbConn();
-        $db->runQueryDirectly("DROP DATABASE IF EXISTS $thisYearArchive", $dbErr);
+        
     }
     
     function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
                               $preserveTableId2Name, $thisYearArchive) {
-        // 1. Dump the current database.  Important: the database user must
-        // have adequate permission, including LOCK permission, to do these
-        // operations.
+        // 1. Dump the current database.
         error_log("Writing out current DB contents");
         $dbPath = "/tmp/curdb.sql";
         error_log("Dumping current database to $dbPath using $mysqldump");
@@ -82,20 +65,9 @@
             }
             return;
         }
-        // 2. Create the archive database.
-        error_log("Creating backup DB $thisYearArchive");
-        $db = new DbConn();
-        $result = $db->runQueryDirectly("DROP DATABASE IF EXISTS $thisYearArchive", $dbErr);
-        if ($result === NULL) {
-            return;
-        }
-        $result = $db->runQueryDirectly("CREATE DATABASE $thisYearArchive COLLATE utf8_unicode_ci", $dbErr);
-        if ($result === NULL) {
-            return;
-        }
-        // 3. Import dumped data to the archive DB.
+        // 2. Import dumped data to the archive DB.
         error_log("Importing data to $thisYearArchive");
-        $cmd = $mysql . " --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " $thisYearArchive < $dbPath";
+        $cmd = "$mysql --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " $thisYearArchive < $dbPath";
         $retVal;
         $result = exec($cmd, $output, $retVal);
         if ($retVal) {
@@ -105,8 +77,9 @@
             }
             return;
         }
-        // 4. Empty camper-specific tables in the current db.
-        $delTables = array("campers", "matches", "preferences");
+        // 3. Clear matches and prefs from the current DB, since these always switch over from year
+        // to year.
+        $delTables = array("matches", "preferences");
         foreach ($delTables as $delTable) {
             error_log("Clearing $delTable in current DB");
             $db = new DbConn();
@@ -115,50 +88,47 @@
                 return;
             }
         }
-        // 5. Empty dynamic tables, unless their ID appears in $preserveTables.
+        // 4. Empty dynamic tables from the current DB, unless their ID appears in $preserveTables.
         foreach ($preserveTableId2Name as $delTableId => $delTableName) {
             if (array_key_exists("$delTableId", $preserveTables)) {
                 error_log("Not clearing dynamic $delTableName per checkbox");
                 continue;
             }
-            error_log("Clearing dynamic $delTableName in current DB");
-            $db = new DbConn();
-            $result = $db->runQueryDirectly("DELETE FROM $delTableName", $dbErr);
-            if ($result === NULL) {
-                return;
+            // Some table names contain multiple tables separated by " + ".
+            $tables = explode(" + ", $delTableName);
+            foreach ($tables as $table) {
+                error_log("Clearing dynamic $table in current DB");
+                $db = new DbConn();
+                $result = $db->runQueryDirectly("DELETE FROM $table", $dbErr);
+                if ($result === NULL) {
+                    return;
+                }
             }
         }
     }
     
     // Check to see if the most recently finished summer has already been
-    // archived.  An archive DB has the same name as the MYSQL_DB constant,
-    // but with the archive year appended after an underscore (e.g.,
-    // camprama_chugbot_db_2016 would be an archive of the summer 2016 data).
-    // If the current year has not been archived, we will display an "archive"
-    // button, with a checklist to choose which tables should be preserved.
-    // If the current year is already archived, display a "restore" button, with
-    // a warning that the restore operation will clobber the data currently in
-    // the database.
+    // archived.
     $curYearHasBeenArchived = FALSE;
     $didRestoreDb = FALSE;
+    $didArchiveDb = FALSE;
     $homeUrl = homeUrl();
     $nextCampYear = yearOfUpcomingSummer();
     $curCampYear = $nextCampYear - 1;
-    $restoreText = "<p>Our database shows that you have already archived the database for Kayitz $curCampYear. " .
-    "To restore the archived data to the current database, please click \"Restore\" below. This will " .
+    $restoreText = "<p>You have previously archived the database for Kayitz $curCampYear. " .
+    "To restore the $curCampYear data to the current database, please click \"Restore\" below. This will " .
     "overwrite any data in the current database.  This action cannot be undone.</p>";
-    $thisYearArchive = MYSQL_DB . "_" . $curCampYear;
+    $thisYearArchive = MYSQL_DB . $curCampYear;
     $dbErr = "";
     $permissionsError = "";
-    $db = new DbConn();
-    $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
-    while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
-        if ($row[0] === $thisYearArchive) {
+    $archiveYears = getArchiveYears($dbErr);
+    foreach ($archiveYears as $archiveYear) {
+        if ($archiveYear == $curCampYear) {
             $curYearHasBeenArchived = TRUE;
             break;
         }
     }
-    $requiredPermissions = array("CREATE" => 0, "DROP" => 0, "LOCK TABLES" => 0);
+    $requiredPermissions = array("DELETE" => 0, "LOCK TABLES" => 0);
     $db = new DbConn();
     $result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'@'" . MYSQL_HOST . "'", $dbErr);
     while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
@@ -178,6 +148,20 @@
         $permissionsError = "The archive operation requires the following missing permissions: $missingPerms. " .
         "Please check with your site administrator, who should be able to grant these.";
     }
+    $haveDb = FALSE;
+    $noBackupDbError = "";
+    $db = new DbConn();
+    $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
+    while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        if ($row[0] == $thisYearArchive) {
+            $haveDb = TRUE;
+            break;
+        }
+    }
+    if (! $haveDb) {
+        $noBackupDbError = "In order to archive, you must create a database called $thisYearArchive using cPanel or a similar " .
+        "administrative tool. Please ask your site administrator to create this table, then try again.";
+    }
     
     $binaryNotFoundError = "";
     $mysqldump = MYSQL_PATH . "/mysqldump";
@@ -192,7 +176,8 @@
     // Check the GET data to find out what action to take.
     if ($_SERVER["REQUEST_METHOD"] == "GET" &&
         empty($dbErr) &&
-        empty($binaryNotFoundError)) {
+        empty($binaryNotFoundError) &&
+        empty($noBackupDbError)) {
         $doArchive = test_input($_GET["archive"]);
         $restoreFromArchive = test_input($_GET["restore"]);
         $preserveTables = array();
@@ -201,9 +186,10 @@
             archiveCurrentDb($dbErr, $preserveTables, $mysql, $mysqldump,
                              $preserveTableId2Name, $thisYearArchive);
             if (empty($dbErr)) {
+                $didArchiveDb = TRUE;
                 $curYearHasBeenArchived = TRUE;
                 $restoreText = "<p>Archive successful! Click \"Restore\" to undo the archive operation, " .
-                "or click \"Cancel\" to exit.</p>";
+                "or click \"Done\" to exit.</p>";
             }
         } else if ($restoreFromArchive) {
             restoreCurrentDb($dbErr, $mysql, $mysqldump, $thisYearArchive);
@@ -218,7 +204,7 @@
 
 <?php
     echo headerText("Archive Data");
-    $errText = genFatalErrorReport(array($dbErr, $binaryNotFoundError, $permissionsError));
+    $errText = genFatalErrorReport(array($dbErr, $binaryNotFoundError, $permissionsError, $noBackupDbError));
     if (! is_null($errText)) {
         echo $errText;
         exit();
@@ -229,13 +215,10 @@
 
 <h1><a>Archive Page</a></h1>
 
-<form id="archiveForm" class="appnitro" method="GET" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-<div class="form_description">
-<h2>Archive Page</h2>
-</div>
 <?php
     if ($didRestoreDb) {
         $formHtml = <<<EOM
+        <div class="archive_form_container">
         <div class="form_description">
         $restoreText
         </div>
@@ -244,49 +227,70 @@
         <button class="btn btn-success" type="button" data-toggle="tooltip" title="Return to staff home page" onclick="window.location.href='$homeUrl'">Done</button>
         </li>
         </ul>
+        </div>
 EOM;
         echo $formHtml;
-    } else if ($curYearHasBeenArchived) {
+    }
+    
+    $formAction = htmlspecialchars($_SERVER["PHP_SELF"]);
+    $tableChooser = new FormItemInstanceChooser("Items to Preserve", FALSE, "pt", 0);
+    $tableChooser->setId2Name($preserveTableId2Name);
+    $tableChooser->setActiveIdHash($preserveTables);
+    $tableChooser->setGuideText("Put a check next to the items you would like to carry over from $curCampYear to $nextCampYear. " .
+                                "Unchecked categories will be cleared from the current database.");
+    
+    $formHtml = <<<EOM
+    <form id="archiveForm1" class="appnitro" method="GET" action="$formAction">
+    <div class="form_description">
+    <h2>Archive Current Data</h2>
+    </div>
+    <div class="archive_form_container">
+    <div class="form_description">
+    <p>To archive your current data and prepare the database for next year, please click the "Archive"
+        button below.</p>
+    <p>Before you archive, use the checkboxes to choose those items from the current database that you would like to keep for next year (if any).</p>
+    </div>
+    <ul>
+    <li>
+EOM;
+    echo $formHtml;
+    echo $tableChooser->renderHtml();
+    
+    $formHtml = <<<EOM
+    </li>
+    <li class="buttons">
+    <input class="btn btn-primary" type="submit" name="submit" value="Archive" data-toggle="tooltip" title="Archive your $curCampYear data" />
+    <button class="btn btn-link" type="button" data-toggle="tooltip" title="Exit with no changes" onclick="window.location.href='$homeUrl'">Cancel</button>
+    <input type="hidden" name="archive" value="1" />
+    </li>
+    </ul>
+    </form>
+    </div>
+EOM;
+    echo $formHtml;
+    
+    if ($curYearHasBeenArchived &&
+        $didRestoreDb == FALSE) {
+        if ($didArchiveDb) {
+            $noActionButton = "<button class=\"btn btn-success\" type=\"button\" data-toggle=\"tooltip\" title=\"Done with archiving\" onclick=\"window.location.href='$homeUrl'\">Done</button>";
+        } else {
+            $noActionButton = "<button class=\"btn btn-link\" type=\"button\" data-toggle=\"tooltip\" title=\"Exit with no changes\" onclick=\"window.location.href='$homeUrl'\">Cancel</button>";
+        }
         $formHtml = <<<EOM
+        <form id="archiveForm2" class="appnitro" method="GET" action="$formAction">
+        <div class="archive_form_container">
         <div class="form_description">
         $restoreText
         </div>
         <ul>
         <li class="buttons">
-        <button class="btn btn-warning" type="submit" name="submit" data-toggle="tooltip" title="Replace the current database with the archived $curCampYear database">Restore</button>
-        <button class="btn btn-link" type="button" data-toggle="tooltip" title="Exit with no changes" onclick="window.location.href='$homeUrl'">Cancel</button>
+        <button class="btn btn-danger" type="submit" name="submit" data-toggle="tooltip" title="Replace the current database with the archived $curCampYear database">Restore</button>
+        $noActionButton
         <input type="hidden" name="restore" value="1" />
         </li>
         </ul>
-EOM;
-        echo $formHtml;
-    } else {
-        $tableChooser = new FormItemInstanceChooser("Items to Preserve", FALSE, "pt", 0);
-        $tableChooser->setId2Name($preserveTableId2Name);
-        $tableChooser->setActiveIdHash($preserveTables);
-        $tableChooser->setGuideText("Put a check next to the items you would like to carry over from $curCampYear to $nextCampYear. " .
-                                    "Unchecked categories will be cleared from the current database.");
-        
-        $formHtml = <<<EOM
-        <div class="form_description">
-        <p>To archive data for summer $curCampYear and prepare the database for $nextCampYear, please click the "Archive"
-            button below.</p>
-        <p>Before you archive, use the checkboxes to choose those items from $curCampYear that you would like to keep in the database
-            for $nextCampYear (if any).</p>
+        </form>
         </div>
-        <ul>
-        <li>
-EOM;
-        echo $formHtml;
-        echo $tableChooser->renderHtml();
-        $formHtml = <<<EOM
-        </li>
-        <li class="buttons">
-        <input class="btn btn-primary" type="submit" name="submit" value="Archive" data-toggle="tooltip" title="Archive your $curCampYear data" />
-        <button class="btn btn-link" type="button" data-toggle="tooltip" title="Exit with no changes" onclick="window.location.href='$homeUrl'">Cancel</button>
-        <input type="hidden" name="archive" value="1" />
-        </li>
-        </ul>
 EOM;
         echo $formHtml;
     }

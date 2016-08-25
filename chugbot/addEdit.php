@@ -122,13 +122,13 @@
             $errText = genFatalErrorReport($allErrors, TRUE);
             if (! is_null($errText)) {
                 echo $errText;
-                exit();
+                //exit(); // Keep rendering, so the user can fix the data.
             }
             $formId = "main_form";
             $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
             $html = "";
             if ($this->resultStr) {
-                $html .= "<div class=\"centered_container\">$this->resultStr</div>";
+                $html .= "<div class=\"container centered_container\">$this->resultStr</div>";
             }
             $secondParagraphHtml = "";
             if ($this->secondParagraph) {
@@ -482,7 +482,7 @@ EOM;
                     }
                     if ($val === NULL) {
                         if ($col->required && (! $this->fromHomePage)) {
-                            $this->colName2Error[$col->name] = errorString("Missing required column " . $col->name);
+                            $this->colName2Error[$col->name] = errorString("Missing required field " . $col->name);
                             return;
                         }
                         // This is tricky: if a value is NULL, and we have a default,
@@ -491,7 +491,7 @@ EOM;
                         // will revert to those values if they are not set.  I think this
                         // is OK, but we might eventually want to change this.
                         if (! is_null($col->defaultValue)) {
-                            error_log("Column $col->name is unset: using default value $col->defaultValue");
+                            error_log("Field $col->name is unset: using default value $col->defaultValue");
                             $val = $col->defaultValue;
                         }
                     }
@@ -612,7 +612,7 @@ EOM;
                 $val = test_input($_POST[$col->name]);
                 if ($val === NULL) {
                     if ($col->required) {
-                        $this->colName2Error[$col->name] = errorString("Missing value for required column " . $col->name);
+                        $this->colName2Error[$col->name] = errorString("Missing value for required field");
                         continue;
                     }
                     if (! is_null($col->defaultValue)) {
@@ -731,7 +731,7 @@ EOM;
                 $val = test_input($_POST[$col->name]);
                 if ($val === NULL) {
                     if ($col->required) {
-                        $this->colName2Error[$col->name] = errorString("Missing value for required column " . $col->name);
+                        $this->colName2Error[$col->name] = errorString("Missing value for required field");
                         continue;
                     }
                     if (! is_null($col->defaultValue)) {

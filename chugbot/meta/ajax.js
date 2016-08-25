@@ -4,6 +4,21 @@ var success = false;
 var existingChoicesMap = {};
 var blockGroupChugInUse = {};
 
+$(function() {
+        $("#Exit").click(function(event) {
+                event.preventDefault();
+                // Simulate clicking a link, so this page goes in the browser history.
+                var curUrl = window.location.href;
+                var homeUrl = curUrl.replace("rankCamperChoices.html", "camperHome.php");
+                // Remove query string before redir.
+                var qpos = homeUrl.indexOf("?");
+                if (qpos > 0) {
+                    homeUrl = homeUrl.substr(0, qpos);
+                }
+                window.location.href = homeUrl;
+            })
+            });
+
 // Use the "promise" interface to ensure that we get existing choices and nav
 // data before we get the name and fill in existing choices (otherwise, the
 // functions can run in any order, and the user might not see any preferences).
@@ -75,7 +90,7 @@ $(function() {
 		// Collect data from the dest arrays when the submit button is clicked.
 		var arrayOrderedLists = [];
 		var divs = document.getElementsByName("chug_choice_container");
-		var chugCountError = "<h3>Oops! Errors were found:</h3>";
+		var chugCountError = "<h3>Oops! Errors were found. Please fix the errors, then click Submit.</h3>";
 		var errorCount = 0;
 		for (var i = 0; i < divs.length; i++){
 		    var divElement = divs[i];
@@ -118,7 +133,7 @@ $(function() {
 		}
 		if (errorCount > 0) {
 		    $( "#error:visible" ).removeAttr( "style" ).fadeOut();
-		    $( "#error" ).html(chugCountError);
+		    $( "#error" ).html("<div class=\"error_box\">" + chugCountError + "</div>");
 		    $( "#error" ).show("slide", 250 );
                     return;
                 }
@@ -260,7 +275,9 @@ function getNameAndFillChoices() {
 				   });
 			   });
 		    if (html.length == 0) {
-			html = "<div class=\"error_box\"><h3>No chugim were found for your edah and session.</h3></div>";
+			html = "<div class=\"panel_body error_box\"><h3>No chugim were found for your edah and session.</h3></div>";
+			$("#exit_button").show();
+			$(".center_block").hide();
 		    } 
 		    $("#filltarget").html(html);
 		},
