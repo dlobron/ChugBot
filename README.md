@@ -13,10 +13,9 @@ fact, the assignment should be treated as a "suggestion," which the camp staff w
 The application assumes that you have PHP installed in your webserver, and that you have access to a MySQL database.  To set things up,
 please follow these instructions:
 
-1. Enter the MySQL command line as root, and run "source ChugBot.sql".  Note that there is a line in the SQL that pulls in sample data: you should comment that out.
-Alternately, you can enter the database commands into an admin window.  You may have to change the name of the database to fit your ISP's conventions.  The default database name is "camprama_chugbot_db".
-
-2. Update constants.php with the login information for your MySQL database and your email account.  If your ISP's email authentication is broken, you might also need to add the following to the sendMail function in functions.php (please see https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting for details):
+1. Enter the MySQL command line as root, and run "source ChugBot.sql". Alternately, you can cut-and-paste the file into a database admin window.  You may have to change the name of the database to fit your ISP's naming conventions.  The default database name is "camprama_chugbot_db".  Make sure to grant database permissions to the user that this program will run as: I recommend using an admin window for this.
+2. Because some ISPs do not allow PHP scripts to create databases, I recommend manually creating archive databases for the next few years.  This program expects the archive database for a given year to have the same name as the database, with the year appended.  So if your database is called camprama_chugbot_db, the archive for summer 2016 would be called camprama_chugbot_db2016.  I suggest creating camprama_chugbot_dbYEAR databases for the next couple of years.
+3. Update constants.php with the login information for your MySQL database and your email account, the database user for this program, and the path to your mysql and mysqldump binaries.  If your ISP's email authentication is broken, you might also need to add the following to the sendMail function in functions.php (please see https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting for details):
 
     $mail->SMTPOptions = array(
         'ssl' => array(
@@ -25,9 +24,9 @@ Alternately, you can enter the database commands into an admin window.  You may 
             'allow_self_signed' => true
         )
     );
-
-3. Copy the contents of the "chugbot" directory to the directory where you want the website to run.  For example, if your webserver
-root is /home/web/htdocs (assuming a Unix-like directory structure), and you want this application to appear in a browser as mycamp.org/leveling/, you would copy these files to /home/web/htdocs/leveling/.
+    
+4. Copy the contents of the "chugbot" directory to the directory where you want the website to run.  For example, if your webserver
+root is /home/web/htdocs (assuming a Unix-like directory structure), and you want this application to appear in a browser as mycamp.org/leveling/, you should copy these files to /home/web/htdocs/leveling/.
 
 That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: they use a plain text token for access.  If campers need to modify their choices after entering them, they identify themselves with their email address.  This design obviously favors ease of use over high security.
 
