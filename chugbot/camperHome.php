@@ -74,6 +74,8 @@
 
 <?php
     $counter = 0;
+    // David O. requested we remove email search for now.
+    /*
     $camperEmailField = new FormItemSingleTextField("Email address associated with camper", FALSE, "email", $counter++);
     $camperEmailField->setInputType("email");
     $camperEmailField->setInputClass("element text medium");
@@ -81,6 +83,7 @@
     $camperEmailField->setPlaceHolder("Email address");
     $camperEmailField->setGuideText("Enter the email associated with the camper you would like to edit.");
     echo $camperEmailField->renderHtml();
+     */
     
     $firstNameField = new FormItemSingleTextField("Camper First Name", FALSE, "first", $counter++);
     $firstNameField->setInputType("text");

@@ -15,6 +15,8 @@
                 "edah_id", "edot");
     
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
+        // Email search is currently disabled, but we support it just in case
+        // it's added back.
         $email = test_input($_GET["email"]);
         $first = test_input($_GET["first"]);
         $last = test_input($_GET["last"]);
