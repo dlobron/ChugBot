@@ -22,6 +22,10 @@
         }
         
         $accessCode = test_input($_POST['camper_code']);
+        if (! $accessCode) {
+            $accessCode = test_input($_GET['camper_code']);
+        }
+        
         $n = strlen($accessCode);
         if ($accessCode &&
             strncasecmp($accessCode, $code, $n) == 0) {
@@ -46,8 +50,7 @@
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
-<p>This system will let you order your chug (activity) preferences.</p>
-<p>If this is your first time picking chugim for this summer, click First Time for <?php echo yearOfUpcomingSummer(); ?>.  If you have used the system this year to enter earlier preferences, click Update Existing.</p>
+<p>If this is your first time picking chugim for this summer, click First Time for <?php echo yearOfUpcomingSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
 
 <div class="panel panel-default">
 <div class="panel-heading">
@@ -74,7 +77,7 @@
 
 <?php
     $counter = 0;
-    // David O. requested we remove email search for now.
+    // David O. requested that we remove email search for now.
     /*
     $camperEmailField = new FormItemSingleTextField("Email address associated with camper", FALSE, "email", $counter++);
     $camperEmailField->setInputType("email");
