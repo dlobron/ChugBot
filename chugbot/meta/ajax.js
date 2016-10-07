@@ -253,7 +253,7 @@ function getNameAndFillChoices() {
 						   });
 					   });
 				       html += "</ul>";
-				       html += "<div class=\"centered_invisible\"><img src=\"images/RightArrow.png\" height=\"35\" width=\"35\"></div>";
+				       html += "<div class=\"sortableLabelTop\">Higher pref</div>";
 				       html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">\n";
 				       $.each(existingChoicesForThisDiv, function(index, chugNameAndId) {
 					       var p = chugNameAndId.split("||");
@@ -269,7 +269,8 @@ function getNameAndFillChoices() {
 						   titleText + " >" + chugName + "</li>";
 					   });
 				       html += "</ul>";
-				       html += "<div class=\"right_invisible\"><img src=\"images/UpDownArrows.png\"></div>";
+				       html += "<div class=\"sortableLabelBot\">Lower pref</div>";
+				       html += "<div class=\"centered_invisible\"><img src=\"images/RightArrow.png\" height=\"35\" width=\"35\"></div>";
 				       html += "<div class=\"ui-progressbar\"><div class=\"progress-label\"></div></div>";
 				       html += "</div>";
 				   });

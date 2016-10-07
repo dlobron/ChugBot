@@ -56,22 +56,9 @@ body
 	margin-left: 15%;
 }
 
-.centered_invisible
-{
-	position: absolute;
-	top: 30%;
-	left: 28.5%;
-	text-align: center;
-	margin: 0 auto;
-}
-
 .right_invisible
 {
-	position: absolute;
-	top: 27%;
-	left: 57%;
-	text-align: center;
-	margin: 0 auto;
+	opacity: 0.2;
 }
 
 .error_box
@@ -224,39 +211,39 @@ body
         -webkit-border-radius: 10px;
 }
 
-@media all and (max-device-width: 750px) {
+/**** Overrides for mobile devices ****/
+@media all and (max-device-width: 1000px) {
+
 .toggler
 {
 	width: 90%;
 }
-.centered_invisible
-{
-	left: 36%;
-}
-.right_invisible
-{
-	left: 80%;
-}
+
 .chug_choice_container
 {
 	width: 90%;
 }
+
 .archive_form_container
 {
 	width: 90%;
 }
+
 .form_container
 {
 	width:90%;
 }
+
 .multi_form_container
 {
 	width:90%;
 }
+
 .report_form_container
 {
 	width:90%;	
 }
+
 }
 
 #top
@@ -320,13 +307,11 @@ h1 a
 	overflow:hidden;
 }
 
-
 img
 {
 	behavior:url(css/iepngfix.htc);
 	border:none;
 }
-
 
 /**** Form Section ****/
 .tooltip {
@@ -865,15 +850,6 @@ ul.password{
    font-size:120% !important;
    padding-top:10px;
    font-weight:bold;
-}
-
-#li_captcha{
-   padding-left: 5px;
-}
-
-
-#li_captcha span{
-	float:none;
 }
 
 /** Embedded Form **/
