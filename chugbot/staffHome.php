@@ -137,7 +137,7 @@ will be created and then displayed.</p>
 <div>
 <select class="form-control" id="edah" name="edah">
 <?php
-    echo genPickList($edahId2Name, "", "edah");
+    echo genPickList($edahId2Name, array(), "edah");
     ?>
 </select>
 </div><p class="guidelines" id="guide_1"><small>Choose an Edah.</small></p>
@@ -147,7 +147,7 @@ will be created and then displayed.</p>
 <div>
 <select class="form-control" id="block" name="block">
 <?php
-    echo genPickList($blockId2Name, "", "block");
+    echo genPickList($blockId2Name, array(), "block");
     ?>
 </select>
 </div><p class="guidelines" id="guide_2"><small>Choose a Block.</small></p>

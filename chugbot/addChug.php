@@ -2,6 +2,7 @@
     session_start();
     include_once 'addEdit.php';
     include_once 'formItem.php';
+    include_once 'dbConn.php';
     bounceToLogin();
     
     $addChugPage = new AddPage("Add Chug",
@@ -58,7 +59,7 @@
     $minField->setInputMaxLength(4);
     $minField->setPlaceHolder("Min participants");
     $minField->setInputValue($addChugPage->columnValue("min_size"));
-    $minField->setGuideText("Enter the minimum number of campers needed for this chug to take place (default = no minimum)");
+    $minField->setGuideText("Enter the minimum number of campers needed for this chug to take place (default is no minimum)");
     $addChugPage->addFormItem($minField);
 
     $maxField = new FormItemSingleTextField("Maximum participants", FALSE, "max_size", 5);
@@ -76,6 +77,23 @@
     $commentsField->setPlaceHolder("Chug description");
     $commentsField->setGuideText("Enter an optional description of this activity.");
     $addChugPage->addFormItem($commentsField);
+    
+    // Let the user choose chugim to dedup.
+    $dedupDropDown = new FormItemDropDown("Dedup chugim", FALSE, "dedup", 7);
+    $dedupDropDown->setGuideText("Select chugim that should not be assigned to the same camper together with this one. As you select, each de-duplicated chug will appear in a list above the drop-down.");
+    $dedupDropDown->setInputSingular("chug");
+    $dedupDropDown->setDefaultMsg("Choose Chug(im)");
+    $dedupDropDown->setInputClass("element select medium");
+    $db = new DbConn();
+    $err = "";
+    $result = $db->runQueryDirectly("SELECT DISTINCT name FROM chugim", $err);
+    $chugName2Name = array(); // Mimic id-to-name, but use name as ID.
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $chugName2Name[$row[0]] = $row[0];
+    }
+    $dedupDropDown->setId2Name($chugName2Name);
+    $dedupDropDown->setDisplayListName("dedup_chugim");
+    $addChugPage->addFormItem($dedupDropDown);
     
     $addChugPage->renderForm();
 

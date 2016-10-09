@@ -920,3 +920,27 @@ div.zebra { position: relative; }
 .zebra th {
   width: 25%;
 }
+
+/*** Toggling options list **********************/
+ul.options_toggle {
+  list-style-type: none;
+  width: 15em;
+  margin: 0.3em 0;
+  padding: 0;
+}
+
+ul.options_toggle li {
+  background: #def url(../images/cross_bright.png) no-repeat 98% center;
+  margin: 1px;
+  padding: 0.1em 0.3em;
+  cursor: pointer;
+  color: #46a;
+  font-weight: bold;
+  border: solid 1px #cde;
+}
+
+select.options_toggle {
+  swidth: 15em;
+  color: #46a;
+  font-weight: bold;
+}

@@ -326,7 +326,7 @@ EOM;
         return $retVal;
     }
     
-    function genPickList($id2Name, $selected_id, $name, $defaultMessage = NULL) {
+    function genPickList($id2Name, $selectedMap, $name, $defaultMessage = NULL) {
         $ucName = ucfirst($name);
         $ddMsg = "Choose $ucName";
         if ($defaultMessage !== NULL) {
@@ -336,7 +336,7 @@ EOM;
         asort($id2Name);
         foreach ($id2Name as $id => $name) {
             $selStr = "";
-            if ($id == $selected_id) {
+            if (array_key_exists($id, $selectedMap)) {
                 $selStr = "selected";
             }
             $retVal  = $retVal . "<option value=\"$id\" $selStr>$name</option>";

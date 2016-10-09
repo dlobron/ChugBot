@@ -213,10 +213,31 @@
             if (! $this->staffOnlyOk()) {
                 return;
             }
+            if ($this->displayListName) {
+                $javascript = $this->selectIngredientText();
+                $this->html .= "\n$javascript\n";
+            }
             $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
             $this->html .= "<div>\n";
-            $this->html .= "<select class=\"form-control $this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\">";
-            $this->html .= genPickList($this->id2Name, $this->colVal, $this->inputSingular, $this->defaultMsg); // $inputSingular = e.g., "group"
+            $selectedMap = array();
+            $ocStr = "";
+            if ($this->displayListName) {
+                $this->html .= "<ul class=\"options_toggle\">";
+                foreach ($this->displayListSelectedIds as $selectedId) {
+                    $name = $this->id2Name[$selectedId];
+                    $this->html .= "<li onclick=\"this.parentNode.removeChild(this);\">";
+                    $this->html .= "<input type=\"hidden\" name=\"$this->displayListName[]\" value=\"$selectedId\" />";
+                    $this->html .= "$name</li>";
+                    $selectedMap[$selectedId] = 1;
+                }
+                $this->html .= "</ul>";
+                $ocStr = "onchange=\"selectIngredient(this);\"";
+            } else {
+                $selectedMap[$this->colVal] = 1;
+            }
+            $this->html .= "<select class=\"form-control $this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\" $ocStr>";
+            $this->html .= genPickList($this->id2Name, $selectedMap,
+                                       $this->inputSingular, $this->defaultMsg); // $inputSingular = e.g., "group"
             $this->html .= "</select>";
             if ($this->error) {
                 $this->html .= "<span class=\"error\">$this->error</span>";
@@ -229,6 +250,39 @@
             $this->html .= "</li>";
             
             return $this->html;
+        }
+        
+        public function selectIngredientText() {
+            $name = $this->displayListName;
+            $javascript = <<<JS
+            <script>
+            function selectIngredient(select)
+            {
+                var option = select.options[select.selectedIndex];
+                var ul = select.parentNode.getElementsByTagName('ul')[0];
+                
+                var choices = ul.getElementsByTagName('input');
+                for (var i = 0; i < choices.length; i++)
+                    if (choices[i].value == option.value)
+                        return;
+                
+                var li = document.createElement('li');
+                var input = document.createElement('input');
+                var text = document.createTextNode(option.firstChild.data);
+                
+                input.type = 'hidden';
+                input.name = "${name}[]";
+                input.value = option.value;
+                
+                li.appendChild(input);
+                li.appendChild(text);
+                li.setAttribute('onclick', 'this.parentNode.removeChild(this);');     
+                
+                ul.appendChild(li);
+            }
+            </script>
+JS;
+            return $javascript;
         }
         
         public function fillDropDownId2Name(&$dbErr, $idCol, $table) {
@@ -254,10 +308,22 @@
             $this->defaultMsg = $msg;
         }
         
+        public function setDisplayListSelectedIds($displayListSelectedIds) {
+            $this->displayListSelectedIds = $displayListSelectedIds;
+        }
+        
+        public function setDisplayListName($displayListName) {
+            $this->displayListName = $displayListName;
+        }
+        
         private $id2Name = array();
         private $inputSingular = "";
         private $colVal = "";
         private $defaultMsg = NULL;
+        
+        // These variables are only used if there is a display list.
+        private $displayListSelectedIds = array();
+        private $displayListName = NULL;
     }
     
     // This class generates a drop down that depends on the choices made in
