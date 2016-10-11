@@ -346,6 +346,10 @@ EOM;
             $this->alternateResultString = $ars;
         }
         
+        public function setAddEditChugPage() {
+            $this->addEditChugPage = 1;
+        }
+        
         public $mainTable;
         
         protected $idCol; // The ID column name of $this->mainTable
@@ -376,6 +380,8 @@ EOM;
         
         protected $infoMessage = "";
         protected $alternateResultString = NULL;
+        
+        protected $addEditChugPage = 0;
     }
     
     class EditPage extends AddEditBase {
@@ -462,9 +468,44 @@ EOM;
                 // Populate active instance IDs and edah filter, if configured.
                 $this->updateInstances($idVal, $this->instanceActiveIdHash);
                 $this->updateInstances($idVal, $this->activeEdotHash, TRUE);
+                
+                if ($this->addEditChugPage) {
+                    $seen = array();
+                    $db = new DbConn();
+                    $db->addSelectColumn("left_chug_id");
+                    $db->addWhereColumn("right_chug_id", $idVal, 'i');
+                    $result = $db->simpleSelectFromTable("chug_dedup_instances_v2", $this->dbErr);
+                    if ($result == FALSE) {
+                        error_log("Failed to get column values from DB: $this->dbErr");
+                        return;
+                    }
+                    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+                        if (! array_key_exists($row[0], $seen)) {
+                            array_push($this->displayListSelectedIds, $row[0]);
+                            $seen[$row[0]] = 1;
+                        }
+                    }
+                    $db = new DbConn();
+                    $db->addSelectColumn("right_chug_id");
+                    $db->addWhereColumn("left_chug_id", $idVal, 'i');
+                    $result = $db->simpleSelectFromTable("chug_dedup_instances_v2", $this->dbErr);
+                    if ($result == FALSE) {
+                        error_log("Failed to get column values from DB: $this->dbErr");
+                        return;
+                    }
+                    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+                        if (! array_key_exists($row[0], $seen)) {
+                            array_push($this->displayListSelectedIds, $row[0]);
+                            $seen[$row[0]] = 1;
+                        }
+                    }                                        
+                }
             } else {
                 // From other sources (our add page or this page), column values should
                 // be in the form data.
+                if ($this->addEditChugPage) {
+                    $this->displayListSelectedIds = $_POST["dedup_chugim"];
+                }
                 foreach ($this->columns as $col) {
                     $val = test_input($_POST[$col->name]);
                     // Translate numeric values as needed, but keep NULL as-is.
@@ -546,6 +587,24 @@ EOM;
                 if (! $instanceUpdateOk) {
                     return;
                 }
+                
+                if ($this->addEditChugPage) {
+                    // If we're editing a chug, update the exclusion table.
+                    // First, we delete dedup rows where this chug is in the left
+                    // column.  Then, we add rows from our active list.
+                    $db = new DbConn();
+                    $db->addWhereColumn("left_chug_id", $idVal, 'i');
+                    $db->deleteFromTable("chug_dedup_instances_v2", $this->dbErr);
+                    // Add the current set of names.
+                    foreach ($this->displayListSelectedIds as $dedupId) {
+                        $db = new DbConn();
+                        $db->addIgnore();
+                        $db->addColumn("left_chug_id", $idVal, 'i');
+                        $db->addColumn("right_chug_id", $dedupId, 'i');
+                        $db->insertIntoTable("chug_dedup_instances_v2", $this->dbErr);
+                    }
+                    debugLog("Added " . count($this->displayListSelectedIds) . " dedup instances");
+                }
 
                 $this->resultStr =
                     "<h3><font color=\"green\">$name updated!</font> $additionalText</h3>";
@@ -581,6 +640,13 @@ EOM;
                 }
             }
         }
+        
+        public function displayListSelectedIds() {
+            return $this->displayListSelectedIds;
+        }
+        
+        // Display list for dedup IDs, or other drop-down IDs.
+        private $displayListSelectedIds = array();
     }
 
     class AddPage extends AddEditBase {
@@ -674,17 +740,30 @@ EOM;
                 $paramHash[$key] = array_keys($this->activeEdotHash);
             }
             
-            // If we added a new chug, update the exclusion table.
-            if ($this->addChugPage) {
-                $myChugName = $this->col2Val["name"];
+            // If we are adding a new chug, update the exclusion table.
+            if ($this->addEditChugPage) {
+                // First, dedup with this chug.
                 $db = new DbConn();
                 $db->addIgnore();
-                $db->addColumn("left_chug_name", $myChugName, 's');
-                $db->addColumn("right_chug_name", $myChugName, 's');
-                $insertOk = $db->insertIntoTable("chug_dedup_instances", $this->dbErr);
+                $db->addColumn("left_chug_id", $mainTableInsertId, 'i');
+                $db->addColumn("right_chug_id", $mainTableInsertId, 'i');
+                $insertOk = $db->insertIntoTable("chug_dedup_instances_v2", $this->dbErr);
                 if (! $insertOk) {
-                    error_log("Insert into chug_dedup_instances failed: $this->dbErr");
+                    error_log("Insert into chug_dedup_instances_v2 failed: $this->dbErr");
                     return;
+                }
+                // Dedup with other chugim as requested.
+                $arr = $_POST["dedup_chugim"];
+                foreach ($arr as $dedupChugId) {
+                    $db = new DbConn();
+                    $db->addIgnore();
+                    $db->addColumn("left_chug_id", $mainTableInsertId, 'i');
+                    $db->addColumn("right_chug_id", $dedupChugId, 'i');
+                    $insertOk = $db->insertIntoTable("chug_dedup_instances_v2", $this->dbErr);
+                    if (! $insertOk) {
+                        error_log("Insert into chug_dedup_instances_v2 failed: $this->dbErr");
+                        return;
+                    }
                 }
             }
             
@@ -692,12 +771,6 @@ EOM;
             $editPage = preg_replace('/^add/', "edit", $thisPage); // e.g., "addGroup.php" -> "editGroup.php"
             echo(genPassToEditPageForm($editPage, $paramHash));
         }
-        
-        public function setAddChugPage() {
-            $this->addChugPage = 1;
-        }
-        
-        private $addChugPage;
     }
     
     // Adding a camper is very different from other add actions, so we define

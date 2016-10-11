@@ -16,6 +16,7 @@
         $retVal = array();
         $db = new DbConn();
         $db->addSelectColumn("name");
+        $db->addSelectColumn("chug_id");
         $db->addOrderByClause("GROUP BY name ORDER BY name ");
         $err = "";
         $result = $db->simpleSelectFromTable("chugim", $err);
@@ -24,24 +25,27 @@
             die(json_encode(array("error" => $err)));
         }
         $chugMap = array();
+        $chugIds = array();
         while ($row = $result->fetch_assoc()) {
             array_push($chugMap, $row["name"]);
+            array_push($chugIds, $row["chug_id"]);
         }
         $retVal["chugMap"] = $chugMap;
+        $retVal["chugIds"] = $chugIds;
         
         $matrixMap = array();
         $db = new DbConn();
         $db->addSelectColumn("*");
-        $result = $db->simpleSelectFromTable("chug_dedup_instances", $err);
+        $result = $db->simpleSelectFromTable("chug_dedup_instances_v2", $err);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
             die(json_encode(array("error" => $err)));
         }
         while ($row = $result->fetch_assoc()) {
-            if (! array_key_exists($row["left_chug_name"], $matrixMap)) {
-                $matrixMap[$row["left_chug_name"]] = array();
+            if (! array_key_exists($row["left_chug_id"], $matrixMap)) {
+                $matrixMap[$row["left_chug_id"]] = array();
             }
-            $matrixMap[$row["left_chug_name"]][$row["right_chug_name"]] = 1;
+            $matrixMap[$row["left_chug_id"]][$row["right_chug_id"]] = 1;
         }
         $retVal["matrixMap"] = $matrixMap;
         
@@ -61,18 +65,18 @@
                 if ($checked) {
                     // Add the tuple, unless it exists.
                     $db->addIgnore();
-                    $db->addColumn("left_chug_name", $leftChug, 's');
-                    $db->addColumn("right_chug_name", $rightChug, 's');
-                    $insertOk = $db->insertIntoTable("chug_dedup_instances", $err);
+                    $db->addColumn("left_chug_id", $leftChug, 'i');
+                    $db->addColumn("right_chug_id", $rightChug, 'i');
+                    $insertOk = $db->insertIntoTable("chug_dedup_instances_v2", $err);
                     if (! $insertOk) {
                         header('HTTP/1.1 500 Internal Server Error');
                         die(json_encode(array("error" => $err)));
                     }
                 } else {
                     // Delete the tuple, if it exists.
-                    $db->addWhereColumn("left_chug_name", $leftChug, 's');
-                    $db->addWhereColumn("right_chug_name", $rightChug, 's');
-                    $delOk = $db->deleteFromTable("chug_dedup_instances", $err);
+                    $db->addWhereColumn("left_chug_id", $leftChug, 'i');
+                    $db->addWhereColumn("right_chug_id", $rightChug, 'i');
+                    $delOk = $db->deleteFromTable("chug_dedup_instances_v2", $err);
                     if (! $delOk) {
                         header('HTTP/1.1 500 Internal Server Error');
                         die(json_encode(array("error" => $err)));

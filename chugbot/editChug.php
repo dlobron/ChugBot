@@ -15,6 +15,7 @@
     $editChugPage->addInstanceTable("chug_instances");
     $editChugPage->fillInstanceId2Name("block_id", "blocks");
     $editChugPage->setActiveEdotFilterBy("chug");
+    $editChugPage->setAddEditChugPage();
     
     $editChugPage->handleSubmit();
     
@@ -75,6 +76,23 @@
     $commentsField->setPlaceHolder("Chug description");
     $commentsField->setGuideText("Enter an optional description of this activity.");
     $editChugPage->addFormItem($commentsField);
+    
+    $dedupDropDown = new FormItemDropDown("Dedup chugim", FALSE, "dedup", 7);
+    $dedupDropDown->setGuideText("Select chugim that should not be assigned to the same camper together with this one. As you select, each de-duplicated chug will appear in a list above the drop-down. Click the red X next to a chug in the list to remove it.");
+    $dedupDropDown->setInputSingular("chug");
+    $dedupDropDown->setDefaultMsg("Choose Chug(im)");
+    $dedupDropDown->setInputClass("element select medium");
+    $db = new DbConn();
+    $err = "";
+    $result = $db->runQueryDirectly("SELECT chug_id, name FROM chugim", $err);
+    $chugId2Name = array();
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $chugId2Name[$row[0]] = $row[1];
+    }
+    $dedupDropDown->setId2Name($chugId2Name);
+    $dedupDropDown->setDisplayListName("dedup_chugim");
+    $dedupDropDown->setDisplayListSelectedIds($editChugPage->displayListSelectedIds());
+    $editChugPage->addFormItem($dedupDropDown);
     
     $editChugPage->renderForm();
 

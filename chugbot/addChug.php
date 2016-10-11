@@ -8,7 +8,7 @@
     $addChugPage = new AddPage("Add Chug",
                                "Please enter chug information here",
                                "chugim", "chug_id");
-    $addChugPage->setAddChugPage();
+    $addChugPage->setAddEditChugPage();
     $addChugPage->addColumn("name");
     $addChugPage->addColumn("group_id");
     $addChugPage->addColumn("min_size", FALSE, TRUE, MIN_SIZE_NUM);
@@ -87,7 +87,7 @@
     $db = new DbConn();
     $err = "";
     $result = $db->runQueryDirectly("SELECT DISTINCT name FROM chugim", $err);
-    $chugName2Name = array(); // Mimic id-to-name, but use name as ID.
+    $chugName2Name = array(); // Mimic id-to-name, but use name as ID in this case.
     while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
         $chugName2Name[$row[0]] = $row[0];
     }

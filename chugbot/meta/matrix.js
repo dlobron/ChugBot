@@ -13,6 +13,7 @@ $(function() {
 
 $(function() {
 	var chugNames = [];
+	var chugIds = [];
 	$("#SaveChanges").hide();
 	$.ajax({
                 url: 'matrix.php',
@@ -22,6 +23,9 @@ $(function() {
 		    var obj = JSON.parse(json);
 		    $.each(obj.chugMap, function(index, chugName) {
 			    chugNames.push(chugName);
+			});
+		    $.each(obj.chugIds, function(index, chugId) {
+			    chugIds.push(chugId);
 			});
 		    $.each(obj.matrixMap, function(leftChug, rightChug2Enabled) {
 			    $.each(rightChug2Enabled, function(rightChug, enabled) {
@@ -52,13 +56,13 @@ $(function() {
 			for (y = 0; y < chugNames.length; y++) {
 			    html += "<td>";
 			    var checkedText = " ";
-			    if ((chugNames[x] in chugChecked) &&
-				chugNames[y] in chugChecked[chugNames[x]]) {
+			    if ((chugIds[x] in chugChecked) &&
+				chugIds[y] in chugChecked[chugIds[x]]) {
 				checkedText = " checked=1 ";
 			    }
 			    checkbox = '<input type=checkbox' + checkedText;
-			    checkbox += 'data-x="' + chugNames[x] + '"';
-			    checkbox += ' data-y="' + chugNames[y] + '"';
+			    checkbox += 'data-x="' + chugIds[x] + '"';
+			    checkbox += ' data-y="' + chugIds[y] + '"';
 			    checkbox += '/>';
 			    html += checkbox;
 			    html += "</td>";

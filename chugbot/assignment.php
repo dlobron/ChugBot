@@ -52,11 +52,11 @@
     }
     
     function isDuplicate($candidateChug, $matchesForThisCamper, $deDupMatrix) {
-        $candidateChugName = $candidateChug->name;
-        if (array_key_exists($candidateChugName, $deDupMatrix)) {
+        $candidateChugId = $candidateChug->chug_id;
+        if (array_key_exists($candidateChugId, $deDupMatrix)) {
             // Grab the set of chugim with which the candidate chug may not
             // be duplicated.
-            $forbiddenToDupSet = $deDupMatrix[$candidateChugName];
+            $forbiddenToDupSet = $deDupMatrix[$candidateChugId];
             foreach ($matchesForThisCamper as $existingMatch) {
                 if (array_key_exists($existingMatch, $forbiddenToDupSet)) {
                     // We've found an existing match that appears in the
@@ -327,14 +327,14 @@
         $deDupMatrix = array();
         $db = new DbConn();
         $db->addSelectColumn("*");
-        $result = $db->simpleSelectFromTable("chug_dedup_instances", $err);
+        $result = $db->simpleSelectFromTable("chug_dedup_instances_v2", $err);
         if ($result == FALSE) {
             error_log($err);
             return FALSE;
         }
         while ($row = mysqli_fetch_assoc($result)) {
-            $leftChug = $row["left_chug_name"];
-            $rightChug = $row["right_chug_name"];
+            $leftChug = $row["left_chug_id"];
+            $rightChug = $row["right_chug_id"];
             if (! array_key_exists($leftChug, $deDupMatrix)) {
                 $deDupMatrix[$leftChug] = array();
             }
@@ -385,7 +385,7 @@
             if (! array_key_exists($camper->camper_id, $existingMatches)) {
                 $existingMatches[$camper->camper_id] = array();
             }
-            array_push($existingMatches[$camper->camper_id], $row[2]);
+            array_push($existingMatches[$camper->camper_id], $row[3]); // Add chug ID to existing match list.
             if (array_key_exists($camper->camper_id, $existingPrefs)) {
                 // Compute the happiness level of this match.
                 $prefsByGid = $existingPrefs[$camper->camper_id];
