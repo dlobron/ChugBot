@@ -347,8 +347,6 @@
         
         // Grab existing matches for this block, for *other* chug groups, and
         // arrange them in a lookup table by camper ID.  We'll use this to prevent dups.
-        // Note that when preventing dups, we compare chugim by name rather than ID,
-        // since Ropes aleph will have a different ID than Ropes bet.
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
         $existingMatches = array();

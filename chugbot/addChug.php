@@ -79,7 +79,7 @@
     $addChugPage->addFormItem($commentsField);
     
     // Let the user choose chugim to dedup.
-    $dedupDropDown = new FormItemDropDown("Dedup chugim", FALSE, "dedup", 7);
+    $dedupDropDown = new FormItemDropDown("De-duplication list", FALSE, "dedup", 7);
     $dedupDropDown->setGuideText("Select chugim that should not be assigned to the same camper together with this one. As you select, each de-duplicated chug will appear in a list above the drop-down.");
     $dedupDropDown->setInputSingular("chug");
     $dedupDropDown->setDefaultMsg("Choose Chug(im)");

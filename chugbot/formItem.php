@@ -252,12 +252,18 @@
             return $this->html;
         }
         
+        // Emit JS for the chug-selection drop-down.  We return if the index
+        // is zero, because the first item in the drop-down is always the
+        // default prompt "Choose One" text.  We also return if the user
+        // chooses a duplicate.
         public function selectIngredientText() {
             $name = $this->displayListName;
             $javascript = <<<JS
             <script>
             function selectIngredient(select)
             {
+                if (select.selectedIndex == 0)
+                    return;
                 var option = select.options[select.selectedIndex];
                 var ul = select.parentNode.getElementsByTagName('ul')[0];
                 

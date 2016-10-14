@@ -77,7 +77,7 @@
     $commentsField->setGuideText("Enter an optional description of this activity.");
     $editChugPage->addFormItem($commentsField);
     
-    $dedupDropDown = new FormItemDropDown("Dedup chugim", FALSE, "dedup", 7);
+    $dedupDropDown = new FormItemDropDown("De-duplication list", FALSE, "dedup", 7);
     $dedupDropDown->setGuideText("Select chugim that should not be assigned to the same camper together with this one. As you select, each de-duplicated chug will appear in a list above the drop-down. Click the red X next to a chug in the list to remove it.");
     $dedupDropDown->setInputSingular("chug");
     $dedupDropDown->setDefaultMsg("Choose Chug(im)");
