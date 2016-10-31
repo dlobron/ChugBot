@@ -349,40 +349,17 @@
         // arrange them in a lookup table by camper ID.  We'll use this to prevent dups.
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
-        // Note: we used to only consider the current block, and to exclude
-        // the current group.  We now allow other blocks, because we want to
-        // count block any duplicate assignment, not just within a block.  I
-        // think it was incorrect to exclude the current group.
+        // We have to exclude the group and block that we are currently matching,
+        // because otherwise all current assignments will look like dups!
         $existingMatches = array();
         $db = new DbConn();
-        //$db->addColVal($block_id, 'i');
-        //$db->addColVal($group_id, 'i');
-        $db->addColVal($edah_id, 'i');
-        //$db->addColVal($block_id, 'i');
-        $db->addColVal($edah_id, 'i');
+        $db->addColVal($block_id, 'i');
+        $db->addColVal($group_id, 'i');
         $db->isSelect = TRUE;
-        // The next query is the old one, which only looked at the current
-        // block (e.g., Weeks 1+2) and excluded the current group (e.g.,
-        // Chug Aleph).
-        /*
         $sql = "SELECT m.camper_id, c.group_id, c.name, c.chug_id " .
-        "FROM matches m, chugim c, campers ca, block_instances b, chug_instances i, edot_for_chug e " .
-        "WHERE i.block_id = ? AND m.chug_instance_id = i.chug_instance_id " .
-        "AND i.chug_id = c.chug_id AND c.group_id != ? " .
-        "AND m.camper_id = ca.camper_id AND ca.edah_id = ? AND b.block_id = ? " .
-        "AND b.session_id = ca.session_id " .
-        "AND e.chug_id = c.chug_id " .
-        "AND e.edah_id = ? " .
-        "GROUP BY 1,2";
-         */
-        $sql = "SELECT m.camper_id, c.group_id, c.name, c.chug_id  " .
-        "FROM matches m, chugim c, campers ca, chug_instances i, edot_for_chug e " .
-        "WHERE m.chug_instance_id = i.chug_instance_id " .
-        "AND i.chug_id = c.chug_id " .
-        "AND m.camper_id = ca.camper_id AND ca.edah_id = ? " .
-        "AND e.chug_id = c.chug_id " .
-        "AND e.edah_id = ? " .
-        "GROUP BY 1,2";
+        "FROM matches m, chug_instances i, chugim c " .
+        "WHERE m.chug_instance_id = i.chug_instance_id AND i.chug_id = c.chug_id " .
+        "AND NOT (i.block_id = ? AND c.group_id = ?) order by 1,2";
         $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
             error_log($err);

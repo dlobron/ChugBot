@@ -1,17 +1,24 @@
-// On page load, grab nav data, then assignments, and then get and display
-// current matches.
+// On page load, clear some structures, grab nav data, 
+// and then get and display current matches.
 $(function() {
         $.when(
                getNav()
-               ).then(getAssignments).then(getAndDisplayCurrentMatches);
+               ).then(getAndDisplayCurrentMatches);
     });
 
-// Get the current assignment stats for this edah/block.
-function getAssignments() {
-	var edah = getParameterByName("edah");
-	var block = getParameterByName("block");
-	doAssignmentAjax("get_current_stats", "Current Stats", "fetch current assignment stats",
-			 edah, block);
+function isDupOf(droppedChugId, matchHash, deDupMatrix) {
+    if (droppedChugId in deDupMatrix) {
+	var forbiddenToDupSet = deDupMatrix[droppedChugId];
+	for (var matchedChugId in matchHash) {
+	    if (matchedChugId == droppedChugId) {
+		continue; // Don't flag the dropped chug as a dup.
+	    }
+	    if (matchedChugId in forbiddenToDupSet) {
+		return matchedChugId;
+	    }
+	}
+    }
+    return -1;
 }
 
 function getNav() {
@@ -51,7 +58,7 @@ function doAssignmentAjax(action, title, errText,
 		    $( "#results" ).html(function() {
 				    txt = "<h3>" + title + "</h3>";
 				    txt += "<ul>";
-				    txt += "<li><b>Chugim under min</b>: ";
+				    txt += "<li><b>Chugim with space</b>: ";
 				    txt += data.under_min_list;
 				    txt += "</li>";
 				    txt += "<li><b>Chugim over max</b>: ";
@@ -87,6 +94,9 @@ function getAndDisplayCurrentMatches() {
         var block = getParameterByName("block");
 	var succeeded = false;
 	var camperId2Group2PrefList;
+	var chugId2Beta = {};
+	var existingMatches = {};
+	var deDupMatrix = {};
 	var prefClasses = ["li_first_choice", "li_second_choice", "li_third_choice", "li_fourth_choice"];
 	$.ajax({
                 url: 'levelingAjax.php',
@@ -112,7 +122,9 @@ function getAndDisplayCurrentMatches() {
 		    var groupId2Name = json["groupId2Name"];
 		    var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
 		    camperId2Group2PrefList = json["camperId2Group2PrefList"];
-		    var chugId2Beta = json["chugId2Beta"];
+		    existingMatches = json["existingMatches"];
+		    deDupMatrix = json["deDupMatrix"];
+		    chugId2Beta = json["chugId2Beta"];
 		    var camperId2Name = json["camperId2Name"];
 		    $.each(groupId2ChugId2MatchedCampers,
 			   function(groupId, chugId2MatchedCampers) {
@@ -148,7 +160,7 @@ function getAndDisplayCurrentMatches() {
 					      (typeof(chugMin) === 'undefined')) {
 					      chugMin = "no minimum";
 					  }
-					  html += "<div name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
+					  html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
 					  if (chugName == "Not Assigned Yet") {
 					      html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
 					  } else {
@@ -189,12 +201,35 @@ function getAndDisplayCurrentMatches() {
 							 titleText = "title=\"" + prefListText + "\"";
 						     }
 						     html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" "  + titleText;
-						     html += "><h5 class=\"ui-widget-header\">" + camperName + "</h5></li>\n";
+						     html += "><h5 class=\"ui-widget-header\">" + camperName + "</h5><div class=\"dup-warning\"></div></li>\n";
 						 });
 					  html += "</ul><br style=\"clear: both\"></div>\n";
 				      });
 			   html += "</div>\n";
 			   });
+		    // Compute and display chugim with space.
+		    var freeHtml = "<h4>Chugim with Free Space:</h4>";
+		    $.each(chugId2Beta, function(chugId, betaHash) {
+			    var freeSpace = betaHash["free"];
+			    var name = betaHash["name"];
+			    var groupName = betaHash["group_name"];
+			    if (freeSpace) {
+				var sp = "spaces";
+				var endTag = " left<br>";
+				if (freeSpace == 1) {
+				    sp = "space";
+				} else if (freeSpace == "unlimited") {
+				    sp = "space";
+				    endTag = "<br>";
+				}
+				var sp = (freeSpace == 1 || freeSpace == "unlimited") ? "space" : "spaces";
+				freeHtml += name + " (" + groupName + "): " + freeSpace + " " + sp + endTag;
+			    }
+			});
+		    $( "#results" ).show();
+		    $("#results").html(freeHtml);
+		    $("#results").attr('disabled', false);
+		    // Display matches and chugim.
 		    $("#fillmatches").html(html);
                 },
                     error: function(xhr, desc, err) {
@@ -251,6 +286,20 @@ function getAndDisplayCurrentMatches() {
 						$(dropped).addClass(prefClass);
 					    }
 					    $(dropped).detach().css({top:0,left:0}).appendTo(droppedOn);
+					    // Check to see if the dropped chug is a duplicate- if so, show a warning.
+					    var dupWarningDiv = $(dropped).find(".dup-warning");
+					    $(dupWarningDiv).hide(); // Hide dup warning by default.
+					    if (camperId in existingMatches) {
+						var matchHash = existingMatches[camperId];
+						var dupId = isDupOf(droppedChugId, matchHash, deDupMatrix);
+						if (dupId in chugId2Beta) {
+						    var dupName = chugId2Beta[dupId]["name"];
+						    var dupGroup = chugId2Beta[dupId]["group_name"];
+						    var dupBlockName = matchHash[dupId];
+						    $(dupWarningDiv).html("<small><span class=\"label label-warning\">Dup of " + dupName + " (" + dupBlockName + " " + dupGroup + ")</span></small>");
+						    $(dupWarningDiv).fadeIn("fast");
+						}
+					    }
 					}
 				    });
 			    });
@@ -338,7 +387,7 @@ $(function() {
 		    ra.resolve();
 		    return ra;
 		};
-		var displayAction = function() {		    
+		var displayAction = function() {                    
 		    getAndDisplayCurrentMatches();
 		};
 		ajaxAction().then(displayAction);

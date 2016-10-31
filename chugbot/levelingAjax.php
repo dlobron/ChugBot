@@ -284,17 +284,64 @@
             $block_name = $row[0];
         }
         
+        // Grab existing matches for all campers.  We'll use this to warn
+        // if the user moves a camper into a duplicate chug.
+        $existingMatches = array();
+        $db = new DbConn();
+        $db->isSelect = TRUE;
+        $sql = "SELECT m.camper_id, c.chug_id, b.name  " .
+        "FROM matches m, chugim c, chug_instances i, blocks b " .
+        "WHERE m.chug_instance_id = i.chug_instance_id " .
+        "AND i.chug_id = c.chug_id " .
+        "AND i.block_id = b.block_id";
+        $result = $db->doQuery($sql, $err);
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+            $camper_id = $row[0];
+            $chug_id = $row[1];
+            $block_name = $row[2];
+            if (! array_key_exists($camper_id, $existingMatches)) {
+                $existingMatches[$camper_id] = array();
+            }
+            $existingMatches[$camper_id][$chug_id] = $block_name;
+        }
+        
+        // Compute the de-dup matrix, which we'll use to warn if the user
+        // moves a camper to a duplicate chug.
+        $deDupMatrix = array();
+        $db = new DbConn();
+        $db->addSelectColumn("*");
+        $result = $db->simpleSelectFromTable("chug_dedup_instances_v2", $err);
+        if ($result == FALSE) {
+            error_log($err);
+            return FALSE;
+        }
+        while ($row = mysqli_fetch_assoc($result)) {
+            $leftChug = $row["left_chug_id"];
+            $rightChug = $row["right_chug_id"];
+            if (! array_key_exists($leftChug, $deDupMatrix)) {
+                $deDupMatrix[$leftChug] = array();
+            }
+            if (! array_key_exists($rightChug, $deDupMatrix)) {
+                $deDupMatrix[$rightChug] = array();
+            }
+            $deDupMatrix[$leftChug][$rightChug] = 1;
+            $deDupMatrix[$rightChug][$leftChug] = 1;
+        }
+        
         // Get preferences (as strings) for these campers.
         // First, map chug ID to name and min/max.  Also, define an "unassigned"
         // chug, which we will use to flag campers still needing assignment.
         $maxIndex = 0;
         $chugId2Beta = array();
-        $result = getDbResult("SELECT chug_id, name, min_size, max_size FROM chugim");
+        $result = getDbResult("SELECT c.chug_id, c.name, c.min_size, c.max_size, g.name " .
+                              "FROM chugim c, groups g WHERE c.group_id = g.group_id");
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $chugId2Beta[intval($row[0])] = array();
             $chugId2Beta[intval($row[0])]["name"] = $row[1];
             $chugId2Beta[intval($row[0])]["min_size"] = $row[2];
             $chugId2Beta[intval($row[0])]["max_size"] = $row[3];
+            $chugId2Beta[intval($row[0])]["group_name"] = $row[4];
+            $chugId2Beta[intval($row[0])]["free"] = 0; // default
             if (intval($row[0]) > $maxIndex) {
                 $maxIndex = intval($row[0]);
             }
@@ -303,6 +350,37 @@
         $chugId2Beta[$unAssignedIndex]["name"] = "Not Assigned Yet";
         $chugId2Beta[$unAssignedIndex]["min_size"] = 0;
         $chugId2Beta[$unAssignedIndex]["max_size"] = 0;
+        
+        // Check the matches table and compute how much space is left in each
+        // chug for this block.  For chugim with space, record it in $chugId2Beta.
+        $db = new DbConn();
+        $db->addColVal($block_id, 'i');
+        $sql = "SELECT a.chug_id chug_id, a.max_size max_size, sum(a.matched) num_matched " .
+        "FROM (SELECT c.chug_id, c.max_size max_size, CASE WHEN m.matched_chug_id IS NULL THEN 0 ELSE 1 END matched " .
+        "FROM chugim c LEFT OUTER JOIN (SELECT i.chug_id matched_chug_id FROM chug_instances i, matches m " .
+        "WHERE i.chug_instance_id = m.chug_instance_id  AND i.block_id = ?) m " .
+        "ON c.chug_id = m.matched_chug_id) a " .
+        "GROUP BY chug_id";
+        $result = $db->doQuery($sql, $err);
+        if ($result == FALSE) {
+            // For now, just log a warning, since this is only used for informational
+            // display.
+            error_log("WARNING: Failed to select current chug-full status: $err");
+        } else {
+            while ($row = $result->fetch_assoc()) {
+                $idVal = intval($row["chug_id"]);
+                if (! array_key_exists($idVal, $chugId2Beta)) {
+                    continue;
+                }
+                $assigned = intval($row["num_matched"]);
+                $capacity = intval($row["max_size"]);
+                if ($capacity == 0) {
+                    $chugId2Beta[$idVal]["free"] = "unlimited";
+                } else if ($assigned < $capacity) {
+                    $chugId2Beta[$idVal]["free"] = $capacity - $assigned;
+                }
+            }
+        }
 
         // Next, map camper ID to an ordered list of preferred chugim, by
         // group ID.  Also, map camper ID to name.
@@ -402,6 +480,8 @@
         $retVal["chugId2Beta"] = $chugId2Beta;   // {Chug ID -> Chug Name, Min and Max}
         $retVal["edahName"] = $edah_name;
         $retVal["blockName"] = $block_name;
+        $retVal["existingMatches"] = $existingMatches;
+        $retVal["deDupMatrix"] = $deDupMatrix;
         
         echo json_encode($retVal);
         exit();
