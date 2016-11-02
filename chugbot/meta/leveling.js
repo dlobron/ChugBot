@@ -6,14 +6,45 @@ $(function() {
                ).then(getAndDisplayCurrentMatches);
     });
 
-function isDupOf(droppedChugId, matchHash, deDupMatrix) {
+function chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers) {
+    // Populate the sorted list.
+    var sorted = new Array();
+    for (var chugId in chugId2MatchedCampers) {
+	if (chugId2MatchedCampers.hasOwnProperty(chugId)) { // to be safe
+	    sorted.push(chugId);
+	}
+    }
+    // Do the actual sort.
+    sorted.sort(function(x,y) {
+	    var betaX = chugId2Beta[x];
+	    var betaY = chugId2Beta[y];
+	    if (betaX.name < betaY.name) {
+		return -1;
+	    } 
+	    if (betaX.name > betaY.name) {
+		return 1;
+	    }
+	    return 0;
+	});
+
+    return sorted;
+}
+
+function isDupOf(droppedChugId, matchHash, deDupMatrix, chugId2MatchedCampers, matchedCamperId) {
+    if (droppedChugId in chugId2MatchedCampers) {
+	// If the camper is being dropped into their current mapping (e.g., being
+	// dragged back), do not flag that as a duplicate.
+	campersOriginallyMatched = chugId2MatchedCampers[droppedChugId];
+	for (var i = 0; i < campersOriginallyMatched.length; i++) {
+	    if (campersOriginallyMatched[i] == matchedCamperId) {
+		return -1;
+	    }
+	}
+    }
     if (droppedChugId in deDupMatrix) {
 	var forbiddenToDupSet = deDupMatrix[droppedChugId];
 	for (var matchedChugId in matchHash) {
-	    if (matchedChugId == droppedChugId) {
-		continue; // Don't flag the dropped chug as a dup.
-	    }
-	    if (matchedChugId in forbiddenToDupSet) {
+	    if (matchedChugId in forbiddenToDupSet) {	       
 		return matchedChugId;
 	    }
 	}
@@ -97,6 +128,7 @@ function getAndDisplayCurrentMatches() {
 	var chugId2Beta = {};
 	var existingMatches = {};
 	var deDupMatrix = {};
+	var groupId2ChugId2MatchedCampers = {};
 	var prefClasses = ["li_first_choice", "li_second_choice", "li_third_choice", "li_fourth_choice"];
 	$.ajax({
                 url: 'levelingAjax.php',
@@ -120,7 +152,7 @@ function getAndDisplayCurrentMatches() {
 		    var edahName = json["edahName"];
 		    var blockName = json["blockName"];
 		    var groupId2Name = json["groupId2Name"];
-		    var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
+		    groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
 		    camperId2Group2PrefList = json["camperId2Group2PrefList"];
 		    existingMatches = json["existingMatches"];
 		    deDupMatrix = json["deDupMatrix"];
@@ -138,74 +170,76 @@ function getAndDisplayCurrentMatches() {
 				       ", " + blockName + "</h3>\n";
 			       } 
 			       // Within each group, add a holder for campers, and then populate with
-			       // campers.
-			       $.each(chugId2MatchedCampers,
-				      function(chugId, matchedCampers) {
-					  // Add a chug holder, and put camper holders inside it.
-					  var chugName = chugId2Beta[chugId]["name"];
-					  var chugMin = chugId2Beta[chugId]["min_size"];
-					  var chugMax = chugId2Beta[chugId]["max_size"];
-					  var editChugUrl = editChugBase + chugId;
-					  if (chugMax == "0" ||
-					      chugMax == 0 ||
-					      chugMax == "10000" ||
-					      chugMax == 10000 ||
-					      chugMax === null ||
-					      (typeof(chugMax) === 'undefined')) {
-					      chugMax = "no limit";
-					  }
-					  if (chugMin == "-1" ||
-					      chugMin == -1 ||
-					      chugMin === null ||
-					      (typeof(chugMin) === 'undefined')) {
-					      chugMin = "no minimum";
-					  }
-					  html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
-					  if (chugName == "Not Assigned Yet") {
-					      html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
-					  } else {
-					      html += "<h4>" + "<a href=\"" + editChugUrl + "\">" + chugName + "</a>"
-						  + " (min = " + chugMin + ", max = " + chugMax + ")</h4>";
-					  }
-					  html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
-					  $.each(matchedCampers,
-						 function(index, camperId) {
-						     var camperName = camperId2Name[camperId];
-						     var prefListText = "";
-						     var prefClass = prefClasses[prefClasses.length - 1];
-						     if (camperId in camperId2Group2PrefList) {
-							 var group2PrefList = camperId2Group2PrefList[camperId];
-							 if (groupId in group2PrefList) {
-							     var prefList = group2PrefList[groupId];
-							     $.each(prefList, function(index, prefChugId) {
-								     var listNum = index + 1;
-								     if (prefListText == "") {
-									 prefListText += "Preferences:\n";
-								     }
-								     if (prefChugId in chugId2Beta) {
-									 prefListText += listNum + ". " + chugId2Beta[prefChugId]["name"] + "\n";
-								     }
-								     if (prefChugId == chugId) {
-									 if (index < prefClasses.length) {
-									     prefClass = prefClasses[index];
-									 } else {
-									     prefClass = prefClasses[prefClasses.length - 1];
-									 }
-								     }
-								 });
-							 }
-						     }
-						     var titleText = "title=\"<no preferences>\"";
-						     if (prefListText) {
-							 // If we have a pref list, write it as a tool tip.
-							 titleText = "title=\"" + prefListText + "\"";
-						     }
-						     html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" "  + titleText;
-						     html += "><h5 class=\"ui-widget-header\">" + camperName + "</h5><div class=\"dup-warning\"></div></li>\n";
-						 });
-					  html += "</ul><br style=\"clear: both\"></div>\n";
-				      });
-			   html += "</div>\n";
+			       // campers.  List chugim in alphabetical order.
+			       var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers);
+			       for (var i = 0; i < sortedChugIds.length; i++) {
+				   var chugId = sortedChugIds[i];
+				   var matchedCampers = chugId2MatchedCampers[chugId];
+				   // Add a chug holder, and put camper holders inside it.
+				   var chugName = chugId2Beta[chugId]["name"];
+				   var chugMin = chugId2Beta[chugId]["min_size"];
+				   var chugMax = chugId2Beta[chugId]["max_size"];
+				   var editChugUrl = editChugBase + chugId;
+				   if (chugMax == "0" ||
+				       chugMax == 0 ||
+				       chugMax == "10000" ||
+				       chugMax == 10000 ||
+				       chugMax === null ||
+				       (typeof(chugMax) === 'undefined')) {
+				       chugMax = "no limit";
+				   }
+				   if (chugMin == "-1" ||
+				       chugMin == -1 ||
+				       chugMin === null ||
+				       (typeof(chugMin) === 'undefined')) {
+				       chugMin = "no minimum";
+				   }
+				   html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
+				   if (chugName == "Not Assigned Yet") {
+				       html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
+				   } else {
+				       html += "<h4>" + "<a href=\"" + editChugUrl + "\">" + chugName + "</a>"
+					   + " (min = " + chugMin + ", max = " + chugMax + ")</h4>";
+				   }
+				   html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
+				   $.each(matchedCampers,
+					  function(index, camperId) {
+					      var camperName = camperId2Name[camperId];
+					      var prefListText = "";
+					      var prefClass = prefClasses[prefClasses.length - 1];
+					      if (camperId in camperId2Group2PrefList) {
+						  var group2PrefList = camperId2Group2PrefList[camperId];
+						  if (groupId in group2PrefList) {
+						      var prefList = group2PrefList[groupId];
+						      $.each(prefList, function(index, prefChugId) {
+							      var listNum = index + 1;
+							      if (prefListText == "") {
+								  prefListText += "Preferences:\n";
+							      }
+							      if (prefChugId in chugId2Beta) {
+								  prefListText += listNum + ". " + chugId2Beta[prefChugId]["name"] + "\n";
+							      }
+							      if (prefChugId == chugId) {
+								  if (index < prefClasses.length) {
+								      prefClass = prefClasses[index];
+								  } else {
+								      prefClass = prefClasses[prefClasses.length - 1];
+								  }
+							      }
+							  });
+						  }
+					      }
+					      var titleText = "title=\"<no preferences>\"";
+					      if (prefListText) {
+						  // If we have a pref list, write it as a tool tip.
+						  titleText = "title=\"" + prefListText + "\"";
+					      }
+					      html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" "  + titleText;
+					      html += "><h5 class=\"ui-widget-header\">" + camperName + "</h5><div class=\"dup-warning\"></div></li>\n";
+					  });
+				   html += "</ul><br style=\"clear: both\"></div>\n";
+			       }
+			       html += "</div>\n";
 			   });
 		    // Compute and display chugim with space.
 		    var freeHtml = "<h4>Chugim with Free Space:</h4>";
@@ -231,11 +265,11 @@ function getAndDisplayCurrentMatches() {
 		    $("#results").attr('disabled', false);
 		    // Display matches and chugim.
 		    $("#fillmatches").html(html);
-                },
-                    error: function(xhr, desc, err) {
+		},
+		    error: function(xhr, desc, err) {
 		    console.log(xhr);
 		    console.log("Details: " + desc + "\nError:" + err);
-                }
+		}
             }).then(function(){
                     if (succeeded) {
 			$("ul.gallery li").draggable({
@@ -251,6 +285,8 @@ function getAndDisplayCurrentMatches() {
 			// old chug to new, and update the preference color.
 			$('.chugholder').each(function(){
 				var $el = $(this);
+				var groupId = $el.parent().attr('name');
+				var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
 				$el.droppable({accept: "ul.gallery li",
 					    activeClass: "ui-state-active",
 					    hoverClass: "ui-state-hover",
@@ -291,7 +327,9 @@ function getAndDisplayCurrentMatches() {
 					    $(dupWarningDiv).hide(); // Hide dup warning by default.
 					    if (camperId in existingMatches) {
 						var matchHash = existingMatches[camperId];
-						var dupId = isDupOf(droppedChugId, matchHash, deDupMatrix);
+						var dupId = isDupOf(droppedChugId, matchHash, 
+								    deDupMatrix, chugId2MatchedCampers,
+								    $(dropped).attr('value'));
 						if (dupId in chugId2Beta) {
 						    var dupName = chugId2Beta[dupId]["name"];
 						    var dupGroup = chugId2Beta[dupId]["group_name"];

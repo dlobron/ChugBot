@@ -415,9 +415,9 @@
             $db->addColVal($block_id, 'i');
             $db->addColVal($edah_id, 'i');
             $err = "";
-            $result2 = $db->doQuery("SELECT c.chug_id chug_id FROM chugim c, chug_instances i, edot_for_chug ec " .
+            $result2 = $db->doQuery("SELECT c.chug_id chug_id, c.name chug_name FROM chugim c, chug_instances i, edot_for_chug ec " .
                                     "WHERE c.group_id = ? AND i.block_id = ? AND c.chug_id = i.chug_id " .
-                                    "AND ec.chug_id = c.chug_id AND ec.edah_id = ?", $err);
+                                    "AND ec.chug_id = c.chug_id AND ec.edah_id = ? ORDER BY chug_name", $err);
             if ($result2 == FALSE) {
                 error_log("Unable to select chugim: $err");
                 header('HTTP/1.1 500 Internal Server Error');
@@ -435,11 +435,11 @@
             $db->addColVal($edah_id, 'i');
             $db->addColVal($block_id, 'i');
             $err = "";
-            $sql = "SELECT m.camper_id, ch.chug_id FROM matches m, campers c, block_instances b, chugim ch, chug_instances i " .
+            $sql = "SELECT m.camper_id, ch.chug_id, c.first firstname, c.last lastname FROM matches m, campers c, block_instances b, chugim ch, chug_instances i " .
             "WHERE i.block_id = b.block_id AND ch.chug_id = i.chug_id " .
             "AND ch.group_id = ? AND m.chug_instance_id = i.chug_instance_id " .
             "AND m.camper_id = c.camper_id AND c.edah_id = ? " .
-            "AND b.block_id = ? AND b.session_id = c.session_id";
+            "AND b.block_id = ? AND b.session_id = c.session_id ORDER BY lastname,firstname";
             $result3 = $db->doQuery($sql, $err);
             if ($result3 == FALSE) {
                 error_log("Unable to select matches: $err");
