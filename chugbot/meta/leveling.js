@@ -6,6 +6,42 @@ $(function() {
                ).then(getAndDisplayCurrentMatches);
     });
 
+var chugCountColorClasses = ["text-primary", "text-danger", "text-warning"];
+
+function getColorForCount(curCount, chugMin,chugMax) {
+    var colorClass = chugCountColorClasses[0];
+    if (curCount > chugMax &&
+	chugMax > 0) {
+	colorClass = chugCountColorClasses[1];
+    } else if (curCount < chugMin) {
+	colorClass = chugCountColorClasses[2];
+    }
+    return colorClass;
+}
+
+// Loop through all chugim in a group, and update their 
+// current count and associated count color.
+function updateCount(chugId2Beta, curChugHolder) {
+    var groupHolder = $(curChugHolder).closest(".groupholder");
+    var chugHolders = $(groupHolder).children(".chugholder");
+    $(chugHolders).each(function(index) {
+	    var chugId = $(this).attr('name');
+	    var newCount = $(this).find("ul").children().length;
+	    var min = parseInt(chugId2Beta[chugId]["min_size"]);
+	    var max = parseInt(chugId2Beta[chugId]["max_size"]);
+	    var colorClass = getColorForCount(newCount, min, max);
+	    var curCountHolder = $(this).find("span[name=curCountHolder]");
+	    $.each(chugCountColorClasses, function(index, classToRemove) {
+		    // Remove old color class.
+		    $(curCountHolder).removeClass(classToRemove);
+		});
+	    // Add new color class and count.
+	    $(curCountHolder).attr('value', newCount);
+	    $(curCountHolder).text("cur = " + newCount);
+	    $(curCountHolder).addClass(colorClass);
+	});
+}
+
 function chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers) {
     // Populate the sorted list.
     var sorted = new Array();
@@ -194,12 +230,14 @@ function getAndDisplayCurrentMatches() {
 				       (typeof(chugMin) === 'undefined')) {
 				       chugMin = "no minimum";
 				   }
+				   var curCount = matchedCampers.length;
+				   var colorClass = getColorForCount(curCount, chugMin, chugMax);
 				   html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
 				   if (chugName == "Not Assigned Yet") {
 				       html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
 				   } else {
 				       html += "<h4>" + "<a href=\"" + editChugUrl + "\">" + chugName + "</a>"
-					   + " (min = " + chugMin + ", max = " + chugMax + ")</h4>";
+					   + " (min = " + chugMin + ", max = " + chugMax + ", <span name=\"curCountHolder\" class=\"" + colorClass + "\" value=\"" + curCount + "\">cur = " + curCount + "</span>)</h4>";
 				   }
 				   html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
 				   $.each(matchedCampers,
@@ -322,7 +360,8 @@ function getAndDisplayCurrentMatches() {
 						$(dropped).addClass(prefClass);
 					    }
 					    $(dropped).detach().css({top:0,left:0}).appendTo(droppedOn);
-					    // Check to see if the dropped chug is a duplicate- if so, show a warning.
+					    // Check to see if the dropped-on chug is a duplicate for the dropped
+					    // camper, and if so, show a warning.
 					    var dupWarningDiv = $(dropped).find(".dup-warning");
 					    $(dupWarningDiv).hide(); // Hide dup warning by default.
 					    if (camperId in existingMatches) {
@@ -338,6 +377,8 @@ function getAndDisplayCurrentMatches() {
 						    $(dupWarningDiv).fadeIn("fast");
 						}
 					    }
+					    // Update counts.
+					    updateCount(chugId2Beta, droppedOn);
 					}
 				    });
 			    });
