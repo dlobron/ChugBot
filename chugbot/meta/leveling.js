@@ -6,7 +6,7 @@ $(function() {
                ).then(getAndDisplayCurrentMatches);
     });
 
-var chugCountColorClasses = ["text-primary", "text-danger", "text-warning"];
+var chugCountColorClasses = ["text-success", "text-danger", "text-warning"];
 
 function getColorForCount(curCount, chugMin,chugMax) {
     var colorClass = chugCountColorClasses[0];
