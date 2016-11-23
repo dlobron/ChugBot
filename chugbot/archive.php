@@ -6,9 +6,11 @@
     include_once 'formItem.php';
     bounceToLogin();
     
-    // Create an ID to name mapping for tables to preserve after archiving.
-    // When we "preserve" a table, we copy it from the archived database to
-    // the new one.
+    // Create an ID to name mapping for tables that we might clear.  We clear
+    // these tables from the current DB unless the user instructs us not to.
+    // Certain other tables will automatically be cleared due to cascading
+    // deletions (e.g., chug_dedup_instances_v2 will be cleared if chugim is
+    // cleared).
     $preserveTableId2Name = array();
     $preserveTableId2Name[1] = "blocks";
     $preserveTableId2Name[2] = "bunks";

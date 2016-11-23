@@ -278,6 +278,7 @@ function getNameAndFillChoices() {
 		    if (html.length == 0) {
 			html = "<div class=\"panel_body error_box\"><h3>No chugim were found for your edah and session.</h3></div>";
 			$("#exit_button").show();
+			$(".SubmitPrefsButton").hide();
 			$(".center_block").hide();
 		    } 
 		    $("#filltarget").html(html);

@@ -6,6 +6,13 @@ $(function() {
                ).then(getAndDisplayCurrentMatches);
     });
 
+function removeLastDirectoryPartOf(the_url)
+{
+    var the_arr = the_url.split('/');
+    the_arr.pop();
+    return (the_arr.join('/'));
+}
+
 var chugCountColorClasses = ["text-success", "text-danger", "text-warning"];
 
 function getColorForCount(curCount, chugMin,chugMax) {
@@ -42,23 +49,29 @@ function updateCount(chugId2Beta, curChugHolder) {
 	});
 }
 
-function chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers) {
+function chugIdsSortedByName(chugId2Beta, chugId2Entity) {
     // Populate the sorted list.
     var sorted = new Array();
-    for (var chugId in chugId2MatchedCampers) {
-	if (chugId2MatchedCampers.hasOwnProperty(chugId)) { // to be safe
+    for (var chugId in chugId2Entity) {
+	if (chugId2Entity.hasOwnProperty(chugId)) { // to be safe
 	    sorted.push(chugId);
 	}
     }
-    // Do the actual sort.
+    // Do the actual sort, by chug name and then group name.
     sorted.sort(function(x,y) {
 	    var betaX = chugId2Beta[x];
 	    var betaY = chugId2Beta[y];
-	    if (betaX.name < betaY.name) {
+	    if (betaX.name.toLowerCase() < betaY.name.toLowerCase()) {
 		return -1;
 	    } 
-	    if (betaX.name > betaY.name) {
+	    if (betaX.name.toLowerCase() > betaY.name.toLowerCase()) {
 		return 1;
+	    }
+	    if (betaX.group_name.toLowerCase() < betaY.group_name.toLowerCase()) {
+		return -1;
+	    }
+	    if (betaX.group_name.toLowerCase() > betaY.group_name.toLowerCase()) {
+	    	return 1;
 	    }
 	    return 0;
 	});
@@ -122,10 +135,11 @@ function doAssignmentAjax(action, title, errText,
 			// Fade and then reload with new data (for multiple clicks).
 			$( "#results:visible" ).removeAttr( "style" ).fadeOut();
 		    }
+		    /*
 		    $( "#results" ).html(function() {
 				    txt = "<h3>" + title + "</h3>";
 				    txt += "<ul>";
-				    txt += "<li><b>Chugim with space</b>: ";
+				    txt += "<li><b>Chugim under min</b>: ";
 				    txt += data.under_min_list;
 				    txt += "</li>";
 				    txt += "<li><b>Chugim over max</b>: ";
@@ -138,6 +152,7 @@ function doAssignmentAjax(action, title, errText,
 			});
 		    $( "#results" ).show("slide", 500);
 		    $( "#results" ).attr('disabled', false);
+		    */
 		},
 		    error: function(xhr, desc, err) {
 		    errMsg = "The system was unable to ";
@@ -279,27 +294,34 @@ function getAndDisplayCurrentMatches() {
 			       }
 			       html += "</div>\n";
 			   });
-		    // Compute and display chugim with space.
+		    // Compute and display chugim with space.  Link to the reporting page.
+		    var loc = window.location;
+		    var basePath = removeLastDirectoryPartOf(loc.pathname);		    
+		    var reportLink = "<a class=\"btn btn-primary btn-med btn-with-padding\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + "&edah_id=" + edah + "&submit=Display\">Report</a>";
 		    var freeHtml = "<h4>Chugim with Free Space:</h4>";
-		    $.each(chugId2Beta, function(chugId, betaHash) {
-			    var freeSpace = betaHash["free"];
-			    var name = betaHash["name"];
-			    var groupName = betaHash["group_name"];
-			    if (freeSpace) {
-				var sp = "spaces";
-				var endTag = " left<br>";
-				if (freeSpace == 1) {
-				    sp = "space";
-				} else if (freeSpace == "unlimited") {
-				    sp = "space";
-				    endTag = "<br>";
-				}
-				var sp = (freeSpace == 1 || freeSpace == "unlimited") ? "space" : "spaces";
-				freeHtml += name + " (" + groupName + "): " + freeSpace + " " + sp + endTag;
+		    var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2Beta);
+		    for (var i = 0; i < sortedChugIds.length; i++) {
+			var betaHash = chugId2Beta[sortedChugIds[i]];
+			var freeSpace = betaHash["free"];
+			var name = betaHash["name"];
+			var groupName = betaHash["group_name"];
+			if (freeSpace) {
+			    var sp = "spaces";
+			    var endTag = " left<br>";
+			    if (freeSpace == 1) {
+				sp = "space";
+			    } else if (freeSpace == "unlimited") {
+				sp = "space";
+				endTag = "<br>";
 			    }
-			});
-		    $( "#results" ).show();
+			    var sp = (freeSpace == 1 || freeSpace == "unlimited") ? "space" : "spaces";
+			    freeHtml += name + " (" + groupName + "): " + freeSpace + " " + sp + endTag;
+			}
+		    }
+		    freeHtml += reportLink;
 		    $("#results").html(freeHtml);
+		    $("#results:visible").removeAttr( "style" ).fadeOut();
+		    $("#results").show("slide", 500);
 		    $("#results").attr('disabled', false);
 		    // Display matches and chugim.
 		    $("#fillmatches").html(html);
@@ -520,6 +542,7 @@ $(function() {
 			    success: function(json) {
 			    doAssignmentAjax("get_current_stats", "Changes Saved! Stats:", "save your changes",
 					     edah, block);
+			    getAndDisplayCurrentMatches();
 			},
 			    error: function(xhr, desc, err) {
 			    console.log(xhr);

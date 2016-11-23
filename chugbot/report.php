@@ -498,6 +498,7 @@
         const Director = 4;
         const CamperChoices = 5;
         const AllRegisteredCampers = 6;
+        const ChugimWithSpace = 7;
     }
 
     $dbErr = "";
@@ -513,7 +514,8 @@
                                  ReportTypes::ByChug        => "Chug Leader (by chug)",
                                  ReportTypes::Director      => "Director (whole camp, sorted by edah)",
                                  ReportTypes::CamperChoices => "Camper Prefs and Assignment",
-                                 ReportTypes::AllRegisteredCampers => "All Campers Who Have Submitted Preferences"
+                                 ReportTypes::AllRegisteredCampers => "All Campers Who Have Submitted Preferences",
+                                 ReportTypes::ChugimWithSpace => "Chugim With Free Space"
                                 );
     
     // Check for archived databases.
@@ -641,7 +643,7 @@
     
     $archiveText = "";
     if (! empty($availableArchiveYears)) {
-        $archiveText = "<p>To view data from previous summers, choose a year from the Archive Year drop-down menu</p>";
+        $archiveText = "<p>To view data from previous summers, choose a year from the Year drop-down menu</p>";
     }
     
     $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
@@ -664,7 +666,7 @@ EOM;
     
     // Always show the report method drop-down and archive year menu (if any).
     $reportMethodDropDown = new FormItemDropDown("Report Type", TRUE, "report_method", 0);
-    $reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.");
+    $reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.  Chugim With Free Space shows chugim with space remaining.");
     $reportMethodDropDown->setPlaceHolder("Choose Type");
     $reportMethodDropDown->setId2Name($reportMethodId2Name);
     $reportMethodDropDown->setColVal($reportMethod);
@@ -675,13 +677,14 @@ EOM;
     
     $archiveYearDropDown = NULL;
     if (! empty($availableArchiveYears)) {
-        $archiveYearDropDown = new FormItemDropDown("Archive Year", FALSE, "archive_year", 1);
-        $archiveYearDropDown->setGuideText("Optional: To view archived data from a previous summer, choose the year here. To see current data, leave this option set to \"Current Year\".");
+        $defaultYear = yearOfUpcomingSummer();
+        $archiveYearDropDown = new FormItemDropDown("Year", FALSE, "archive_year", 1);
+        $archiveYearDropDown->setGuideText("Optional: To view archived data from a previous summer, choose the year here. To see current data, leave this option set to $defaultYear.");
         $archiveYearDropDown->setPlaceHolder("Current Year");
         $archiveYearDropDown->setId2Name($availableArchiveYears);
         $archiveYearDropDown->setColVal($archiveYear);
-        $archiveYearDropDown->setInputSingular("Archive Year");
-        $archiveYearDropDown->setDefaultMsg("Current Year");
+        $archiveYearDropDown->setInputSingular("Year");
+        $archiveYearDropDown->setDefaultMsg($defaultYear);
         if ($archiveYear) {
             $archiveYearDropDown->setInputValue($archiveYear);
         }
@@ -752,11 +755,13 @@ EOM;
         if ($outputType == OutputTypes::Html) {
             echo $chugChooser->renderHtml();
         }
-    } else if ($reportMethod == ReportTypes::CamperChoices) {
+    } else if ($reportMethod == ReportTypes::CamperChoices ||
+               $reportMethod == ReportTypes::ChugimWithSpace) {
         // The camper choices report can be filtered by edah, group, and
         // block, e.g., Bogrim, Chug Aleph, weeks 1+2.
+        // The same applies to chugim with space.
         $edahChooser = new FormItemDropDown("Edah", FALSE, "edah_id", $liNumCounter++);
-        $edahChooser->setGuideText("Step 3: Choose an edah.  Leave empty to see campers in all edot.");
+        $edahChooser->setGuideText("Step 3: Choose an edah.  Leave empty to see all edot.");
         $edahChooser->setInputClass("element select medium");
         $edahChooser->setInputSingular("edah");
         $edahChooser->setColVal($edahId);
@@ -1063,6 +1068,67 @@ EOM;
             $directorReport->setIdCol2EditPage("chug_id", "editChug.php", "assignment");
             $directorReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
             $directorReport->renderTable();
+        } else if ($reportMethod == ReportTypes::ChugimWithSpace) {
+            // Display chugim with space, filtering by edah, block, and
+            // group, as requested.
+            $blockInText = "";
+            if (count($activeBlockIds) > 0) {
+                $blockInText = "AND b.block_id IN (";
+                $i = 0;
+                foreach ($activeBlockIds as $bid => $val) {
+                    if ($i == 0) {
+                        $blockInText .= $bid;
+                    } else {
+                        $blockInText .= ", " . $bid;
+                    }
+                    $i++;
+                }
+                $blockInText .= ")";
+            }
+            $edotForChugText = "";
+            if ($edahId) {
+                $edotForChugText = "edot_for_chug ec,";
+            }
+            $sql = "SELECT a.chug_id chug_id, CONCAT(a.chug_name, ' ', a.chug_group_name) AS chug_name, a.block_name block_name, " .
+            "a.max_size max_campers, sum(a.matched) num_campers_assigned, " .
+            "CASE WHEN a.max_size = 0 THEN \"No limit\" ELSE a.max_size END num_campers_allowed " .
+            "FROM (SELECT c.chug_id chug_id, c.name chug_name, g.name chug_group_name, m.block_id block_id, b.name block_name, " .
+            "c.max_size max_size, CASE WHEN m.match_id IS NULL THEN 0 ELSE 1 END matched " .
+            "      FROM $edotForChugText groups g, blocks b, chugim c " .
+            "      LEFT OUTER JOIN " .
+            "      (SELECT i.chug_id matched_chug_id, i.block_id block_id, m.match_id match_id " .
+            "       FROM chug_instances i " .
+            "       LEFT OUTER JOIN matches m " .
+            "       ON i.chug_instance_id = m.chug_instance_id) m " .
+            "      ON c.chug_id = m.matched_chug_id " .
+            "      WHERE c.group_id = g.group_id " .
+            "      AND b.block_id = m.block_id $blockInText " .
+            "      AND m.block_id IS NOT NULL ";
+            if ($edahId) {
+                $sql .= "AND ec.edah_id = ? AND ec.chug_id = c.chug_id ";
+                $db->addColVal($edahId, 'i');
+            }
+            if ($groupId) {
+                $sql .= "AND c.group_id = ? ";
+                $db->addColVal($groupId, 'i');
+            }
+            $sql .= ") a " .
+            "GROUP BY chug_id, block_id " .
+            "HAVING (num_campers_assigned < num_campers_allowed OR num_campers_allowed = \"No limit\") " .
+            "ORDER BY a.chug_group_name, a.chug_name, " .
+            "CASE WHEN (block_name LIKE '%July%' OR block_name LIKE '%july%') THEN CONCAT('a', block_name) " .
+            "WHEN (block_name LIKE '%Aug%' OR block_name LIKE '%aug%') THEN CONCAT('b', block_name) ELSE block_name END";
+            error_log("DBG: sql = $sql, edahId = $edahId, groupId = $groupId");
+            $chugimWithSpaceReport = new ZebraReport($db, $sql, $outputType);
+            $chugimWithSpaceReport->addNewTableColumn("edah");
+            $caption = "Chugim With Free Space";
+            if ($edahId) {
+                $caption .= " for Edah " . $edahId2Name[$edahId];
+            }
+            $chugimWithSpaceReport->setCaption($caption);
+            $chugimWithSpaceReport->setIdCol2EditPage("chug_id", "editChug.php", "chug_name");
+            $chugimWithSpaceReport->addIgnoreColumn("max_campers");
+            $chugimWithSpaceReport->renderTable();
         }
     }
     

@@ -120,7 +120,9 @@
             $db->isSelect = TRUE;
             $db->addColVal($groupId, 'i');
             $db->addColVal($edah_id, 'i');
-            $sql = "SELECT * FROM chugim c, edot_for_chug e where c.group_id = ? AND c.chug_id = e.chug_id AND e.edah_id = ?";
+            $sql = "SELECT c.name name, c.max_size max_size, c.min_size min_size, c.chug_id chug_id, " .
+            "c.group_id group_id FROM chugim c, edot_for_chug e " .
+            "WHERE c.group_id = ? AND c.chug_id = e.chug_id AND e.edah_id = ?";
             $err = "";
             $result = $db->doQuery($sql, $err);
             if ($result == FALSE) {

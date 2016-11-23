@@ -181,9 +181,9 @@
                 } else {
                     $underMin .= ", $chug->name";
                 }
-                $underMin .= " (" . strval($amtUnder) . ")";
-            }
-            if ($chug->assigned_count > $chug->max_size) {
+                $underMin .= " (-" . strval($amtUnder) . ")";
+            } else if ($chug->assigned_count > $chug->max_size &&
+                $chug->max_size > 0) {
                 $amtOver = $chug->assigned_count - $chug->max_size;
                 if (empty($overMax)) {
                     $overMax = $chug->name;

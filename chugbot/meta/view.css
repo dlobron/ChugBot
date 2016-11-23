@@ -34,6 +34,12 @@ body
      margin-bottom: 2%;
 }
 
+.btn-with-padding
+{
+     margin-top: 5px;
+     margin-bottom: 5px;
+}
+
 .chug_choice_container
 {
 	position: relative;
