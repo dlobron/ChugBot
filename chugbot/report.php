@@ -1091,7 +1091,7 @@ EOM;
             }
             $sql = "SELECT a.chug_id chug_id, CONCAT(a.chug_name, ' ', a.chug_group_name) AS chug_name, a.block_name block_name, " .
             "a.max_size max_campers, sum(a.matched) num_campers_assigned, " .
-            "CASE WHEN a.max_size = 0 THEN \"No limit\" ELSE a.max_size END num_campers_allowed " .
+            "CASE WHEN a.max_size = 0 OR a.max_size = " . MAX_SIZE_NUM . " THEN \"No limit\" ELSE a.max_size END num_campers_allowed " .
             "FROM (SELECT c.chug_id chug_id, c.name chug_name, g.name chug_group_name, m.block_id block_id, b.name block_name, " .
             "c.max_size max_size, CASE WHEN m.match_id IS NULL THEN 0 ELSE 1 END matched " .
             "      FROM $edotForChugText groups g, blocks b, chugim c " .

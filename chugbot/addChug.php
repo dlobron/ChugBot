@@ -86,12 +86,12 @@
     $dedupDropDown->setInputClass("element select medium");
     $db = new DbConn();
     $err = "";
-    $result = $db->runQueryDirectly("SELECT DISTINCT name FROM chugim", $err);
-    $chugName2Name = array(); // Mimic id-to-name, but use name as ID in this case.
+    $result = $db->runQueryDirectly("SELECT c.name, c.chug_id, g.name FROM chugim c, groups g WHERE c.group_id = g.group_id", $err);
+    $chugId2Name = array();
     while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-        $chugName2Name[$row[0]] = $row[0];
+        $chugId2Name[$row[1]] = $row[0] . " (" . $row[2] . ")";
     }
-    $dedupDropDown->setId2Name($chugName2Name);
+    $dedupDropDown->setId2Name($chugId2Name);
     $dedupDropDown->setDisplayListName("dedup_chugim");
     $addChugPage->addFormItem($dedupDropDown);
     

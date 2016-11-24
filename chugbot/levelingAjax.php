@@ -357,11 +357,13 @@
         // chug for this block.  For chugim with space, record it in $chugId2Beta.
         $db = new DbConn();
         $db->addColVal($block_id, 'i');
+        $db->addColVal($edah_id, 'i');
         $sql = "SELECT a.chug_id chug_id, a.max_size max_size, sum(a.matched) num_matched " .
         "FROM (SELECT c.chug_id, c.max_size max_size, CASE WHEN m.matched_chug_id IS NULL THEN 0 ELSE 1 END matched " .
         "FROM chugim c LEFT OUTER JOIN (SELECT i.chug_id matched_chug_id FROM chug_instances i, matches m " .
-        "WHERE i.chug_instance_id = m.chug_instance_id  AND i.block_id = ?) m " .
-        "ON c.chug_id = m.matched_chug_id) a " .
+        "WHERE i.chug_instance_id = m.chug_instance_id AND i.block_id = ?) m " .
+        "ON c.chug_id = m.matched_chug_id) a, edot_for_chug e " .
+        "WHERE a.chug_id = e.chug_id AND e.edah_id = ? " .
         "GROUP BY chug_id";
         $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
@@ -376,7 +378,7 @@
                 }
                 $assigned = intval($row["num_matched"]);
                 $capacity = intval($row["max_size"]);
-                if ($capacity == 0) {
+                if ($capacity == 0 || $capacity == MAX_SIZE_NUM) {
                     $chugId2Beta[$idVal]["free"] = "unlimited";
                 } else if ($assigned < $capacity) {
                     $chugId2Beta[$idVal]["free"] = $capacity - $assigned;

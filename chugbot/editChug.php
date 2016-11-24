@@ -84,10 +84,10 @@
     $dedupDropDown->setInputClass("element select medium");
     $db = new DbConn();
     $err = "";
-    $result = $db->runQueryDirectly("SELECT chug_id, name FROM chugim", $err);
+    $result = $db->runQueryDirectly("SELECT c.name, c.chug_id, g.name FROM chugim c, groups g WHERE c.group_id = g.group_id", $err);
     $chugId2Name = array();
     while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-        $chugId2Name[$row[0]] = $row[1];
+        $chugId2Name[$row[1]] = $row[0] . " (" . $row[2] . ")";
     }
     $dedupDropDown->setId2Name($chugId2Name);
     $dedupDropDown->setDisplayListName("dedup_chugim");
