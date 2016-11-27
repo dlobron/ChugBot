@@ -93,6 +93,10 @@ function isDupOf(droppedChugId, matchHash, deDupMatrix, chugId2MatchedCampers, m
     if (droppedChugId in deDupMatrix) {
 	var forbiddenToDupSet = deDupMatrix[droppedChugId];
 	for (var matchedChugId in matchHash) {
+	    if (matchedChugId == droppedChugId) {
+		// Don't flag our own ID as a dup: it will be in the hash.
+		continue;
+	    }
 	    if (matchedChugId in forbiddenToDupSet) {	       
 		return matchedChugId;
 	    }
@@ -339,7 +343,14 @@ function getAndDisplayCurrentMatches() {
 				    });
 			$('ul.gallery li').each(function(){
 				var $el = $(this);
-				$el.draggable({containment:$el.closest('.groupholder')});
+				$el.draggable({
+					containment: $el.closest('.groupholder'),
+					    start: function(event, ui) {
+					    // Store the ID of the chug from which we're being dragged.
+					    var sourceChugId = $(this).closest(".chugholder").attr("name");
+					    $(this).data("sourceChugId", sourceChugId);
+					    }
+					    });
 			    });
 			// Let chug holders be droppable.  When a camper holder is dragged, move from
 			// old chug to new, and update the preference color.
@@ -386,8 +397,17 @@ function getAndDisplayCurrentMatches() {
 					    // camper, and if so, show a warning.
 					    var dupWarningDiv = $(dropped).find(".dup-warning");
 					    $(dupWarningDiv).hide(); // Hide dup warning by default.
+					    // Store sourceChugId in a variable, and remove it from the element.
+					    var sourceChugId = $(dropped).data("sourceChugId");
+					    $(dropped).removeData("sourceChugId");
 					    if (camperId in existingMatches) {
 						var matchHash = existingMatches[camperId];
+						// Update matchHash: we need to remove the chug from which the camper
+						// was dragged, and add the one in which they were dropped.  We won't
+						// count the one in which they were dropped when we check for dups.
+						delete matchHash[sourceChugId];
+						var ourBlockName = $(".blockfill").text().substring(12);
+						matchHash[droppedChugId] = ourBlockName;
 						var dupId = isDupOf(droppedChugId, matchHash, 
 								    deDupMatrix, chugId2MatchedCampers,
 								    $(dropped).attr('value'));
