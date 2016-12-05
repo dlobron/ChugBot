@@ -217,8 +217,25 @@ body
         -webkit-border-radius: 10px;
 }
 
+.form_item_instance_chooser
+{
+	border:2px solid #ccc; 
+	max-height: 300px; 
+	overflow-y: scroll;
+	padding-right: 1%;
+	padding-left: 1%;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+}
+
 /**** Overrides for mobile devices ****/
-@media all and (max-device-width: 1000px) {
+@media all and (max-device-width: 750px) {
+
+.form_item_instance_chooser
+{
+	width: 100%;
+}
 
 .toggler
 {

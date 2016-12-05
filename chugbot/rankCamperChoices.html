@@ -142,9 +142,23 @@
 }
   </style>
   <script>
-  $(document).tooltip({
-     position: { my: "left+350 center", at: "right center" }
-  });
+  var isMobile = window.matchMedia("only screen and (max-width: 750px)");
+  if (isMobile.matches) {
+    $(document).tooltip({
+      position: {
+         my: "left top",
+         at: "left bottom",
+         collision: "flipfit"
+      },
+    });
+  } else {
+    $(document).tooltip({
+       position: {
+         my: "left+350 center",
+         at: "right center"
+       }
+    });
+  }
   function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),

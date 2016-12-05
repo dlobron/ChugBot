@@ -1,5 +1,6 @@
 <?php
     session_start();
+    include_once 'constants.php';
     include_once 'functions.php';
     include_once 'dbConn.php';
     
@@ -58,13 +59,19 @@
     if (isset($_POST["get_pref_count"])) {
         $err = "";
         $db = new DbConn();
+        $prefCountHash = [];
         $db->addSelectColumn("pref_count");
         $result = $db->simpleSelectFromTable("admin_data", $err);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
             die(json_encode(array("error" => $err)));
         }
-        echo json_encode($result->fetch_assoc());
+        if ($result->num_rows == 0) {
+            $prefCountHash["pref_count"] = DEFAULT_PREF_COUNT;
+        } else {
+            $prefCountHash = $result->fetch_assoc();
+        }
+        echo json_encode($prefCountHash);
         exit();
     }
     
@@ -81,7 +88,7 @@
         }
         $err = "";
         $db = new DbConn();
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < DEFAULT_PREF_COUNT; $i++) {
             $db->addColVal($camper_id, 'i');
         }
         $sql =

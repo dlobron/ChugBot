@@ -3,6 +3,7 @@
 
     define("MAX_SIZE_NUM", 10000);
     define("MIN_SIZE_NUM", -1);
+    define("DEFAULT_PREF_COUNT", 6);
 
     define("MYSQL_HOST", "localhost");
     define("MYSQL_USER", "camprama_chugbot");

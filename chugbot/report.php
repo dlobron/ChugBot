@@ -470,10 +470,13 @@
         private $pdfFontSize = 12;
     }
     
-    function addWhereClause(&$sql, &$db, $idHash) {
+    function addWhereClause(&$sql, &$db, $idHash,
+                            $entity = "bl.block_id",
+                            $haveWhereAlready = FALSE) {
+        $phrase = $haveWhereAlready ? "AND" : "WHERE";
         $haveWhere = FALSE;
         if (count($idHash) > 0) {
-            $sql .= " WHERE bl.block_id IN (";
+            $sql .= " $phrase $entity IN (";
             foreach ($idHash as $activeBlockId => $val) {
                 if ($haveWhere) {
                     $sql .= ",?";
@@ -528,6 +531,8 @@
     }
     asort($availableArchiveYears);
 
+    $activeBlockIds = array();
+    $activeChugIds = array();
     $errors = array();
     $reportMethod = ReportTypes::None;
     $outputType = OutputTypes::Html;
@@ -537,7 +542,6 @@
         $edahId = test_input($_GET["edah_id"]);
         $sessionId = test_input($_GET["session_id"]);
         $bunkId = test_input($_GET["bunk_id"]);
-        $chugId = test_input($_GET["chug_id"]);
         $groupId = test_input($_GET["group_id"]);
         $blockId = test_input($_GET["block_id"]);
         $doReport = test_input($_GET["do_report"]);
@@ -547,9 +551,9 @@
         } else if (test_input($_GET["export"])) {
             $outputType = OutputTypes::Csv;
         }
-        // Grab active block IDs.
-        $activeBlockIds = array();
+        // Grab active block and chug IDs.
         populateActiveIds($activeBlockIds, "block_ids");
+        populateActiveIds($activeChugIds, "chug_ids");
 
         // Report method is required for GET.  All other filter parameters are
         // optional (if we don't have a filter, we show everything).
@@ -557,10 +561,8 @@
         // other values.
         if ($reset) {
             $reportMethod = ReportTypes::None;
-            $activeBlockIds = array();
             $edahId = NULL;
             $bunkId = NULL;
-            $chugId = NULL;
             $groupId = NULL;
             $blockId = NULL;
             $sessionId = NULL;
@@ -576,7 +578,8 @@
             }
             $lhs = strtolower($cparts[0]);
             
-            // By-edah report.
+            // Add a check for each report type that we display this way- add
+            // more of these as needed.
             if ($lhs == "edah") {
                 $reportMethod = ReportTypes::ByEdah;
                 $edahId = $cparts[1];
@@ -587,9 +590,9 @@
                 $outputType = OutputTypes::Pdf;
             } else if ($lhs == "export") {
                 $outputType = OutputTypes::Csv;
+            } else if ($lhs == "chug") {
+                $activeChugIds[$cparts[1]] = 1;
             }
-            // Add more of these as needed.
-            
         }
     }
     if ($doReport && ($reportMethod === NULL)) {
@@ -610,11 +613,11 @@
         exit();
     }
     
-    // Per-chug report requires a chug ID to display.
+    // Per-chug report require at least one chug ID to display.
     if ($reportMethod == ReportTypes::ByChug &&
         $doReport &&
-        $chugId == NULL) {
-        array_push($errors, errorString("Please choose a chug for this report"));
+        count($activeChugIds) == 0) {
+        array_push($errors, errorString("Please choose at least one chug for this report"));
     }
     
     // Display errors and exit, if needed.
@@ -744,13 +747,11 @@ EOM;
         }
     } else if ($reportMethod == ReportTypes::ByChug) {
         // Similar to the above, but the filter is by chug.  Also, in this case, the
-        // input is required.
-        $chugChooser = new FormItemDropDown("Chug", TRUE, "chug_id", $liNumCounter++);
-        $chugChooser->setGuideText("Step 3: Choose a chug for this report.");
-        $chugChooser->setInputClass("element select medium");
-        $chugChooser->setInputSingular("chug");
-        $chugChooser->setColVal($chugId);
+        // input is required (the user must choose at least one chug).
+        $chugChooser = new FormItemInstanceChooser("Chugim", TRUE, "chug_ids", $liNumCounter++);
         $chugChooser->setId2Name($chugId2Name);
+        $chugChooser->setActiveIdHash($activeChugIds);
+        $chugChooser->setGuideText("Step 3: Choose one or more chugim for this report.");
         
         if ($outputType == OutputTypes::Html) {
             echo $chugChooser->renderHtml();
@@ -957,16 +958,12 @@ EOM;
             "JOIN blocks AS bl ON bl.block_id = i.block_id " .
             "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
             $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
-            if ($haveWhere) {
-                $sql .= " AND ch.chug_id = ? ";
-            } else {
-                $sql .= " WHERE ch.chug_id = ? ";
-            }
-            $db->addColVal($chugId, 'i');
-            $sql .= " ORDER BY edah_sort_order, edah, block, camper, bunk";
+            addWhereClause($sql, $db, $activeChugIds, "ch.chug_id",
+                           $haveWhere);
+            $sql .= " ORDER BY chug_name, edah_sort_order, edah, block, camper, bunk";
             
             $chugReport = new ZebraReport($db, $sql, $outputType);
-            $chugReport->setReportTypeAndNameOfItem("Chug", $chugId2Name[$chugId]);
+            $chugReport->addNewTableColumn("chug_name");
             $chugReport->addNewTableColumn("edah");
             $chugReport->addNewTableColumn("block");
             $chugReport->addIgnoreColumn("edah_sort_order");
@@ -979,7 +976,7 @@ EOM;
             $chugReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
             $chugReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
             $chugReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
-            $chugReport->setCaption("LINK0 campers for LINK1<br>Rosh: ROSH, PHONE");
+            $chugReport->setCaption("LINK0: LINK1 campers for LINK2<br>Rosh: ROSH, PHONE");
             $chugReport->addCaptionReplaceColKey("ROSH", "rosh", "none listed");
             $chugReport->addCaptionReplaceColKey("PHONE", "roshphone", "no rosh phone");
             $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no block name");

@@ -184,7 +184,22 @@
             if (! $this->staffOnlyOk()) {
                 return;
             }
-            $this->html .= "<div>\n";
+            $num = $this->liNum;
+            $idString = "form_item_instance_chooser_" . $num;            
+            $javascript = <<<JSEND
+            <script>
+            function toggle${num}(source) {
+                var checkboxes = $("#$idString").find(":input");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var checkbox = checkboxes[i];
+                    checkbox.checked = source.checked;
+                }
+            }
+            </script>
+JSEND;
+            $this->html .= "$javascript \n";
+            $this->html .= "<input type=\"checkbox\" onClick=\"toggle${num}(this)\" />Toggle All<br>";
+            $this->html .= "<div class=\"form_item_instance_chooser\" id=\"$idString\" >\n";
             $this->html .= genCheckBox($this->id2Name, $this->activeIdHash, $this->inputName);
             $this->html .= "</div>";
             if ($this->guideText) {
@@ -381,7 +396,7 @@ function fillConstraints() {
                   optionText += " >" + itemName + "</option>";
                   html += optionText;
            });
-           // Prepend a -- option for no choice.  Make this the selected
+           // Prepend a -- option for default choice.  Make this the selected
            // option if we didn't have one above.
            var noBunkStr = "<option value=\"\" ";
            if (hadSel == 0) {
