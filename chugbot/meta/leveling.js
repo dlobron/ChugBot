@@ -245,9 +245,9 @@ function getAndDisplayCurrentMatches() {
 			if (Object.keys(chugId2MatchedCampers).length > 0) {
 			    html += "<h3>" + groupName + " assignments</h3>\n";
 			} else {
-			    html += "<h3>" + groupName + ": no chugim are available for " + edahName + 
+			    html += "<h3>" + groupName + ": no chugim are available for " + edahName +
 				", " + blockName + "</h3>\n";
-			} 
+			}
 			// Within each group, add a holder for campers, and then populate with
 			// campers.  List chugim in alphabetical order.
 			var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers);
