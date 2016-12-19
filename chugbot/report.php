@@ -221,6 +221,9 @@
                 return TRUE;
             }
             foreach ($newTableColumnValues as $col => $val) {
+                if (! array_key_exists($col, $row)) {
+                    continue;
+                }
                 if ($row[$col] != $val) {
                     // If any new-table column value has changed from its
                     // previous version, we need a new table.
@@ -233,9 +236,13 @@
         }
         
         public function renderTable() {
-            if ($this->sql == NULL) {
+            if ($this->sql === NULL) {
                 echo genFatalErrorReport(array("No table query was specified"));
                 exit();
+            }
+            if (empty($this->sql)) {
+                echo "<h3>No results were found.</h3>";
+                return;
             }
             $err = "";
             $result = $this->db->doQuery($this->sql, $err);
@@ -245,7 +252,7 @@
             }
             // If no rows were found, display a message.
             if ($result->num_rows == 0) {
-                echo "<h3>No matching assignments were found.</h3>";
+                echo "<h3>No results were found.</h3>";
                 return;
             }
             // Step through the results, build the table, and display it.  We
@@ -502,6 +509,7 @@
         const CamperChoices = 5;
         const AllRegisteredCampers = 6;
         const ChugimWithSpace = 7;
+        const CamperHappiness = 8;
     }
 
     $dbErr = "";
@@ -518,7 +526,8 @@
                                  ReportTypes::Director      => "Director (whole camp, sorted by edah)",
                                  ReportTypes::CamperChoices => "Camper Prefs and Assignment",
                                  ReportTypes::AllRegisteredCampers => "All Campers Who Have Submitted Preferences",
-                                 ReportTypes::ChugimWithSpace => "Chugim With Free Space"
+                                 ReportTypes::ChugimWithSpace => "Chugim With Free Space",
+                                 ReportTypes::CamperHappiness => "Camper Happiness"
                                 );
     
     // Check for archived databases.
@@ -783,11 +792,14 @@ EOM;
         // The director report shows all options, so there are no filter fields
         // except time block.
         
-    } else if ($reportMethod == ReportTypes::AllRegisteredCampers) {
-        // Display optional edah and session filters.  Note that the choice level
+    } else if ($reportMethod == ReportTypes::AllRegisteredCampers ||
+               $reportMethod == ReportTypes::CamperHappiness) {
+        // Display optional edah and session filters.
+        // For the AllRegisteredCampers report, the step level
         // here is 2, because we did not display a block filter.
+        $step = ($reportMethod == ReportTypes::AllRegisteredCampers) ? 2 : 3;
         $edahChooser = new FormItemDropDown("Edah", FALSE, "edah_id", $liNumCounter++);
-        $edahChooser->setGuideText("Step 2: Choose an edah, or leave empty to see all edot");
+        $edahChooser->setGuideText("Step $step: Choose an edah, or leave empty to see all edot");
         $edahChooser->setInputClass("element select medium");
         $edahChooser->setInputSingular("edah");
         $edahChooser->setColVal($edahId);
@@ -1115,7 +1127,6 @@ EOM;
             "ORDER BY a.chug_group_name, a.chug_name, " .
             "CASE WHEN (block_name LIKE '%July%' OR block_name LIKE '%july%') THEN CONCAT('a', block_name) " .
             "WHEN (block_name LIKE '%Aug%' OR block_name LIKE '%aug%') THEN CONCAT('b', block_name) ELSE block_name END";
-            error_log("DBG: sql = $sql, edahId = $edahId, groupId = $groupId");
             $chugimWithSpaceReport = new ZebraReport($db, $sql, $outputType);
             $chugimWithSpaceReport->addNewTableColumn("edah");
             $caption = "Chugim With Free Space";
@@ -1126,6 +1137,107 @@ EOM;
             $chugimWithSpaceReport->setIdCol2EditPage("chug_id", "editChug.php", "chug_name");
             $chugimWithSpaceReport->addIgnoreColumn("max_campers");
             $chugimWithSpaceReport->renderTable();
+        } else if ($reportMethod == ReportTypes::CamperHappiness) {
+            // First, get a list of all groups with at least one match for the selected
+            // block/edah/session.  Use this to make a chug-group clause, which we'll
+            // use in our main SELECT.
+            $localErr = "";
+            $dbc = new DbConn();
+            $sql = "SELECT DISTINCT g.name groupname " .
+            "FROM groups g, matches m, chug_instances i, chugim c, campers ca " .
+            "WHERE i.chug_instance_id = m.chug_instance_id " .
+            "AND i.chug_id = c.chug_id " .
+            "AND c.group_id = g.group_id " .
+            "AND m.camper_id = ca.camper_id ";
+            addWhereClause($sql, $dbc, $activeBlockIds,
+                           "i.block_id", TRUE);
+            if ($edahId) {
+                $sql .= "AND ca.edah_id = ? ";
+                $dbc->addColVal($edahId, 'i');
+            }
+            if ($sessionId) {
+                $sql .= "AND ca.session_id = ? ";
+                $dbc->addColVal($sessionId, 'i');
+            }
+            $sql .= "ORDER BY groupname";
+            $result = $dbc->doQuery($sql, $localErr);
+            if ($result == FALSE) {
+                echo dbErrorString($sql, $localErr);
+                exit();
+            }
+            if ($result->num_rows == 0) {
+                // If we did not find any preferences, report no rows.
+                $sql = "";
+            } else {
+                // If we have prefs and matches, we can build our main SQL.
+                // Otherwise, we'll use the SQL from above, which will report
+                // zero rows found.
+                $groupClause = "";
+                $i = 0;
+                while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+                    $gn = $row[0];
+                    $groupClause .= " max(case when p.group_name = \"" . $gn . "\" then p.chug_name else null end) \"" .
+                    $gn . " Assignment\", max(case when p.group_name = \"" . $gn . "\" then p.happiness_level else null end) \"" .
+                    $gn . " Pref Level\" ";
+                    if ($i++ < ($result->num_rows-1)) {
+                        $groupClause .= ", ";
+                    }
+                }
+                // Now, build our actual query, using the group clause we just created.
+                // The parentheses around the FROM tables ahead of the left join on preferences
+                // are essential, because of a quirk in the way MySQL evaluates statements:
+                //
+                $sql = "SELECT CONCAT(c.last, ', ', c.first) name, c.camper_id camper_id, p.block_name block, p.block_id block_id ";
+                if ($groupClause) {
+                    $sql .= ", " . $groupClause;
+                }
+                $sql .= "FROM campers c, " .
+                "(SELECT " .
+                "m.camper_id camper_id, c.name chug_name, g.name group_name, b.name block_name, b.block_id, " .
+                "CASE WHEN i.chug_id = p.first_choice_id THEN 1 " .
+                "WHEN i.chug_id = p.second_choice_id THEN 2 " .
+                "WHEN i.chug_id = p.third_choice_id THEN 3 " .
+                "WHEN i.chug_id = p.fourth_choice_id THEN 4 " .
+                "WHEN i.chug_id = p.fifth_choice_id THEN 5 " .
+                "WHEN i.chug_id = p.sixth_choice_id THEN 6 " .
+                "ELSE \"no pref\" " .
+                "END AS happiness_level " .
+                "FROM groups g, blocks b, (matches m, chug_instances i, chugim c) " .
+                "LEFT OUTER JOIN preferences p " .
+                "ON p.group_id = c.group_id AND p.block_id = i.block_id AND m.camper_id = p.camper_id " .
+                "WHERE i.block_id = b.block_id " .
+                "AND c.chug_id = i.chug_id " .
+                "AND c.group_id = g.group_id " .
+                "AND m.chug_instance_id = i.chug_instance_id ";
+                addWhereClause($sql, $db, $activeBlockIds,
+                               "i.block_id", TRUE);
+                $sql .= ") p " .
+                "WHERE c.camper_id = p.camper_id ";
+                if ($sessionId) {
+                    $sql .= " AND c.session_id = ? ";
+                    $db->addColVal($sessionId, 'i');
+                }
+                if ($edahId) {
+                    $sql .= " AND c.edah_id = ? ";
+                    $db->addColVal($edahId, 'i');
+                }
+                $sql .= " GROUP BY camper_id, block ORDER BY name, block";
+            }
+            $camperHappinessReport = new ZebraReport($db, $sql, $outputType);
+            $camperHappinessReport->addNewTableColumn("edah");
+            $caption = "Camper Happiness Report";
+            if ($edahId) {
+                $caption .= " for " . $edahId2Name[$edahId];
+            }
+            if ($sessionId) {
+                $caption .= " for " . $sessionId2Name[$sessionId];
+            }
+            $camperHappinessReport->setCaption($caption);
+            $camperHappinessReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
+            $camperHappinessReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
+            $camperHappinessReport->addIgnoreColumn("camper_id");
+            $camperHappinessReport->addIgnoreColumn("block_id");
+            $camperHappinessReport->renderTable();
         }
     }
     

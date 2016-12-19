@@ -49,6 +49,28 @@ function updateCount(chugId2Beta, curChugHolder) {
 	});
 }
 
+function sortedGroupIdKeysByName(groupId2ChugId2MatchedCampers, groupId2Name) {
+    // Populate the sorted list.
+    var sorted = new Array();
+    for (var groupId in groupId2ChugId2MatchedCampers) {
+	sorted.push(groupId);
+    }
+    // Do the actual sort by chug name, and return the sorted array.
+    sorted.sort(function(x,y) {
+	    var xName = groupId2Name[x];
+	    var yName = groupId2Name[y];
+	    if (xName.toLowerCase() < yName.toLowerCase()) {
+		return -1;
+	    }
+	    if (xName.toLowerCase() > yName.toLowerCase()) {
+		return 1;
+	    }
+	    return 0;
+	});
+
+    return sorted;
+}
+
 function chugIdsSortedByName(chugId2Beta, chugId2Entity) {
     // Populate the sorted list.
     var sorted = new Array();
@@ -213,91 +235,93 @@ function getAndDisplayCurrentMatches() {
 		    deDupMatrix = json["deDupMatrix"];
 		    chugId2Beta = json["chugId2Beta"];
 		    var camperId2Name = json["camperId2Name"];
-		    $.each(groupId2ChugId2MatchedCampers,
-			   function(groupId, chugId2MatchedCampers) {
-			       // Add a holder for each group (aleph, bet, gimel).
-			       var groupName = groupId2Name[groupId];
-			       html += "<div class=\"groupholder\" name=\"" + groupId + "\" >\n";
-			       if (Object.keys(chugId2MatchedCampers).length > 0) {
-				   html += "<h3>" + groupName + " assignments</h3>\n";
-			       } else {
-				   html += "<h3>" + groupName + ": no chugim are available for " + edahName + 
-				       ", " + blockName + "</h3>\n";
-			       } 
-			       // Within each group, add a holder for campers, and then populate with
-			       // campers.  List chugim in alphabetical order.
-			       var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers);
-			       for (var i = 0; i < sortedChugIds.length; i++) {
-				   var chugId = sortedChugIds[i];
-				   var matchedCampers = chugId2MatchedCampers[chugId];
-				   // Add a chug holder, and put camper holders inside it.
-				   var chugName = chugId2Beta[chugId]["name"];
-				   var chugMin = chugId2Beta[chugId]["min_size"];
-				   var chugMax = chugId2Beta[chugId]["max_size"];
-				   var editChugUrl = editChugBase + chugId;
-				   if (chugMax == "0" ||
-				       chugMax == 0 ||
-				       chugMax == "10000" ||
-				       chugMax == 10000 ||
-				       chugMax === null ||
-				       (typeof(chugMax) === 'undefined')) {
-				       chugMax = "no limit";
-				   }
-				   if (chugMin == "-1" ||
-				       chugMin == -1 ||
-				       chugMin === null ||
-				       (typeof(chugMin) === 'undefined')) {
-				       chugMin = "no minimum";
-				   }
-				   var curCount = matchedCampers.length;
-				   var colorClass = getColorForCount(curCount, chugMin, chugMax);
-				   html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
-				   if (chugName == "Not Assigned Yet") {
-				       html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
-				   } else {
-				       html += "<h4>" + "<a href=\"" + editChugUrl + "\">" + chugName + "</a>"
-					   + " (min = " + chugMin + ", max = " + chugMax + ", <span name=\"curCountHolder\" class=\"" + colorClass + "\" value=\"" + curCount + "\">cur = " + curCount + "</span>)</h4>";
-				   }
-				   html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
-				   $.each(matchedCampers,
-					  function(index, camperId) {
-					      var camperName = camperId2Name[camperId];
-					      var prefListText = "";
-					      var prefClass = prefClasses[prefClasses.length - 1];
-					      if (camperId in camperId2Group2PrefList) {
-						  var group2PrefList = camperId2Group2PrefList[camperId];
-						  if (groupId in group2PrefList) {
-						      var prefList = group2PrefList[groupId];
-						      $.each(prefList, function(index, prefChugId) {
-							      var listNum = index + 1;
-							      if (prefListText == "") {
-								  prefListText += "Preferences:\n";
-							      }
-							      if (prefChugId in chugId2Beta) {
-								  prefListText += listNum + ". " + chugId2Beta[prefChugId]["name"] + "\n";
-							      }
-							      if (prefChugId == chugId) {
-								  if (index < prefClasses.length) {
-								      prefClass = prefClasses[index];
-								  } else {
-								      prefClass = prefClasses[prefClasses.length - 1];
-								  }
-							      }
-							  });
-						  }
-					      }
-					      var titleText = "title=\"<no preferences>\"";
-					      if (prefListText) {
-						  // If we have a pref list, write it as a tool tip.
-						  titleText = "title=\"" + prefListText + "\"";
-					      }
-					      html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" "  + titleText;
-					      html += "><h5 class=\"ui-widget-header\">" + camperName + "</h5><div class=\"dup-warning\"></div></li>\n";
-					  });
-				   html += "</ul><br style=\"clear: both\"></div>\n";
-			       }
-			       html += "</div>\n";
-			   });
+		    var sortedGroupIds = sortedGroupIdKeysByName(groupId2ChugId2MatchedCampers, groupId2Name);
+		    for (var j = 0; j < sortedGroupIds.length; j++) {
+			var groupId = sortedGroupIds[j];
+			var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
+			// Add a holder for each group (aleph, bet, gimel).
+			var groupName = groupId2Name[groupId];
+			html += "<div class=\"groupholder\" name=\"" + groupId + "\" >\n";
+			if (Object.keys(chugId2MatchedCampers).length > 0) {
+			    html += "<h3>" + groupName + " assignments</h3>\n";
+			} else {
+			    html += "<h3>" + groupName + ": no chugim are available for " + edahName + 
+				", " + blockName + "</h3>\n";
+			} 
+			// Within each group, add a holder for campers, and then populate with
+			// campers.  List chugim in alphabetical order.
+			var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers);
+			for (var i = 0; i < sortedChugIds.length; i++) {
+			    var chugId = sortedChugIds[i];
+			    var matchedCampers = chugId2MatchedCampers[chugId];
+			    // Add a chug holder, and put camper holders inside it.
+			    var chugName = chugId2Beta[chugId]["name"];
+			    var chugMin = chugId2Beta[chugId]["min_size"];
+			    var chugMax = chugId2Beta[chugId]["max_size"];
+			    var editChugUrl = editChugBase + chugId;
+			    if (chugMax == "0" ||
+				chugMax == 0 ||
+				chugMax == "10000" ||
+				chugMax == 10000 ||
+				chugMax === null ||
+				(typeof(chugMax) === 'undefined')) {
+				chugMax = "no limit";
+			    }
+			    if (chugMin == "-1" ||
+				chugMin == -1 ||
+				chugMin === null ||
+				(typeof(chugMin) === 'undefined')) {
+				chugMin = "no minimum";
+			    }
+			    var curCount = matchedCampers.length;
+			    var colorClass = getColorForCount(curCount, chugMin, chugMax);
+			    html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
+			    if (chugName == "Not Assigned Yet") {
+				html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
+			    } else {
+				html += "<h4>" + "<a href=\"" + editChugUrl + "\">" + chugName + "</a>"
+				    + " (min = " + chugMin + ", max = " + chugMax + ", <span name=\"curCountHolder\" class=\"" + colorClass + "\" value=\"" + curCount + "\">cur = " + curCount + "</span>)</h4>";
+			    }
+			    html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
+			    $.each(matchedCampers,
+				   function(index, camperId) {
+				       var camperName = camperId2Name[camperId];
+				       var prefListText = "";
+				       var prefClass = prefClasses[prefClasses.length - 1];
+				       if (camperId in camperId2Group2PrefList) {
+					   var group2PrefList = camperId2Group2PrefList[camperId];
+					   if (groupId in group2PrefList) {
+					       var prefList = group2PrefList[groupId];
+					       $.each(prefList, function(index, prefChugId) {
+						       var listNum = index + 1;
+						       if (prefListText == "") {
+							   prefListText += "Preferences:\n";
+						       }
+						       if (prefChugId in chugId2Beta) {
+							   prefListText += listNum + ". " + chugId2Beta[prefChugId]["name"] + "\n";
+						       }
+						       if (prefChugId == chugId) {
+							   if (index < prefClasses.length) {
+							       prefClass = prefClasses[index];
+							   } else {
+							       prefClass = prefClasses[prefClasses.length - 1];
+							   }
+						       }
+						   });
+					   }
+				       }
+				       var titleText = "title=\"<no preferences>\"";
+				       if (prefListText) {
+					   // If we have a pref list, write it as a tool tip.
+					   titleText = "title=\"" + prefListText + "\"";
+				       }
+				       html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" "  + titleText;
+				       html += "><h5 class=\"ui-widget-header\">" + camperName + "</h5><div class=\"dup-warning\"></div></li>\n";
+				   });
+			    html += "</ul><br style=\"clear: both\"></div>\n";
+			}
+			html += "</div>\n";
+		    };
 		    // Compute and display chugim with space.  Link to the reporting page.
 		    var loc = window.location;
 		    var basePath = removeLastDirectoryPartOf(loc.pathname);		    
