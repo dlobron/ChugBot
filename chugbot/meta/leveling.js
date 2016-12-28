@@ -361,7 +361,7 @@ function getAndDisplayCurrentMatches() {
             }).then(function(){
                     if (succeeded) {
 			$("ul.gallery li").draggable({
-				scroll: false,
+				scroll: true,
 				    revert: "invalid", // when not dropped, the item will revert back
 				    cursor: "move"
 				    });
