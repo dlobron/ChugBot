@@ -3,6 +3,31 @@
     include_once 'functions.php';
     require_once 'PHPMailer/PHPMailerAutoload.php';
     
+    function getGroupsForEdahIds($edah_ids) {
+        $retVal = array();
+        $db = new DbConn();
+        $edahText = NULL;
+        foreach ($edah_ids as $edah_id) {
+            if ($edahText == NULL) {
+                $edahText = "?";
+            } else {
+                $edahText .= ",?";
+            }
+            $db->addColVal($edah_id, 'i');
+        }
+        $sql = "SELECT DISTINCT g.group_id group_id FROM groups g, edot_for_group e " .
+        "WHERE g.group_id = e.group_id AND e.edah_id IN ($edahText)";
+        $result = $db->doQuery($sql, $err);
+        if ($result == FALSE) {
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+            array_push($retVal, intval($row[0]));
+        }
+        return $retVal;
+    }
+    
     function getArchiveYears(&$dbErr) {
         $retVal = array();
         $db = new DbConn();

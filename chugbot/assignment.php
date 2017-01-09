@@ -161,20 +161,27 @@
         }
     }
     
-    function do_assignment($edah_id, $block_id, $group_id, &$err) {
-        debugLog("Making assignment for edah $edah_id, block $block_id, group $group_id");
-        
-        // Get the name of this edah, block, and group, for logging and error printing.
-        $db = new DbConn();
-        $db->addSelectColumn("name");
-        $db->addWhereColumn("edah_id", $edah_id, 'i');
-        $result = $db->simpleSelectFromTable("edot", $err);
-        if ($result == FALSE) {
-            error_log($err);
-            return FALSE;
+    function do_assignment($edah_ids, $block_id, $group_id, &$err) {
+        $edotText = "";
+        debugLog("Starting assignment");
+        // Get the names of our edot, block, and group, for logging and error printing.
+        $edahId2Name = array();
+        foreach ($edah_ids as $edah_id) {
+            $db = new DbConn();
+            $db->addSelectColumn("name");
+            $db->addWhereColumn("edah_id", $edah_id, 'i');
+            $result = $db->simpleSelectFromTable("edot", $err);
+            if ($result == FALSE) {
+                error_log($err);
+                return FALSE;
+            }
+            $row = mysqli_fetch_assoc($result);
+            if ($edotText) {
+                $edotText .= "+";
+            }
+            $edotText .= $row["name"];
+            $edahId2Name[$edah_id] = $row["name"];
         }
-        $row = mysqli_fetch_assoc($result);
-        $edahName = $row["name"];
         $db = new DbConn();
         $db->addSelectColumn("name");
         $db->addWhereColumn("block_id", $block_id, 'i');
@@ -195,7 +202,7 @@
         }
         $row = mysqli_fetch_assoc($result);
         $groupName = $row["name"];
-        debugLog("Edah $edahName, block $blockName, group $groupName");
+        debugLog("Starting assignment for edah/ot $edotText, block $blockName, group $groupName");
         
         // Grab the campers in this edah and block, and prefs for this group.  We determine the
         // campers in a block by joining with the block_instances table, which tells us which
@@ -205,69 +212,85 @@
         // have any preferences in the system (staff might want to assign them manually).
         $campers = array();
         $camperIdsToAssign = array();
-        $db = new DbConn();
-        $db->addColVal($group_id, 'i');
-        $db->addColVal($block_id, 'i');
-        $db->addColVal($edah_id, 'i');
-        $db->addColVal($block_id, 'i');
-        $db->isSelect = TRUE;
-        $sql = "SELECT c.camper_id, c.first, c.last, c.needs_first_choice, " .
-        "prefs.fr firstpref, prefs.sc secpref, prefs.th thirdpref, prefs.frth fourthpref, prefs.ff fifthpref, prefs.sxth sixthpref " .
-        "FROM block_instances b, campers c " .
-        "LEFT OUTER JOIN " .
-        "(SELECT p.group_id group_id, p.block_id block_id, p.camper_id camper_id, " .
-        "IFNULL(p.first_choice_id,-1) fr, IFNULL(p.second_choice_id,-1) sc, " .
-        "IFNULL(p.third_choice_id,-1) th, IFNULL(p.fourth_choice_id,-1) frth, " .
-        "IFNULL(p.fifth_choice_id,-1) ff, IFNULL(p.sixth_choice_id,-1) sxth " .
-        "FROM preferences p, block_instances b, campers c " .
-        "WHERE c.camper_id = p.camper_id AND p.block_id = b.block_id AND c.session_id = b.session_id) prefs " .
-        "ON prefs.group_id = ? AND prefs.block_id = ? AND prefs.camper_id = c.camper_id " .
-        "WHERE c.edah_id = ? AND c.session_id = b.session_id AND b.block_id = ? AND c.inactive = 0";
-        $result = $db->doQuery($sql, $err);
-        if ($result == FALSE) {
-            error_log($err);
-            return FALSE;
-        }
-        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-            $c = new Camper($row[0], $row[1], $row[2], $row[3]);
-            for ($i = 4; $i < count($row); $i++) {
-                if ($row[$i] >= 0) {
-                    array_push($c->prefs, $row[$i]);
-                }
+        $camperId2EdahId = array();
+        foreach ($edah_ids as $edah_id) {
+            $db = new DbConn();
+            $db->addColVal($group_id, 'i');
+            $db->addColVal($block_id, 'i');
+            $db->addColVal($edah_id, 'i');
+            $db->addColVal($block_id, 'i');
+            $db->isSelect = TRUE;
+            $sql = "SELECT c.camper_id, c.first, c.last, c.needs_first_choice, " .
+            "prefs.fr firstpref, prefs.sc secpref, prefs.th thirdpref, prefs.frth fourthpref, prefs.ff fifthpref, prefs.sxth sixthpref " .
+            "FROM block_instances b, campers c " .
+            "LEFT OUTER JOIN " .
+            "(SELECT p.group_id group_id, p.block_id block_id, p.camper_id camper_id, " .
+            "IFNULL(p.first_choice_id,-1) fr, IFNULL(p.second_choice_id,-1) sc, " .
+            "IFNULL(p.third_choice_id,-1) th, IFNULL(p.fourth_choice_id,-1) frth, " .
+            "IFNULL(p.fifth_choice_id,-1) ff, IFNULL(p.sixth_choice_id,-1) sxth " .
+            "FROM preferences p, block_instances b, campers c " .
+            "WHERE c.camper_id = p.camper_id AND p.block_id = b.block_id AND c.session_id = b.session_id) prefs " .
+            "ON prefs.group_id = ? AND prefs.block_id = ? AND prefs.camper_id = c.camper_id " .
+            "WHERE c.edah_id = ? AND c.session_id = b.session_id AND b.block_id = ? AND c.inactive = 0";
+            $result = $db->doQuery($sql, $err);
+            if ($result == FALSE) {
+                error_log($err);
+                return FALSE;
             }
-            $camper_id = intval($row[0]);
-            $campers[$camper_id] = $c;
-            array_push($camperIdsToAssign, $camper_id);
+            while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+                $c = new Camper($row[0], $row[1], $row[2], $row[3]);
+                for ($i = 4; $i < count($row); $i++) {
+                    if ($row[$i] >= 0) {
+                        array_push($c->prefs, $row[$i]);
+                    }
+                }
+                $camper_id = intval($row[0]);
+                $campers[$camper_id] = $c;
+                array_push($camperIdsToAssign, $camper_id);
+                $camperId2EdahId[$camper_id] = $edah_id;
+            }
         }
         if (count($campers) == 0) {
-            error_log("No campers found for edah $edahName, block $blockName, group $groupName: not assigning.");
+            error_log("No campers found for edah $edotText, block $blockName, group $groupName: not assigning.");
             return TRUE; // This is not an error, so return true.
         }
         
-        // Grab the chugim available for this group/block/edah.  The chug must have an
-        // instance in this block, must be available to this edah, and must be in this group.
-        $chugim = array();
-        $db = new DbConn();
-        $db->addColVal($group_id, 'i');
-        $db->addColVal($edah_id, 'i');
-        $db->addColVal($edah_id, 'i');
-        $db->addColVal($block_id, 'i');
-        $db->addColVal($block_id, 'i');
-        $db->isSelect = TRUE;
-        $sql = "SELECT c.name, c.max_size, c.min_size, c.chug_id FROM chugim c, edot_for_chug e, edot_for_block b, chug_instances i WHERE " .
-        "c.group_id = ? AND c.chug_id = e.chug_id AND e.edah_id = ? AND b.edah_id = ? AND b.block_id = ? AND " .
-        "i.chug_id = c.chug_id AND i.block_id = ?";
-        $result = $db->doQuery($sql, $err);
-        if ($result == FALSE) {
-            error_log($err);
-            return FALSE;
+        // Grab the available chugim for this group/block, for each edah.  The chug must have an
+        // instance in this block, must be available to the edah, and must be in this group.
+        // Note that the same edah can, and often will, be available to more than one edah.
+        $chugimForEdot = array(); // Map edah ID->chug ID->Chug object.
+        foreach ($edah_ids as $edah_id) {
+            $db = new DbConn();
+            $db->addColVal($group_id, 'i');
+            $db->addColVal($edah_id, 'i');
+            $db->addColVal($edah_id, 'i');
+            $db->addColVal($block_id, 'i');
+            $db->addColVal($block_id, 'i');
+            $db->isSelect = TRUE;
+            $sql = "SELECT c.name, c.max_size, c.min_size, c.chug_id FROM chugim c, edot_for_chug e, edot_for_block b, chug_instances i WHERE " .
+            "c.group_id = ? AND c.chug_id = e.chug_id AND e.edah_id = ? AND b.edah_id = ? AND b.block_id = ? AND " .
+            "i.chug_id = c.chug_id AND i.block_id = ?";
+            $result = $db->doQuery($sql, $err);
+            if ($result == FALSE) {
+                error_log($err);
+                return FALSE;
+            }
+            while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+                $c = new Chug($row[0], $row[1], $row[2], $row[3]);
+                if (! array_key_exists($edah_id, $chugimForEdot)) {
+                    $chugimForEdot[$edah_id] = array();
+                }
+                $chugimForEdot[$edah_id][$c->chug_id] = $c;
+            }
+            if (! array_key_exists($edah_id, $chugimForEdot)) {
+                // Each edah being assigned must have at least one chug available.
+                error_log("No chugim found for edah " . $edahId2Name[$edah_id] .
+                          ", block $blockName, group $groupName: not assigning.");
+                return TRUE; // This is not an error, so return true.
+            }
         }
-        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-            $c = new Chug($row[0], $row[1], $row[2], $row[3]);
-            $chugim[$c->chug_id] = $c;
-        }
-        if (count($chugim) == 0) {
-            error_log("No chugim found for edah $edahName, block $blockName, group $groupName: not assigning.");
+        if (count($chugimForEdot) == 0) {
+            error_log("No chugim found for edah $edotText, block $blockName, group $groupName: not assigning.");
             return TRUE; // This is not an error, so return true.
         }
         
@@ -321,9 +344,7 @@
             }
         }
         
-        // Grab the de-dup matrix.  Each chug name should map to a list of
-        // those chugim that are not allowed to be dup'ed with it (if any such
-        // exist).
+        // Grab the de-dup matrix.
         $deDupMatrix = array();
         $db = new DbConn();
         $db->addSelectColumn("*");
@@ -345,7 +366,7 @@
             $deDupMatrix[$rightChug][$leftChug] = 1;
         }
         
-        // Grab existing matches for all campers in this edah, and
+        // Grab existing matches for all campers in this block/group, and
         // arrange them in a lookup table by camper ID.  We'll use this to prevent dups.
         // We also compute existing happiness level here, by checking each match
         // against the camper's pref list.
@@ -387,8 +408,8 @@
                     if (! array_key_exists($camper->camper_id, $happiness)) {
                         $happiness[$camper->camper_id] = 0; // Initialize
                     }
-                    // Increment the camper's total happiness level according to their
-                    // preference for this existing match.
+                    // Increment the camper's total happiness level according to
+                    // their preference for this existing match.
                     $chug_id = intval($row[3]);
                     if (array_key_exists($chug_id, $prefsByChugId)) {
                         $happiness[$camper->camper_id] += $prefsByChugId[$chug_id];
@@ -426,25 +447,34 @@
             if (count($camper->prefs) > 0) {
                 $candidateChugId = array_shift($camper->prefs);
             }
+            if (! array_key_exists($camperId, $camperId2EdahId)) {
+                // If we have a camper's ID, we expect to have their edah ID, so
+                // log a warning.
+                error_log("No edah cound for camper " . $camper->name);
+                continue;
+            }
+            $edah_id = $camperId2EdahId[$camperId];
+            $chugimForThisEdah = $chugimForEdot[$edah_id]; // Eligible chugim for assignment.
             if ($candidateChugId == NULL) {
                 // If we run out of preferences, assign the camper to the chug with the most
                 // free space.  Note that chugWithMostSpace is guaranteed to return a chug, so
                 // we know that this loop must terminate.
-                $maxFreeChugId = chugWithMostSpace($chugim);
-                $maxFreeChug =& $chugim[$maxFreeChugId];
+                $maxFreeChugId = chugWithMostSpace($chugimForThisEdah);
+                $maxFreeChug =& $chugimForThisEdah[$maxFreeChugId];
                 debugLog("No more prefs: assigning to max free chug " . $maxFreeChug->name);
                 assign($camper, $assignments, $maxFreeChug);
                 continue;
             }
-            if (! array_key_exists($candidateChugId, $chugim)) {
-                // This could occur if the allowed edot for a chug were changed after preferences were set.
-                // We can't easily correct this, so just log an error for now.
+            if (! array_key_exists($candidateChugId, $chugimForThisEdah)) {
+                // This could occur if the allowed edot for a chug or edah were
+                // changed after preferences were set.  We can't easily correct
+                // this, so just log an error for now.
                 error_log("ERROR: Preferred chug ID " . $candidateChugId . " not found in allowed chug set");
                 $err = "Chug choices for " . $camper->name . " contained illegal chug ID " . $candidateChugId;
                 array_push($camperIdsToAssign, $camper->camper_id); // Try the next pref.
                 continue;
             }
-            $candidateChug =& $chugim[$candidateChugId];
+            $candidateChug =& $chugimForThisEdah[$candidateChugId];
             
             $camper->choice_level++; // Increment the choice level (it starts at zero).
             // At this point, we check for duplicate assignment.
@@ -474,7 +504,7 @@
             debugLog("Candidate chug " . $candidateChug->name . " is full - trying to bump");
             // Try to find a happier camper who is assigned to this chug.
             $happierCamperId = findHappierCamper($camper, $candidateChug, $assignments,
-                                                 $happiness, $chugim, $campers);
+                                                 $happiness, $chugimForThisEdah, $campers);
             
             if ($happierCamperId == NULL) {
                 // No happier camper was found.
@@ -500,19 +530,27 @@
             debugLog("Unassigned happier camper " . $happierCamper->name . ", assigned " . $camper->name);
         }
         
-        // Compile stats, and update the database.
-        $firstCt = 0;
-        $secondCt = 0;
-        $thirdCt = 0;
-        $fourthOrWorseCt = 0;
+        // Log results, and update the database.
         debugLog("Finished assignment loop - results:");
         foreach ($campers as $camperId => $cdbg) {
+            $edah_id = $camperId2EdahId[$camperId];
+            if ($edah_id == NULL) {
+                error_log("ERROR: Can't find edah for assigned camper ID $camperId");
+                return FALSE;
+            }
+            $edahName = $edahId2Name[$edah_id];
+            $chugimForThisEdah = $chugimForEdot[$edah_id];
+            if ($chugimForThisEdah == NULL ||
+                count($chugimForThisEdah) == 0) {
+                error_log("ERROR: No chugim found for edah $edahName");
+                return FALSE;
+            }
             $assignedChugId = $assignments[$camperId];
             if ($assignedChugId == NULL) {
                 error_log("ERROR: Failed to assign chug for camper ID $camperId");
                 return FALSE;
             }
-            $assignedChug = $chugim[$assignedChugId];
+            $assignedChug = $chugimForThisEdah[$assignedChugId];
             if ($assignedChug == NULL) {
                 error_log("ERROR: Assigned camper ID $camperId to illegal chug ID $assignedChugId");
                 return FALSE;
@@ -522,16 +560,9 @@
                 error_log("ERROR: Assigned camper ID $camperId chug ID $assignedChugId, which has no instance for block $block_id");
                 return FALSE;
             }
-            debugLog("Assigned " . $cdbg->name . ", cid " . $cdbg->camper_id . " to " . $assignedChug->name . ", choice " . $cdbg->choice_level);
-            if ($cdbg->choice_level == 1) {
-                $firstCt++;
-            } else if ($cdbg->choice_level == 2) {
-                $secondCt++;
-            } else if ($cdbg->choice_level == 3) {
-                $thirdCt++;
-            } else {
-                $fourthOrWorseCt++;
-            }
+            
+            debugLog("Assigned " . $cdbg->name . ", cid " . $cdbg->camper_id . ", edah " . $edahName . " to " .
+                     $assignedChug->name . ", choice " . $cdbg->choice_level);
             // Update the matches table with each camper's assignment.
             $db = new DbConn();
             $db->addColVal($cdbg->camper_id, 'i');
@@ -564,35 +595,6 @@
                 error_log($err);
                 return FALSE;
             }
-        }
-        $underMin = "";
-        $overMax = "";
-        overUnder($chugim, $underMin, $overMax);
-        
-        // Update the assignment table (metadata about this assignment) with our stats.
-        $db = new DbConn();
-        $db->addWhereColumn("edah_id", $edah_id, 'i');
-        $db->addWhereColumn("block_id", $block_id, 'i');
-        $db->addWhereColumn("group_id", $group_id, 'i');
-        $delOk = $db->deleteFromTable("assignments", $err);
-        if ($delOk == FALSE) {
-            error_log($err);
-            return FALSE;
-        }
-        $db = new DbConn();
-        $db->addColumn("edah_id", $edah_id, 'i');
-        $db->addColumn("block_id", $block_id, 'i');
-        $db->addColumn("group_id", $group_id, 'i');
-        $db->addColumn("first_choice_ct", $firstCt, 'i');
-        $db->addColumn("second_choice_ct", $secondCt, 'i');
-        $db->addColumn("third_choice_ct", $thirdCt, 'i');
-        $db->addColumn("fourth_choice_or_worse_ct", $fourthOrWorseCt, 'i');
-        $db->addColumn("under_min_list", $underMin, 's');
-        $db->addColumn("over_max_list", $overMax, 's');
-        $result = $db->insertIntoTable("assignments", $err);
-        if ($result == FALSE) {
-            error_log($err);
-            return FALSE;
         }
         
         return TRUE;

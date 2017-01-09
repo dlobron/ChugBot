@@ -496,7 +496,8 @@
             $sql .= ") ";
         }
         
-        return $haveWhere;
+        // Return YES if we have a WHERE coming in, or if we added one.
+        return ($haveWhereAlready || $haveWhere);
     }
     
     abstract class ReportTypes
@@ -540,6 +541,7 @@
     }
     asort($availableArchiveYears);
 
+    $activeEdahIds = array();
     $activeBlockIds = array();
     $activeChugIds = array();
     $errors = array();
@@ -548,7 +550,6 @@
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $reset = test_input($_GET["reset"]);
         $reportMethod = test_input($_GET["report_method"]);
-        $edahId = test_input($_GET["edah_id"]);
         $sessionId = test_input($_GET["session_id"]);
         $bunkId = test_input($_GET["bunk_id"]);
         $groupId = test_input($_GET["group_id"]);
@@ -563,6 +564,7 @@
         // Grab active block and chug IDs.
         populateActiveIds($activeBlockIds, "block_ids");
         populateActiveIds($activeChugIds, "chug_ids");
+        populateActiveIds($activeEdahIds, "edah_ids");
 
         // Report method is required for GET.  All other filter parameters are
         // optional (if we don't have a filter, we show everything).
@@ -570,7 +572,6 @@
         // other values.
         if ($reset) {
             $reportMethod = ReportTypes::None;
-            $edahId = NULL;
             $bunkId = NULL;
             $groupId = NULL;
             $blockId = NULL;
@@ -589,10 +590,10 @@
             
             // Add a check for each report type that we display this way- add
             // more of these as needed.
-            if ($lhs == "edah") {
+            if ($lhs == "edah" ||
+                $lhs == "edah_id") {
                 $reportMethod = ReportTypes::ByEdah;
-                $edahId = $cparts[1];
-                $doReport = 1;
+                $activeEdahIds[$cparts[1]] = 1
             } else if ($lhs == "block") {
                 $activeBlockIds[$cparts[1]] = 1;
             } else if ($lhs == "print") {
@@ -732,13 +733,11 @@ EOM;
     // If we have a report method specified, display the appropriate filter fields.
     if ($reportMethod == ReportTypes::ByEdah) {
         // Display an optional Edah drop-down filter.
-        $edahChooser = new FormItemDropDown("Edah", FALSE, "edah_id", $liNumCounter++);
-        $edahChooser->setGuideText("Step 3: Choose an edah, or leave empty to see all edot");
-        $edahChooser->setInputClass("element select medium");
-        $edahChooser->setInputSingular("edah");
-        $edahChooser->setColVal($edahId);
+        $edahChooser = new FormItemInstanceChooser("Edah Ids", FALSE, "edah_ids", $liNumCounter++);
         $edahChooser->setId2Name($edahId2Name);
-        
+        $edahChooser->setActiveIdHash($activeEdahIds);
+        $edahChooser->setGuideText("Step 3: Choose one or more edot for your report, or leave empty to see all edot");
+        $edahChooser->setInputSingular("edah");
         if ($outputType == OutputTypes::Html) {
             echo $edahChooser->renderHtml();
         }
@@ -770,11 +769,9 @@ EOM;
         // The camper choices report can be filtered by edah, group, and
         // block, e.g., Bogrim, Chug Aleph, weeks 1+2.
         // The same applies to chugim with space.
-        $edahChooser = new FormItemDropDown("Edah", FALSE, "edah_id", $liNumCounter++);
-        $edahChooser->setGuideText("Step 3: Choose an edah.  Leave empty to see all edot.");
-        $edahChooser->setInputClass("element select medium");
-        $edahChooser->setInputSingular("edah");
-        $edahChooser->setColVal($edahId);
+        $edahChooser = new FormItemInstanceChooser("Edot", FALSE, "edah_ids", $liNumCounter++);
+        $edahChooser->setGuideText("Step 3: Choose one or more edot, or leave empty to see all edot.");
+        $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setId2Name($edahId2Name);
         
         $groupChooser = new FormItemDropDown("Group", FALSE, "group_id", $liNumCounter++);
@@ -798,11 +795,9 @@ EOM;
         // For the AllRegisteredCampers report, the step level
         // here is 2, because we did not display a block filter.
         $step = ($reportMethod == ReportTypes::AllRegisteredCampers) ? 2 : 3;
-        $edahChooser = new FormItemDropDown("Edah", FALSE, "edah_id", $liNumCounter++);
-        $edahChooser->setGuideText("Step $step: Choose an edah, or leave empty to see all edot");
-        $edahChooser->setInputClass("element select medium");
-        $edahChooser->setInputSingular("edah");
-        $edahChooser->setColVal($edahId);
+        $edahChooser = new FormItemInstanceChooser("Edot", FALSE, "edah_ids", $liNumCounter++);
+        $edahChooser->setGuideText("Step $step: Choose one or more edot, or leave empty to see all edot.");
+        $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setId2Name($edahId2Name);
         
         $sessionChooser = new FormItemDropDown("Session", FALSE, "session_id", $liNumCounter++);
@@ -850,6 +845,14 @@ EOM;
     if ($doReport) {
         // Prepare and display the report, setting the SQL according to the report
         // type.  If we have an archive year, pull from that database.
+        $edahText = "";
+        foreach ($edahId2Name as $edah_id => $edahName) {
+            if (empty($edahText)) {
+                $edahText = $edahName;
+            } else {
+                $edahText .= ", " . $edahName;
+            }
+        }
         $db = new DbConn($archiveYear);
         $db->isSelect = TRUE;
         if ($reportMethod == ReportTypes::AllRegisteredCampers) {
@@ -857,10 +860,8 @@ EOM;
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, s.name session, s.session_id session_id, e.name edah, e.edah_id edah_id FROM " .
             "campers c, sessions s, edot e " .
             "WHERE c.session_id = s.session_id AND c.edah_id = e.edah_id ";
-            if ($edahId) {
-                $sql .= "AND c.edah_id = ? ";
-                $db->addColVal($edahId, 'i');
-            }
+            addWhereClause($sql, $db, $activeEdahIds,
+                           "c.edah_id", TRUE);
             if ($sessionId) {
                 $sql .= "AND c.session_id = ? ";
                 $db->addColVal($sessionId, 'i');
@@ -889,19 +890,13 @@ EOM;
             "JOIN groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id ";
             $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
-            if ($edahId) {
-                if (! $haveWhere) {
-                    $sql .= "WHERE c.edah_id = ? ";
-                } else {
-                    $sql .= "AND c.edah_id = ? ";
-                }
-                $db->addColVal($edahId, 'i');
-            }
+            $haveWhere = addWhereClause($sql, $db, $activeEdahIds,
+                                        "c.edah_id", $haveWhere);
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
             
             // Create and display the report.
             $edahReport = new ZebraReport($db, $sql, $outputType);
-            $edahReport->setReportTypeAndNameOfItem("Edah", $edahId2Name[$edahId]);
+            $edahReport->setReportTypeAndNameOfItem("Edah", $edahText);
             $edahReport->addNewTableColumn("edah");
             $edahReport->setCaption("Chug Assignments by Edah for LINK0<br>Rosh: ROSH, PHONE");
             $edahReport->addIgnoreColumn("edah_sort_order");
@@ -1011,15 +1006,8 @@ EOM;
             "AND i.chug_id = ch.chug_id) AS ma " .
             "ON ma.camper_id = c.camper_id AND ma.block_id = bl.block_id AND ma.group_id = g.group_id ";
             $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
-            if ($edahId) {
-                if (! $haveWhere) {
-                    $sql .= "WHERE c.edah_id = ? ";
-                    $haveWhere = TRUE;
-                } else {
-                    $sql .= "AND c.edah_id = ? ";
-                }
-                $db->addColVal($edahId, 'i');
-            }
+            $haveWhere = addWhereClause($sql, $db, $activeEdahIds,
+                                        "c.edah_id", $haveWhere);
             if ($groupId) {
                 if (! $haveWhere) {
                     $sql .= "WHERE g.group_id = ? ";
@@ -1095,7 +1083,7 @@ EOM;
                 $blockInText .= ")";
             }
             $edotForChugText = "";
-            if ($edahId) {
+            if (! empty($activeEdahIds)) {
                 $edotForChugText = "edot_for_chug ec,";
             }
             $sql = "SELECT a.chug_id chug_id, CONCAT(a.chug_name, ' ', a.chug_group_name) AS chug_name, a.block_name block_name, " .
@@ -1113,9 +1101,9 @@ EOM;
             "      WHERE c.group_id = g.group_id " .
             "      AND b.block_id = m.block_id $blockInText " .
             "      AND m.block_id IS NOT NULL ";
-            if ($edahId) {
-                $sql .= "AND ec.edah_id = ? AND ec.chug_id = c.chug_id ";
-                $db->addColVal($edahId, 'i');
+            if (! empty($activeEdahIds)) {
+                $sql .= "AND ec.chug_id = c.chug_id ";
+                addWhereClause($sql, $db, $activeEdahIds, "ec.edah_id", TRUE);
             }
             if ($groupId) {
                 $sql .= "AND c.group_id = ? ";
@@ -1130,8 +1118,8 @@ EOM;
             $chugimWithSpaceReport = new ZebraReport($db, $sql, $outputType);
             $chugimWithSpaceReport->addNewTableColumn("edah");
             $caption = "Chugim With Free Space";
-            if ($edahId) {
-                $caption .= " for Edah " . $edahId2Name[$edahId];
+            if (! empty($edahText)) {
+                $caption .= " for " . $edahText;
             }
             $chugimWithSpaceReport->setCaption($caption);
             $chugimWithSpaceReport->setIdCol2EditPage("chug_id", "editChug.php", "chug_name");
@@ -1139,7 +1127,7 @@ EOM;
             $chugimWithSpaceReport->renderTable();
         } else if ($reportMethod == ReportTypes::CamperHappiness) {
             // First, get a list of all groups with at least one match for the selected
-            // block/edah/session.  Use this to make a chug-group clause, which we'll
+            // block/edot/session.  Use this to make a chug-group clause, which we'll
             // use in our main SELECT.
             $localErr = "";
             $dbc = new DbConn();
@@ -1151,10 +1139,8 @@ EOM;
             "AND m.camper_id = ca.camper_id ";
             addWhereClause($sql, $dbc, $activeBlockIds,
                            "i.block_id", TRUE);
-            if ($edahId) {
-                $sql .= "AND ca.edah_id = ? ";
-                $dbc->addColVal($edahId, 'i');
-            }
+            addWhereClause($sql, $dbc, $activeEdahIds,
+                           "ca.edah_id", TRUE);
             if ($sessionId) {
                 $sql .= "AND ca.session_id = ? ";
                 $dbc->addColVal($sessionId, 'i');
@@ -1217,17 +1203,15 @@ EOM;
                     $sql .= " AND c.session_id = ? ";
                     $db->addColVal($sessionId, 'i');
                 }
-                if ($edahId) {
-                    $sql .= " AND c.edah_id = ? ";
-                    $db->addColVal($edahId, 'i');
-                }
+                addWhereClause($sql, $db, $activeEdahIds,
+                               "c.edah_id", TRUE);
                 $sql .= " GROUP BY camper_id, block ORDER BY name, block";
             }
             $camperHappinessReport = new ZebraReport($db, $sql, $outputType);
             $camperHappinessReport->addNewTableColumn("edah");
             $caption = "Camper Happiness Report";
-            if ($edahId) {
-                $caption .= " for " . $edahId2Name[$edahId];
+            if (! empty($edahText)) {
+                $caption .= " for " . $edahText;
             }
             if ($sessionId) {
                 $caption .= " for " . $sessionId2Name[$sessionId];

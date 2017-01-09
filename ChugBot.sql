@@ -242,32 +242,6 @@ preference_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci
 ENGINE = INNODB;
 
-# Assignments are done at the edah/block/group level.  This table holds beta
-# about each assignment.  The actual matches are stored in the matches table.
-CREATE TABLE IF NOT EXISTS assignments(
-edah_id int NOT NULL,
-FOREIGN KEY fk_edah_id(edah_id) REFERENCES edot(edah_id)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-block_id int NOT NULL,
-FOREIGN KEY fk_block_id(block_id) REFERENCES blocks(block_id)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-group_id int NOT NULL, # aleph, bet, or gimel
-FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-first_choice_ct float DEFAULT 0,
-second_choice_ct float DEFAULT 0,
-third_choice_ct float DEFAULT 0,
-fourth_choice_or_worse_ct float DEFAULT 0,
-under_min_list varchar(1024) DEFAULT "",
-over_max_list varchar(1024) DEFAULT "",
-ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY pk_assignments(edah_id, block_id, group_id))
-COLLATE utf8_unicode_ci
-ENGINE = INNODB;
-
 # This table holds matches of campers to chugim.  A match is for one
 # camper to an instance of a chug.  Chugim are associated with groups,
 # and instances have a chug and a block, so a match associates a camper

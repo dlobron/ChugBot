@@ -10,19 +10,21 @@
     
     header("content-type:application/json");
     
-    function getDbResult($sql) {
+    function getPrefListsForCampersByGroup($edah_id, $block_id, &$camperId2Name, &$camperId2Edah, &$edahId2Name) {
         $db = new DbConn();
+        $db->isSelect = TRUE;
+        $db->addColVal($edah_id, 'i');
+        $sql = "SELECT name FROM edot WHERE edah_id = ?";
         $err = "";
-        $result = $db->runQueryDirectly($sql, $err);
-        if ($result == FALSE) {
-            error_log("ERROR: failed to execute SQL: $sql, $err");
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => $err)));
+        $result = $db->doQuery($sql, $err);
+        if ($result == FALSE ||
+            mysqli_num_rows($result) != 1) {
+            error_log("WARNING: failed to match edah ID $edah_id: $err");
+            return;
         }
-        return $result;
-    }
-    
-    function getPrefListsForCampersByGroup($edah_id, $block_id, &$camperId2Name) {
+        $row = mysqli_fetch_array($result, MYSQLI_NUM);
+        $edahId2Name[$edah_id] = $row[0];
+
         $db = new DbConn();
         $db->isSelect = TRUE;
         $db->addColVal($edah_id, 'i');
@@ -46,6 +48,8 @@
             // Map camper ID to full name (remember that the latter might not
             // be unique).
             $camperId2Name[intval($row[0])] = $row[1] . " " . $row[2];
+            // Map camper ID to edah ID.
+            $camperId2Edah[intval($row[0])] = $edah_id;
             // Build a parenthesized CSV of camper IDs to pass to the preferences
             // query, below.
             $camperInString .= $row[0];
@@ -94,26 +98,22 @@
     // Save changes to the DB.  The "assignments" object is an associative array
     // of the form:
     // assignments[groupId][chugId] = (list of matched camper IDs)
-    // We will delete and then insert into the matches table.  We'll also update
-    // the assignments table, based on the pref list for each camper, and the
-    // min/max for each chug.
+    // We will delete and then insert into the matches table.
     if (isset($_POST["save_changes"])) {
-        $edah_id = $_POST["edah"];
+        $edah_ids = $_POST["edah_ids"];
         $block_id = $_POST["block"];
         $assignments = $_POST["assignments"];
         
-        // First, grab the pref lists, and map camper ID to name.
+        // First, grab the pref lists, and map camper ID to name and edah.
         $camperId2Name = array();
-        $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name);
+        $camperId2Edah = array();
+        $edahId2Name = array();
+        foreach ($edah_id as $edah_id) {
+            $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name, $camperId2Edah, $edahId2Name);
+        }
         
-        // Step through the assignments for each group, and update the assignments
-        // and matches tables.
+        // Step through the assignments for each group, and update the matches table.
         foreach ($assignments as $groupId => $chugId2MatchList) {
-            $firstCt = 0;
-            $secondCt = 0;
-            $thirdCt = 0;
-            $fourthOrWorseCt = 0;
-            
             // Grab chug limits, and create Chug objects.
             $chugId2Chug = array();
             $db = new DbConn();
@@ -157,22 +157,9 @@
                         }
                     }
                     if ($prefListForGroup != NULL) {
-                        $i = 0;
-                        foreach ($prefListForGroup as $prefChugId) {
-                            $i++;
-                            if ($prefChugId == $chugId) {
-                                break;
-                            }
-                        }
-                        if ($i == 1) {
-                            $firstCt++;
-                        } else if ($i == 2) {
-                            $secondCt++;
-                        } else if ($i == 3) {
-                            $thirdCt++;
-                        } else {
-                            $fourthOrWorseCt++;
-                        }
+                        // We used to create a tally of preferences for reporting.
+                        // We no longer do this, but I'm keeping this block here in
+                        // case we decide to display preferences again.
                     }
                     // First, delete the existing match for this block and group for this camper, if any.
                     $err = "";
@@ -226,35 +213,6 @@
                     }
                 }
             }
-            // Compute assignment stats, and update the assignments table.
-            $underMin = "";
-            $overMax = "";
-            overUnder(array_values($chugId2Chug), $underMin, $overMax);
-
-            // Update the assignment table (metadata about this assignment) with our stats.
-            $db = new DbConn();
-            $db->addWhereColumn("edah_id", $edah_id, 'i');
-            $db->addWhereColumn("block_id", $block_id, 'i');
-            $db->addWhereColumn("group_id", $groupId, 'i');
-            if (! $db->deleteFromTable("assignments", $err)) {
-                error_log("Unable to delete existing assignment: $err");
-                header('HTTP/1.1 500 Internal Server Error');
-                die(json_encode(array("error" => $err)));
-            }
-            $db = new DbConn();
-            $db->addColumn("edah_id", $edah_id, 'i');
-            $db->addColumn("block_id", $block_id, 'i');
-            $db->addColumn("group_id", $groupId, 'i');
-            $db->addColumn("first_choice_ct", $firstCt, 'i');
-            $db->addColumn("second_choice_ct", $secondCt, 'i');
-            $db->addColumn("third_choice_ct", $thirdCt, 'i');
-            $db->addColumn("fourth_choice_or_worse_ct", $fourthOrWorseCt, 'i');
-            $db->addColumn("under_min_list", $underMin, 's');
-            $db->addColumn("over_max_list", $overMax, 's');
-            if (! $db->insertIntoTable("assignments", $err)) {
-                error_log("Unable to insert new assignment stats: $err");
-                exit;
-            }
         }
         
         $retVal["ok"] = 1;
@@ -265,18 +223,24 @@
     // Grab match, chug, and preference info, for display on the main leveling
     // page.
     if (isset($_POST["matches_and_prefs"])) {
-        $edah_id = $_POST["edah_id"];
+        $edah_ids = $_POST["edah_ids"];
         $block_id = $_POST["block_id"];
         
-        $edah_name = "";
+        $edah_names = "";
         $block_name = "";
         $err = "";
-        $db = new DbConn();
-        $db->addSelectColumn("name");
-        $db->addWhereColumn("edah_id", $edah_id, 'i');
-        $result = $db->simpleSelectFromTable("edot", $err);
-        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-            $edah_name = $row[0];
+        foreach ($edah_ids as $edah_id) {
+            $db = new DbConn();
+            $db->addSelectColumn("name");
+            $db->addWhereColumn("edah_id", $edah_id, 'i');
+            $result = $db->simpleSelectFromTable("edot", $err);
+            while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+                if ($edah_names) {
+                    $edah_names = $row[0];
+                } else {
+                    $edah_names .= "+" . $row[0];
+                }
+            }
         }
         $db = new DbConn();
         $db->addSelectColumn("name");
@@ -331,21 +295,48 @@
         }
         
         // Get preferences (as strings) for these campers.
-        // First, map chug ID to name and min/max.  Also, define an "unassigned"
-        // chug, which we will use to flag campers still needing assignment.
+        // First, map chug ID to name, allowed edot, and min/max, for the edot we
+        // are assigning.  Also, define an "unassigned" chug, which we will use
+        // to flag campers still needing assignment.
         $maxIndex = 0;
         $chugId2Beta = array();
-        $result = getDbResult("SELECT c.chug_id, c.name, c.min_size, c.max_size, g.name " .
-                              "FROM chugim c, groups g WHERE c.group_id = g.group_id");
-        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-            $chugId2Beta[intval($row[0])] = array();
-            $chugId2Beta[intval($row[0])]["name"] = $row[1];
-            $chugId2Beta[intval($row[0])]["min_size"] = $row[2];
-            $chugId2Beta[intval($row[0])]["max_size"] = $row[3];
-            $chugId2Beta[intval($row[0])]["group_name"] = $row[4];
-            $chugId2Beta[intval($row[0])]["free"] = 0; // default
-            if (intval($row[0]) > $maxIndex) {
-                $maxIndex = intval($row[0]);
+        $sql = "SELECT c.chug_id chugid, c.name chugname, c.min_size minsize, " .
+        "c.max_size maxsize, g.name groupname, e.edah_id edahid " .
+        "FROM chugim c, groups g, edot_for_chug e WHERE c.group_id = g.group_id AND ";
+        $edahIdOrText = "";
+        foreach ($edah_ids as $edah_id) {
+            $db->addColVal($edah_id, 'i');
+            if (empty($edahIdOrText)) {
+                $edahIdOrText .= "(e.edah_id = ?";
+            } else {
+                $edahIdOrText .= " OR e.edah_id = ?";
+            }
+            $edahIdOrText .= ")";
+        }
+        $sql .= $edahIdOrText;
+        $sql .= " GROUP BY chugid, edahid";
+        $result = $db->doQuery($sql, $err);
+        if ($result == FALSE) {
+            error_log("Preferences query failed: $err");
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        while ($row = $result->fetch_assoc()) {
+            $chugId = intval($row["chugid"]);
+            if (array_key_exists($chugId, $chugId2Beta)) {
+                array_push($chugId2Beta[$chugId]["allowed_edot"], $row["edahid"]);
+                continue;
+            }
+            $chugId2Beta[$chugId] = array();
+            $chugId2Beta[$chugId]["name"] = $row["chugname"];
+            $chugId2Beta[$chugId]["min_size"] = $row["minsize"];
+            $chugId2Beta[$chugId]["max_size"] = $row["maxsize"];
+            $chugId2Beta[$chugId]["group_name"] = $row["groupname"];
+            $chugId2Beta[$chugId]["free"] = 0; // default
+            $chugId2Beta[$chugId]["allowed_edot"] = array();
+            array_push($chugId2Beta[$chugId]["allowed_edot"], $row["edahid"]);
+            if ($chugId > $maxIndex) {
+                $maxIndex = $chugId;
             }
         }
         $unAssignedIndex = $maxIndex + 1;
@@ -354,17 +345,20 @@
         $chugId2Beta[$unAssignedIndex]["max_size"] = 0;
         
         // Check the matches table and compute how much space is left in each
-        // chug for this block.  For chugim with space, record it in $chugId2Beta.
+        // chug for this block/edot.  For chugim with space, record it in $chugId2Beta.
         $db = new DbConn();
         $db->addColVal($block_id, 'i');
-        $db->addColVal($edah_id, 'i');
-        $sql = "SELECT a.chug_id chug_id, a.max_size max_size, sum(a.matched) num_matched " .
+        $sql = "SELECT a.chug_id chug_id, e.edah_id edah_id, a.max_size max_size, sum(a.matched) num_matched " .
         "FROM (SELECT c.chug_id, c.max_size max_size, CASE WHEN m.matched_chug_id IS NULL THEN 0 ELSE 1 END matched " .
         "FROM chugim c LEFT OUTER JOIN (SELECT i.chug_id matched_chug_id FROM chug_instances i, matches m " .
         "WHERE i.chug_instance_id = m.chug_instance_id AND i.block_id = ?) m " .
         "ON c.chug_id = m.matched_chug_id) a, edot_for_chug e " .
-        "WHERE a.chug_id = e.chug_id AND e.edah_id = ? " .
-        "GROUP BY chug_id";
+        "WHERE a.chug_id = e.chug_id AND ";
+        foreach ($edah_ids as $edah_id) {
+            $db->addColVal($edah_id, 'i');
+        }
+        $sql .= $edahIdOrText;
+        $sql .= " GROUP BY chug_id";
         $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
             // For now, just log a warning, since this is only used for informational
@@ -387,15 +381,23 @@
         }
 
         // Next, map camper ID to an ordered list of preferred chugim, by
-        // group ID.  Also, map camper ID to name.
+        // group ID.  Also, map camper ID to name and edah, and map edah ID
+        // to edah name.
         $camperId2Name = array();
-        $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name);
+        $camperId2Edah = array();
+        $edahId2Name = array();
+        foreach ($edah_ids as $edah_id) {
+            $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id,
+                                                                     $camperId2Name, $camperId2Edah, $edahId2Name);
+        }
 
         // Loop through groups, fetching matches as we go.
         $db = new DbConn();
-        $db->addColVal($edah_id, 'i');
+        foreach ($edah_ids as $edah_id) {
+            $db->addColVal($edah_id, 'i');
+        }
         $sql = "SELECT g.group_id group_id, g.name name FROM groups g, edot_for_group e " .
-        "WHERE g.group_id = e.group_id AND e.edah_id = ?";
+        "WHERE g.group_id = e.group_id AND $edahIdOrText";
         $result = $db->doQuery($sql, $dbErr);
         if ($result == FALSE) {
             error_log("Unable to select groups: $err");
@@ -412,16 +414,18 @@
             if (! array_key_exists($group_id, $groupId2ChugId2MatchedCampers)) {
                 $groupId2ChugId2MatchedCampers[$group_id] = array();
             }
-            // Get all chugim for this group/edah, and make an array entry.
+            // Get all chugim for this group/edot, and make an array entry.
             $db = new DbConn();
             $db->isSelect = TRUE;
             $db->addColVal($group_id, 'i');
             $db->addColVal($block_id, 'i');
-            $db->addColVal($edah_id, 'i');
+            foreach ($edah_ids as $edah_id) {
+                $db->addColVal($edah_id, 'i');
+            }
             $err = "";
-            $result2 = $db->doQuery("SELECT c.chug_id chug_id, c.name chug_name FROM chugim c, chug_instances i, edot_for_chug ec " .
+            $result2 = $db->doQuery("SELECT c.chug_id chug_id, c.name chug_name FROM chugim c, chug_instances i, edot_for_chug e " .
                                     "WHERE c.group_id = ? AND i.block_id = ? AND c.chug_id = i.chug_id " .
-                                    "AND ec.chug_id = c.chug_id AND ec.edah_id = ? ORDER BY chug_name", $err);
+                                    "AND e.chug_id = c.chug_id AND $edahIdOrText ORDER BY chug_name", $err);
             if ($result2 == FALSE) {
                 error_log("Unable to select chugim: $err");
                 header('HTTP/1.1 500 Internal Server Error');
@@ -432,18 +436,23 @@
                 $groupId2ChugId2MatchedCampers[$group_id][$chug_id] = array();
             }
             $groupId2ChugId2MatchedCampers[$group_id][$unAssignedIndex] = array();
-            // Get matches for this group/block/edah/session.
+            // Get matches for this group/block/edot/session.
             $db = new DbConn();
             $db->isSelect = TRUE;
             $db->addColVal($group_id, 'i');
-            $db->addColVal($edah_id, 'i');
+            foreach ($edah_ids as $edah_id) {
+                $db->addColVal($edah_id, 'i');
+            }
             $db->addColVal($block_id, 'i');
             $err = "";
-            $sql = "SELECT m.camper_id, ch.chug_id, c.first firstname, c.last lastname FROM matches m, campers c, block_instances b, chugim ch, chug_instances i " .
+            // Grab assigned campers by chug.
+            // For convenience, we use "e" for the campers table in this SQL, so
+            // we can use the $edahIdOrText we computed above.
+            $sql = "SELECT m.camper_id, ch.chug_id, e.first firstname, e.last lastname FROM matches m, campers e, block_instances b, chugim ch, chug_instances i " .
             "WHERE i.block_id = b.block_id AND ch.chug_id = i.chug_id " .
             "AND ch.group_id = ? AND m.chug_instance_id = i.chug_instance_id " .
-            "AND m.camper_id = c.camper_id AND c.edah_id = ? " .
-            "AND b.block_id = ? AND b.session_id = c.session_id ORDER BY lastname,firstname";
+            "AND m.camper_id = e.camper_id AND $edahIdOrText " .
+            "AND b.block_id = ? AND b.session_id = e.session_id ORDER BY lastname, firstname";
             $result3 = $db->doQuery($sql, $err);
             if ($result3 == FALSE) {
                 error_log("Unable to select matches: $err");
@@ -481,8 +490,10 @@
         $retVal["groupId2ChugId2MatchedCampers"] = $groupId2ChugId2MatchedCampers; // {Group ID->{Chug ID->(Matched camper ID list - might be empty)}}
         $retVal["groupId2Name"] = $groupId2Name; // {Group ID -> Group Name}
         $retVal["camperId2Name"] = $camperId2Name; // {Camper ID -> Camper Name}
-        $retVal["chugId2Beta"] = $chugId2Beta;   // {Chug ID -> Chug Name, Min and Max}
-        $retVal["edahName"] = $edah_name;
+        $retVal["camperId2Edah"] = $camperId2Edah; // {Camper ID -> Edah ID for that camper}
+        $retVal["chugId2Beta"] = $chugId2Beta;   // {Chug ID -> Chug Name, Allowed Edot, Min and Max}
+        $retVal["edahId2Name"] = $edahId2Name;
+        $retVal["edahNames"] = $edah_names;
         $retVal["blockName"] = $block_name;
         $retVal["existingMatches"] = $existingMatches;
         $retVal["deDupMatrix"] = $deDupMatrix;
@@ -493,24 +504,29 @@
     
     // Get the names for an edah and block.
     if (isset($_POST["names_for_id"])) {
-        $edah_id = $_POST["edah_id"];
+        $edah_ids = $_POST["edah_ids"];
         $block_id = $_POST["block_id"];
-        $edah_name = "";
+        $edah_names = "";
         $block_name = "";
-        $db = new DbConn();
-        $db->isSelect = TRUE;
-        $db->addSelectColumn("name");
-        $db->addWhereColumn("edah_id", $edah_id, 'i');
-        $err = "";
-        $result = $db->simpleSelectFromTable("edot", $err);
-        if ($result == FALSE) {
-            error_log("Unable to select edah: $err");
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => $err)));
-        }
-        if ($result->num_rows) {
+        foreach ($edah_ids as $edah_id) {
+            $db = new DbConn();
+            $db->isSelect = TRUE;
+            $db->addSelectColumn("name");
+            $db->addWhereColumn("edah_id", $edah_id, 'i');
+            $err = "";
+            $result = $db->simpleSelectFromTable("edot", $err);
+            if ($result == FALSE ||
+                $result->num_rows != 1) {
+                error_log("Unable to select edah: $err");
+                header('HTTP/1.1 500 Internal Server Error');
+                die(json_encode(array("error" => $err)));
+            }
             $row = $result->fetch_row();
-            $edah_name = $row[0];
+            if (empty($edah_names)) {
+                $edah_names = $row[0];
+            } else {
+                $edah_names .= "+" . $row[0];
+            }
         }
         $db = new DbConn();
         $db->isSelect = TRUE;
@@ -527,7 +543,7 @@
             $block_name = $row[0];
         }
         $retVal = array(
-                        'edahName' => $edah_name,
+                        'edahNames' => $edah_names,
                         'blockName' => $block_name
                         );
         echo json_encode($retVal);
@@ -537,89 +553,22 @@
     // Get the assignment stats, first running the assignment algorithm if
     // requested.
     if (isset($_POST["reassign"]) ||
-        isset($_POST["get_current_stats"])) {
-        $err = "";
-        $edah_id = $_POST["edah"];
+        isset($_POST["get_current_stats"])) {        
+        $edah_ids = $_POST["edah_ids"];
         $block_id = $_POST["block"];
-    
-        $db = new DbConn();
-        $db->addColVal($edah_id, 'i');
-        $sql = "SELECT g.group_id group_id, g.name name FROM groups g, edot_for_group e " .
-        "WHERE g.group_id = e.group_id AND e.edah_id = ?";
-        $result = $db->doQuery($sql, $err);
-        if ($result == FALSE) {
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => $err)));
-        }
         
-        // Loop through groups.  Do each assignment (if requested), and grab assignment
-        // stats.
-        $choiceCounts = array();
-        $stats = array();
-        $sKeys = array("under_min_list", "over_max_list");
-        $choiceKeys = array("first_choice_ct", "second_choice_ct", "third_choice_ct", "fourth_choice_or_worse_ct");
-        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-            $group_id = intval($row[0]);
-            $group_name = $row[1];
+        // Loop through groups.  Do each assignment (if requested).
+        $group_ids = getGroupsForEdahIds($edah_ids);
+        foreach ($group_ids as $group_id) {
             if (isset($_POST["reassign"])) {
-                $ok = do_assignment($edah_id, $block_id, $group_id, $err);
+                $err = "";
+                $ok = do_assignment($edah_ids, $block_id, $group_id, $err);
                 if (! $ok) {
                     header('HTTP/1.1 500 Internal Server Error');
                     die(json_encode(array("error" => $err)));
                 }
             }
-            $db = new DbConn();
-            $db->isSelect = TRUE;
-            $db->addSelectColumn("*");
-            $db->addWhereColumn("edah_id", $edah_id, 'i');
-            $db->addWhereColumn("group_id", $group_id, 'i');
-            $db->addWhereColumn("block_id", $block_id, 'i');
-            $err = "";
-            $result2 = $db->simpleSelectFromTable("assignments", $err);
-            if ($result2 == FALSE) {
-                error_log("Unable to select assignment: $err");
-                header('HTTP/1.1 500 Internal Server Error');
-                die(json_encode(array("error" => $err)));
-            }
-            $row = mysqli_fetch_assoc($result2);
-            if ($row === NULL) {
-                continue;
-            }
-            // Increment choice counts
-            foreach ($choiceKeys as $choiceKey) {
-                if ($row["$choiceKey"] != NULL) {
-                    if (! array_key_exists($choiceKey, $choiceCounts)) {
-                        $choiceCounts[$choiceKey] = intval($row["$choiceKey"]);
-                    } else {
-                        $choiceCounts[$choiceKey] += intval($row["$choiceKey"]);
-                    }
-                }
-            }
-            // Note under-min and over-max chugim.
-            foreach ($sKeys as $key) {
-                if (array_key_exists($key, $row) &&
-                    (! empty($row[$key]))) {
-                    $stats[$key] .= "<br>" . $group_name . ": " . $row[$key];
-                }
-            }
         }
-        $statstxt = "";
-        for ($i = 0; $i < count($choiceKeys); $i++) {
-            $choice = $i + 1;
-            if ($choice == 4) {
-                $choice .= " or worse";
-            }
-            $cKey = $choiceKeys[$i];
-            $statstxt .= "Choice $choice count: <b>" . $choiceCounts[$cKey] . "</b><br>";
-        }
-        foreach ($sKeys as $key) {
-            if (! array_key_exists($key, $stats)) {
-                $stats[$key] = "none";
-            }
-        }
-        $stats["statstxt"] = $statstxt;
-        
-        echo json_encode($stats);
         
         exit;
     }

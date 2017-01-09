@@ -8,10 +8,13 @@
     if ($_SERVER["REQUEST_METHOD"] != "GET") {
         $err = errorString("Unknown request method.");
     }
-    $edah_id = intval(test_input($_GET["edah"]));
+    $edah_ids = $_GET["edah_ids"];
     $block_id = intval(test_input($_GET["block"]));
-    if ($edah_id == NULL || $block_id == NULL) {
-        $err = errorString("Block and edah must be specified.");
+    if ($edah_ids == NULL || $block_id == NULL ||
+        empty($edah_ids)) {
+        $err = errorString("Block and at least one edah must be specified.");
+    } else if (count($edah_ids) > 2) {
+        $err = errorString("No more than 2 edot may be leveled together.");
     }
     if ($err) {
         echo genErrorPage($err);
@@ -19,20 +22,36 @@
     }
     
     $levelHomeUrl = urlIfy("levelHome.html");
-    $levelHomeUrl .= "?edah=$edah_id&block=$block_id";
-    
-    // Check for an existing assignment set.
-    $db = new DbConn();
-    $db->addSelectColumn("*");
-    $db->addWhereColumn("edah_id", $edah_id, 'i');
-    $db->addWhereColumn("block_id", $block_id, 'i');
-    $db->isSelect = TRUE;
-    $result = $db->simpleSelectFromTable("assignments", $dbErr);
-    if ($result == FALSE) {
-        echo genErrorPage($dbErr);
-        exit;
+    $levelHomeUrl .= "?block=$block_id";
+    foreach ($edah_ids as $edah_id) {
+        $levelHomeUrl .= "&edah_ids[]=$edah_id";
     }
-    if ($result->num_rows > 0) {
+    // Check for a existing assignments for our edot.  We consider a combination
+    // already assigned if we have at least one camper in every edah matched
+    // for this block.
+    $matchedAll = TRUE;
+    foreach ($edah_ids as $edah_id) {
+        $db = new DbConn();
+        $db->addColumn("block_id", $block_id, 'i');
+        $db->addColumn("edah_id", $edah_id, 'i');
+        $db->isSelect = TRUE;
+        $sql = "SELECT * FROM matches m, chug_instances i, campers c " .
+        "WHERE m.chug_instance_id = i.chug_instance_id AND " .
+        "i.block_id = ? AND " .
+        "m.camper_id = c.camper_id AND " .
+        "c.edah_id = ?";
+        $result = $db->doQuery($sql, $dbErr);
+        if ($result === FALSE) {
+            echo genErrorPage($dbErr);
+            exit;
+        }
+        if ($result->num_rows == 0) {
+            // No matches found for this edah/block.
+            $matchedAll = FALSE;
+            break;
+        }
+    }
+    if ($matchedAll) {
         // We have an existing assignment: redirect to the display/edit page.
         echo forwardNoHistory($levelHomeUrl);
         exit;
@@ -40,24 +59,14 @@
     
     // We're now ready to build our assignments.  We iterate over each activity
     // group that applies to this edah, and make an assignment for each one.
-    $db = new DbConn();
-    $db->addColVal($edah_id, 'i');
-    $db->isSelect = TRUE;
-    $sql = "SELECT g.group_id group_id, g.name name FROM groups g, edot_for_group e " .
-    "WHERE g.group_id = e.group_id AND e.edah_id = ?";
-    $result = $db->doQuery($sql, $dbErr);
-    if ($result == FALSE) {
-        echo genErrorPage($dbErr);
-        exit;
-    }
-    // Do the actual assignments, recording results as we go.
-    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-        $group_id = intval($row[0]);
-        $group_name = $row[1];
+    // Loop through groups.  Do each assignment (if requested).
+    $edotText = implode(", ", $edah_ids);
+    $group_ids = getGroupsForEdahIds($edah_ids);
+    foreach ($group_ids as $group_id) {
         $err = "";
-        $ok = do_assignment($edah_id, $block_id, $group_id, $err);
+        $ok = do_assignment($edah_ids, $block_id, $group_id, $err);
         if (! $ok) {
-            error_log("Assignment for edah $edah_id, block $block_id, group $group_id failed");
+            error_log("Assignment for edah $edotText, block $block_id, group $group_id failed");
             if (empty($err)) {
                 $err = "Unknown assignment error";
             }
@@ -66,7 +75,7 @@
         }
     }
     // Assignments done - redirect to the assignment page.
-    error_log("Assigned edah $edah_id, block $block_id OK");
+    error_log("Assigned edot $edotText, block $block_id OK");
     echo forwardNoHistory($levelHomeUrl);
     exit;
     

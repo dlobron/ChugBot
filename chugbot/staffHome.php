@@ -125,22 +125,21 @@ EOM;
 
 <div class="multi_form_container">
 <h3>Leveling</h3>
-<p>To view the leveling page, choose a time block and edah from the drop-down lists, and click "Go."</p>
-<p>If there is an existing saved assignment for the selected edah and block, it will be displayed.  Nothing will be
+<p>To view the leveling page, choose a time block and <b>one</b> or <b>two</b> edot, and click "Go."</p>
+<p>If there is an existing saved assignment for the selected edah/edot and block, it will be displayed.  Nothing will be
 changed until you click the Save or Reassign buttons on the leveling page.  If there is no existing assignment, one
 will be created and then displayed.</p>
+<p>If you choose two edot, make sure they share at least some chugim.</p>
 <p>To generate a printable chug assigment report, click "Report".
 <form id="leveling_choice_form" class="appnitro" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
-<label class="description" for="edah">Edah</label>
+<label class="description" for="edah">Edah (choose one or two)</label>
 <div>
-<select class="form-control" id="edah" name="edah">
 <?php
-    echo genPickList($edahId2Name, array(), "edah");
+    echo genCheckBox($edahId2Name, array(), "edah_ids");
     ?>
-</select>
-</div><p class="guidelines" id="guide_1"><small>Choose an Edah.</small></p>
+</div><p class="guidelines" id="guide_1"><small>Choose One or Two Edot.</small></p>
 </li>
 <li>
 <label class="description" for="block">Block</label>
