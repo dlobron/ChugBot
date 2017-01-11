@@ -10,7 +10,8 @@
     
     header("content-type:application/json");
     
-    function getPrefListsForCampersByGroup($edah_id, $block_id, &$camperId2Name, &$camperId2Edah, &$edahId2Name) {
+    function getPrefListsForCampersByGroup($edah_id, $block_id, &$camperId2Name,
+                                           &$camperId2Edah, &$edahId2Name, &$camperId2Group2PrefList) {
         $db = new DbConn();
         $db->isSelect = TRUE;
         $db->addColVal($edah_id, 'i');
@@ -59,7 +60,6 @@
         }
         $camperInString .= ")";
         
-        $camperId2Group2PrefList = array();
         $keylist = array("first_choice_id", "second_choice_id", "third_choice_id", "fourth_choice_id", "fifth_choice_id", "sixth_choice_id");
         $db = new DbConn();
         $db->isSelect = TRUE;
@@ -91,8 +91,6 @@
                 array_push($camperId2Group2PrefList[$camper_id][$group_id], intval($row[$colKey]));
             }
         }
-        
-        return $camperId2Group2PrefList;
     }
     
     // Save changes to the DB.  The "assignments" object is an associative array
@@ -108,8 +106,10 @@
         $camperId2Name = array();
         $camperId2Edah = array();
         $edahId2Name = array();
+        $camperId2Group2PrefList = array();
         foreach ($edah_id as $edah_id) {
-            $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name, $camperId2Edah, $edahId2Name);
+            $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name,
+                                                                     $camperId2Edah, $edahId2Name, $camperId2Group2PrefList);
         }
         
         // Step through the assignments for each group, and update the matches table.
@@ -311,20 +311,22 @@
             } else {
                 $edahIdOrText .= " OR e.edah_id = ?";
             }
-            $edahIdOrText .= ")";
         }
+        $edahIdOrText .= ")";
         $sql .= $edahIdOrText;
         $sql .= " GROUP BY chugid, edahid";
         $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
-            error_log("Preferences query failed: $err");
+            error_log("Preferences query \"$sql\" failed: $err");
             header('HTTP/1.1 500 Internal Server Error');
             die(json_encode(array("error" => $err)));
         }
         while ($row = $result->fetch_assoc()) {
             $chugId = intval($row["chugid"]);
             if (array_key_exists($chugId, $chugId2Beta)) {
-                array_push($chugId2Beta[$chugId]["allowed_edot"], $row["edahid"]);
+                // If the key exists, it means this chug is allowed in >1 of
+                // the edot we are leveling.  This is OK, and we continue here
+                // to avoid adding a duplicate.
                 continue;
             }
             $chugId2Beta[$chugId] = array();
@@ -333,8 +335,6 @@
             $chugId2Beta[$chugId]["max_size"] = $row["maxsize"];
             $chugId2Beta[$chugId]["group_name"] = $row["groupname"];
             $chugId2Beta[$chugId]["free"] = 0; // default
-            $chugId2Beta[$chugId]["allowed_edot"] = array();
-            array_push($chugId2Beta[$chugId]["allowed_edot"], $row["edahid"]);
             if ($chugId > $maxIndex) {
                 $maxIndex = $chugId;
             }
@@ -343,6 +343,26 @@
         $chugId2Beta[$unAssignedIndex]["name"] = "Not Assigned Yet";
         $chugId2Beta[$unAssignedIndex]["min_size"] = 0;
         $chugId2Beta[$unAssignedIndex]["max_size"] = 0;
+        
+        // Grab and note the allowed edot for each chug.
+        $db = new DbConn();
+        $result = $db->doQuery("SELECT chug_id, edah_id FROM edot_for_chug", $err);
+        if ($result == FALSE) {
+            error_log("Allowed chugim query failed: $err");
+            header('HTTP/1.1 500 Internal Server Error');
+            die(json_encode(array("error" => $err)));
+        }
+        while ($row = $result->fetch_assoc()) {
+            $chugId = intval($row["chug_id"]);
+            if (! array_key_exists($chugId, $chugId2Beta)) {
+                // This chug isn't offered in any of our edot: OK to ignore it.
+                continue;
+            }
+            if (! array_key_exists($chugId2Beta[$chugId], "allowed_edot")) {
+                $chugId2Beta[$chugId]["allowed_edot"] = array();
+            }
+            array_push($chugId2Beta[$chugId]["allowed_edot"], $row["edah_id"]);
+        }
         
         // Check the matches table and compute how much space is left in each
         // chug for this block/edot.  For chugim with space, record it in $chugId2Beta.
@@ -386,9 +406,10 @@
         $camperId2Name = array();
         $camperId2Edah = array();
         $edahId2Name = array();
+        $camperId2Group2PrefList = array();
         foreach ($edah_ids as $edah_id) {
-            $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id,
-                                                                     $camperId2Name, $camperId2Edah, $edahId2Name);
+                getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name,
+                                              $camperId2Edah, $edahId2Name, $camperId2Group2PrefList);
         }
 
         // Loop through groups, fetching matches as we go.

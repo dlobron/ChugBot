@@ -11,13 +11,12 @@ function getParameterByName(nameTok) {
     var query = window.location.search.substring(1);
     var vars = query.split("&");
     var arrayVal = [];
-    var textVal = "";
-    var seen = 0;
+    var textStyle = 0;
     for (var i = 0; i < vars.length; i++) {
-	// Look for our parameter name.  If the parameter has
-	// the form param[]=foo, or if it appears more than once,
+	// Look for our parameter, nameTok.  If the parameter has
+	// the form nameTok[]=foo, or if it appears more than once,
 	// then return an array of values.  Otherwise, if
-	// param=foo appears, return foo.  Otherwise, return the empty
+	// nameTok=foo appears, return foo.  Otherwise, return the empty
 	// string.
 	var pair = vars[i].split("=");
 	if (pair.length != 2) {
@@ -25,20 +24,19 @@ function getParameterByName(nameTok) {
 	}
 	var val = pair[1];
 	if (pair[0] == nameTok) {
-	    if (seen) {
-		arrayVal.push(val);
-	    } else {
-		textVal = val;
-	    }
-	    seen = 1;
+	    textStyle = 1;
+	    arrayVal.push(val);
 	} else if (pair[0] == nameTokArray) {
 	    arrayVal.push(val);
 	}
     }
-    if (arrayVal.length > 0) {
-	return arrayVal;
+    if (arrayVal.length == 0) {
+	return "";
+    } else if (textStyle &&
+	arrayVal.length == 1) {
+	return arrayVal[0]; // Return single value as text.
     } else {
-	return textVal;
+	return arrayVal; // Return array values as an array.
     }
 }
 
@@ -217,6 +215,7 @@ function getAndDisplayCurrentMatches() {
 	var existingMatches = {};
 	var deDupMatrix = {};
 	var groupId2ChugId2MatchedCampers = {};
+	var camperId2Edah = {};
 	var prefClasses = ["li_first_choice", "li_second_choice", "li_third_choice", "li_fourth_choice"];
 	$.ajax({
                 url: 'levelingAjax.php',
@@ -241,13 +240,18 @@ function getAndDisplayCurrentMatches() {
 		    var blockName = json["blockName"];
 		    var groupId2Name = json["groupId2Name"];
 		    var edahId2Name = json["edahId2Name"];
+		    var showEdahForCamper = 0;
+		    if (Object.keys(edahId2Name).length > 1) {
+			// Only show the edah in camper bubbles if we are leveling > 1 edah.
+			showEdahForCamper = 1;
+		    }
 		    groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
 		    camperId2Group2PrefList = json["camperId2Group2PrefList"];
 		    existingMatches = json["existingMatches"];
 		    deDupMatrix = json["deDupMatrix"];
 		    chugId2Beta = json["chugId2Beta"];
 		    var camperId2Name = json["camperId2Name"];
-		    var camperId2Edah = json["camperId2Edah"];
+		    camperId2Edah = json["camperId2Edah"];
 		    var sortedGroupIds = sortedGroupIdKeysByName(groupId2ChugId2MatchedCampers, groupId2Name);
 		    for (var j = 0; j < sortedGroupIds.length; j++) {
 			var groupId = sortedGroupIds[j];
@@ -255,7 +259,7 @@ function getAndDisplayCurrentMatches() {
 			// Add a holder for each group (aleph, bet, gimel).
 			var groupName = groupId2Name[groupId];
 			html += "<div class=\"groupholder\" name=\"" + groupId + "\" >\n";
-			if (Object.keys(chugId2MatchedCampers).length > 0) {
+			if (showEdahForCamper) {
 			    html += "<h3>" + groupName + " assignments</h3>\n";
 			} else {
 			    html += "<h3>" + groupName + ": no chugim are available for " + edahName +
@@ -302,6 +306,10 @@ function getAndDisplayCurrentMatches() {
 				       var camperName = camperId2Name[camperId];
 				       var edahId = camperId2Edah[camperId];
 				       var camperEdah = edahId2Name[edahId];
+				       var camperEdahText = "";
+				       if (Object.keys(edahId2Name).length > 1) {
+					   camperEdahText = " <small>(" + camperEdah + ")</small>";
+				       }
 				       var prefListText = "";
 				       var prefClass = prefClasses[prefClasses.length - 1];
 				       if (camperId in camperId2Group2PrefList) {
@@ -332,7 +340,7 @@ function getAndDisplayCurrentMatches() {
 					   titleText = "title=\"" + prefListText + "\"";
 				       }
 				       html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" "  + titleText;
-				       html += "><h5 class=\"ui-widget-header\">" + camperName + " (" + camperEdah + ") " +  "</h5><div class=\"dup-warning\"></div></li>\n";
+				       html += "><h5 class=\"ui-widget-header\">" + camperName + camperEdahText +  " </h5><div class=\"dup-warning\"></div></li>\n";
 				   });
 			    html += "</ul><br style=\"clear: both\"></div>\n";
 			}
@@ -398,23 +406,37 @@ function getAndDisplayCurrentMatches() {
 			    });
 			// Let chug holders be droppable.  When a camper holder is dragged, move from
 			// old chug to new, and update the preference color.
-			// TODO: Only allow campers to be dropped into chugim for which the camper's edah
-			// is eligible.
 			$('.chugholder').each(function(){
 				var $el = $(this);
 				var groupId = $el.parent().attr('name');
 				var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
-				$el.droppable({accept: "ul.gallery li",
+				$el.droppable({accept: function (dropped) {
+					    // Only accept a camper bubble in this chug if the camper's edah
+					    // is allowed for that chug.
+					    var camperId = $(dropped).attr("value");
+					    var camperEdahId = camperId2Edah[camperId];
+					    var droppedOn = $(this).find(".gallery").addBack(".gallery");
+                                            var droppedChugId = $(droppedOn).parent().attr("name");
+					    var allowedEdotForChug = chugId2Beta[droppedChugId]["allowed_edot"]; // array
+					    for (var i = 0; i < allowedEdotForChug.length; i++) {
+						if (allowedEdotForChug[i] == camperEdahId) {
+						    return true; // This edah is allowed for this chug.
+						}
+					    }
+					    return false;
+					},
+					    //accept: "ul.gallery li",
 					    activeClass: "ui-state-active",
 					    hoverClass: "ui-state-hover",
 					    drop: function(event, ui) {
 					    var droppedOn = $(this).find(".gallery").addBack(".gallery");
 					    var droppedChugId = $(droppedOn).parent().attr("name");
+					    var allowedEdotForChug = chugId2Beta[droppedChugId]["allowed_edot"]; // array
 					    var dropped = ui.draggable;
-					    //$(dropped).addClass("ui-state-highlight");
 					    // Change the color of the dropped item according to the camper's
 					    // preference for the dropped-on chug.
 					    var camperId = $(dropped).attr("value");
+					    var camperEdahId = camperId2Edah[camperId];
 					    var groupId = $(this).parent().attr("name");
 					    var prefClass = prefClasses[prefClasses.length - 1];
 					    if (camperId in camperId2Group2PrefList) {

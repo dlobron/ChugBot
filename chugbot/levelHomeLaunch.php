@@ -27,7 +27,7 @@
         $levelHomeUrl .= "&edah_ids[]=$edah_id";
     }
     // Check for a existing assignments for our edot.  We consider a combination
-    // already assigned if we have at least one camper in every edah matched
+    // already assigned if we have at least one assigned camper in every edah, 
     // for this block.
     $matchedAll = TRUE;
     foreach ($edah_ids as $edah_id) {
