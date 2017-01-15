@@ -737,7 +737,6 @@ EOM;
         $edahChooser->setId2Name($edahId2Name);
         $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setGuideText("Step 3: Choose one or more edot for your report, or leave empty to see all edot");
-        $edahChooser->setInputSingular("edah");
         if ($outputType == OutputTypes::Html) {
             echo $edahChooser->renderHtml();
         }
