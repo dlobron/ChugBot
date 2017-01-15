@@ -593,7 +593,7 @@
             if ($lhs == "edah" ||
                 $lhs == "edah_id") {
                 $reportMethod = ReportTypes::ByEdah;
-                $activeEdahIds[$cparts[1]] = 1
+                $activeEdahIds[$cparts[1]] = 1;
             } else if ($lhs == "block") {
                 $activeBlockIds[$cparts[1]] = 1;
             } else if ($lhs == "print") {
@@ -846,9 +846,14 @@ EOM;
         // Prepare and display the report, setting the SQL according to the report
         // type.  If we have an archive year, pull from that database.
         $edahText = "";
-        foreach ($edahId2Name as $edah_id => $edahName) {
+        $i = 0;
+        foreach ($activeEdahIds as $edah_id => $val) {
+            $i++;
+            $edahName = $edahId2Name[$edah_id];
             if (empty($edahText)) {
                 $edahText = $edahName;
+            } else if ($i == count($activeEdahIds)) {
+                $edahText .= " and " . $edahName;
             } else {
                 $edahText .= ", " . $edahName;
             }

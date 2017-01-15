@@ -163,7 +163,7 @@
     
     function do_assignment($edah_ids, $block_id, $group_id, &$err) {
         $edotText = "";
-        debugLog("Starting assignment");
+        debugLog("Starting do_assignment");
         // Get the names of our edot, block, and group, for logging and error printing.
         $edahId2Name = array();
         foreach ($edah_ids as $edah_id) {
@@ -202,7 +202,7 @@
         }
         $row = mysqli_fetch_assoc($result);
         $groupName = $row["name"];
-        debugLog("Starting assignment for edah/ot $edotText, block $blockName, group $groupName");
+        debugLog("Starting assignment loop for edah/ot $edotText, block $blockName, group $groupName");
         
         // Grab the campers in this edah and block, and prefs for this group.  We determine the
         // campers in a block by joining with the block_instances table, which tells us which
@@ -320,7 +320,18 @@
         $sql = "SELECT p.camper_id camper_id, p.group_id group_id, " .
         "IFNULL(first_choice_id,-1), IFNULL(second_choice_id,-1), IFNULL(third_choice_id,-1), " .
         "IFNULL(fourth_choice_id,-1), IFNULL(fifth_choice_id,-1), IFNULL(sixth_choice_id,-1) " .
-        "FROM preferences p WHERE p.block_id = ?";
+        "FROM preferences p, campers c WHERE p.camper_id = c.camper_id AND " .
+        "p.block_id = ? AND (";
+        $edahText = "";
+        foreach ($edah_ids as $edah_id) {
+            $db->addColVal($edah_id, 'i');
+            if (empty($edahText)) {
+                $edahText = "c.edah_id = ?";
+            } else {
+                $edahText .= " OR c.edah_id = ?";
+            }
+        }
+        $sql .= $edahText . ")";
         $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
             error_log($err);
@@ -374,13 +385,24 @@
         // because otherwise all current assignments will look like dups!
         $existingMatches = array();
         $db = new DbConn();
-        $db->addColVal($block_id, 'i');
-        $db->addColVal($group_id, 'i');
         $db->isSelect = TRUE;
         $sql = "SELECT m.camper_id, c.group_id, c.name, c.chug_id " .
-        "FROM matches m, chug_instances i, chugim c " .
+        "FROM matches m, chug_instances i, chugim c, campers ca " .
         "WHERE m.chug_instance_id = i.chug_instance_id AND i.chug_id = c.chug_id " .
-        "AND NOT (i.block_id = ? AND c.group_id = ?) order by 1,2";
+        "AND ca.camper_id = m.camper_id AND " .
+        $edahText = "";
+        foreach ($edah_ids as $edah_id) {
+            $db->addColVal($edah_id, 'i');
+            if (empty($edahText)) {
+                $edahText = "(ca.edah_id = ?";
+            } else {
+                $edahText .= " OR ca.edah_id = ?";
+            }
+        }
+        $sql .= $edahText . ") ";
+        $db->addColVal($block_id, 'i');
+        $db->addColVal($group_id, 'i');
+        $sql .= "AND NOT (i.block_id = ? AND c.group_id = ?) ORDER BY 1,2";
         $result = $db->doQuery($sql, $err);
         if ($result == FALSE) {
             error_log($err);

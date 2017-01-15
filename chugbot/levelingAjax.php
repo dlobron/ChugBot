@@ -107,9 +107,9 @@
         $camperId2Edah = array();
         $edahId2Name = array();
         $camperId2Group2PrefList = array();
-        foreach ($edah_id as $edah_id) {
-            $camperId2Group2PrefList = getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name,
-                                                                     $camperId2Edah, $edahId2Name, $camperId2Group2PrefList);
+        foreach ($edah_ids as $edah_id) {
+            getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name,
+                                          $camperId2Edah, $edahId2Name, $camperId2Group2PrefList);
         }
         
         // Step through the assignments for each group, and update the matches table.
@@ -119,10 +119,21 @@
             $db = new DbConn();
             $db->isSelect = TRUE;
             $db->addColVal($groupId, 'i');
-            $db->addColVal($edah_id, 'i');
             $sql = "SELECT c.name name, c.max_size max_size, c.min_size min_size, c.chug_id chug_id, " .
             "c.group_id group_id FROM chugim c, edot_for_chug e " .
-            "WHERE c.group_id = ? AND c.chug_id = e.chug_id AND e.edah_id = ?";
+            "WHERE c.group_id = ? AND c.chug_id = e.chug_id AND ";
+            $edahIdOrText = "";
+            foreach ($edah_ids as $edah_id) {
+                $db->addColVal($edah_id, 'i');
+                if (empty($edahIdOrText)) {
+                    $edahIdOrText .= "(e.edah_id = ?";
+                } else {
+                    $edahIdOrText .= " OR e.edah_id = ?";
+                }
+            }
+            $edahIdOrText .= ")";
+            $sql .= $edahIdOrText;
+            
             $err = "";
             $result = $db->doQuery($sql, $err);
             if ($result == FALSE) {
@@ -235,7 +246,7 @@
             $db->addWhereColumn("edah_id", $edah_id, 'i');
             $result = $db->simpleSelectFromTable("edot", $err);
             while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-                if ($edah_names) {
+                if (empty($edah_names)) {
                     $edah_names = $row[0];
                 } else {
                     $edah_names .= "+" . $row[0];
@@ -343,6 +354,7 @@
         $chugId2Beta[$unAssignedIndex]["name"] = "Not Assigned Yet";
         $chugId2Beta[$unAssignedIndex]["min_size"] = 0;
         $chugId2Beta[$unAssignedIndex]["max_size"] = 0;
+        $chugId2Beta[$unAssignedIndex]["allowed_edot"] = NULL;
         
         // Grab and note the allowed edot for each chug.
         $db = new DbConn();
@@ -358,7 +370,7 @@
                 // This chug isn't offered in any of our edot: OK to ignore it.
                 continue;
             }
-            if (! array_key_exists($chugId2Beta[$chugId], "allowed_edot")) {
+            if (! array_key_exists("allowed_edot", $chugId2Beta[$chugId])) {
                 $chugId2Beta[$chugId]["allowed_edot"] = array();
             }
             array_push($chugId2Beta[$chugId]["allowed_edot"], $row["edah_id"]);
@@ -577,7 +589,6 @@
         isset($_POST["get_current_stats"])) {        
         $edah_ids = $_POST["edah_ids"];
         $block_id = $_POST["block"];
-        
         // Loop through groups.  Do each assignment (if requested).
         $group_ids = getGroupsForEdahIds($edah_ids);
         foreach ($group_ids as $group_id) {

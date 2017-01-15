@@ -173,10 +173,10 @@ function getNav() {
 }
 
 function doAssignmentAjax(action, title, errText,
-			  edah, block) {    
+			  edah_ids, block) {    
     var values = {};
     values[action] = 1;
-    values["edah"] = edah;
+    values["edah_ids"] = edah_ids;
     values["block"] = block;
     	$.ajax({
                 url: 'levelingAjax.php',
@@ -262,7 +262,7 @@ function getAndDisplayCurrentMatches() {
 			if (showEdahForCamper) {
 			    html += "<h3>" + groupName + " assignments</h3>\n";
 			} else {
-			    html += "<h3>" + groupName + ": no chugim are available for " + edahName +
+			    html += "<h3>" + groupName + " assignments for " + edahNames +
 				", " + blockName + "</h3>\n";
 			}
 			// Within each group, add a holder for campers, and then populate with
@@ -417,7 +417,13 @@ function getAndDisplayCurrentMatches() {
 					    var camperEdahId = camperId2Edah[camperId];
 					    var droppedOn = $(this).find(".gallery").addBack(".gallery");
                                             var droppedChugId = $(droppedOn).parent().attr("name");
+					    if (! droppedChugId in chugId2Beta) {
+						return true; // Default to true.
+					    }
 					    var allowedEdotForChug = chugId2Beta[droppedChugId]["allowed_edot"]; // array
+					    if (allowedEdotForChug == undefined) {
+						return true; // This will be the case for "Not Yet Assigned".
+					    }
 					    for (var i = 0; i < allowedEdotForChug.length; i++) {
 						if (allowedEdotForChug[i] == camperEdahId) {
 						    return true; // This edah is allowed for this chug.
@@ -565,8 +571,7 @@ $(function() {
 
 // Action for the Reassign button.
 $(function() {
-	// TODO: Allow multiple edot.
-	var edah = getParameterByName("edah_ids");
+	var edah_ids = getParameterByName("edah_ids");
 	var block = getParameterByName("block");
         $("#Reassign").click(function(event) {
                 event.preventDefault();
@@ -577,7 +582,7 @@ $(function() {
 		var ajaxAction = function() {
 		    var ra = $.Deferred();
 		    doAssignmentAjax("reassign", "Assignment saved!", "reassign",
-				     edah, block);
+				     edah_ids, block);
 		    ra.resolve();
 		    return ra;
 		};
@@ -592,8 +597,7 @@ $(function() {
 // Collect the current assignments and send them to the ajax page to be
 // saved in the DB.
 $(function() {
-	// TODO: allow multiple edot.
-	var edah = getParameterByName("edah_ids");
+	var edah_ids = getParameterByName("edah_ids");
 	var block = getParameterByName("block");
         $("#Save").click(function(event) {
                 event.preventDefault();
@@ -626,7 +630,7 @@ $(function() {
 		var values = {};
 		values["save_changes"] = 1;
 		values["assignments"] = assignments;
-		values["edah"] = edah;
+		values["edah_ids"] = edah_ids;
 		values["block"] = block;
 		$.ajax({
 			url: 'levelingAjax.php',
@@ -635,7 +639,7 @@ $(function() {
 			    data: values,
 			    success: function(json) {
 			    doAssignmentAjax("get_current_stats", "Changes Saved! Stats:", "save your changes",
-					     edah, block);
+					     edah_ids, block);
 			    getAndDisplayCurrentMatches();
 			},
 			    error: function(xhr, desc, err) {
