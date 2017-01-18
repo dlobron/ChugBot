@@ -137,6 +137,8 @@
         foreach ($requiredPermissions as $rp => $count) {
             if (strpos($row[0], $rp) !== FALSE) {
                 $requiredPermissions[$rp]++;
+            } else if (strpos($row[0], "GRANT ALL PRIVILEGES") !== FALSE) {
+                $requiredPermissions[$rp]++;
             }
         }
     }

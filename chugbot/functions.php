@@ -197,29 +197,6 @@
         }
     }
     
-    function overUnder($chugim, &$underMin, &$overMax) {
-        foreach ($chugim as $chug) {
-            if ($chug->assigned_count < $chug->min_size) {
-                $amtUnder = $chug->min_size - $chug->assigned_count;
-                if (empty($underMin)) {
-                    $underMin = $chug->name;
-                } else {
-                    $underMin .= ", $chug->name";
-                }
-                $underMin .= " (-" . strval($amtUnder) . ")";
-            } else if ($chug->assigned_count > $chug->max_size &&
-                $chug->max_size > 0) {
-                $amtOver = $chug->assigned_count - $chug->max_size;
-                if (empty($overMax)) {
-                    $overMax = $chug->name;
-                } else {
-                    $overMax .= ", $chug->name";
-                }
-                $overMax .= " (+" . strval($amtOver) . ")";
-            }
-        }
-    }
-    
     function genFatalErrorReport($errorList, $fixOnSamePage = FALSE,
                                  $backUrl = NULL) {
         $errorHtml = "";
