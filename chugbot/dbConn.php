@@ -1,5 +1,6 @@
 <?php
     include_once 'constants.php';
+    include_once 'functions.php';
     
     function connect_db($archiveYear = NULL) {
         $dbName = MYSQL_DB;
@@ -14,7 +15,7 @@
     }
 
     class DbConn {
-        function DbConn($archiveYear = NULL) {
+        function __construct($archiveYear = NULL) {
             $this->archiveYear = $archiveYear;
             $this->mysqli = connect_db($this->archiveYear);
         }

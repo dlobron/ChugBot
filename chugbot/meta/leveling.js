@@ -180,7 +180,7 @@ function doAssignmentAjax(action, title, errText,
     values["block"] = block;
     	$.ajax({
                 url: 'levelingAjax.php',
-		    async: false,
+		    //async: false,
                     type: 'post',
                     data: values,
                     success: function(data) {
@@ -220,7 +220,7 @@ function getAndDisplayCurrentMatches() {
 	$.ajax({
                 url: 'levelingAjax.php',
                     type: 'post',
-		    async: false,
+		    //async: false,
                     data:{ matches_and_prefs: 1,
 			edah_ids: edah_ids, 
 			block_id: block },
@@ -509,7 +509,7 @@ $(function() {
         $.ajax({
                 url: 'levelingAjax.php',
                     type: 'post',
-		    async: false,
+		    //async: false,
                     data:{ names_for_id: 1,
 		           edah_ids: edahIds, 
 			   block_id: blockId },
@@ -635,7 +635,7 @@ $(function() {
 		$.ajax({
 			url: 'levelingAjax.php',
 			    type: 'post',
-			    async: false,
+			    //async: false,
 			    data: values,
 			    success: function(json) {
 			    doAssignmentAjax("get_current_stats", "Changes Saved! Stats:", "save your changes",

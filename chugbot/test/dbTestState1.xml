@@ -1,0 +1,2047 @@
+<?xml version="1.0"?>
+<mysqldump xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<database name="camprama_chugbot_db">
+	<table_data name="sessions">
+	<row>
+		<field name="session_id">2</field>
+		<field name="name">August</field>
+	</row>
+	<row>
+		<field name="session_id">1</field>
+		<field name="name">July</field>
+	</row>
+	<row>
+		<field name="session_id">3</field>
+		<field name="name">July and August</field>
+	</row>
+	<row>
+		<field name="session_id">4</field>
+		<field name="name">Mini Aleph</field>
+	</row>
+	</table_data>
+	<table_data name="groups">
+	<row>
+		<field name="group_id">1</field>
+		<field name="name">aleph</field>
+	</row>
+	<row>
+		<field name="group_id">2</field>
+		<field name="name">bet</field>
+	</row>
+	<row>
+		<field name="group_id">3</field>
+		<field name="name">gimel</field>
+	</row>
+	</table_data>
+	<table_data name="blocks">
+	<row>
+		<field name="block_id">1</field>
+		<field name="name">July 1</field>
+		<field name="visible_to_campers">1</field>
+	</row>
+	<row>
+		<field name="block_id">2</field>
+		<field name="name">July 2</field>
+		<field name="visible_to_campers">1</field>
+	</row>
+	<row>
+		<field name="block_id">3</field>
+		<field name="name">August 2</field>
+		<field name="visible_to_campers">1</field>
+	</row>
+	<row>
+		<field name="block_id">4</field>
+		<field name="name">Kishroniyah</field>
+		<field name="visible_to_campers">1</field>
+	</row>
+	</table_data>
+	<table_data name="admin_data">
+	</table_data>
+	<table_data name="bunks">
+	<row>
+		<field name="bunk_id">1</field>
+		<field name="name">1</field>
+	</row>
+	<row>
+		<field name="bunk_id">2</field>
+		<field name="name">2</field>
+	</row>
+	<row>
+		<field name="bunk_id">3</field>
+		<field name="name">3.14159</field>
+	</row>
+	<row>
+		<field name="bunk_id">4</field>
+		<field name="name">h bar</field>
+	</row>
+	</table_data>
+	<table_data name="category_tables">
+	<row>
+		<field name="name">blocks</field>
+		<field name="category_table_id">1</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">bunks</field>
+		<field name="category_table_id">2</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">campers</field>
+		<field name="category_table_id">3</field>
+		<field name="delete_ok">1</field>
+	</row>
+	<row>
+		<field name="name">chugim</field>
+		<field name="category_table_id">4</field>
+		<field name="delete_ok">1</field>
+	</row>
+	<row>
+		<field name="name">edot</field>
+		<field name="category_table_id">5</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">groups</field>
+		<field name="category_table_id">6</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">sessions</field>
+		<field name="category_table_id">7</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">blocks</field>
+		<field name="category_table_id">8</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">bunks</field>
+		<field name="category_table_id">9</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">campers</field>
+		<field name="category_table_id">10</field>
+		<field name="delete_ok">1</field>
+	</row>
+	<row>
+		<field name="name">chugim</field>
+		<field name="category_table_id">11</field>
+		<field name="delete_ok">1</field>
+	</row>
+	<row>
+		<field name="name">edot</field>
+		<field name="category_table_id">12</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">groups</field>
+		<field name="category_table_id">13</field>
+		<field name="delete_ok">0</field>
+	</row>
+	<row>
+		<field name="name">sessions</field>
+		<field name="category_table_id">14</field>
+		<field name="delete_ok">0</field>
+	</row>
+	</table_data>
+	<table_data name="chugim">
+	<row>
+		<field name="name">Swimming</field>
+		<field name="group_id">1</field>
+		<field name="max_size">2</field>
+		<field name="min_size">0</field>
+		<field name="description">Playing in the water</field>
+		<field name="chug_id">1</field>
+	</row>
+	<row>
+		<field name="name">Krav Maga</field>
+		<field name="group_id">1</field>
+		<field name="max_size">2</field>
+		<field name="min_size">2</field>
+		<field name="description">Israeli martial art</field>
+		<field name="chug_id">2</field>
+	</row>
+	<row>
+		<field name="name">Cooking</field>
+		<field name="group_id">1</field>
+		<field name="max_size">2</field>
+		<field name="min_size">2</field>
+		<field name="description">Making food</field>
+		<field name="chug_id">3</field>
+	</row>
+	<row>
+		<field name="name">Boating</field>
+		<field name="group_id">1</field>
+		<field name="max_size">0</field>
+		<field name="min_size">2</field>
+		<field name="description">Kayaking and suchlike</field>
+		<field name="chug_id">4</field>
+	</row>
+	<row>
+		<field name="name">Ropes</field>
+		<field name="group_id">1</field>
+		<field name="max_size">1</field>
+		<field name="min_size">1</field>
+		<field name="description">Awesome climbs on fun rock</field>
+		<field name="chug_id">5</field>
+	</row>
+	<row>
+		<field name="name">Archery</field>
+		<field name="group_id">1</field>
+		<field name="max_size">0</field>
+		<field name="min_size">3</field>
+		<field name="description">Bow and arrow</field>
+		<field name="chug_id">6</field>
+	</row>
+	<row>
+		<field name="name">Paddling</field>
+		<field name="group_id">2</field>
+		<field name="max_size">1</field>
+		<field name="min_size">1</field>
+		<field name="description">SUP and kayaking</field>
+		<field name="chug_id">7</field>
+	</row>
+	<row>
+		<field name="name">Outdoor Cooking</field>
+		<field name="group_id">2</field>
+		<field name="max_size">1</field>
+		<field name="min_size">1</field>
+		<field name="description">Smores and such</field>
+		<field name="chug_id">8</field>
+	</row>
+	<row>
+		<field name="name">Israeli Dance</field>
+		<field name="group_id">2</field>
+		<field name="max_size">2</field>
+		<field name="min_size">1</field>
+		<field name="description">Also known as rikud</field>
+		<field name="chug_id">9</field>
+	</row>
+	<row>
+		<field name="name">Canoeing</field>
+		<field name="group_id">2</field>
+		<field name="max_size">3</field>
+		<field name="min_size">3</field>
+		<field name="description">Messing about in boats</field>
+		<field name="chug_id">10</field>
+	</row>
+	<row>
+		<field name="name">Archery</field>
+		<field name="group_id">2</field>
+		<field name="max_size">3</field>
+		<field name="min_size">2</field>
+		<field name="description">Bow and arrow</field>
+		<field name="chug_id">11</field>
+	</row>
+	<row>
+		<field name="name">Omanut</field>
+		<field name="group_id">2</field>
+		<field name="max_size">2</field>
+		<field name="min_size">2</field>
+		<field name="description">Art</field>
+		<field name="chug_id">12</field>
+	</row>
+	<row>
+		<field name="name">Jogging</field>
+		<field name="group_id">3</field>
+		<field name="max_size">2</field>
+		<field name="min_size">2</field>
+		<field name="description">Marathon training</field>
+		<field name="chug_id">13</field>
+	</row>
+	<row>
+		<field name="name">outdoor cooking</field>
+		<field name="group_id">3</field>
+		<field name="max_size">2</field>
+		<field name="min_size">2</field>
+		<field name="description">Smores and such, with lowercase</field>
+		<field name="chug_id">14</field>
+	</row>
+	<row>
+		<field name="name">Israeli Dance</field>
+		<field name="group_id">3</field>
+		<field name="max_size">2</field>
+		<field name="min_size">1</field>
+		<field name="description">Also known as rikud</field>
+		<field name="chug_id">15</field>
+	</row>
+	<row>
+		<field name="name">Etgar</field>
+		<field name="group_id">3</field>
+		<field name="max_size">2</field>
+		<field name="min_size">1</field>
+		<field name="description">Avoid angering the bears</field>
+		<field name="chug_id">16</field>
+	</row>
+	<row>
+		<field name="name">Advanced Ivrit</field>
+		<field name="group_id">3</field>
+		<field name="max_size">3</field>
+		<field name="min_size">2</field>
+		<field name="description">Hu is he, hi is she</field>
+		<field name="chug_id">17</field>
+	</row>
+	<row>
+		<field name="name">Omanut</field>
+		<field name="group_id">3</field>
+		<field name="max_size">2</field>
+		<field name="min_size">2</field>
+		<field name="description">Art and sculpture</field>
+		<field name="chug_id">18</field>
+	</row>
+	</table_data>
+	<table_data name="edot">
+	<row>
+		<field name="edah_id">1</field>
+		<field name="name">Kochavim</field>
+		<field name="rosh_name"></field>
+		<field name="rosh_phone"></field>
+		<field name="comments"></field>
+		<field name="sort_order">0</field>
+	</row>
+	<row>
+		<field name="edah_id">2</field>
+		<field name="name">Ilanot 1</field>
+		<field name="rosh_name"></field>
+		<field name="rosh_phone"></field>
+		<field name="comments"></field>
+		<field name="sort_order">0</field>
+	</row>
+	<row>
+		<field name="edah_id">3</field>
+		<field name="name">Ilanot 2</field>
+		<field name="rosh_name"></field>
+		<field name="rosh_phone"></field>
+		<field name="comments"></field>
+		<field name="sort_order">0</field>
+	</row>
+	<row>
+		<field name="edah_id">4</field>
+		<field name="name">Solelim</field>
+		<field name="rosh_name"></field>
+		<field name="rosh_phone"></field>
+		<field name="comments"></field>
+		<field name="sort_order">0</field>
+	</row>
+	</table_data>
+	<table_data name="chug_instances">
+	<row>
+		<field name="chug_id">1</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">1</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">19</field>
+	</row>
+	<row>
+		<field name="chug_id">1</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">37</field>
+	</row>
+	<row>
+		<field name="chug_id">1</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">55</field>
+	</row>
+	<row>
+		<field name="chug_id">2</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">2</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">20</field>
+	</row>
+	<row>
+		<field name="chug_id">2</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">38</field>
+	</row>
+	<row>
+		<field name="chug_id">2</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">56</field>
+	</row>
+	<row>
+		<field name="chug_id">3</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">3</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">21</field>
+	</row>
+	<row>
+		<field name="chug_id">3</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">39</field>
+	</row>
+	<row>
+		<field name="chug_id">3</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">57</field>
+	</row>
+	<row>
+		<field name="chug_id">4</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">4</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">22</field>
+	</row>
+	<row>
+		<field name="chug_id">4</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">40</field>
+	</row>
+	<row>
+		<field name="chug_id">4</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">58</field>
+	</row>
+	<row>
+		<field name="chug_id">5</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">5</field>
+	</row>
+	<row>
+		<field name="chug_id">5</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">23</field>
+	</row>
+	<row>
+		<field name="chug_id">5</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">41</field>
+	</row>
+	<row>
+		<field name="chug_id">5</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">59</field>
+	</row>
+	<row>
+		<field name="chug_id">6</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">6</field>
+	</row>
+	<row>
+		<field name="chug_id">6</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">24</field>
+	</row>
+	<row>
+		<field name="chug_id">6</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">42</field>
+	</row>
+	<row>
+		<field name="chug_id">6</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">60</field>
+	</row>
+	<row>
+		<field name="chug_id">7</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">7</field>
+	</row>
+	<row>
+		<field name="chug_id">7</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">25</field>
+	</row>
+	<row>
+		<field name="chug_id">7</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">43</field>
+	</row>
+	<row>
+		<field name="chug_id">7</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">61</field>
+	</row>
+	<row>
+		<field name="chug_id">8</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">8</field>
+	</row>
+	<row>
+		<field name="chug_id">8</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">26</field>
+	</row>
+	<row>
+		<field name="chug_id">8</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">44</field>
+	</row>
+	<row>
+		<field name="chug_id">8</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">62</field>
+	</row>
+	<row>
+		<field name="chug_id">9</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">9</field>
+	</row>
+	<row>
+		<field name="chug_id">9</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">27</field>
+	</row>
+	<row>
+		<field name="chug_id">9</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">45</field>
+	</row>
+	<row>
+		<field name="chug_id">9</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">63</field>
+	</row>
+	<row>
+		<field name="chug_id">10</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">10</field>
+	</row>
+	<row>
+		<field name="chug_id">10</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">28</field>
+	</row>
+	<row>
+		<field name="chug_id">10</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">46</field>
+	</row>
+	<row>
+		<field name="chug_id">10</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">64</field>
+	</row>
+	<row>
+		<field name="chug_id">11</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">11</field>
+	</row>
+	<row>
+		<field name="chug_id">11</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">29</field>
+	</row>
+	<row>
+		<field name="chug_id">11</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">47</field>
+	</row>
+	<row>
+		<field name="chug_id">11</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">65</field>
+	</row>
+	<row>
+		<field name="chug_id">12</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">12</field>
+	</row>
+	<row>
+		<field name="chug_id">12</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">30</field>
+	</row>
+	<row>
+		<field name="chug_id">12</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">48</field>
+	</row>
+	<row>
+		<field name="chug_id">12</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">66</field>
+	</row>
+	<row>
+		<field name="chug_id">13</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">13</field>
+	</row>
+	<row>
+		<field name="chug_id">13</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">31</field>
+	</row>
+	<row>
+		<field name="chug_id">13</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">49</field>
+	</row>
+	<row>
+		<field name="chug_id">13</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">67</field>
+	</row>
+	<row>
+		<field name="chug_id">14</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">14</field>
+	</row>
+	<row>
+		<field name="chug_id">14</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">32</field>
+	</row>
+	<row>
+		<field name="chug_id">14</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">50</field>
+	</row>
+	<row>
+		<field name="chug_id">14</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">68</field>
+	</row>
+	<row>
+		<field name="chug_id">15</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">15</field>
+	</row>
+	<row>
+		<field name="chug_id">15</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">33</field>
+	</row>
+	<row>
+		<field name="chug_id">15</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">51</field>
+	</row>
+	<row>
+		<field name="chug_id">15</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">69</field>
+	</row>
+	<row>
+		<field name="chug_id">16</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">16</field>
+	</row>
+	<row>
+		<field name="chug_id">16</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">34</field>
+	</row>
+	<row>
+		<field name="chug_id">16</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">52</field>
+	</row>
+	<row>
+		<field name="chug_id">16</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">70</field>
+	</row>
+	<row>
+		<field name="chug_id">17</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">17</field>
+	</row>
+	<row>
+		<field name="chug_id">17</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">35</field>
+	</row>
+	<row>
+		<field name="chug_id">17</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">53</field>
+	</row>
+	<row>
+		<field name="chug_id">17</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">71</field>
+	</row>
+	<row>
+		<field name="chug_id">18</field>
+		<field name="block_id">1</field>
+		<field name="chug_instance_id">18</field>
+	</row>
+	<row>
+		<field name="chug_id">18</field>
+		<field name="block_id">2</field>
+		<field name="chug_instance_id">36</field>
+	</row>
+	<row>
+		<field name="chug_id">18</field>
+		<field name="block_id">3</field>
+		<field name="chug_instance_id">54</field>
+	</row>
+	<row>
+		<field name="chug_id">18</field>
+		<field name="block_id">4</field>
+		<field name="chug_instance_id">72</field>
+	</row>
+	</table_data>
+	<table_data name="edot_for_block">
+	<row>
+		<field name="block_id">1</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="block_id">2</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="block_id">3</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="block_id">4</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="block_id">1</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="block_id">2</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="block_id">3</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="block_id">1</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="block_id">2</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="block_id">3</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="block_id">1</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="block_id">2</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="block_id">3</field>
+		<field name="edah_id">4</field>
+	</row>
+	</table_data>
+	<table_data name="edot_for_chug">
+	<row>
+		<field name="chug_id">1</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">2</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">3</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">4</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">5</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">6</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">7</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">8</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">9</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">10</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">11</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">12</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">13</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">14</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">15</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">16</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">17</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">18</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="chug_id">1</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">2</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">3</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">4</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">5</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">6</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">7</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">8</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">9</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">10</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">11</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">12</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">13</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">14</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">15</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">16</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">17</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">18</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="chug_id">1</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">2</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">3</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">4</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">5</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">6</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">7</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">8</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">9</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">10</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">11</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">12</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">13</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">14</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">15</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">16</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">17</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">18</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="chug_id">1</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">2</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">3</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">4</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">5</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">6</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">7</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">8</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">9</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">10</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">11</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">12</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">13</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">14</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">15</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">16</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">17</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="chug_id">18</field>
+		<field name="edah_id">4</field>
+	</row>
+	</table_data>
+	<table_data name="edot_for_group">
+	<row>
+		<field name="group_id">1</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="group_id">2</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="group_id">3</field>
+		<field name="edah_id">1</field>
+	</row>
+	<row>
+		<field name="group_id">1</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="group_id">2</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="group_id">3</field>
+		<field name="edah_id">2</field>
+	</row>
+	<row>
+		<field name="group_id">1</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="group_id">2</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="group_id">3</field>
+		<field name="edah_id">3</field>
+	</row>
+	<row>
+		<field name="group_id">1</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="group_id">2</field>
+		<field name="edah_id">4</field>
+	</row>
+	<row>
+		<field name="group_id">3</field>
+		<field name="edah_id">4</field>
+	</row>
+	</table_data>
+	<table_data name="campers">
+	<row>
+		<field name="camper_id">1</field>
+		<field name="edah_id">1</field>
+		<field name="session_id">1</field>
+		<field name="bunk_id">1</field>
+		<field name="first">Wolfgang Amadeus</field>
+		<field name="last">Mozart</field>
+		<field name="email">dlobron@gmail.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">2</field>
+		<field name="edah_id">2</field>
+		<field name="session_id">3</field>
+		<field name="bunk_id">1</field>
+		<field name="first">Ludwig van</field>
+		<field name="last">Beethoven</field>
+		<field name="email">dlobron@gmail.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">3</field>
+		<field name="edah_id">2</field>
+		<field name="session_id">3</field>
+		<field name="bunk_id">2</field>
+		<field name="first">Johann Sebastian</field>
+		<field name="last">Bach</field>
+		<field name="email">dlobron@gmail.com</field>
+		<field name="needs_first_choice">1</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">4</field>
+		<field name="edah_id">2</field>
+		<field name="session_id">3</field>
+		<field name="bunk_id">2</field>
+		<field name="first">Hector</field>
+		<field name="last">Berlioz</field>
+		<field name="email">dlobron@gmail.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">5</field>
+		<field name="edah_id">2</field>
+		<field name="session_id">3</field>
+		<field name="bunk_id">2</field>
+		<field name="first">Carl</field>
+		<field name="last">Nielsen</field>
+		<field name="email">dlobron@gmail.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">6</field>
+		<field name="edah_id">2</field>
+		<field name="session_id">3</field>
+		<field name="bunk_id">2</field>
+		<field name="first">Guiseppe</field>
+		<field name="last">Verdi</field>
+		<field name="email">dlobron@gmail.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">7</field>
+		<field name="edah_id">2</field>
+		<field name="session_id">3</field>
+		<field name="bunk_id">3</field>
+		<field name="first">Franz</field>
+		<field name="last">Schubert</field>
+		<field name="email">dlobron@gmail.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">8</field>
+		<field name="edah_id">2</field>
+		<field name="session_id">3</field>
+		<field name="bunk_id">3</field>
+		<field name="first">Robert</field>
+		<field name="last">Schumann</field>
+		<field name="email">dlobron@gmail.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">9</field>
+		<field name="edah_id">2</field>
+		<field name="session_id">3</field>
+		<field name="bunk_id">4</field>
+		<field name="first">Clara</field>
+		<field name="last">Schumann</field>
+		<field name="email">MyFavoriteMartian@trex.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	<row>
+		<field name="camper_id">10</field>
+		<field name="edah_id">3</field>
+		<field name="session_id">2</field>
+		<field name="bunk_id">4</field>
+		<field name="first">Johannes</field>
+		<field name="last">Brahms</field>
+		<field name="email">MyFavoriteMartian@trex.com</field>
+		<field name="needs_first_choice">0</field>
+		<field name="inactive">0</field>
+	</row>
+	</table_data>
+	<table_data name="matches">
+	</table_data>
+	<table_data name="password_reset_codes">
+	</table_data>
+	<table_data name="preferences">
+	<row>
+		<field name="camper_id">1</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id" xsi:nil="true" />
+		<field name="second_choice_id" xsi:nil="true" />
+		<field name="third_choice_id" xsi:nil="true" />
+		<field name="fourth_choice_id" xsi:nil="true" />
+		<field name="fifth_choice_id" xsi:nil="true" />
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">1</field>
+	</row>
+	<row>
+		<field name="camper_id">2</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">3</field>
+		<field name="fourth_choice_id">1</field>
+		<field name="fifth_choice_id">5</field>
+		<field name="sixth_choice_id">6</field>
+		<field name="preference_id">2</field>
+	</row>
+	<row>
+		<field name="camper_id">3</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">1</field>
+		<field name="third_choice_id">2</field>
+		<field name="fourth_choice_id">3</field>
+		<field name="fifth_choice_id">5</field>
+		<field name="sixth_choice_id">6</field>
+		<field name="preference_id">3</field>
+	</row>
+	<row>
+		<field name="camper_id">4</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">5</field>
+		<field name="third_choice_id">2</field>
+		<field name="fourth_choice_id">6</field>
+		<field name="fifth_choice_id" xsi:nil="true" />
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">4</field>
+	</row>
+	<row>
+		<field name="camper_id">5</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">1</field>
+		<field name="third_choice_id">2</field>
+		<field name="fourth_choice_id">6</field>
+		<field name="fifth_choice_id" xsi:nil="true" />
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">5</field>
+	</row>
+	<row>
+		<field name="camper_id">6</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">5</field>
+		<field name="fourth_choice_id">3</field>
+		<field name="fifth_choice_id">1</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">6</field>
+	</row>
+	<row>
+		<field name="camper_id">7</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">5</field>
+		<field name="fourth_choice_id">3</field>
+		<field name="fifth_choice_id">1</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">7</field>
+	</row>
+	<row>
+		<field name="camper_id">8</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">5</field>
+		<field name="fourth_choice_id">3</field>
+		<field name="fifth_choice_id">1</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">8</field>
+	</row>
+	<row>
+		<field name="camper_id">9</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">5</field>
+		<field name="fourth_choice_id">1</field>
+		<field name="fifth_choice_id">6</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">9</field>
+	</row>
+	<row>
+		<field name="camper_id">10</field>
+		<field name="group_id">1</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">5</field>
+		<field name="second_choice_id">4</field>
+		<field name="third_choice_id">3</field>
+		<field name="fourth_choice_id">2</field>
+		<field name="fifth_choice_id">1</field>
+		<field name="sixth_choice_id">6</field>
+		<field name="preference_id">10</field>
+	</row>
+	<row>
+		<field name="camper_id">1</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">11</field>
+	</row>
+	<row>
+		<field name="camper_id">2</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">9</field>
+		<field name="third_choice_id">8</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">12</field>
+	</row>
+	<row>
+		<field name="camper_id">3</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">13</field>
+	</row>
+	<row>
+		<field name="camper_id">4</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">9</field>
+		<field name="third_choice_id">8</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">14</field>
+	</row>
+	<row>
+		<field name="camper_id">5</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">15</field>
+	</row>
+	<row>
+		<field name="camper_id">6</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">9</field>
+		<field name="third_choice_id">8</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">16</field>
+	</row>
+	<row>
+		<field name="camper_id">7</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">17</field>
+	</row>
+	<row>
+		<field name="camper_id">8</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">9</field>
+		<field name="third_choice_id">8</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">18</field>
+	</row>
+	<row>
+		<field name="camper_id">9</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">19</field>
+	</row>
+	<row>
+		<field name="camper_id">10</field>
+		<field name="group_id">2</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">11</field>
+		<field name="second_choice_id">10</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">8</field>
+		<field name="fifth_choice_id">7</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">20</field>
+	</row>
+	<row>
+		<field name="camper_id">1</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">21</field>
+	</row>
+	<row>
+		<field name="camper_id">2</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">22</field>
+	</row>
+	<row>
+		<field name="camper_id">3</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">23</field>
+	</row>
+	<row>
+		<field name="camper_id">4</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">24</field>
+	</row>
+	<row>
+		<field name="camper_id">5</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">25</field>
+	</row>
+	<row>
+		<field name="camper_id">6</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">26</field>
+	</row>
+	<row>
+		<field name="camper_id">7</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">27</field>
+	</row>
+	<row>
+		<field name="camper_id">8</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">28</field>
+	</row>
+	<row>
+		<field name="camper_id">9</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">29</field>
+	</row>
+	<row>
+		<field name="camper_id">10</field>
+		<field name="group_id">3</field>
+		<field name="block_id">1</field>
+		<field name="first_choice_id">17</field>
+		<field name="second_choice_id">16</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">14</field>
+		<field name="fifth_choice_id">13</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">30</field>
+	</row>
+	<row>
+		<field name="camper_id">1</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id" xsi:nil="true" />
+		<field name="second_choice_id" xsi:nil="true" />
+		<field name="third_choice_id" xsi:nil="true" />
+		<field name="fourth_choice_id" xsi:nil="true" />
+		<field name="fifth_choice_id" xsi:nil="true" />
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">31</field>
+	</row>
+	<row>
+		<field name="camper_id">2</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">3</field>
+		<field name="fourth_choice_id">1</field>
+		<field name="fifth_choice_id">5</field>
+		<field name="sixth_choice_id">6</field>
+		<field name="preference_id">32</field>
+	</row>
+	<row>
+		<field name="camper_id">3</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">1</field>
+		<field name="third_choice_id">2</field>
+		<field name="fourth_choice_id">3</field>
+		<field name="fifth_choice_id">5</field>
+		<field name="sixth_choice_id">6</field>
+		<field name="preference_id">33</field>
+	</row>
+	<row>
+		<field name="camper_id">4</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">5</field>
+		<field name="third_choice_id">2</field>
+		<field name="fourth_choice_id">6</field>
+		<field name="fifth_choice_id" xsi:nil="true" />
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">34</field>
+	</row>
+	<row>
+		<field name="camper_id">5</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">1</field>
+		<field name="third_choice_id">2</field>
+		<field name="fourth_choice_id">6</field>
+		<field name="fifth_choice_id" xsi:nil="true" />
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">35</field>
+	</row>
+	<row>
+		<field name="camper_id">6</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">5</field>
+		<field name="fourth_choice_id">3</field>
+		<field name="fifth_choice_id">1</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">36</field>
+	</row>
+	<row>
+		<field name="camper_id">7</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">5</field>
+		<field name="fourth_choice_id">3</field>
+		<field name="fifth_choice_id">1</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">37</field>
+	</row>
+	<row>
+		<field name="camper_id">8</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">5</field>
+		<field name="fourth_choice_id">3</field>
+		<field name="fifth_choice_id">1</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">38</field>
+	</row>
+	<row>
+		<field name="camper_id">9</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">5</field>
+		<field name="fourth_choice_id">1</field>
+		<field name="fifth_choice_id">6</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">39</field>
+	</row>
+	<row>
+		<field name="camper_id">10</field>
+		<field name="group_id">1</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">5</field>
+		<field name="second_choice_id">4</field>
+		<field name="third_choice_id">3</field>
+		<field name="fourth_choice_id">2</field>
+		<field name="fifth_choice_id">1</field>
+		<field name="sixth_choice_id">6</field>
+		<field name="preference_id">40</field>
+	</row>
+	<row>
+		<field name="camper_id">1</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">41</field>
+	</row>
+	<row>
+		<field name="camper_id">2</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">9</field>
+		<field name="third_choice_id">8</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">42</field>
+	</row>
+	<row>
+		<field name="camper_id">3</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">43</field>
+	</row>
+	<row>
+		<field name="camper_id">4</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">9</field>
+		<field name="third_choice_id">8</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">44</field>
+	</row>
+	<row>
+		<field name="camper_id">5</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">45</field>
+	</row>
+	<row>
+		<field name="camper_id">6</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">9</field>
+		<field name="third_choice_id">8</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">46</field>
+	</row>
+	<row>
+		<field name="camper_id">7</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">47</field>
+	</row>
+	<row>
+		<field name="camper_id">8</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">9</field>
+		<field name="third_choice_id">8</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">48</field>
+	</row>
+	<row>
+		<field name="camper_id">9</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">7</field>
+		<field name="second_choice_id">8</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">10</field>
+		<field name="fifth_choice_id">11</field>
+		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="preference_id">49</field>
+	</row>
+	<row>
+		<field name="camper_id">10</field>
+		<field name="group_id">2</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">11</field>
+		<field name="second_choice_id">10</field>
+		<field name="third_choice_id">9</field>
+		<field name="fourth_choice_id">8</field>
+		<field name="fifth_choice_id">7</field>
+		<field name="sixth_choice_id">12</field>
+		<field name="preference_id">50</field>
+	</row>
+	<row>
+		<field name="camper_id">1</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">51</field>
+	</row>
+	<row>
+		<field name="camper_id">2</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">52</field>
+	</row>
+	<row>
+		<field name="camper_id">3</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">53</field>
+	</row>
+	<row>
+		<field name="camper_id">4</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">54</field>
+	</row>
+	<row>
+		<field name="camper_id">5</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">55</field>
+	</row>
+	<row>
+		<field name="camper_id">6</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">56</field>
+	</row>
+	<row>
+		<field name="camper_id">7</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">57</field>
+	</row>
+	<row>
+		<field name="camper_id">8</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">58</field>
+	</row>
+	<row>
+		<field name="camper_id">9</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">13</field>
+		<field name="second_choice_id">14</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">16</field>
+		<field name="fifth_choice_id">17</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">59</field>
+	</row>
+	<row>
+		<field name="camper_id">10</field>
+		<field name="group_id">3</field>
+		<field name="block_id">2</field>
+		<field name="first_choice_id">17</field>
+		<field name="second_choice_id">16</field>
+		<field name="third_choice_id">15</field>
+		<field name="fourth_choice_id">14</field>
+		<field name="fifth_choice_id">13</field>
+		<field name="sixth_choice_id">18</field>
+		<field name="preference_id">60</field>
+	</row>
+	</table_data>
+	<table_data name="block_instances">
+	<row>
+		<field name="block_id">1</field>
+		<field name="session_id">1</field>
+	</row>
+	<row>
+		<field name="block_id">2</field>
+		<field name="session_id">1</field>
+	</row>
+	<row>
+		<field name="block_id">4</field>
+		<field name="session_id">1</field>
+	</row>
+	<row>
+		<field name="block_id">3</field>
+		<field name="session_id">2</field>
+	</row>
+	<row>
+		<field name="block_id">1</field>
+		<field name="session_id">3</field>
+	</row>
+	<row>
+		<field name="block_id">2</field>
+		<field name="session_id">3</field>
+	</row>
+	<row>
+		<field name="block_id">3</field>
+		<field name="session_id">3</field>
+	</row>
+	</table_data>
+	<table_data name="bunk_instances">
+	</table_data>
+	<table_data name="chug_dedup_instances_v2">
+	<row>
+		<field name="left_chug_id">1</field>
+		<field name="right_chug_id">1</field>
+	</row>
+	<row>
+		<field name="left_chug_id">2</field>
+		<field name="right_chug_id">2</field>
+	</row>
+	<row>
+		<field name="left_chug_id">3</field>
+		<field name="right_chug_id">3</field>
+	</row>
+	<row>
+		<field name="left_chug_id">4</field>
+		<field name="right_chug_id">4</field>
+	</row>
+	<row>
+		<field name="left_chug_id">5</field>
+		<field name="right_chug_id">5</field>
+	</row>
+	<row>
+		<field name="left_chug_id">6</field>
+		<field name="right_chug_id">6</field>
+	</row>
+	<row>
+		<field name="left_chug_id">7</field>
+		<field name="right_chug_id">7</field>
+	</row>
+	<row>
+		<field name="left_chug_id">8</field>
+		<field name="right_chug_id">8</field>
+	</row>
+	<row>
+		<field name="left_chug_id">9</field>
+		<field name="right_chug_id">9</field>
+	</row>
+	<row>
+		<field name="left_chug_id">10</field>
+		<field name="right_chug_id">10</field>
+	</row>
+	<row>
+		<field name="left_chug_id">11</field>
+		<field name="right_chug_id">11</field>
+	</row>
+	<row>
+		<field name="left_chug_id">12</field>
+		<field name="right_chug_id">12</field>
+	</row>
+	<row>
+		<field name="left_chug_id">13</field>
+		<field name="right_chug_id">13</field>
+	</row>
+	<row>
+		<field name="left_chug_id">14</field>
+		<field name="right_chug_id">14</field>
+	</row>
+	<row>
+		<field name="left_chug_id">15</field>
+		<field name="right_chug_id">15</field>
+	</row>
+	<row>
+		<field name="left_chug_id">16</field>
+		<field name="right_chug_id">16</field>
+	</row>
+	<row>
+		<field name="left_chug_id">17</field>
+		<field name="right_chug_id">17</field>
+	</row>
+	<row>
+		<field name="left_chug_id">18</field>
+		<field name="right_chug_id">18</field>
+	</row>
+	<row>
+		<field name="left_chug_id">9</field>
+		<field name="right_chug_id">15</field>
+	</row>
+	<row>
+		<field name="left_chug_id">8</field>
+		<field name="right_chug_id">14</field>
+	</row>
+	<row>
+		<field name="left_chug_id">6</field>
+		<field name="right_chug_id">11</field>
+	</row>
+	<row>
+		<field name="left_chug_id">12</field>
+		<field name="right_chug_id">18</field>
+	</row>
+	</table_data>
+</database>
+</mysqldump>
