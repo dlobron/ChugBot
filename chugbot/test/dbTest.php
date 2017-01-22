@@ -31,7 +31,7 @@
         }
         
         public function testCamperCount() {
-            $this->assertEquals(10, $this->getConnection()->getRowCount('campers'),
+            $this->assertEquals(18, $this->getConnection()->getRowCount('campers'),
                                 ERRSTR . "bad camper row count: db setup incorrect");
         }
         
@@ -46,15 +46,24 @@
             $db->addColumn("bunk_id", 1, 'i');
             $db->insertIntoTable("campers", $err);
             $this->assertEmpty($err, "Insertion error");
-            $this->assertEquals(11, $this->getConnection()->getRowCount('campers'),
+            $this->assertEquals(19, $this->getConnection()->getRowCount('campers'),
                                 ERRSTR . "new camper not found");            
             $db = new DbConn();
             $db->addWhereColumn("last", "Gesualdo", 's');
             $db->deleteFromTable("campers", $err);
             $this->assertEmpty($err, "Delete error");
-            $this->assertEquals(10, $this->getConnection()->getRowCount('campers'),
+            $this->assertEquals(18, $this->getConnection()->getRowCount('campers'),
                                 ERRSTR . "new camper not deleted");
         }
+
+	public function testAssignment() {
+            $err = "";
+            
+            
+            
+            
+        }
+	
         
         private $conn = null;
     }
