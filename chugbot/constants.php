@@ -1,5 +1,5 @@
 <?php
-    define("DEBUG", TRUE);                                  // This should be changed in production use.
+    define("DEBUG", FALSE);
 
     define("MAX_SIZE_NUM", 10000);
     define("MIN_SIZE_NUM", -1);

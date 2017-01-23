@@ -2,27 +2,6 @@
     use PHPUnit\Framework\TestCase;
     include_once '../dbConn.php';
     include_once 'common.php';
-
-    abstract class DatabaseTestBase extends PHPUnit_Extensions_Database_TestCase
-    {
-        // only instantiate pdo once for test clean-up/fixture load
-        static private $pdo = null;
-        
-        // only instantiate PHPUnit_Extensions_Database_DB_IDatabaseConnection once per test
-        private $conn = null;
-        
-        final public function getConnection()
-        {
-            if ($this->conn === null) {
-                if (self::$pdo == null) {
-                    self::$pdo = new PDO( $GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD'] );
-                }
-                $this->conn = $this->createDefaultDBConnection(self::$pdo, $GLOBALS['DB_DBNAME']);
-            }
-            
-            return $this->conn;
-        }
-    }
     
     class DatabaseTest extends DatabaseTestBase {
         
@@ -45,7 +24,7 @@
             $db->addColumn("email", "baroque@music.org", 's');
             $db->addColumn("bunk_id", 1, 'i');
             $db->insertIntoTable("campers", $err);
-            $this->assertEmpty($err, "Insertion error");
+            $this->assertEmpty($err, ERRSTR . "insertion error");
             $this->assertEquals(19, $this->getConnection()->getRowCount('campers'),
                                 ERRSTR . "new camper not found");            
             $db = new DbConn();
@@ -55,17 +34,6 @@
             $this->assertEquals(18, $this->getConnection()->getRowCount('campers'),
                                 ERRSTR . "new camper not deleted");
         }
-
-	public function testAssignment() {
-            $err = "";
-            
-            
-            
-            
-        }
-	
-        
-        private $conn = null;
     }
 
-    
+    ?>
