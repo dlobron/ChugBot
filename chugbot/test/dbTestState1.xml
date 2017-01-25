@@ -199,7 +199,7 @@
 	<row>
 		<field name="name">Paddling</field>
 		<field name="group_id">2</field>
-		<field name="max_size">1</field>
+		<field name="max_size">6</field>
 		<field name="min_size">1</field>
 		<field name="description">SUP and kayaking</field>
 		<field name="chug_id">7</field>
@@ -247,7 +247,7 @@
 	<row>
 		<field name="name">Jogging</field>
 		<field name="group_id">3</field>
-		<field name="max_size">2</field>
+		<field name="max_size">6</field>
 		<field name="min_size">2</field>
 		<field name="description">Marathon training</field>
 		<field name="chug_id">13</field>
@@ -753,10 +753,6 @@
 		<field name="edah_id">1</field>
 	</row>
 	<row>
-		<field name="chug_id">3</field>
-		<field name="edah_id">1</field>
-	</row>
-	<row>
 		<field name="chug_id">4</field>
 		<field name="edah_id">1</field>
 	</row>
@@ -818,10 +814,6 @@
 	</row>
 	<row>
 		<field name="chug_id">1</field>
-		<field name="edah_id">2</field>
-	</row>
-	<row>
-		<field name="chug_id">2</field>
 		<field name="edah_id">2</field>
 	</row>
 	<row>
@@ -1292,12 +1284,12 @@
 		<field name="camper_id">1</field>
 		<field name="group_id">1</field>
 		<field name="block_id">1</field>
-		<field name="first_choice_id" xsi:nil="true" />
-		<field name="second_choice_id" xsi:nil="true" />
-		<field name="third_choice_id" xsi:nil="true" />
-		<field name="fourth_choice_id" xsi:nil="true" />
-		<field name="fifth_choice_id" xsi:nil="true" />
-		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="first_choice_id">6</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">3</field>
+		<field name="fourth_choice_id">1</field>
+		<field name="fifth_choice_id">5</field>
+		<field name="sixth_choice_id">4</field>
 		<field name="preference_id">1</field>
 	</row>
 	<row>
@@ -1352,9 +1344,9 @@
 		<field name="camper_id">4</field>
 		<field name="group_id">1</field>
 		<field name="block_id">1</field>
-		<field name="first_choice_id">4</field>
-		<field name="second_choice_id">5</field>
-		<field name="third_choice_id">2</field>
+		<field name="first_choice_id">2</field>
+		<field name="second_choice_id">3</field>
+		<field name="third_choice_id">4</field>
 		<field name="fourth_choice_id">6</field>
 		<field name="fifth_choice_id" xsi:nil="true" />
 		<field name="sixth_choice_id" xsi:nil="true" />
@@ -1364,9 +1356,9 @@
 		<field name="camper_id">13</field>
 		<field name="group_id">1</field>
 		<field name="block_id">1</field>
-		<field name="first_choice_id">4</field>
-		<field name="second_choice_id">5</field>
-		<field name="third_choice_id">2</field>
+		<field name="first_choice_id">3</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">4</field>
 		<field name="fourth_choice_id">6</field>
 		<field name="fifth_choice_id" xsi:nil="true" />
 		<field name="sixth_choice_id" xsi:nil="true" />
@@ -1412,11 +1404,11 @@
 		<field name="camper_id">15</field>
 		<field name="group_id">1</field>
 		<field name="block_id">1</field>
-		<field name="first_choice_id">4</field>
+		<field name="first_choice_id">1</field>
 		<field name="second_choice_id">2</field>
 		<field name="third_choice_id">5</field>
 		<field name="fourth_choice_id">3</field>
-		<field name="fifth_choice_id">1</field>
+		<field name="fifth_choice_id">4</field>
 		<field name="sixth_choice_id" xsi:nil="true" />
 		<field name="preference_id">11</field>
 	</row>
@@ -1448,11 +1440,11 @@
 		<field name="camper_id">8</field>
 		<field name="group_id">1</field>
 		<field name="block_id">1</field>
-		<field name="first_choice_id">4</field>
+		<field name="first_choice_id">1</field>
 		<field name="second_choice_id">2</field>
 		<field name="third_choice_id">5</field>
 		<field name="fourth_choice_id">3</field>
-		<field name="fifth_choice_id">1</field>
+		<field name="fifth_choice_id">4</field>
 		<field name="sixth_choice_id" xsi:nil="true" />
 		<field name="preference_id">14</field>
 	</row>
@@ -1465,7 +1457,7 @@
 		<field name="third_choice_id">5</field>
 		<field name="fourth_choice_id">3</field>
 		<field name="fifth_choice_id">1</field>
-		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="sixth_choice_id">6</field>
 		<field name="preference_id">15</field>
 	</row>
 	<row>
@@ -1748,12 +1740,12 @@
 		<field name="camper_id">1</field>
 		<field name="group_id">1</field>
 		<field name="block_id">2</field>
-		<field name="first_choice_id" xsi:nil="true" />
-		<field name="second_choice_id" xsi:nil="true" />
-		<field name="third_choice_id" xsi:nil="true" />
-		<field name="fourth_choice_id" xsi:nil="true" />
-		<field name="fifth_choice_id" xsi:nil="true" />
-		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="first_choice_id">4</field>
+		<field name="second_choice_id">2</field>
+		<field name="third_choice_id">3</field>
+		<field name="fourth_choice_id">1</field>
+		<field name="fifth_choice_id">5</field>
+		<field name="sixth_choice_id">6</field>
 		<field name="preference_id">39</field>
 	</row>
 	<row>
@@ -1788,7 +1780,7 @@
 		<field name="second_choice_id">5</field>
 		<field name="third_choice_id">2</field>
 		<field name="fourth_choice_id">6</field>
-		<field name="fifth_choice_id" xsi:nil="true" />
+		<field name="fifth_choice_id">3</field>
 		<field name="sixth_choice_id" xsi:nil="true" />
 		<field name="preference_id">42</field>
 	</row>
@@ -2473,7 +2465,7 @@
 		<field name="third_choice_id">5</field>
 		<field name="fourth_choice_id">3</field>
 		<field name="fifth_choice_id">1</field>
-		<field name="sixth_choice_id" xsi:nil="true" />
+		<field name="sixth_choice_id">6</field>
 		<field name="preference_id">113</field>
 	</row>
 	<row>

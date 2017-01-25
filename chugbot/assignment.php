@@ -19,21 +19,32 @@
         $chugToUnassign->assigned_count--;
     }
     
-    function spaceInNextPref($assignments, $chugim, $camper) {
+    function spaceInNextPref($assignments, $chugId2Chug, $camper) {
         // Note the first chug in this camper's pref list, and compute the
         // space remaining in it per assignments compared to its max.
         if (count($camper->prefs) == 0) {
             return 0; // No preferences left.
         }
-        $nextPrefChug = $chugim[$camper->prefs[0]]; // Look up by chug ID.
+        if (empty($camper->prefs)) {
+            return 0;
+        }
+        if (! array_key_exists($camper->prefs[0], $chugId2Chug)) {
+            return 0;
+        }
+        $nextPrefChug = $chugId2Chug[$camper->prefs[0]]; // Look up by chug ID.
         $retVal = $nextPrefChug->max_size - $nextPrefChug->assigned_count;
         return ($retVal > 0) ? $retVal : 0; // The difference will be negative if oversubscribed.
     }
     
-    function chugWithMostSpace($chugim) {
+    function chugWithMostSpace($chugIds, $chugId2Chug) {
         $maxFreeSpace = 0;
         $maxFreeId = NULL;
-        foreach ($chugim as $chugId => $chug) {
+        foreach ($chugIds as $chugId => $val) {
+            if (! array_key_exists($chugId, $chugId2Chug)) {
+                error_log("ERROR: No chug found for ID $chugId");
+                return NULL;
+            }
+            $chug = $chugId2Chug[$chugId];
             // Always return a chug: if all chugim have the same free space, then
             // we'll return the first one in the list.  It's crucial that we always
             // return a chug, because it guarantees that the assignment loop will
@@ -41,8 +52,7 @@
             if ($maxFreeId == NULL) {
                 $maxFreeId = $chugId;
             }
-            if ($maxFreeId == NULL ||
-                $maxFreeSpace < ($chug->max_size - $chug->assigned_count)) {
+            if ($maxFreeSpace < ($chug->max_size - $chug->assigned_count)) {
                 $maxFreeSpace = $chug->max_size - $chug->assigned_count;
                 $maxFreeId = $chugId;
             }
@@ -77,7 +87,7 @@
     // (the caller tries this function first, because if a bump can be found, it's
     // better than overflowing the chug).
     function findHappierCamper($camper, $candidateChug, $ourAssignments,
-                               $happiness, $chugim, $campers) {
+                               $happiness, $chugId2Chug, $campers) {
         // First, get our happiness level and the space left in our next-choice
         // chug.
         debugLog("starting findHappierCamper for $camper->name");
@@ -86,7 +96,7 @@
             $ourHappiness = $happiness[$camper->camper_id];
         }
         $minHappiness = $ourHappiness;
-        $ourNextSpace = spaceInNextPref($ourAssignments, $chugim, $camper);
+        $ourNextSpace = spaceInNextPref($ourAssignments, $chugId2Chug, $camper);
         $maxNextSpace = $ourNextSpace;
         debugLog("ourHappiness = $ourHappiness, ourNextSpace = $ourNextSpace");
         $happierCamperId = NULL;
@@ -133,7 +143,7 @@
                 $minHappiness = $theirHappiness;
                 debugLog("found camper $otherCamper->name with better (lower) happiness $theirHappiness - min is now $minHappiness");
             }
-            $theirNextSpace = spaceInNextPref($ourAssignments, $chugim, $otherCamper);
+            $theirNextSpace = spaceInNextPref($ourAssignments, $chugId2Chug, $otherCamper);
             if ($theirNextSpace > $maxNextSpace) {
                 $mostFreeSpaceCamperId = $otherCamperId;
                 $maxNextSpace = $theirNextSpace;
@@ -258,7 +268,12 @@
         // Grab the available chugim for this group/block, for each edah.  The chug must have an
         // instance in this block, must be available to the edah, and must be in this group.
         // Note that the same edah can, and often will, be available to more than one edah.
-        $chugimForEdot = array(); // Map edah ID->chug ID->Chug object.
+        // We need to use a lookup table here, because edot might have overlapping but distinct
+        // sets of allowed chugim.  A chug ca appear in more than one set, but there must only ever
+        // be a single object for that chug, because we need to update its assigned count (for example)
+        // when we assign a camper, regardless of the camper's edah.
+        $chugIdsForEdot = array(); // Map edah ID->chug ID->1 (existence hash).
+        $chugId2Chug = array();  // Map chug ID to chug object.
         foreach ($edah_ids as $edah_id) {
             $db = new DbConn();
             $db->addColVal($group_id, 'i');
@@ -276,22 +291,20 @@
                 return FALSE;
             }
             while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-                $c = new Chug($row[0], $row[1], $row[2], $row[3]);
-                if (! array_key_exists($edah_id, $chugimForEdot)) {
-                    $chugimForEdot[$edah_id] = array();
+                if (! array_key_exists($edah_id, $chugIdsForEdot)) {
+                    $chugIdsForEdot[$edah_id] = array();
                 }
-                $chugimForEdot[$edah_id][$c->chug_id] = $c;
+                $chugIdsForEdot[$edah_id][$row[3]] = 1;
+                if (! array_key_exists($row[3], $chugId2Chug)) {
+                    $chugId2Chug[$row[3]] = new Chug($row[0], $row[1], $row[2], $row[3]);
+                }
             }
-            if (! array_key_exists($edah_id, $chugimForEdot)) {
+            if (! array_key_exists($edah_id, $chugIdsForEdot)) {
                 // Each edah being assigned must have at least one chug available.
                 error_log("No chugim found for edah " . $edahId2Name[$edah_id] .
                           ", block $blockName, group $groupName: not assigning.");
                 return TRUE; // This is not an error, so return true.
             }
-        }
-        if (count($chugimForEdot) == 0) {
-            error_log("No chugim found for edah $edotText, block $blockName, group $groupName: not assigning.");
-            return TRUE; // This is not an error, so return true.
         }
         
         // Map chug ID to chug instance ID, for this block.  We'll use this when we create entries
@@ -462,6 +475,8 @@
         $assignments = array();
         while (($camperId = array_shift($camperIdsToAssign)) != NULL) {
             $camper =& $campers[$camperId];
+            $edah_id = $camperId2EdahId[$camperId];
+            $chugIdHashForThisEdah = $chugIdsForEdot[$edah_id]; // Eligible chugim for assignment.
             debugLog("Assigning " . $camper->name);
             // Try to assign this camper to the first chug in their preference list, and remove
             // that chug from their list.
@@ -475,34 +490,39 @@
                 error_log("No edah cound for camper " . $camper->name);
                 continue;
             }
-            $edah_id = $camperId2EdahId[$camperId];
-            $chugimForThisEdah = $chugimForEdot[$edah_id]; // Eligible chugim for assignment.
             if ($candidateChugId == NULL) {
                 // If we run out of preferences, assign the camper to the chug with the most
                 // free space.  Note that chugWithMostSpace is guaranteed to return a chug, so
                 // we know that this loop must terminate.
-                $maxFreeChugId = chugWithMostSpace($chugimForThisEdah);
-                $maxFreeChug =& $chugimForThisEdah[$maxFreeChugId];
+                $maxFreeChugId = chugWithMostSpace($chugIdHashForThisEdah, $chugId2Chug);
+                // The max-free chug should never be NULL.  If it is, we have to exit.
+                if ($maxFreeChugId === NULL) {
+                    error_log("ERROR: Cannot find max free chug: can't continue");
+                    return FALSE;
+                }
+                $maxFreeChug =& $chugId2Chug[$maxFreeChugId];
                 debugLog("No more prefs: assigning to max free chug " . $maxFreeChug->name);
                 assign($camper, $assignments, $maxFreeChug);
                 continue;
             }
-            if (! array_key_exists($candidateChugId, $chugimForThisEdah)) {
+            if (! array_key_exists($candidateChugId, $chugIdHashForThisEdah)) {
                 // This could occur if the allowed edot for a chug or edah were
                 // changed after preferences were set.  We can't easily correct
                 // this, so just log an error for now.
-                error_log("ERROR: Preferred chug ID " . $candidateChugId . " not found in allowed chug set");
+                error_log("ERROR: Preferred chug ID " . $candidateChugId . " for camper $camper->name" .
+                          " not found in allowed chug set (set has " . count($chugIdHashForThisEdah) . " edot)");
                 $err = "Chug choices for " . $camper->name . " contained illegal chug ID " . $candidateChugId;
                 array_push($camperIdsToAssign, $camper->camper_id); // Try the next pref.
                 continue;
             }
-            $candidateChug =& $chugimForThisEdah[$candidateChugId];
-            
+            $candidateChug =& $chugId2Chug[$candidateChugId];
             $camper->choice_level++; // Increment the choice level (it starts at zero).
             // At this point, we check for duplicate assignment.
             if (array_key_exists($camper->camper_id, $existingMatches)) {
                 $matchesForThisCamper = $existingMatches[$camper->camper_id];
-                debugLog("Have " . count($matchesForThisCamper) . " existing matches, trying to assign to $candidateChug->name");
+                debugLog("Have " . count($matchesForThisCamper) .
+                         " existing matches, trying to assign to $candidateChug->name (ID $candidateChugId), which has a max of $candidateChug->max_size" .
+                         " and current assign count of $candidateChug->assigned_count");
                 // Check for duplicate assignment, and skip dups, unless needs_first_choice
                 // is set.
                 if (isDuplicate($candidateChug, $matchesForThisCamper, $deDupMatrix)) {
@@ -526,7 +546,7 @@
             debugLog("Candidate chug " . $candidateChug->name . " is full - trying to bump");
             // Try to find a happier camper who is assigned to this chug.
             $happierCamperId = findHappierCamper($camper, $candidateChug, $assignments,
-                                                 $happiness, $chugimForThisEdah, $campers);
+                                                 $happiness, $chugId2Chug, $campers);
             
             if ($happierCamperId == NULL) {
                 // No happier camper was found.
@@ -561,18 +581,12 @@
                 return FALSE;
             }
             $edahName = $edahId2Name[$edah_id];
-            $chugimForThisEdah = $chugimForEdot[$edah_id];
-            if ($chugimForThisEdah == NULL ||
-                count($chugimForThisEdah) == 0) {
-                error_log("ERROR: No chugim found for edah $edahName");
-                return FALSE;
-            }
             $assignedChugId = $assignments[$camperId];
             if ($assignedChugId == NULL) {
-                error_log("ERROR: Failed to assign chug for camper ID $camperId");
+                error_log("ERROR: Failed to assign chug for camper ID $camperId, edah $edahName");
                 return FALSE;
             }
-            $assignedChug = $chugimForThisEdah[$assignedChugId];
+            $assignedChug = $chugId2Chug[$assignedChugId];
             if ($assignedChug == NULL) {
                 error_log("ERROR: Assigned camper ID $camperId to illegal chug ID $assignedChugId");
                 return FALSE;

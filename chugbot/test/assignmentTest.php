@@ -31,26 +31,96 @@
             $edot_names = $edahId2Name['1'] . " and " . $edahId2Name['2'];
             $block_ids = array(1, 2);
             $group_ids = array(1, 2, 3);
+            echo "\n(Some \"Preferred\" ERROR and \"No preference\" lines are expected above)";
             foreach ($block_ids as $block_id) {
                 foreach ($group_ids as $group_id) {
                     echo "\nRunning assignment for block " . $blockId2Name[$block_id] .
                     ", group " . $groupId2Name[$group_id] . ", edot " .
-                    $edot_names . " (some warnings are expected)";
+                    $edot_names;
                     do_assignment($edah_ids, $block_id, $group_id, $err);
-                    $this->assertEmpty($err, ERRSTR . "assignment error");
                 }
             }
+            
+            $this->assertNotEmpty($err, ERRSTR . "select error");
+            $err = ""; // Reset err to empty.
+            
             // Verify that the assignment is optimal and correct.  In particular:
             // All chugim should be under max.
-            // Always-first campers should have all first choices.
-            // Chugim should have campers from both edot, if eligible.
+            $db = new DbConn();
+            $sql = "select c.chug_id chug_id, c.max_size max_size, sum(1) num_assigned from chugim c, " .
+            "matches m, chug_instances i where m.chug_instance_id = i.chug_instance_id and i.block_id = 1 " .
+            "and i.chug_id = c.chug_id and c.max_size > 0 group by 1 having num_assigned > max_size";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEmpty($err, ERRSTR . "select error");
+            $this->assertEquals($result->num_rows, 0, ERRSTR . "over-max assignment in block 1");
+            $db = new DbConn();
+            $sql = "select c.chug_id chug_id, c.max_size max_size, sum(1) num_assigned from chugim c, " .
+            "matches m, chug_instances i where m.chug_instance_id = i.chug_instance_id and i.block_id = 2 " .
+            "and i.chug_id = c.chug_id and c.max_size > 0 group by 1 having num_assigned > max_size";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEmpty($err, ERRSTR . "select error");
+            $this->assertEquals($result->num_rows, 0, ERRSTR . "over-max assignment in block 2");
+            
+            // All assigned chugim should be allowed for the assigned camper's edah.
+            
             // Chugim that are only eligible for one edah should only have that
-            // edah assigned to them (TODO: we might need to edit edot_for_chug
-            // so that some chugim are disallowed for edah 1 or 2 or both).  We
-            // might also want to tweak prefs to be different, to exercise more
-            // pref possibilities.
+            // edah assigned to them:
+            // Disallowed Krav Maga from Ilanot 1
+            // Disallowed Cooking from Kochavim
+            // Berlioz (Ilanot 1): first choice for aleph = Krav Maga, second = Cooking
+            // Handel (Kochavim): first choice for aleph = Cooking, second = Krav Maga
+            // Expect: Both should get their second (allowed) choice.
+            $db = new DbConn();
+            $sql = "select m.match_id from matches m, chug_instances i " .
+            "where m.camper_id=4 and m.chug_instance_id = i.chug_instance_id " .
+            "and i.block_id=1 and i.chug_id=3";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEmpty($err, ERRSTR . "select error");
+            $this->assertEquals($result->num_rows, 1, ERRSTR . "incorrect assignment (Berlioz)");
+            $db = new DbConn();
+            $sql = "select m.match_id from matches m, chug_instances i " .
+            "where m.camper_id=13 and m.chug_instance_id = i.chug_instance_id " .
+            "and i.block_id=1 and i.chug_id=2";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEmpty($err, ERRSTR . "select error");
+            $this->assertEquals($result->num_rows, 1, ERRSTR . "incorrect assignment (Handel)");
+            
             // Choice levels should be as high as possible.
-            // TODO
+            // Expect: Mozart should always be assigned to Archery for aleph.
+            $db = new DbConn();
+            $sql = "select m.match_id from matches m, chug_instances i " .
+            "where m.camper_id=1 and m.chug_instance_id = i.chug_instance_id " .
+            "and i.block_id=1 and i.chug_id=6";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEmpty($err, ERRSTR . "select error");
+            $this->assertEquals($result->num_rows, 1, ERRSTR . "incorrect assignment (Mozart)");
+            
+            // Always-first campers should have all first choices.
+            // Expect: Bach should have his first choice every time.
+            $db = new DbConn();
+            $sql = "select m.match_id from matches m, chug_instances i " .
+            "where m.camper_id=3 and m.chug_instance_id = i.chug_instance_id " .
+            "and i.block_id=1 and i.chug_id in (13,7,4)";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEmpty($err, ERRSTR . "select error");
+            $this->assertEquals($result->num_rows, 3, ERRSTR . "incorrect assignment (Bach)");
+            
+            // Chugim should have campers from both edot, if eligible.
+            // Expect: R. Schumann and Scriabin should be assigned to Swimming for aleph.
+            $db = new DbConn();
+            $sql = "select m.match_id from matches m, chug_instances i " .
+            "where m.camper_id=8 and m.chug_instance_id = i.chug_instance_id " .
+            "and i.block_id=1 and i.chug_id=1";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEmpty($err, ERRSTR . "select error");
+            $this->assertEquals($result->num_rows, 1, ERRSTR . "incorrect assignment (R. Schumann)");
+            $db = new DbConn();
+            $sql = "select m.match_id from matches m, chug_instances i " .
+            "where m.camper_id=15 and m.chug_instance_id = i.chug_instance_id " .
+            "and i.block_id=1 and i.chug_id=1";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEmpty($err, ERRSTR . "select error");
+            $this->assertEquals($result->num_rows, 1, ERRSTR . "incorrect assignment (Scriabin)");
     
         }
     }
