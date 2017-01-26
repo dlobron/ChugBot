@@ -62,6 +62,12 @@
             $this->assertEquals($result->num_rows, 0, ERRSTR . "over-max assignment in block 2");
             
             // All assigned chugim should be allowed for the assigned camper's edah.
+            $db = new DbConn();
+            $sql = "select m.match_id bad_match_id from matches m, campers c, chug_instances i " .
+            "where m.camper_id = c.camper_id and m.chug_instance_id = i.chug_instance_id and " .
+            "c.edah_id not in (select edah_id from edot_for_chug where chug_id = i.chug_id)";
+            $result = $db->runQueryDirectly($sql, $err);
+            $this->assertEquals($result->num_rows, 0, ERRSTR . "chug not allowed for camper edah");
             
             // Chugim that are only eligible for one edah should only have that
             // edah assigned to them:
