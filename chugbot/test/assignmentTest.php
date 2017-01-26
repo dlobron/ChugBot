@@ -31,7 +31,7 @@
             $edot_names = $edahId2Name['1'] . " and " . $edahId2Name['2'];
             $block_ids = array(1, 2);
             $group_ids = array(1, 2, 3);
-            echo "\n(Some \"Preferred\" ERROR and \"No preference\" lines are expected above)";
+            echo "\n10-12 \"WARNING: Preferred\" and \"WARNING: No preference\" lines are expected above due to corner case tests.";
             foreach ($block_ids as $block_id) {
                 foreach ($group_ids as $group_id) {
                     echo "\nRunning assignment for block " . $blockId2Name[$block_id] .

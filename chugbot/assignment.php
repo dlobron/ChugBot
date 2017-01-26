@@ -508,8 +508,8 @@
             if (! array_key_exists($candidateChugId, $chugIdHashForThisEdah)) {
                 // This could occur if the allowed edot for a chug or edah were
                 // changed after preferences were set.  We can't easily correct
-                // this, so just log an error for now.
-                error_log("ERROR: Preferred chug ID " . $candidateChugId . " for camper $camper->name" .
+                // this, so just log a warning for now.
+                error_log("WARNING: Preferred chug ID " . $candidateChugId . " for camper $camper->name" .
                           " not found in allowed chug set (set has " . count($chugIdHashForThisEdah) . " edot)");
                 $err = "Chug choices for " . $camper->name . " contained illegal chug ID " . $candidateChugId;
                 array_push($camperIdsToAssign, $camper->camper_id); // Try the next pref.
