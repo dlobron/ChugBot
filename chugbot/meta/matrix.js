@@ -1,6 +1,12 @@
 var chugChecked = {};
 
+function show(id, value) {
+    document.getElementById(id).style.display = value ? 'block' : 'none';
+}
+
 $(function() {
+	show('page', false);
+	show('loading', true);
         $.ajax({
                 url: 'ajax.php',
 		    type: 'post',
@@ -71,6 +77,8 @@ $(function() {
 		    }
 		    html += "</tbody></table></div>";
 		    target.html(html); // Display the table.
+		    show('loading', false);
+		    show('page', true);
 		    // For debugging: alert when a box is checked.
 		    //target.on('change', 'input:checkbox', function() {
 		    //var $this = $(this),

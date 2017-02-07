@@ -17,6 +17,12 @@
   <link rel='stylesheet' type='text/css' href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>
   <link rel="stylesheet" href="meta/view.css" />
   <style>
+    @keyframes fadeIn {
+    from { opacity: 0; }
+    }
+    #loading {
+    animation: fadeIn 1s infinite alternate;
+    }
     .control_buttons {
     position: relative;
     margin: auto;
@@ -46,6 +52,7 @@
   </head>
   <body>
     
+    <div id="page">
     <div id="nav"></div>
 
     <div class="container centered_container">
@@ -65,12 +72,13 @@
     
     <div class="image_container"><img src="images/Matrix.jpg" alt="" /></div>
 
-    <div id="checkboxes"><div class="message_container">Building matrix: please wait...</div></div>
-    </div>
+    <div id="checkboxes"></div>
     
     <div class="control_buttons">
       <input title="Save changes and exit this page" class="btn btn-primary btn-lg" type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
     </div>
+    </div>
+    <div id="loading"><div class="message_container">Building matrix - please wait...</div></div>
     
   </body>
 </html>
