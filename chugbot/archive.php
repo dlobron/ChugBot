@@ -133,12 +133,17 @@
     $requiredPermissions = array("DELETE" => 0, "LOCK TABLES" => 0);
     $db = new DbConn();
     $result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'@'" . MYSQL_HOST . "'", $dbErr);
-    while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
-        foreach ($requiredPermissions as $rp => $count) {
-            if (strpos($row[0], $rp) !== FALSE) {
-                $requiredPermissions[$rp]++;
-            } else if (strpos($row[0], "GRANT ALL PRIVILEGES") !== FALSE) {
-                $requiredPermissions[$rp]++;
+    if ($result === FALSE) {
+        $permissionsError = "Failed to show database grants: $dbErr";
+        error_log($permissionsError);
+    } else {
+        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+            foreach ($requiredPermissions as $rp => $count) {
+                if (strpos($row[0], $rp) !== FALSE) {
+                    $requiredPermissions[$rp]++;
+                } else if (strpos($row[0], "GRANT ALL PRIVILEGES") !== FALSE) {
+                    $requiredPermissions[$rp]++;
+                }
             }
         }
     }
@@ -163,8 +168,17 @@
         }
     }
     if (! $haveDb) {
-        $noBackupDbError = "In order to archive, you must create a database called $thisYearArchive using cPanel or a similar " .
-        "administrative tool. Please ask your site administrator to create this table, then try again.";
+        // If the archive DB does not exist, try to create it.
+        $db = new DbConn();
+        $result = $db->runQueryDirectly("CREATE DATABASE IF NOT EXISTS $thisYearArchive COLLATE utf8_unicode_ci", $dbErr);
+        if ($result === TRUE) {
+            // Created archive DB OK.
+            error_log("Created new archive DB $thisYearArchive OK");
+        } else {
+            $noBackupDbError = "In order to archive, you must create a database called $thisYearArchive using cPanel or a similar " .
+            "administrative tool. Please ask your site administrator to create this table, then try again.  This program does not have " .
+            "sufficient permission to create the database.";
+        }
     }
     
     $binaryNotFoundError = "";
