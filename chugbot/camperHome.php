@@ -44,7 +44,6 @@
 ?>
 
 <script type="text/javascript" src="jquery/jquery-1.11.3.min.js"></script>
-<script type="text/javascript" src="meta/tooltip.js"></script>
 
 <div class="form_container" id="accordion">
 <h1><a>Camper Home</a></h1>

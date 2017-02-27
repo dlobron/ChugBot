@@ -160,6 +160,8 @@ $(function() {
 				});
 			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
 			    $( "#results" ).show("slide", 500 );
+			    $(".SubmitPrefsButton").hide();
+			    $("#exit_button").show();
 			},
 			    error: function(xhr, desc, err) {
 			    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
