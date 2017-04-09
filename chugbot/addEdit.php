@@ -588,7 +588,8 @@ EOM;
                     return;
                 }
                 
-                if ($this->addEditChugPage) {
+                if ($this->addEditChugPage &&
+                    $this->displayListSelectedIds) {
                     // If we're editing a chug, update the exclusion table.
                     // First, we delete dedup rows where this chug is in the left
                     // column.  Then, we add rows from our active list.

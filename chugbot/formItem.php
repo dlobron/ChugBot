@@ -236,7 +236,8 @@ JSEND;
             $this->html .= "<div>\n";
             $selectedMap = array();
             $ocStr = "";
-            if ($this->displayListName) {
+            if ($this->displayListName &&
+                $this->displayListSelectedIds) {
                 $this->html .= "<ul class=\"options_toggle\">";
                 foreach ($this->displayListSelectedIds as $selectedId) {
                     $name = $this->id2Name[$selectedId];

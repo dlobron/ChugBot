@@ -881,7 +881,7 @@ EOM;
             $allCampersReport->renderTable();
         } else if ($reportMethod == ReportTypes::ByEdah) {
             // Per-edah report.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name,\"Not Selected\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name,\"-\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
             "e.rosh_name rosh, e.rosh_phone roshphone, " .
             "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
             "ch.chug_id chug_id, bl.block_id block_id " .
@@ -918,7 +918,7 @@ EOM;
         } else if ($reportMethod == ReportTypes::ByBunk) {
             // Per-bunk report.  This the same as the per-edah report, except
             // organized by bunk.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name,\"Not Selected\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name,\"-\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
             "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
             "ch.chug_id chug_id, bl.block_id block_id " .
             "FROM matches AS m " .
@@ -959,7 +959,7 @@ EOM;
             // - Rosh name and phone at the top, together with the edah name.
             // - List of campers in the edah: name and bunk.
             $sql = "SELECT CONCAT(c.last, ', ', c.first) AS camper, e.name edah, e.sort_order edah_sort_order, " .
-            "e.rosh_name rosh, e.rosh_phone roshphone, ch.name chug_name, IFNULL(b.name, \"Not Selected\") bunk, bl.name block, " .
+            "e.rosh_name rosh, e.rosh_phone roshphone, ch.name chug_name, IFNULL(b.name, \"-\") bunk, bl.name block, " .
             "ch.chug_id chug_id, bl.block_id block_id, b.bunk_id bunk_id, e.edah_id edah_id, c.camper_id " .
             "FROM edot AS e " .
             "JOIN campers AS c ON c.edah_id = e.edah_id " .
@@ -1043,7 +1043,7 @@ EOM;
             $camperReport->renderTable();
         } else if ($reportMethod == ReportTypes::Director) {
             // The director report is similar to the edah report, but unfiltered.
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name, \"Not Selected\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name, \"-\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
             "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
             "ch.chug_id chug_id, bl.block_id block_id " .
             "FROM matches AS m " .

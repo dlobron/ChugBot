@@ -460,11 +460,8 @@
                     }
                 }
             } else {
-                // Campers should have a pref list.
+                // Campers should have a pref list: warn if we don't find one.
                 error_log("WARNING: No preferences found for camper " . $camper->name);
-                if ($camper != NULL) {
-                    error_log("Camper name: " . $camper->name);
-                }
             }
         }
         

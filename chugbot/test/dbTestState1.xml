@@ -56,6 +56,19 @@
 	</row>
 	</table_data>
 	<table_data name="admin_data">
+	<row>
+	        <field name="admin_email">jsb@baroque.org</field>
+                <field name="admin_password">blurfl</field>
+                <field name="admin_email_cc">handel@baroque.org</field>
+                <field name="admin_email_from_name">CantataGuy</field>
+                <field name="regular_user_token">Kayitz</field>
+                <field name="regular_user_token_hint">Hebrew word for summer</field>
+                <field name="pref_page_instructions">Make choices test text</field>
+                <field name="camp_name">Camp Ramah of the Baroque Era</field>
+                <field name="camp_web">www.campramahbaroque.org</field>
+                <field name="pref_count">6</field>
+                <field name="send_confirm_email">0</field>
+        </row>
 	</table_data>
 	<table_data name="bunks">
 	<row>

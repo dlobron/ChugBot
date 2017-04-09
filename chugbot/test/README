@@ -1,0 +1,9 @@
+To run the tests in this directory, follow these steps:
+
+1. Edit constants.php in the main directory so that MYSQL_HOST is set to 127.0.0.1:8889
+   rather than localhost.  
+
+2. Run ./runTests.sh
+
+PHPUnit may complain that your version of PHP is too old: if this happens, simply upgrade your
+PHP version, and try again.

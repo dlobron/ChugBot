@@ -5,6 +5,8 @@
     define("MIN_SIZE_NUM", -1);
     define("DEFAULT_PREF_COUNT", 6);
 
+// Important: use 127.0.0.1:8889 as the host when running PHPUnit tests.  For regular use,
+// use localhost.
 //    define("MYSQL_HOST", "127.0.0.1:8889");
     define("MYSQL_HOST", "localhost");
     define("MYSQL_USER", "camprama_chugbot");
