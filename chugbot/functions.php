@@ -3,30 +3,6 @@
     include_once 'functions.php';
     require_once 'PHPMailer/PHPMailerAutoload.php';
     
-    function getGroupsForEdahIds($edah_ids) {
-        $retVal = array();
-        $db = new DbConn();
-        $edahText = NULL;
-        foreach ($edah_ids as $edah_id) {
-            if ($edahText == NULL) {
-                $edahText = "?";
-            } else {
-                $edahText .= ",?";
-            }
-            $db->addColVal($edah_id, 'i');
-        }
-        $sql = "SELECT DISTINCT g.group_id group_id FROM groups g, edot_for_group e " .
-        "WHERE g.group_id = e.group_id AND e.edah_id IN ($edahText)";
-        $result = $db->doQuery($sql, $err);
-        if ($result == FALSE) {
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => $err)));
-        }
-        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-            array_push($retVal, intval($row[0]));
-        }
-        return $retVal;
-    }
     
     function getArchiveYears(&$dbErr) {
         $retVal = array();
@@ -360,6 +336,72 @@ EOM;
             $retVal = $retVal . "<input type=\"checkbox\" name=\"${arrayName}[]\" value=\"$idStr\" $selStr />$name<br>";
         }
         return $retVal;
+    }
+    
+    // Similar to genCheckBox, except we emit JS that limits the available checkboxes
+    // based on selected items in a parent.
+    function genConstrainedCheckBoxScript($id2Name, $arrayName,
+                                          $ourId, $parentId, $descId) {
+        asort($id2Name);
+        $javascript = <<<JS
+<script src="jquery/jquery-1.11.3.min.js"></script>
+<script src="jquery/ui/1.11.4/jquery-ui.js"></script>
+<script>
+function fillConstraintsCheckBox() {
+    var parent = $("#${parentId}");
+    var ourCheckBox = $("#${ourId}");
+    var ourDesc = $("#${descId}");
+    var values = {};
+    values["get_legal_id_to_name"] = 1;
+    var curSelectedEdahIds = [];
+    $("#${parentId} input:checked").each(function() {
+       curSelectedEdahIds.push($(this).attr('value'));
+    });
+    var sql = "SELECT e.group_id group_id, g.name group_name FROM edot_for_group e, groups g WHERE e.edah_id IN (";
+    var ct = 0;
+    for (var i = 0; i < curSelectedEdahIds.length; i++) {
+        if (ct++ > 0) {
+            sql += ",";
+        }
+        sql += "?";
+    }
+    sql += ") AND e.group_id = g.group_id GROUP BY e.group_id HAVING COUNT(e.edah_id) = " + ct;
+    values["sql"] = sql;
+    values["instance_ids"] = curSelectedEdahIds;
+    $.ajax({
+        url: 'ajax.php',
+        type: 'post',
+        data: values,
+        success: function(data) {
+           ourCheckBox.empty();
+           var html = "";
+           if (data == "none") {
+               $(ourCheckBox).hide();
+               $(ourDesc).hide();
+               return;
+           }
+           $.each(data, function(itemId, itemName) {
+                html = "<input type=\"checkbox\" name=\"" + "${arrayName}" +
+                  "[]\" value=\"" + itemId + "\" checked=checked/>" + itemName + "<br>";
+                $(ourCheckBox).append(html);
+            });
+           $(ourCheckBox).show();
+           $(ourDesc).show();
+        },
+        error: function(xhr, desc, err) {
+           console.log(xhr);
+           console.log("Details: " + desc + " Error:" + err);
+        }
+    });
+}
+$(function() {
+  $("#${parentId}").load(fillConstraintsCheckBox());
+  $("#${parentId}").bind('change',fillConstraintsCheckBox);
+});
+</script>
+JS;
+        
+        return $javascript;
     }
     
     function test_input($data) {

@@ -9,10 +9,11 @@
         $err = errorString("Unknown request method.");
     }
     $edah_ids = $_GET["edah_ids"];
+    $group_ids = $_GET["group_ids"];
     $block_id = intval(test_input($_GET["block"]));
-    if ($edah_ids == NULL || $block_id == NULL ||
-        empty($edah_ids)) {
-        $err = errorString("Block and at least one edah must be specified.");
+    if ($edah_ids == NULL || $block_id == NULL || $group_ids == NULL ||
+        empty($edah_ids) || empty($group_ids)) {
+        $err = errorString("Block and at least one edah and group must be specified.");
     } else if (count($edah_ids) > 2) {
         $err = errorString("No more than 2 edot may be leveled together.");
     }
@@ -25,6 +26,9 @@
     $levelHomeUrl .= "?block=$block_id";
     foreach ($edah_ids as $edah_id) {
         $levelHomeUrl .= "&edah_ids[]=$edah_id";
+    }
+    foreach ($group_ids as $group_id) {
+        $levelHomeUrl .= "&group_ids[]=$group_id";
     }
     // Check for a existing assignments for our edot.  We consider a combination
     // already assigned if we have at least one assigned camper in every edah, 
@@ -61,7 +65,6 @@
     // group that applies to this edah, and make an assignment for each one.
     // Loop through groups.  Do each assignment (if requested).
     $edotText = implode(", ", $edah_ids);
-    $group_ids = getGroupsForEdahIds($edah_ids);
     foreach ($group_ids as $group_id) {
         $err = "";
         $ok = do_assignment($edah_ids, $block_id, $group_id, $err);

@@ -135,11 +135,22 @@ will be created and then displayed.</p>
 <ul>
 <li>
 <label class="description" for="edah">Edah (choose one or two)</label>
-<div>
+<div id="edah_checkbox">
 <?php
     echo genCheckBox($edahId2Name, array(), "edah_ids");
     ?>
 </div><p class="guidelines" id="guide_1"><small>Choose One or Two Edot.</small></p>
+</li>
+<li>
+<label class="description" for="group" id="group_desc">Group (check as many as desired)</label>
+<div id="group_checkbox">
+<?php
+    echo genConstrainedCheckBoxScript($groupId2Name, "group_ids",
+                                      "group_checkbox", "edah_checkbox",
+                                      "group_desc");
+    ?>
+</div><p class="guidelines" id="guide_2"><small>Select groups to level. Groups
+shown here are the ones common to all selected edot.</small></p>
 </li>
 <li>
 <label class="description" for="block">Block</label>
@@ -149,7 +160,7 @@ will be created and then displayed.</p>
     echo genPickList($blockId2Name, array(), "block");
     ?>
 </select>
-</div><p class="guidelines" id="guide_2"><small>Choose a Block.</small></p>
+</div><p class="guidelines" id="guide_3"><small>Choose a Block.</small></p>
 </li>
 <li>
 <input title="Launch the leveling page" class="btn btn-primary" type="submit" value="Level" />

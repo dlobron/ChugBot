@@ -173,10 +173,11 @@ function getNav() {
 }
 
 function doAssignmentAjax(action, title, errText,
-			  edah_ids, block) {    
+			  edah_ids, group_ids, block) {    
     var values = {};
     values[action] = 1;
     values["edah_ids"] = edah_ids;
+    values["group_ids"] = group_ids;
     values["block"] = block;
     	$.ajax({
                 url: 'levelingAjax.php',
@@ -208,6 +209,7 @@ function getAndDisplayCurrentMatches() {
         var curUrlBase = curUrl.substr(0, curUrl.lastIndexOf("/"));
 	var editChugBase = curUrlBase + "/editChug.php?eid=";
         var edah_ids = getParameterByName("edah_ids");
+	var group_ids = getParameterByName("group_ids");
         var block = getParameterByName("block");
 	var succeeded = false;
 	var camperId2Group2PrefList;
@@ -223,6 +225,7 @@ function getAndDisplayCurrentMatches() {
 		    async: false,
                     data:{ matches_and_prefs: 1,
 			edah_ids: edah_ids, 
+			group_ids: group_ids,
 			block_id: block },
                     success: function(json) {
 		    succeeded = true;
@@ -572,6 +575,7 @@ $(function() {
 // Action for the Reassign button.
 $(function() {
 	var edah_ids = getParameterByName("edah_ids");
+	var group_ids = getParameterByName("group_ids");
 	var block = getParameterByName("block");
         $("#Reassign").click(function(event) {
                 event.preventDefault();
@@ -582,7 +586,7 @@ $(function() {
 		var ajaxAction = function() {
 		    var ra = $.Deferred();
 		    doAssignmentAjax("reassign", "Assignment saved!", "reassign",
-				     edah_ids, block);
+				     edah_ids, group_ids, block);
 		    ra.resolve();
 		    return ra;
 		};
@@ -598,6 +602,7 @@ $(function() {
 // saved in the DB.
 $(function() {
 	var edah_ids = getParameterByName("edah_ids");
+	var group_ids = getParameterByName("group_ids");
 	var block = getParameterByName("block");
         $("#Save").click(function(event) {
                 event.preventDefault();
@@ -631,6 +636,7 @@ $(function() {
 		values["save_changes"] = 1;
 		values["assignments"] = assignments;
 		values["edah_ids"] = edah_ids;
+		values["group_ids"] = group_ids;
 		values["block"] = block;
 		$.ajax({
 			url: 'levelingAjax.php',
@@ -639,7 +645,7 @@ $(function() {
 			    data: values,
 			    success: function(json) {
 			    doAssignmentAjax("get_current_stats", "Changes Saved! Stats:", "save your changes",
-					     edah_ids, block);
+					     edah_ids, group_ids, block);
 			    getAndDisplayCurrentMatches();
 			},
 			    error: function(xhr, desc, err) {

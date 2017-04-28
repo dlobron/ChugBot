@@ -18,21 +18,29 @@
         return $camper_id;
     }
     
-    // Return login status.
+    // All functions past this point return JSON, including for error cases.
     header('content-type: application/json; charset=UTF-8');
-    if (isset($_POST["check_login"])) {
-        $retVals = array();
-        $retVals["loggedIn"] = isset($_SESSION['admin_logged_in']);
-        $retVals["loginUrl"] = urlIfy("staffLogin.php");
-        echo json_encode($retVals);
-        exit();
-    }
-    
+
     // Get constraints for a drop-down.
     if (isset($_POST["get_legal_id_to_name"])) {
         $err = "";
         $db = new DbConn();
-        $db->addColVal($_POST["instance_id"], 'i');
+        if (isset($_POST["instance_id"])) {
+            // Singular version, for backwards support.
+            $db->addColVal($_POST["instance_id"], 'i');
+        } else if (isset($_POST["instance_ids"])) {
+            $instanceIds = $_POST["instance_ids"];
+            if (count($instanceIds) == 0) {
+                echo json_encode("none");
+                exit();
+            }
+            foreach ($instanceIds as $instanceId) {
+                $db->addColVal($instanceId, 'i');
+            }
+        } else {
+            echo json_encode("none");
+            exit();
+        }
         $result = $db->doQuery($_POST["sql"], $err);
         if ($result == FALSE) {
             header('HTTP/1.1 500 Internal Server Error');
@@ -44,6 +52,7 @@
         while ($row = $result->fetch_row()) {
             $retVal[$row[0]] = $row[1];
         }
+        asort($retVal); // Sort alpha by value.
         echo json_encode($retVal);
         exit();
     }

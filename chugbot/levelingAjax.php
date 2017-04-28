@@ -8,7 +8,8 @@
         exit();
     }
     
-    header("content-type:application/json");
+    // All functions past this point return JSON.
+    header("content-type:application/json; charset=UTF-8");
     
     function getPrefListsForCampersByGroup($edah_id, $block_id, &$camperId2Name,
                                            &$camperId2Edah, &$edahId2Name, &$camperId2Group2PrefList) {
@@ -99,6 +100,7 @@
     // We will delete and then insert into the matches table.
     if (isset($_POST["save_changes"])) {
         $edah_ids = $_POST["edah_ids"];
+        $group_ids = $_POST["group_ids"];
         $block_id = $_POST["block"];
         $assignments = $_POST["assignments"];
         
@@ -114,6 +116,11 @@
         
         // Step through the assignments for each group, and update the matches table.
         foreach ($assignments as $groupId => $chugId2MatchList) {
+            // Only save this group if it's in our list.
+            if (! in_array($groupId, $group_ids)) {
+                error_log("Not saving assignments for group ID $groupId");
+                continue;
+            }
             // Grab chug limits, and create Chug objects.
             $chugId2Chug = array();
             $db = new DbConn();
@@ -235,6 +242,7 @@
     // page.
     if (isset($_POST["matches_and_prefs"])) {
         $edah_ids = $_POST["edah_ids"];
+        $group_ids = $_POST["group_ids"];
         $block_id = $_POST["block_id"];
         
         $edah_names = "";
@@ -424,13 +432,26 @@
                                               $camperId2Edah, $edahId2Name, $camperId2Group2PrefList);
         }
 
-        // Loop through groups, fetching matches as we go.
+        // Loop through groups, fetching matches as we go.  Groups must be in
+        // our list of requested groups to level, if we have at least one.
         $db = new DbConn();
         foreach ($edah_ids as $edah_id) {
             $db->addColVal($edah_id, 'i');
         }
+        $groupInText = "";
+        $ct = 0;
+        foreach ($group_ids as $group_id) {
+            if ($ct++ === 0) {
+                $groupInText .= "AND g.group_id IN (";
+            } else {
+                $groupInText .= ",";
+            }
+            $groupInText .= "?";
+            $db->addColVal($group_id, 'i');
+        }
+        $groupInText .= ")";
         $sql = "SELECT g.group_id group_id, g.name name FROM groups g, edot_for_group e " .
-        "WHERE g.group_id = e.group_id AND $edahIdOrText";
+        "WHERE g.group_id = e.group_id AND $edahIdOrText $groupInText";
         $result = $db->doQuery($sql, $dbErr);
         if ($result == FALSE) {
             error_log("Unable to select groups: $err");
@@ -588,9 +609,9 @@
     if (isset($_POST["reassign"]) ||
         isset($_POST["get_current_stats"])) {        
         $edah_ids = $_POST["edah_ids"];
+        $group_ids = $_POST["group_ids"];
         $block_id = $_POST["block"];
         // Loop through groups.  Do each assignment (if requested).
-        $group_ids = getGroupsForEdahIds($edah_ids);
         foreach ($group_ids as $group_id) {
             if (isset($_POST["reassign"])) {
                 $err = "";
