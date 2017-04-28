@@ -52,6 +52,10 @@
         while ($row = $result->fetch_row()) {
             $retVal[$row[0]] = $row[1];
         }
+        if (empty($retVal)) {
+            echo json_encode("no-intersection");
+            exit();
+        }
         asort($retVal); // Sort alpha by value.
         echo json_encode($retVal);
         exit();

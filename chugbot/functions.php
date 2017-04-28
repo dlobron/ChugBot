@@ -379,6 +379,12 @@ function fillConstraintsCheckBox() {
                $(ourCheckBox).hide();
                $(ourDesc).hide();
                return;
+           } else if (data == "no-intersection") {
+               html = "<b>Error</b>: The selected edot cannot be leveled together, because they have no common groups. Please choose a different edot combination, or edit the groups to allow these edot to be leveled together.";
+               $(ourCheckBox).html(html);
+               $(ourCheckBox).show();
+               $(ourDesc).hide();
+               return;
            }
            $.each(data, function(itemId, itemName) {
                 html = "<input type=\"checkbox\" name=\"" + "${arrayName}" +

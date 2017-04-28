@@ -142,7 +142,7 @@ will be created and then displayed.</p>
 </div><p class="guidelines" id="guide_1"><small>Choose One or Two Edot.</small></p>
 </li>
 <li>
-<label class="description" for="group" id="group_desc">Group (check as many as desired)</label>
+<label class="description" for="group" id="group_desc">Group (choose one or more)</label>
 <div id="group_checkbox">
 <?php
     echo genConstrainedCheckBoxScript($groupId2Name, "group_ids",
