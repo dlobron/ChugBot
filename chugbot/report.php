@@ -215,9 +215,11 @@
         }
         
         public function needToStartNewTable($newTableColumnValues, $row) {
-            if (empty($newTableColumnValues)) {
-                // If the new-table values are not set, it's our first time
-                // through the loop, and we should always create a new table.
+            static $firstTime = TRUE;
+            if ($firstTime) {
+                // If it's our first time through the loop, then we should
+                // always create a new table.
+                $firstTime = FALSE;
                 return TRUE;
             }
             foreach ($newTableColumnValues as $col => $val) {
@@ -544,6 +546,7 @@
     $activeEdahIds = array();
     $activeBlockIds = array();
     $activeChugIds = array();
+    $activeSessionIds = array();
     $errors = array();
     $reportMethod = ReportTypes::None;
     $outputType = OutputTypes::Html;
@@ -561,10 +564,11 @@
         } else if (test_input($_GET["export"])) {
             $outputType = OutputTypes::Csv;
         }
-        // Grab active block and chug IDs.
+        // Populate active IDs, if any.
         populateActiveIds($activeBlockIds, "block_ids");
         populateActiveIds($activeChugIds, "chug_ids");
         populateActiveIds($activeEdahIds, "edah_ids");
+        populateActiveIds($activeSessionIds, "session_ids");
 
         // Report method is required for GET.  All other filter parameters are
         // optional (if we don't have a filter, we show everything).
@@ -596,6 +600,8 @@
                 $activeEdahIds[$cparts[1]] = 1;
             } else if ($lhs == "block") {
                 $activeBlockIds[$cparts[1]] = 1;
+            } else if ($lhs == "session") {
+                $activeSessionIds[$cparts[1]] = 1;
             } else if ($lhs == "print") {
                 $outputType = OutputTypes::Pdf;
             } else if ($lhs == "export") {
@@ -799,11 +805,9 @@ EOM;
         $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setId2Name($edahId2Name);
         
-        $sessionChooser = new FormItemDropDown("Session", FALSE, "session_id", $liNumCounter++);
+        $sessionChooser = new FormItemInstanceChooser("Session", FALSE, "session_ids", $liNumCounter++);
         $sessionChooser->setGuideText("Choose a session, or leave empty to see all sessions");
-        $sessionChooser->setInputClass("element select medium");
-        $sessionChooser->setInputSingular("session");
-        $sessionChooser->setColVal($sessionId);
+        $sessionChooser->setActiveIdHash($activeSessionIds);
         $sessionChooser->setId2Name($sessionId2Name);
         
         if ($outputType == OutputTypes::Html) {
@@ -866,18 +870,20 @@ EOM;
             "WHERE c.session_id = s.session_id AND c.edah_id = e.edah_id ";
             addWhereClause($sql, $db, $activeEdahIds,
                            "c.edah_id", TRUE);
-            if ($sessionId) {
-                $sql .= "AND c.session_id = ? ";
-                $db->addColVal($sessionId, 'i');
-            }
-            $sql .= "ORDER BY session, edah, name";
+            addWhereClause($sql, $db, $activeSessionIds,
+                           "c.session_id", TRUE);
+            addWhereClause($sql, $db, $activeSessionIds,
+                           "c.session_id", TRUE);
+            $sql .= "ORDER BY name, edah, session";
             $allCampersReport = new ZebraReport($db, $sql, $outputType);
             $allCampersReport->setReportTypeAndNameOfItem("All Campers", "Whole Camp");
-            $allCampersReport->addNewTableColumn("edah");
-            $allCampersReport->addNewTableColumn("session");
-            $allCampersReport->setCaption("LINK0 Campers in Session LINK1");
-            $allCampersReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
-            $allCampersReport->setIdCol2EditPage("session_id", "editSession.php", "session");
+            $allCampersReport->addIgnoreColumn("session_id");
+            $allCampersReport->addIgnoreColumn("edah_id");
+            //$allCampersReport->addNewTableColumn("edah");
+            //$allCampersReport->addNewTableColumn("session");
+            //$allCampersReport->setCaption("LINK0 Campers in Session LINK1");
+            //$allCampersReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+            //$allCampersReport->setIdCol2EditPage("session_id", "editSession.php", "session");
             $allCampersReport->renderTable();
         } else if ($reportMethod == ReportTypes::ByEdah) {
             // Per-edah report.
