@@ -214,6 +214,7 @@ function getAndDisplayCurrentMatches() {
 	var succeeded = false;
 	var camperId2Group2PrefList;
 	var chugId2Beta = {};
+	var chugId2FreeSpace = {};
 	var existingMatches = {};
 	var deDupMatrix = {};
 	var groupId2ChugId2MatchedCampers = {};
@@ -274,6 +275,7 @@ function getAndDisplayCurrentMatches() {
 			for (var i = 0; i < sortedChugIds.length; i++) {
 			    var chugId = sortedChugIds[i];
 			    var matchedCampers = chugId2MatchedCampers[chugId];
+			    var curCount = matchedCampers.length;
 			    // Add a chug holder, and put camper holders inside it.
 			    var chugName = chugId2Beta[chugId]["name"];
 			    var chugMin = chugId2Beta[chugId]["min_size"];
@@ -287,14 +289,17 @@ function getAndDisplayCurrentMatches() {
 				chugMax === null ||
 				(typeof(chugMax) === 'undefined')) {
 				chugMax = "no limit";
+				chugId2FreeSpace[chugId] = "unlimited";
 			    }
 			    if (chugMin == "-1" ||
 				chugMin == -1 ||
 				chugMin === null ||
 				(typeof(chugMin) === 'undefined')) {
 				chugMin = "no minimum";
+			    } else if ((! (chugId in chugId2FreeSpace)) &&
+				       chugMax > curCount) {
+				chugId2FreeSpace[chugId] = chugMax - curCount;
 			    }
-			    var curCount = matchedCampers.length;
 			    var colorClass = getColorForCount(curCount, chugMin, chugMax);
 			    html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
 			    if (chugName == "Not Assigned Yet") {
@@ -356,15 +361,22 @@ function getAndDisplayCurrentMatches() {
 		    $.each(edahId2Name, function(edahId, edahName) {
 			    edahQueryString += "&edah_ids%5B%5D=" + edahId;
 			});
-		    var reportLink = "<a class=\"btn btn-primary btn-med btn-with-padding\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + "&submit=Display\">Report</a>";
+		    var groupQueryString = "";
+		    $.each(groupId2Name, function(groupId, groupName) {
+                            groupQueryString += "&group_ids%5B%5D=" + groupId;
+                        });
+		    var reportLink = "<a class=\"btn btn-primary btn-med btn-with-padding\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
 		    var freeHtml = "<h4>Chugim with Free Space:</h4>";
 		    var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2Beta);
 		    for (var i = 0; i < sortedChugIds.length; i++) {
 			var betaHash = chugId2Beta[sortedChugIds[i]];
-			var freeSpace = betaHash["free"];
 			var name = betaHash["name"];
 			var groupName = betaHash["group_name"];
-			if (freeSpace) {
+			var freeSpace = undefined;
+			if (sortedChugIds[i] in chugId2FreeSpace) {
+			    freeSpace = chugId2FreeSpace[sortedChugIds[i]];
+			}
+			if (freeSpace !== undefined) {
 			    var sp = "spaces";
 			    var endTag = " left<br>";
 			    if (freeSpace == 1) {

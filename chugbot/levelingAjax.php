@@ -383,42 +383,6 @@
             }
             array_push($chugId2Beta[$chugId]["allowed_edot"], $row["edah_id"]);
         }
-        
-        // Check the matches table and compute how much space is left in each
-        // chug for this block/edot.  For chugim with space, record it in $chugId2Beta.
-        $db = new DbConn();
-        $db->addColVal($block_id, 'i');
-        $sql = "SELECT a.chug_id chug_id, e.edah_id edah_id, a.max_size max_size, sum(a.matched) num_matched " .
-        "FROM (SELECT c.chug_id, c.max_size max_size, CASE WHEN m.matched_chug_id IS NULL THEN 0 ELSE 1 END matched " .
-        "FROM chugim c LEFT OUTER JOIN (SELECT i.chug_id matched_chug_id FROM chug_instances i, matches m " .
-        "WHERE i.chug_instance_id = m.chug_instance_id AND i.block_id = ?) m " .
-        "ON c.chug_id = m.matched_chug_id) a, edot_for_chug e " .
-        "WHERE a.chug_id = e.chug_id AND ";
-        foreach ($edah_ids as $edah_id) {
-            $db->addColVal($edah_id, 'i');
-        }
-        $sql .= $edahIdOrText;
-        $sql .= " GROUP BY chug_id";
-        $result = $db->doQuery($sql, $err);
-        if ($result == FALSE) {
-            // For now, just log a warning, since this is only used for informational
-            // display.
-            error_log("WARNING: Failed to select current chug-full status: $err");
-        } else {
-            while ($row = $result->fetch_assoc()) {
-                $idVal = intval($row["chug_id"]);
-                if (! array_key_exists($idVal, $chugId2Beta)) {
-                    continue;
-                }
-                $assigned = intval($row["num_matched"]);
-                $capacity = intval($row["max_size"]);
-                if ($capacity == 0 || $capacity == MAX_SIZE_NUM) {
-                    $chugId2Beta[$idVal]["free"] = "unlimited";
-                } else if ($assigned < $capacity) {
-                    $chugId2Beta[$idVal]["free"] = $capacity - $assigned;
-                }
-            }
-        }
 
         // Next, map camper ID to an ordered list of preferred chugim, by
         // group ID.  Also, map camper ID to name and edah, and map edah ID

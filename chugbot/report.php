@@ -547,6 +547,7 @@
     $activeBlockIds = array();
     $activeChugIds = array();
     $activeSessionIds = array();
+    $activeGroupIds = array();
     $errors = array();
     $reportMethod = ReportTypes::None;
     $outputType = OutputTypes::Html;
@@ -569,6 +570,7 @@
         populateActiveIds($activeChugIds, "chug_ids");
         populateActiveIds($activeEdahIds, "edah_ids");
         populateActiveIds($activeSessionIds, "session_ids");
+        populateActiveIds($activeGroupIds, "group_ids");
 
         // Report method is required for GET.  All other filter parameters are
         // optional (if we don't have a filter, we show everything).
@@ -779,11 +781,9 @@ EOM;
         $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setId2Name($edahId2Name);
         
-        $groupChooser = new FormItemDropDown("Group", FALSE, "group_id", $liNumCounter++);
-        $groupChooser->setGuideText("Choose a chug group, or leave empty to see all groups.");
-        $groupChooser->setInputClass("element select medium");
-        $groupChooser->setInputSingular("group");
-        $groupChooser->setColVal($groupId);
+        $groupChooser = new FormItemInstanceChooser("Groups", FALSE, "group_ids", $liNumCounter++);
+        $groupChooser->setGuideText("Choose on or more chug groups, or leave empty to see all groups.");
+        $groupChooser->setActiveIdHash($activeGroupIds);
         $groupChooser->setId2Name($groupId2Name);
         
         if ($outputType == OutputTypes::Html) {
@@ -1018,15 +1018,8 @@ EOM;
             $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
             $haveWhere = addWhereClause($sql, $db, $activeEdahIds,
                                         "c.edah_id", $haveWhere);
-            if ($groupId) {
-                if (! $haveWhere) {
-                    $sql .= "WHERE g.group_id = ? ";
-                    $haveWhere = TRUE;
-                } else {
-                    $sql .= "AND g.group_id = ? ";
-                }
-                $db->addColVal($groupId, 'i');
-            }
+            $haveWhere = addWhereClause($sql, $db, $activeGroupIds,
+                                        "g.group_id", $haveWhere);
             $sql .= "ORDER BY edah_sort_order, edah, block, name, group_name";
             $camperReport = new ZebraReport($db, $sql, $outputType);
             $camperReport->setIdNameMap($chugId2Name, " -");
@@ -1078,54 +1071,29 @@ EOM;
         } else if ($reportMethod == ReportTypes::ChugimWithSpace) {
             // Display chugim with space, filtering by edah, block, and
             // group, as requested.
-            $blockInText = "";
-            if (count($activeBlockIds) > 0) {
-                $blockInText = "AND b.block_id IN (";
-                $i = 0;
-                foreach ($activeBlockIds as $bid => $val) {
-                    if ($i == 0) {
-                        $blockInText .= $bid;
-                    } else {
-                        $blockInText .= ", " . $bid;
-                    }
-                    $i++;
-                }
-                $blockInText .= ")";
-            }
-            $edotForChugText = "";
-            if (! empty($activeEdahIds)) {
-                $edotForChugText = "edot_for_chug ec,";
-            }
-            $sql = "SELECT a.chug_id chug_id, CONCAT(a.chug_name, ' ', a.chug_group_name) AS chug_name, a.block_name block_name, " .
-            "a.max_size max_campers, sum(a.matched) num_campers_assigned, " .
-            "CASE WHEN a.max_size = 0 OR a.max_size = " . MAX_SIZE_NUM . " THEN \"No limit\" ELSE a.max_size END num_campers_allowed " .
-            "FROM (SELECT c.chug_id chug_id, c.name chug_name, g.name chug_group_name, m.block_id block_id, b.name block_name, " .
-            "c.max_size max_size, CASE WHEN m.match_id IS NULL THEN 0 ELSE 1 END matched " .
-            "      FROM $edotForChugText groups g, blocks b, chugim c " .
-            "      LEFT OUTER JOIN " .
-            "      (SELECT i.chug_id matched_chug_id, i.block_id block_id, m.match_id match_id " .
-            "       FROM chug_instances i " .
-            "       LEFT OUTER JOIN matches m " .
-            "       ON i.chug_instance_id = m.chug_instance_id) m " .
-            "      ON c.chug_id = m.matched_chug_id " .
-            "      WHERE c.group_id = g.group_id " .
-            "      AND b.block_id = m.block_id $blockInText " .
-            "      AND m.block_id IS NOT NULL ";
-            if (! empty($activeEdahIds)) {
-                $sql .= "AND ec.chug_id = c.chug_id ";
-                addWhereClause($sql, $db, $activeEdahIds, "ec.edah_id", TRUE);
-            }
-            if ($groupId) {
-                $sql .= "AND c.group_id = ? ";
-                $db->addColVal($groupId, 'i');
-            }
-            $sql .= ") a " .
-            "GROUP BY chug_id, block_id " .
-            "HAVING (num_campers_assigned < num_campers_allowed OR num_campers_allowed = \"No limit\") " .
-            "ORDER BY a.chug_group_name, a.chug_name, " .
-            "CASE WHEN (block_name LIKE '%July%' OR block_name LIKE '%july%') THEN CONCAT('a', block_name) " .
-            "WHEN (block_name LIKE '%Aug%' OR block_name LIKE '%aug%') THEN CONCAT('b', block_name) ELSE block_name END";
-            $chugimWithSpaceReport = new ZebraReport($db, $sql, $outputType);
+
+            // First, build a sub-query that computes the assigned count
+            // for each chug.
+            $inner = "SELECT c.chug_id chug_id, b.name block_name, count(*) match_count FROM matches m, chugim c, chug_instances i, blocks b, campers ca " .
+            "WHERE m.chug_instance_id = i.chug_instance_id AND i.chug_id = c.chug_id AND i.block_id = b.block_id AND ca.camper_id = m.camper_id ";
+            addWhereClause($inner, $db, $activeGroupIds,
+                           "c.group_id", TRUE);
+            addWhereClause($inner, $db, $activeBlockIds,
+                           "b.block_id", TRUE);
+            addWhereClause($inner, $db, $activeEdahIds,
+                           "ca.edah_id", TRUE);
+            $inner .= " GROUP BY 1";
+
+            // Now, build and fun the full query.
+            $fullSql = "SELECT c.name chug_id, CONCAT(c.name, ' (', g.name, ')') chug_name, " .
+            "a.match_count num_campers_assigned, a.block_name block_name, " .
+            "CASE WHEN c.max_size = 0 OR c.max_size = " . MAX_SIZE_NUM . " THEN \"No limit\" ELSE c.max_size END num_campers_allowed " .
+            "FROM chugim c, groups g, (";
+            $fullSql .= $inner;
+            $fullSql .= ") a " .
+            "WHERE c.chug_id = a.chug_id AND c.group_id = g.group_id AND " .
+            "(a.match_count < c.max_size OR c.max_size = 0 OR c.max_size = " . MAX_SIZE_NUM . ")";
+            $chugimWithSpaceReport = new ZebraReport($db, $fullSql, $outputType);
             $chugimWithSpaceReport->addNewTableColumn("edah");
             $caption = "Chugim With Free Space";
             if (! empty($edahText)) {
