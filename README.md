@@ -26,7 +26,7 @@ The application assumes that you have PHP installed in your webserver, and that 
 
 That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: they use a plain text token for access.  If campers need to modify their choices after entering them, they identify themselves with their email address.  
 
-**Important**: this design obviously favors ease of use over security.  It's trivial for one camper to impersonate another, or for someone to view or modify any camper's choices or registration data.  If your data is considered sensitive, then additional security **must** be added.  The admin staff section is password-protected, but even this depends on the security of your hosting provider, e.g., whether TLS encryption is used across the site.  I'm not a security professional, so if you have security concerns, please consult a qualified person.
+**Important**: this design obviously favors ease of use over security.  It's trivial for one camper to impersonate another, or for someone to view or modify any camper's choices or registration data.  If your data is considered sensitive, then additional security **must** be added.  The admin staff section is password-protected, but even this depends on the security of your hosting provider, e.g., whether TLS encryption is used across the site.  I'm not a security professional, so if you have major security concerns, please consult a qualified person.
 
 The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which means "circle" or "camp activity group." Some of the terms in the application are also transliterated Hebrew (our kids attend a Jewish summer camp).  Feel free to change these for your camp, or keep them as-is.  A quick glossary of terms:
 
@@ -36,7 +36,7 @@ The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which m
 - session: A session for which campers can register, such as July or August.
 - block: A time block within a session, such as July 1 or August 2.  This is the unit within which the bot does camper/chug assignment.
 
-This project is affectionately dedicated to Danny Lewin (1970-2001), co-founder of [Akamai Technologies](http://www.akamai.com), whose algorithms were an inspiration for this work (the code here only uses the publicly-available Gale-Shapely algorithm).
+This project is dedicated to Danny Lewin z"l (1970-2001), [co-founder](https://www.akamai.com/us/en/about/leadership/executive-team/akamai-remembers-danny-lewin.jsp) of Akamai Technologies, whose algorithms were the inspiration for this work (this code uses only the publicly-available Gale-Shapely algorithm).
 
 My daughter drew a picture of what the bot might look like in real life.  He's pretty cool:
 
