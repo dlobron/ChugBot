@@ -502,6 +502,22 @@
         return ($haveWhereAlready || $haveWhere);
     }
     
+    function addActiveItemsToCaption(&$caption, $activeIdHash, $itemPluralName, $id2Name) {
+        if (! empty($activeIdHash)) {
+            $ucName = ucfirst($itemPluralName);
+            $caption .= "<br><b>$ucName</b>: ";
+            $ct = 0;
+            foreach ($activeIdHash as $itemId => $active) {
+                $itemName = $id2Name[$itemId];
+                if ($ct++ == 0) {
+                    $caption .= $itemName;
+                } else {
+                    $caption .= ", $itemName";
+                }
+            }
+        }
+    }
+    
     abstract class ReportTypes
     {
         const None = 0;
@@ -513,6 +529,7 @@
         const AllRegisteredCampers = 6;
         const ChugimWithSpace = 7;
         const CamperHappiness = 8;
+        const RegisteredMissingPrefs = 9;
     }
 
     $dbErr = "";
@@ -530,7 +547,8 @@
                                  ReportTypes::CamperChoices => "Camper Prefs and Assignment",
                                  ReportTypes::AllRegisteredCampers => "All Campers Who Have Submitted Preferences",
                                  ReportTypes::ChugimWithSpace => "Chugim With Free Space",
-                                 ReportTypes::CamperHappiness => "Camper Happiness"
+                                 ReportTypes::CamperHappiness => "Camper Happiness",
+                                 ReportTypes::RegisteredMissingPrefs => "Campers Missing Preferences for Time Block(s)"
                                 );
     
     // Check for archived databases.
@@ -638,13 +656,19 @@
         array_push($errors, errorString("Please choose at least one chug for this report"));
     }
     
+    // Campers missing data for a time block requires at least one time block.
+    if (ReportTypes::RegisteredMissingPrefs &&
+        $doReport &&
+        count($activeBlockIds) == 0) {
+        array_push($errors, errorString("Please choose at least time block from which we'll report preferences missing"));
+    }
+    
     // Display errors and exit, if needed.
     $errText = genFatalErrorReport($errors);
     if (! is_null($errText)) {
         echo $errText;
         exit(); 
     }
-    
     
     // Fill the ID -> name hashes that will populate the drop-down
     // menus.
@@ -687,7 +711,7 @@ EOM;
     
     // Always show the report method drop-down and archive year menu (if any).
     $reportMethodDropDown = new FormItemDropDown("Report Type", TRUE, "report_method", 0);
-    $reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.  Chugim With Free Space shows chugim with space remaining.");
+    $reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.  Chugim With Free Space shows chugim with space remaining.  Campers missing preferences shows campers who are in the system, but who have not entered preferences for a particular time block.");
     $reportMethodDropDown->setPlaceHolder("Choose Type");
     $reportMethodDropDown->setId2Name($reportMethodId2Name);
     $reportMethodDropDown->setColVal($reportMethod);
@@ -729,7 +753,13 @@ EOM;
     $liNumCounter = 0;
     if ($reportMethod &&
         $reportMethod != ReportTypes::AllRegisteredCampers) {
-        $blockChooser = new FormItemInstanceChooser("Time Blocks", FALSE, "block_ids", $liNumCounter++);
+        $filterTitle = "Time Blocks";
+        $required = FALSE;
+        if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
+            $filterTitle = "Time Blocks Missing Preferences";
+            $required = TRUE;
+        }
+        $blockChooser = new FormItemInstanceChooser($filterTitle, $required, "block_ids", $liNumCounter++);
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setActiveIdHash($activeBlockIds);
         $blockChooser->setGuideText("Step 2: Choose the time block(s) you wish to display.  If you do not choose any, all blocks will be shown.");
@@ -772,23 +802,35 @@ EOM;
             echo $chugChooser->renderHtml();
         }
     } else if ($reportMethod == ReportTypes::CamperChoices ||
-               $reportMethod == ReportTypes::ChugimWithSpace) {
-        // The camper choices report can be filtered by edah, group, and
-        // block, e.g., Bogrim, Chug Aleph, weeks 1+2.
-        // The same applies to chugim with space.
-        $edahChooser = new FormItemInstanceChooser("Edot", FALSE, "edah_ids", $liNumCounter++);
+               $reportMethod == ReportTypes::ChugimWithSpace ||
+               $reportMethod == ReportTypes::RegisteredMissingPrefs) {
+        // The camper choices report can be filtered by group and
+        // block.  The same applies to chugim with space.  Missing prefs is similar,
+        // except it filters by session and not by group.
+        $edahChooser = new FormItemInstanceChooser("Show Campers in these Edot", FALSE, "edah_ids", $liNumCounter++);
         $edahChooser->setGuideText("Step 3: Choose one or more edot, or leave empty to see all edot.");
         $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setId2Name($edahId2Name);
         
-        $groupChooser = new FormItemInstanceChooser("Groups", FALSE, "group_ids", $liNumCounter++);
-        $groupChooser->setGuideText("Choose on or more chug groups, or leave empty to see all groups.");
-        $groupChooser->setActiveIdHash($activeGroupIds);
-        $groupChooser->setId2Name($groupId2Name);
+        if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
+            $sessionChooser = new FormItemInstanceChooser("Show Campers Registered for these Sessions", FALSE, "session_ids", $liNumCounter++);
+            $sessionChooser->setGuideText("Choose a session, or leave empty to see all sessions");
+            $sessionChooser->setActiveIdHash($activeSessionIds);
+            $sessionChooser->setId2Name($sessionId2Name);
+        } else {
+            $groupChooser = new FormItemInstanceChooser("Groups", FALSE, "group_ids", $liNumCounter++);
+            $groupChooser->setGuideText("Choose on or more chug groups, or leave empty to see all groups.");
+            $groupChooser->setActiveIdHash($activeGroupIds);
+            $groupChooser->setId2Name($groupId2Name);
+        }
         
         if ($outputType == OutputTypes::Html) {
             echo $edahChooser->renderHtml();
-            echo $groupChooser->renderHtml();
+            if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
+                echo $sessionChooser->renderHtml();
+            } else {
+                echo $groupChooser->renderHtml();
+            }
         }
     } else if ($reportMethod == ReportTypes::Director) {
         // The director report shows all options, so there are no filter fields
@@ -800,12 +842,12 @@ EOM;
         // For the AllRegisteredCampers report, the step level
         // here is 2, because we did not display a block filter.
         $step = ($reportMethod == ReportTypes::AllRegisteredCampers) ? 2 : 3;
-        $edahChooser = new FormItemInstanceChooser("Edot", FALSE, "edah_ids", $liNumCounter++);
+        $edahChooser = new FormItemInstanceChooser("Show Campers in these Edot", FALSE, "edah_ids", $liNumCounter++);
         $edahChooser->setGuideText("Step $step: Choose one or more edot, or leave empty to see all edot.");
         $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setId2Name($edahId2Name);
         
-        $sessionChooser = new FormItemInstanceChooser("Session", FALSE, "session_ids", $liNumCounter++);
+        $sessionChooser = new FormItemInstanceChooser("Show Campers Registered for these Sessions", FALSE, "session_ids", $liNumCounter++);
         $sessionChooser->setGuideText("Choose a session, or leave empty to see all sessions");
         $sessionChooser->setActiveIdHash($activeSessionIds);
         $sessionChooser->setId2Name($sessionId2Name);
@@ -1200,6 +1242,33 @@ EOM;
             $camperHappinessReport->addIgnoreColumn("camper_id");
             $camperHappinessReport->addIgnoreColumn("block_id");
             $camperHappinessReport->renderTable();
+        } else if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
+            $sql = "SELECT DISTINCT a.name name, a.edah edah, a.session session FROM " .
+            "(SELECT CONCAT(c.last, ', ', c.first) AS name, e.name edah, s.name session, p.preference_id pref_id " .
+            "FROM edot e, sessions s, campers c LEFT OUTER JOIN " .
+            "(SELECT * FROM preferences ";
+            // Optionally filter prefs by block.
+            $haveWhere = addWhereClause($sql, $db, $activeBlockIds, "block_id");
+            $sql .= ") p ON p.camper_id = c.camper_id ";
+            // Optionally filter campers by edah and session.
+            $haveWhere = FALSE;
+            $haveWhere = addWhereClause($sql, $db, $activeEdahIds, "c.edah_id");
+            $haveWhere = addWhereClause($sql, $db, $activeSessionIds, "c.session_id", $haveWhere);
+            if ($haveWhere) {
+                $sql .= " AND ";
+            } else {
+                $sql .= " WHERE ";
+            }
+            $sql .= "c.edah_id = e.edah_id AND c.session_id = s.session_id) a ";
+            $sql .= "WHERE a.pref_id IS NULL ORDER BY edah, session, name";
+
+            $campersMissingPrefsReport = new ZebraReport($db, $sql, $outputType);
+            $caption = "Campers Missing Preferences";
+            addActiveItemsToCaption($caption, $activeBlockIds, "blocks", $blockId2Name);
+            $campersMissingPrefsReport->setCaption($caption);
+            //$campersMissingPrefsReport->addNewTableColumn("edah");
+            //$campersMissingPrefsReport->addNewTableColumn("session");
+            $campersMissingPrefsReport->renderTable();
         }
     }
     
