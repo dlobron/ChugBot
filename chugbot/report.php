@@ -698,7 +698,7 @@ EOM;
     
     $archiveYearDropDown = NULL;
     if (! empty($availableArchiveYears)) {
-        $defaultYear = yearOfUpcomingSummer();
+        $defaultYear = yearOfCurrentSummer();
         $archiveYearDropDown = new FormItemDropDown("Year", FALSE, "archive_year", 1);
         $archiveYearDropDown->setGuideText("Optional: To view archived data from a previous summer, choose the year here. To see current data, leave this option set to $defaultYear.");
         $archiveYearDropDown->setPlaceHolder("Current Year");

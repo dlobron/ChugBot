@@ -49,12 +49,12 @@
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
-<p>If this is your first time picking chugim for this summer, click First Time for <?php echo yearOfUpcomingSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
+<p>If this is your first time picking chugim for this summer, click First Time for <?php echo yearOfCurrentSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
 
 <div class="panel panel-default">
 <div class="panel-heading">
   <h4 class="panel-title">
-     <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm1">First Time for <?php echo yearOfUpcomingSummer(); ?></a>
+     <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm1">First Time for <?php echo yearOfCurrentSummer(); ?></a>
   </h4>
 </div>
 <div id="choiceForm1" class="panel-collapse collapse ">

@@ -634,6 +634,17 @@ EOM;
         }
     }
     
+    function yearOfCurrentSummer() {
+        $month = date('n'); // Month, 1-12
+        if ($month >= 9) {
+            // Sep or later: return next year
+            return strval((intval(date('Y')) + 1));
+        } else {
+            // Jan-Jun: return current year.
+            return date('Y');
+        }
+    }
+    
     function genPassToEditPageForm($action, $paramHash) {
         $retVal = "<form action=\"$action\" method=\"POST\" name=\"passToEditPageForm\">";
         foreach ($paramHash as $name => $value) {
