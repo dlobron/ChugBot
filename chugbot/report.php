@@ -657,7 +657,7 @@
     }
     
     // Campers missing data for a time block requires at least one time block.
-    if (ReportTypes::RegisteredMissingPrefs &&
+    if ($reportMethod == ReportTypes::RegisteredMissingPrefs &&
         $doReport &&
         empty($blockId)) {
         array_push($errors, errorString("Please choose a time block from which we'll report preferences missing"));
