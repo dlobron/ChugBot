@@ -659,8 +659,8 @@
     // Campers missing data for a time block requires at least one time block.
     if (ReportTypes::RegisteredMissingPrefs &&
         $doReport &&
-        count($activeBlockIds) == 0) {
-        array_push($errors, errorString("Please choose at least time block from which we'll report preferences missing"));
+        empty($blockId)) {
+        array_push($errors, errorString("Please choose a time block from which we'll report preferences missing"));
     }
     
     // Display errors and exit, if needed.
@@ -753,16 +753,21 @@ EOM;
     $liNumCounter = 0;
     if ($reportMethod &&
         $reportMethod != ReportTypes::AllRegisteredCampers) {
-        $filterTitle = "Time Blocks";
-        $required = FALSE;
         if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
-            $filterTitle = "Time Blocks Missing Preferences";
-            $required = TRUE;
+            // For missing prefs, the user must select exactly one time block (to avoid confusion by the user).
+            $blockChooser = new FormItemDropDown("Time Blocks Missing Preferences", TRUE, "block_id", $liNumCounter++);
+            $blockChooser->setGuideText("Step 2: Select one time block. The report will show campers who are missing preferences for this block.");
+            $blockChooser->setPlaceHolder("Choose a Time Block");
+            $blockChooser->setInputClass("element select medium");
+            $blockChooser->setId2Name($blockId2Name);
+            $blockChooser->setColVal($blockId);
+            $blockChooser->setInputSingular("block");
+        } else {
+            $blockChooser = new FormItemInstanceChooser("Time Blocks", FALSE, "block_ids", $liNumCounter++);
+            $blockChooser->setId2Name($blockId2Name);
+            $blockChooser->setActiveIdHash($activeBlockIds);
+            $blockChooser->setGuideText("Step 2: Choose the time block(s) you wish to display.  If you do not choose any, all blocks will be shown.");
         }
-        $blockChooser = new FormItemInstanceChooser($filterTitle, $required, "block_ids", $liNumCounter++);
-        $blockChooser->setId2Name($blockId2Name);
-        $blockChooser->setActiveIdHash($activeBlockIds);
-        $blockChooser->setGuideText("Step 2: Choose the time block(s) you wish to display.  If you do not choose any, all blocks will be shown.");
         if ($outputType == OutputTypes::Html) {
             echo $blockChooser->renderHtml();
         }
@@ -1248,7 +1253,9 @@ EOM;
             "FROM edot e, sessions s, campers c LEFT OUTER JOIN " .
             "(SELECT * FROM preferences ";
             // Optionally filter prefs by block.
-            $haveWhere = addWhereClause($sql, $db, $activeBlockIds, "block_id");
+            if (! empty($blockId)) {
+                $sql .= " WHERE block_id = $blockId";
+            }
             $sql .= ") p ON p.camper_id = c.camper_id ";
             // Optionally filter campers by edah and session.
             $haveWhere = FALSE;
@@ -1263,8 +1270,10 @@ EOM;
             $sql .= "WHERE a.pref_id IS NULL ORDER BY edah, session, name";
 
             $campersMissingPrefsReport = new ZebraReport($db, $sql, $outputType);
-            $caption = "Campers Missing Preferences";
-            addActiveItemsToCaption($caption, $activeBlockIds, "blocks", $blockId2Name);
+            $caption = "Campers Missing Preferences for ";
+            $caption .= $blockId2Name[$blockId];
+            addActiveItemsToCaption($caption, $activeEdahIds, "edot", $edahId2Name);
+            addActiveItemsToCaption($caption, $activeSessionIds, "sessions", $sessionId2Name);
             $campersMissingPrefsReport->setCaption($caption);
             //$campersMissingPrefsReport->addNewTableColumn("edah");
             //$campersMissingPrefsReport->addNewTableColumn("session");
