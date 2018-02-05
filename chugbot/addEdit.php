@@ -110,8 +110,36 @@
         
         public function renderForm() {
             camperBounceToLogin(); // Forms require at least camper-level access.
-            
             echo headerText($this->title);
+            
+            // If the current submitted data is a duplicate, display an overlay
+            // that offers options.
+            if ($this->duplicateCamperDesc !== NULL) {
+                $html = "";
+                $html .= "<div id=\"dupMsgBox\" class=\"overlay\">";
+                $html .= "<a href=\"javascript:void(0)\" class=\"closebtn\" onclick=\"closeNav()\">&times;</a>";
+                $html .= "<div id=\"dupMsgContents\">";
+                // Display a message that we detected a duplicate, and offer
+                // two buttons.  One directs to the edit page, with the currently
+                // selected camper activated.  The other redirects to the add-camper
+                // page, with the fields cleared.
+                $html .= "<h2><i>Oops!</i><h2>";
+                $html .= "<h3>" . $this->duplicateCamperDesc . " is already in the database for Kayitz " . yearOfCurrentSummer() . "!</h3>";
+                $html .= "<ul><li><b>If you are " . $this->col2Val["first"] . "</b>, click <a href=";
+                $link = urlIfy("preEditCamper.php");
+                $link .= "?first=" . $this->col2Val["first"];
+                $link .= "&last=" . $this->col2Val["last"];
+                $link .= "&edah_id=" . $this->col2Val["edah_id"];
+                $html .= $link;
+                $html .= ">here</a> to add or update your personal info or chugim.</li>";
+                $html .= "<li><b>Otherwise</b>, <a href=\"javascript:void(0)\" onclick=\"closeNav()\">close this window</a> and try registering again with a different name (you can use a nickname).</li></ul>";
+                $html .= "</div></div>";
+                $html .= "<script>";
+                $html .= "function closeNav() { document.getElementById(\"dupMsgBox\").style.width = \"0%\"; }";
+                $html .= "</script>";
+                echo $html;
+            }
+            
             $allErrors = array();
             foreach (array_merge(array($this->dbErr), array_values($this->colName2Error)) as $err) {
                 if (! $err) {
@@ -119,7 +147,7 @@
                 }
                 array_push($allErrors, $err);
             }
-            $errText = genFatalErrorReport($allErrors, TRUE);
+            $errText = genFatalErrorReport($allErrors, TRUE, NULL, TRUE);
             if (! is_null($errText)) {
                 echo $errText;
                 //exit(); // Keep rendering, so the user can fix the data.
@@ -772,6 +800,8 @@ EOM;
             $editPage = preg_replace('/^add/', "edit", $thisPage); // e.g., "addGroup.php" -> "editGroup.php"
             echo(genPassToEditPageForm($editPage, $paramHash));
         }
+        
+        private $duplicateCamperDesc = NULL;
     }
     
     // Adding a camper is very different from other add actions, so we define
@@ -819,6 +849,28 @@ EOM;
             if (! empty($this->colName2Error)) {
                 // If we hit any errors, stop here and display, so the user
                 // can correct them.
+                return;
+            }
+            
+            // Check to see if this camper registration is a duplicate, which
+            // we define as having the same first and last name, and edah.  If
+            // a dup is detected, display an overlay that lets the user either
+            // continue to the edit-camper page, with the ID set to the existing
+            // camper ID, or else lets them start the add form again, with the
+            // fields cleared.
+            $db = new DbConn();
+            $db->isSelect = TRUE;
+            $db->addColVal($this->col2Val["first"], 's');
+            $db->addColVal($this->col2Val["last"], 's');
+            $db->addColVal($this->col2Val["edah_id"], 'i');
+            $sql = "SELECT c.camper_id camper_id, e.name edah_name FROM campers c, edot e WHERE c.edah_id = e.edah_id AND " .
+            "c.first = ? AND c.last = ? AND c.edah_id = ?";
+            $result = $db->doQuery($sql, $err);
+            if (($result !== FALSE) && ($result->num_rows > 0)) {
+                // If the query succeeded and returned one or more rows, then
+                // we've found a duplicate.
+                $row = mysqli_fetch_assoc($result);
+                $this->duplicateCamperDesc = $this->col2Val["first"] . " " . $this->col2Val["last"] . " in " . $row["edah_name"];
                 return;
             }
             
