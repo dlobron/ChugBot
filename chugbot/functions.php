@@ -174,7 +174,7 @@
     }
     
     function genFatalErrorReport($errorList, $fixOnSamePage = FALSE,
-                                 $backUrl = NULL) {
+                                 $backUrl = NULL, $closePage = TRUE) {
         $errorHtml = "";
         $ec = 0;
         foreach ($errorList as $errorText) {
@@ -211,8 +211,10 @@ EOM;
         } else {
             $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div>";
         }
-        $retVal = $retVal . footerText();
-        $retVal = $retVal . "</body></html>";
+        if ($closePage) {
+            $retVal = $retVal . footerText();
+            $retVal = $retVal . "</body></html>";
+        }
         
         return $retVal;
     }
