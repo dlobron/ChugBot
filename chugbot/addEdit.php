@@ -408,6 +408,7 @@ EOM;
         
         protected $infoMessage = "";
         protected $alternateResultString = NULL;
+        protected $duplicateCamperDesc = NULL;
         
         protected $addEditChugPage = 0;
     }
@@ -800,8 +801,6 @@ EOM;
             $editPage = preg_replace('/^add/', "edit", $thisPage); // e.g., "addGroup.php" -> "editGroup.php"
             echo(genPassToEditPageForm($editPage, $paramHash));
         }
-        
-        private $duplicateCamperDesc = NULL;
     }
     
     // Adding a camper is very different from other add actions, so we define
