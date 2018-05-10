@@ -481,24 +481,12 @@ EOM;
             // stored as a session variable.
             $_SESSION[$this->idCol] = $idVal;
             
-            if ($this->fromHomePage) {
-                // If we're coming from a home page, we need to get our
-                // column values from the DB.
-                $db = new DbConn();
-                $db->addSelectColumn("*");
-                $db->addWhereColumn($this->idCol, $idVal, 'i');
-                $result = $db->simpleSelectFromTable($this->mainTable, $this->dbErr);
-                if ($result == FALSE) {
-                    error_log("Failed to get column values from DB: $this->dbErr");
-                    return;
-                }
-                $this->col2Val = $result->fetch_array(MYSQLI_ASSOC);
-
-                // Populate active instance IDs and edah filter, if configured.
-                $this->updateInstances($idVal, $this->instanceActiveIdHash);
-                $this->updateInstances($idVal, $this->activeEdotHash, TRUE);
-                
-                if ($this->addEditChugPage) {
+            // For the add-edit page, get de-dup data.  If it's in the POST
+            // data, use that.  Otherwise, pull from the DB.
+            if ($this->addEditChugPage) {
+                if (array_key_exists("dedup_chugim", $_POST)) {
+                    $this->displayListSelectedIds = $_POST["dedup_chugim"];
+                } else {
                     $seen = array();
                     $db = new DbConn();
                     $db->addSelectColumn("left_chug_id");
@@ -527,14 +515,28 @@ EOM;
                             array_push($this->displayListSelectedIds, $row[0]);
                             $seen[$row[0]] = 1;
                         }
-                    }                                        
+                    }
                 }
+            }
+            if ($this->fromHomePage) {
+                // If we're coming from a home page, we need to get our
+                // column values from the DB.
+                $db = new DbConn();
+                $db->addSelectColumn("*");
+                $db->addWhereColumn($this->idCol, $idVal, 'i');
+                $result = $db->simpleSelectFromTable($this->mainTable, $this->dbErr);
+                if ($result == FALSE) {
+                    error_log("Failed to get column values from DB: $this->dbErr");
+                    return;
+                }
+                $this->col2Val = $result->fetch_array(MYSQLI_ASSOC);
+
+                // Populate active instance IDs and edah filter, if configured.
+                $this->updateInstances($idVal, $this->instanceActiveIdHash);
+                $this->updateInstances($idVal, $this->activeEdotHash, TRUE);
             } else {
                 // From other sources (our add page or this page), column values should
                 // be in the form data.
-                if ($this->addEditChugPage) {
-                    $this->displayListSelectedIds = $_POST["dedup_chugim"];
-                }
                 foreach ($this->columns as $col) {
                     $val = test_input($_POST[$col->name]);
                     // Translate numeric values as needed, but keep NULL as-is.
