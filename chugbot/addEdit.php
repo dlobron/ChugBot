@@ -772,19 +772,13 @@ EOM;
             
             // If we are adding a new chug, update the exclusion table.
             if ($this->addEditChugPage) {
-                // First, dedup with this chug.
-                $db = new DbConn();
-                $db->addIgnore();
-                $db->addColumn("left_chug_id", $mainTableInsertId, 'i');
-                $db->addColumn("right_chug_id", $mainTableInsertId, 'i');
-                $insertOk = $db->insertIntoTable("chug_dedup_instances_v2", $this->dbErr);
-                if (! $insertOk) {
-                    error_log("Insert into chug_dedup_instances_v2 failed: $this->dbErr");
-                    return;
+                // First, dedup this chug with itself.
+                $dedupIds = array($mainTableInsertId);
+                // Dedup other chugim as requested.
+                if (array_key_exists("dedup_chugim", $_POST)) {
+                    array_push($dedupIds, $_POST["dedup_chugim"]);
                 }
-                // Dedup with other chugim as requested.
-                $arr = $_POST["dedup_chugim"];
-                foreach ($arr as $dedupChugId) {
+                foreach ($dedupIds as $dedupChugId) {
                     $db = new DbConn();
                     $db->addIgnore();
                     $db->addColumn("left_chug_id", $mainTableInsertId, 'i');
