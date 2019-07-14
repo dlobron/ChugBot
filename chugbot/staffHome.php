@@ -85,7 +85,7 @@ EOM;
 <p>To add and edit Edot, Sessions, Blocks, Groups, and Chugim, expand the relevant group below.  You may also view and edit campers according to edah.</p>
 <p>Use the Leveling section to run the leveling algorithm.</p>
 <p>For help, hover your mouse over an item, or press on mobile.<p>
-<p>To prune obsolete items and merge duplicate camper registrations, click <a href="<?php echo $advancedUrl; ?>">here</a>. To archive your data at the end of a summer, and prepare the database for the next summer, click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
+<p>To archive your data at the end of a summer, and prepare the database for the next summer, click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
 
 <form class="appnitro" action="<?php echo $resetUrl; ?>">
 <button title="Click here to update the administrative settings, including staff password and camper code" class="btn btn-primary" type="submit" value="1">Edit Admin Settings</button>
@@ -93,6 +93,10 @@ EOM;
 
 <form class="appnitro" action="<?php echo $matrixUrl; ?>" method="post">
 <button title="Click here to update the de-duplication settings" class="btn btn-primary" type="submit" value="1">De-Duplication Matrix</button>
+</form>
+
+<form class="appnitro" action="<?php echo $advancedUrl; ?>" method="post">
+<button title="Click here to prune illegal or obsolete assignments" class="btn btn-primary" type="submit" value="1">Fix Illegal And Duplicate</button>
 </form>
 
 </div>
