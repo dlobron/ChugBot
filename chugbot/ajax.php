@@ -239,15 +239,8 @@ If anything is incorrect or missing, you can edit your choices by following thes
         <li>Enter the email address to which this message was sent, and choose your camper name from the drop-down.</li>
 </ol>
 END;
-        // Delete existing selections, and insert the new ones.
+        // Insert or update new selections.
         $err = "";
-        $db = new DbConn();
-        $db->addWhereColumn("camper_id", $camper_id, 'i');
-        $delOk = $db->deleteFromTable("preferences", $err);
-        if ($delOk == FALSE) {
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(array("error" => $err)));
-        }
         // Make an array of index to choice column.  The placeholder is needed because the preferred chug lists are 1-based (the 0th
         // item is the block||group string).
         $choiceCols = array("placeholder", "first_choice_id","second_choice_id","third_choice_id","fourth_choice_id","fifth_choice_id","sixth_choice_id");
@@ -310,7 +303,7 @@ END;
                 $db->addColumn($choiceCols[$i], NULL, 'i');
             }
             $err = "";
-            $result = $db->insertIntoTable("preferences", $err);
+            $result = $db->insertIntoTable("preferences", $err, TRUE);
             if ($result == FALSE) {
                 header('HTTP/1.1 500 Internal Server Error');
                 die(json_encode(array("error" => $err)));

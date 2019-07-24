@@ -127,7 +127,7 @@
             return $this->doQuery("UPDATE $this->ignore $table $setClause $this->whereClause", $err);
         }
         
-        public function insertIntoTable($table, &$err) {
+        public function insertIntoTable($table, &$err, $replace = FALSE) {
             $qmCsv = "";
             $colCsv = "";
             foreach ($this->colNames as $colName) {
@@ -144,7 +144,11 @@
                 }
             }
             
-            $insertOk = $this->doQuery("INSERT $this->ignore INTO $table ($colCsv) VALUES ($qmCsv)",
+	    $action = "INSERT";
+	    if ($replace) {
+	       $action = "REPLACE";
+	    }
+            $insertOk = $this->doQuery("$action $this->ignore INTO $table ($colCsv) VALUES ($qmCsv)",
                                        $err);
             $this->insert_id = $this->mysqli->insert_id;
 
