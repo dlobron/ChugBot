@@ -366,8 +366,8 @@ JS;
             $ourCurrentValue = $this->colVal; // Might be empty.
             $sql = $this->sql;
             $javascript = <<<JS
-<script src="jquery/jquery-1.11.3.min.js"></script>
-<script src="jquery/ui/1.11.4/jquery-ui.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
 <script>
 function fillConstraints() {
     var parent = $("#${parentId}");
