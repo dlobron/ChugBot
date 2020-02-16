@@ -3,9 +3,9 @@
     include_once 'functions.php';
     include_once 'formItem.php';
     session_start();
-    
+
     echo headerText("Camper/Family Home");
-    
+
     // If the user is not logged in as a camper, validate the incoming access
     // code.  If none is found, display an error message.
     $loginMessage = "";
@@ -20,12 +20,12 @@
             $code = $row["regular_user_token"];
             $hint = $row["regular_user_token_hint"];
         }
-        
+
         $accessCode = test_input($_POST['camper_code']);
         if (! $accessCode) {
             $accessCode = test_input($_GET['camper_code']);
         }
-        
+
         $n = strlen($accessCode);
         if ($accessCode &&
             strncasecmp($accessCode, $code, $n) == 0) {
@@ -40,13 +40,12 @@
             exit();
         }
     }
-    
+
 ?>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 
-<div class="form_container" id="accordion">
-<h1><a>Camper Home</a></h1>
+<div class="well well-white container" id="accordion">
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
 <p>If this is your first time picking chugim for this summer, click First Time for <?php echo yearOfCurrentSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
@@ -86,21 +85,21 @@
     $camperEmailField->setGuideText("Enter the email associated with the camper you would like to edit.");
     echo $camperEmailField->renderHtml();
      */
-    
+
     $firstNameField = new FormItemSingleTextField("Camper First Name", FALSE, "first", $counter++);
     $firstNameField->setInputType("text");
     $firstNameField->setInputClass("element text medium");
     $firstNameField->setInputMaxLength(255);
     $firstNameField->setPlaceHolder("First Name");
     echo $firstNameField->renderHtml();
-    
+
     $lastNameField = new FormItemSingleTextField("Camper Last Name", FALSE, "last", $counter++);
     $lastNameField->setInputType("text");
     $lastNameField->setInputClass("element text medium");
     $lastNameField->setInputMaxLength(255);
     $lastNameField->setPlaceHolder("Last Name");
     echo $lastNameField->renderHtml();
-    
+
     $err = "";
     $edahField = new FormItemDropDown("Edah", FALSE, "edah_id", $counter++);
     $edahField->setGuideText("Choose this camper's current edah");

@@ -3,10 +3,10 @@
     include_once 'functions.php';
     include_once 'formItem.php';
     include_once 'dbConn.php';
-    
+
     // If the user is already logged in, redirect.
     bouncePastIfLoggedIn("staffHome.php");
-    
+
     // Check to see if there is an existing admin password.  If so, we'll
     // prompt the user for a password.  Otherwise, we will ask them to create
     // a new one, and to enter an email address.  Password changes will be
@@ -27,9 +27,9 @@
         $row = mysqli_fetch_row($result);
         $existingPasswordHashed = $row[0];
     }
-    
+
     $staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = "";
-    
+
     // Note the redirect text and destination.  The default is the staff home page,
     // but if there is a "from" query string, we redirect back to that page.
     $redirUrl = staffBounceBackUrl();
@@ -38,11 +38,11 @@
         $redirText = "redirected.";
     }
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        
+
         $staff_email = test_input($_POST["staff_email"]);
         $staff_password = test_input($_POST["staff_password"]);
         $staff_password2 = test_input($_POST["staff_password2"]);
-        
+
         if (empty(test_input($_POST["staffInit"]))) {
             // If we have POST data, we validate it, and update as needed.
             if (empty($staff_password)) {
@@ -108,7 +108,7 @@
             }
         }
     }
-    
+
     ?>
 
 <?php
@@ -122,11 +122,10 @@
     }
     ?>
 
-<div class="form_container">
-<h1><a>Staff Login</a></h1>
+<div class="well well-white container">
 
 <form id="loginForm" class="appnitro"  method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-<div class="form_description">
+<div class="page-header">
 <h2>Admin Staff Login</h2>
 <?php
     if (empty($existingPasswordHashed)) {
@@ -154,7 +153,7 @@
         $emailField->setError($staffEmailErr);
         echo $emailField->renderHtml();
     }
-    
+
     $staffPasswordField = new FormItemSingleTextField("Staff Password", TRUE, "staff_password", $liNum++);
     $staffPasswordField->setInputType("password");
     $staffPasswordField->setInputClass("element text medium");
@@ -162,7 +161,7 @@
     $staffPasswordField->setPlaceHolder(" ");
     $staffPasswordField->setGuideText("Enter a staff password.  This password protects the staff-only parts of the page, and should not be shared with campers.");
     echo $staffPasswordField->renderHtml();
-    
+
     if (empty($existingPasswordHashed)) {
         $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", TRUE, "staff_password2", $liNum++);
         $staffPasswordField2->setInputType("password");

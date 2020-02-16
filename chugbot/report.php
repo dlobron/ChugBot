@@ -5,13 +5,13 @@
     include_once 'formItem.php';
     require_once 'fpdf/fpdf.php';
     bounceToLogin();
-    
+
     abstract class OutputTypes {
         const Html = 0;
         const Pdf = 1;
         const Csv = 2;
     }
-    
+
     // A class to generate a printable PDF report.
     class PDF extends FPDF {
         public function GenTable($title, $header, $data) {
@@ -32,7 +32,7 @@
             $this->SetFillColor(128, 128, 128);
             $this->SetTextColor(255);
             $this->SetDrawColor(128,0,0);
-           
+
             // Header
             for ($i = 0; $i < count($header); $i++) {
                 $this->Cell($this->columnWidths[$i], 7, $header[$i], 1, 0, 'C', true);
@@ -74,14 +74,14 @@
             // Closing line
             $this->Cell(array_sum($this->columnWidths), 0, '', 'T');
         }
-        
+
         function CheckPageBreak($h) {
             // If the height h would cause an overflow, add a new page immediately.
             if ($this->GetY()+$h>$this->PageBreakTrigger) {
                 $this->AddPage($this->CurOrientation);
             }
         }
-        
+
         function NbLines($w, $txt) {
             // Computes the number of lines a MultiCell of width w will take
             $cw=&$this->CurrentFont['cw'];
@@ -131,26 +131,26 @@
             }
             return $nl;
         }
-        
+
         public function setColWidths($w) {
             $this->columnWidths = $w;
         }
-        
+
         public function setFontSize($s) {
             $this->fontSize = $s;
         }
-        
+
         public function setReportTypeAndNameOfItem($t, $n) {
             $this->typeOfReport = $t;
             $this->reportedItem = $n;
         }
-        
+
         private $columnWidths = NULL;
         private $fontSize = 12;
         private $typeOfReport = NULL;
         private $reportedItem = NULL;
     }
-    
+
     // A class to generate a zebra-striped report.
     class ZebraReport {
         function __construct($db, $sql, $outputType) {
@@ -158,38 +158,38 @@
             $this->sql = $sql;
             $this->outputType = $outputType;
         }
-        
+
         public function addIgnoreColumn($ic) {
             $this->ignoreCols[$ic] = 1;
         }
-        
+
         public function addNewTableColumn($ntc) {
             $this->newTableColumns[$ntc] = TRUE;
         }
-        
+
         public function setCaption($c) {
             $this->caption = $c;
         }
-        
+
         public function addCaptionReplaceColKey($key, $column, $default) {
             $this->captionReplaceColKeys[$key] = $column;
             $this->captionReplaceColDefault[$key] = $default;
         }
-        
+
         public function setIdCol2EditPage($idCol, $editPage, $valCol) {
             $this->idCol2EditUrl[$idCol] = urlIfy($editPage);
             $this->valCol2IdCol[$valCol] = $idCol;
         }
-        
+
         public function setIdNameMap($idNameMap, $regex = NULL) {
             $this->idNameMap = $idNameMap;
             $this->idNameMapRegex = $regex;
         }
-        
+
         public function addIdNameMapCol($col) {
             $this->idNameMapCols[$col] = TRUE;
         }
-    
+
         private function shouldSkipColumn($col) {
             if (array_key_exists($col, $this->newTableColumns)) {
                 return TRUE; // Don't re-display new table columns.
@@ -200,20 +200,20 @@
             if (array_key_exists($col, $this->ignoreCols)) {
                 return TRUE;
             }
-            
+
             return FALSE;
         }
-        
+
         public function setReportTypeAndNameOfItem($t, $n) {
             $this->typeOfReport = $t;
             $this->reportedItem = $n;
         }
-        
+
         public function setPdfFontSizeAndMult($size, $mult) {
             $this->pdfFontSize = $size;
             $this->mult = $mult;
         }
-        
+
         public function needToStartNewTable($newTableColumnValues, $row) {
             static $firstTime = TRUE;
             if ($firstTime) {
@@ -232,11 +232,11 @@
                     return TRUE;
                 }
             }
-            
+
             // None of the new-table columns has changed.
             return FALSE;
         }
-        
+
         public function renderTable() {
             if ($this->sql === NULL) {
                 echo genFatalErrorReport(array("No table query was specified"));
@@ -350,7 +350,7 @@
                         $html .= "<caption>$captionText</caption>";
                     }
                     $html .= "<tr>";
-                    
+
                     // Use the column keys as table headers.
                     $colKeys = array_keys($row);
                     foreach ($colKeys as $tableHeader) {
@@ -364,7 +364,7 @@
                         array_push($pdfColWidths, (strlen($tableHeader) * $this->mult) + $this->add);
                     }
                     $html .= "</tr>";
-                    
+
                     // Update new table column values.
                     foreach ($this->newTableColumns as $ntc => $val) {
                         $newTableColumnValues[$ntc] = $row[$ntc];
@@ -437,7 +437,7 @@
             $pdf->setColWidths($pdfColWidths);
             $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
             $html .= "</table></div>";
-            
+
             if ($this->outputType == OutputTypes::Pdf) {
                 $pdf->Output();
                 exit();
@@ -454,10 +454,10 @@
                 fclose($output);
                 exit();
             }
-            
+
             echo $html;
         }
-        
+
         private $idNameMapRegex = NULL;
         private $idNameMapCols = array();
         private $idNameMap = array();
@@ -478,7 +478,7 @@
         private $outputType = OutputTypes::Html;
         private $pdfFontSize = 12;
     }
-    
+
     function addWhereClause(&$sql, &$db, $idHash,
                             $entity = "bl.block_id",
                             $haveWhereAlready = FALSE) {
@@ -497,11 +497,11 @@
             }
             $sql .= ") ";
         }
-        
+
         // Return YES if we have a WHERE coming in, or if we added one.
         return ($haveWhereAlready || $haveWhere);
     }
-    
+
     function addActiveItemsToCaption(&$caption, $activeIdHash, $itemPluralName, $id2Name) {
         if (! empty($activeIdHash)) {
             $ucName = ucfirst($itemPluralName);
@@ -517,7 +517,7 @@
             }
         }
     }
-    
+
     abstract class ReportTypes
     {
         const None = 0;
@@ -550,7 +550,7 @@
                                  ReportTypes::CamperHappiness => "Camper Happiness",
                                  ReportTypes::RegisteredMissingPrefs => "Campers Missing Preferences for Time Block(s)"
                                 );
-    
+
     // Check for archived databases.
     $availableArchiveYears = array();
     $yearList = getArchiveYears($dbErr);
@@ -611,7 +611,7 @@
                 continue;
             }
             $lhs = strtolower($cparts[0]);
-            
+
             // Add a check for each report type that we display this way- add
             // more of these as needed.
             if ($lhs == "edah" ||
@@ -635,11 +635,11 @@
         // The user must specify the type for a report.
         array_push($errors, errorString("Please choose a report type"));
     }
-    
+
     if ($outputType == OutputTypes::Html) {
         echo headerText("Chug Report");
     }
-    
+
     $errText = genFatalErrorReport(array($dbErr));
     if (! is_null($errText)) {
         if ($outputType == OutputTypes::Html) {
@@ -648,28 +648,28 @@
         echo $errText;
         exit();
     }
-    
+
     // Per-chug report require at least one chug ID to display.
     if ($reportMethod == ReportTypes::ByChug &&
         $doReport &&
         count($activeChugIds) == 0) {
         array_push($errors, errorString("Please choose at least one chug for this report"));
     }
-    
+
     // Campers missing data for a time block requires at least one time block.
     if ($reportMethod == ReportTypes::RegisteredMissingPrefs &&
         $doReport &&
         empty($blockId)) {
         array_push($errors, errorString("Please choose a time block from which we'll report preferences missing"));
     }
-    
+
     // Display errors and exit, if needed.
     $errText = genFatalErrorReport($errors);
     if (! is_null($errText)) {
         echo $errText;
-        exit(); 
+        exit();
     }
-    
+
     // Fill the ID -> name hashes that will populate the drop-down
     // menus.
     fillId2Name($archiveYear, $chugId2Name, $dbErr,
@@ -685,30 +685,30 @@
                 "edah_id", "edot");
     fillId2Name($archiveYear, $bunkId2Name, $dbErr,
                 "bunk_id", "bunks");
-    
+
     $archiveText = "";
     if (! empty($availableArchiveYears)) {
         $archiveText = "<p>To view data from previous summers, choose a year from the Year drop-down menu</p>";
     }
-    
+
     $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
     $pageStart = <<<EOM
 <div class="report_form_container">
-    
+
 <h1><a>Chug Assignment Report</a></h1>
 <form id="main_form" class="appnitro" method="GET" action="$actionTarget">
-<div class="form_description">
+<div class="page-header">
 <h2>Chug Assignment Report</h2>
 <p>Start by choosing a report type, then select filters as needed.  Required options are marked with a <font color="red">*</font>.</p>
 $archiveText
 </div>
 <ul>
-    
+
 EOM;
     if ($outputType == OutputTypes::Html) {
         echo $pageStart;
     }
-    
+
     // Always show the report method drop-down and archive year menu (if any).
     $reportMethodDropDown = new FormItemDropDown("Report Type", TRUE, "report_method", 0);
     $reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.  Chugim With Free Space shows chugim with space remaining.  Campers missing preferences shows campers who are in the system, but who have not entered preferences for a particular time block.");
@@ -719,7 +719,7 @@ EOM;
     if ($reportMethod) {
         $reportMethodDropDown->setInputValue($reportMethod);
     }
-    
+
     $archiveYearDropDown = NULL;
     if (! empty($availableArchiveYears)) {
         $defaultYear = yearOfCurrentSummer();
@@ -734,21 +734,21 @@ EOM;
             $archiveYearDropDown->setInputValue($archiveYear);
         }
     }
-    
+
     if ($outputType == OutputTypes::Html) {
         echo $reportMethodDropDown->renderHtml();
         if (! is_null($archiveYearDropDown)) {
             echo $archiveYearDropDown->renderHtml();
         }
     }
-    
+
     if ($reportMethod &&
         $outputType == OutputTypes::Html) {
         // Add a hidden field to all HTML reports, indicating that the page should display a report
         // when this submit comes in.
         echo "<input type=\"hidden\" name=\"do_report\" id=\"do_report\" value=\"1\" />";
     }
-    
+
     // All report methods except AllRegisteredCampers include a time block filter.
     $liNumCounter = 0;
     if ($reportMethod &&
@@ -772,7 +772,7 @@ EOM;
             echo $blockChooser->renderHtml();
         }
     }
-    
+
     // If we have a report method specified, display the appropriate filter fields.
     if ($reportMethod == ReportTypes::ByEdah) {
         // Display an optional Edah drop-down filter.
@@ -791,7 +791,7 @@ EOM;
         $bunkChooser->setInputSingular("bunk");
         $bunkChooser->setColVal($bunkId);
         $bunkChooser->setId2Name($bunkId2Name);
-        
+
         if ($outputType == OutputTypes::Html) {
             echo $bunkChooser->renderHtml();
         }
@@ -802,7 +802,7 @@ EOM;
         $chugChooser->setId2Name($chugId2Name);
         $chugChooser->setActiveIdHash($activeChugIds);
         $chugChooser->setGuideText("Step 3: Choose one or more chugim for this report.");
-        
+
         if ($outputType == OutputTypes::Html) {
             echo $chugChooser->renderHtml();
         }
@@ -816,7 +816,7 @@ EOM;
         $edahChooser->setGuideText("Step 3: Choose one or more edot, or leave empty to see all edot.");
         $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setId2Name($edahId2Name);
-        
+
         if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
             $sessionChooser = new FormItemInstanceChooser("Show Campers Registered for these Sessions", FALSE, "session_ids", $liNumCounter++);
             $sessionChooser->setGuideText("Choose a session, or leave empty to see all sessions");
@@ -828,7 +828,7 @@ EOM;
             $groupChooser->setActiveIdHash($activeGroupIds);
             $groupChooser->setId2Name($groupId2Name);
         }
-        
+
         if ($outputType == OutputTypes::Html) {
             echo $edahChooser->renderHtml();
             if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
@@ -840,7 +840,7 @@ EOM;
     } else if ($reportMethod == ReportTypes::Director) {
         // The director report shows all options, so there are no filter fields
         // except time block.
-        
+
     } else if ($reportMethod == ReportTypes::AllRegisteredCampers ||
                $reportMethod == ReportTypes::CamperHappiness) {
         // Display optional edah and session filters.
@@ -851,47 +851,47 @@ EOM;
         $edahChooser->setGuideText("Step $step: Choose one or more edot, or leave empty to see all edot.");
         $edahChooser->setActiveIdHash($activeEdahIds);
         $edahChooser->setId2Name($edahId2Name);
-        
+
         $sessionChooser = new FormItemInstanceChooser("Show Campers Registered for these Sessions", FALSE, "session_ids", $liNumCounter++);
         $sessionChooser->setGuideText("Choose a session, or leave empty to see all sessions");
         $sessionChooser->setActiveIdHash($activeSessionIds);
         $sessionChooser->setId2Name($sessionId2Name);
-        
+
         if ($outputType == OutputTypes::Html) {
             echo $edahChooser->renderHtml();
             echo $sessionChooser->renderHtml();
         }
     }
-    
+
     $cancelUrl = "";
     if (isset($_SESSION['admin_logged_in'])) {
         $cancelUrl = urlIfy("staffHome.php");
     } else {
         $cancelUrl = urlIfy("index.php");
     }
-    
+
     $buttonText = "Go";
     if ($reportMethod) {
         $buttonText = "Display";
     }
-    
+
     if ($outputType == OutputTypes::Html) {
         echo "<li class=\"buttons\">";
         echo "<input class=\"btn btn-primary\" type=\"submit\" name=\"submit\" value=\"$buttonText\" />";
-        
-        echo "<a href=\"$cancelUrl\">Home</a>";
+
+        echo "<a class=\"btn btn-link\" href=\"$cancelUrl\">Home</a>";
         if ($doReport) {
             echo "<br><br><input class=\"btn btn-default\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print...\" />";
             echo "<input class=\"btn btn-default\" type=\"submit\" name=\"export\" title=\"Export to a file\" value=\"Export\" />";
         }
         echo "</li></ul></form>";
-        
+
         echo "<form id=\"reset_form\" class=\"appnitro\" method=\"GET\" action=\"$actionTarget\">";
         echo "<ul><li class=\"buttons\">";
         echo "<input id=\"resetFormButton\" class=\"btn btn-default\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
         echo "</li></ul></form>";
     }
-    
+
     if ($doReport) {
         // Prepare and display the report, setting the SQL according to the report
         // type.  If we have an archive year, pull from that database.
@@ -950,7 +950,7 @@ EOM;
             $haveWhere = addWhereClause($sql, $db, $activeEdahIds,
                                         "c.edah_id", $haveWhere);
             $sql .= "ORDER BY edah_sort_order, edah, name, block, group_name";
-            
+
             // Create and display the report.
             $edahReport = new ZebraReport($db, $sql, $outputType);
             $edahReport->setReportTypeAndNameOfItem("Edah", $edahText);
@@ -992,7 +992,7 @@ EOM;
                 $db->addColVal($bunkId, 'i');
             }
             $sql .= "ORDER BY bunk, name, edah_sort_order, edah, group_name";
-            
+
             // Create and display the report.
             $bunkReport = new ZebraReport($db, $sql, $outputType);
             $bunkReport->setReportTypeAndNameOfItem("Bunk", $bunkId2Name[$bunkId]);
@@ -1025,7 +1025,7 @@ EOM;
             addWhereClause($sql, $db, $activeChugIds, "ch.chug_id",
                            $haveWhere);
             $sql .= " ORDER BY chug_name, edah_sort_order, edah, block, camper, bunk";
-            
+
             $chugReport = new ZebraReport($db, $sql, $outputType);
             $chugReport->addNewTableColumn("chug_name");
             $chugReport->addNewTableColumn("edah");
@@ -1102,7 +1102,7 @@ EOM;
             "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
             addWhereClause($sql, $db, $activeBlockIds);
             $sql .= " ORDER BY edah_sort_order, edah, name, block, group_name";
-            
+
             // Create and display the report.
             $directorReport = new ZebraReport($db, $sql, $outputType);
             $directorReport->addNewTableColumn("edah");
@@ -1280,23 +1280,23 @@ EOM;
             $campersMissingPrefsReport->renderTable();
         }
     }
-    
+
     if ($outputType == OutputTypes::Html) {
         echo "</div>";
         echo footerText();
         echo "</body></html>";
     }
-    
+
     ?>
 
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+

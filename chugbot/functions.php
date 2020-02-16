@@ -2,8 +2,8 @@
     include_once 'constants.php';
     include_once 'functions.php';
     require_once 'PHPMailer/PHPMailerAutoload.php';
-    
-    
+
+
     function getArchiveYears(&$dbErr) {
         $retVal = array();
         $db = new DbConn();
@@ -39,26 +39,26 @@
                 return $retVal;
             }
             while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-                
+
                 if (intval($row[0]) > 0) {
                     array_push($retVal, $year);
                 }
             }
         }
-        
+
         return $retVal;
     }
-    
+
     function startsWith($haystack, $needle) {
         // search backwards starting from haystack length characters from the end
         return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
     }
-    
+
     function endsWith($haystack, $needle) {
         // search forward starting from end minus needle length characters
         return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== false);
     }
-    
+
     function forwardNoHistory($url) {
         $retVal = '<script type="text/javascript">';
         $retVal .= "window.location.replace(\"$url\")";
@@ -66,10 +66,10 @@
         $retVal .= '<noscript>';
         $retVal .= '<meta http-equiv="refresh" content="0;url='.$url.'" />';
         $retVal .= '</noscript>';
-        
+
         return $retVal;
     }
-    
+
     function sendMail($address,
                       $subject,
                       $body,
@@ -85,8 +85,8 @@
         // of 2016.
         $mail = new PHPMailer;
         // JQuery is unable to parse our JSON if an email error
-        // occurs when SMTPDebug is enabled, so I'm not using it for now.  
-        //$mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
+        // occurs when SMTPDebug is enabled, so I'm not using it for now.
+        $mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
         $toAddress = NULL;
         $sendToCamper = $admin_data_row["send_confirm_email"];
         if ($confirmationMessage == FALSE ||
@@ -117,7 +117,7 @@
         $mail->Body = $body;
         $mail->isSMTP();
         $mail->isHTML(true);
-        $mail->SMTPAuth = true;
+        $mail->SMTPAuth = false;
         $mail->Host = 'localhost';
         $mail->Port = 25;
         $mail->Username = ADMIN_EMAIL_USERNAME;
@@ -140,16 +140,16 @@
         } else {
             error_log("Mail sent to $toAddress OK");
         }
-        
+
         return $sentOk;
     }
-    
+
     function debugLog($message) {
         if (DEBUG) {
             error_log("DBG: $message");
         }
     }
-    
+
     function populateActiveIds(&$idHash, $key) {
         // If we have active instance IDs, grab them.
         if (empty($key) ||
@@ -172,7 +172,7 @@
             $idHash[$instanceId] = 1;
         }
     }
-    
+
     function genFatalErrorReport($errorList, $fixOnSamePage = FALSE,
                                  $backUrl = NULL, $closePage = TRUE) {
         $errorHtml = "";
@@ -215,10 +215,10 @@ EOM;
             $retVal = $retVal . footerText();
             $retVal = $retVal . "</body></html>";
         }
-        
+
         return $retVal;
     }
-    
+
     function genPickListForm($id2Name, $name, $tableName, $method = "POST") {
         // Check to see if items in this table may be deleted.
         $err = "";
@@ -262,7 +262,7 @@ EOM;
  </div>
 <div id="$formName" class="panel-collapse collapse ">
  <form class="appnitro" method="$method">
- <div class="form_description">
+ <div class="page-header">
  <h3>$ucPlural</h3></div>
  <ul><li>
  <div>
@@ -302,10 +302,10 @@ EOM;
 </div>
 EOM;
         $retVal = $retVal . $formEnd;
-        
+
         return $retVal;
     }
-    
+
     function genPickList($id2Name, $selectedMap, $name, $defaultMessage = NULL) {
         $ucName = ucfirst($name);
         $ddMsg = "Choose $ucName";
@@ -323,7 +323,7 @@ EOM;
         }
         return $retVal;
     }
-    
+
     function genCheckBox($id2Name, $activeIds, $arrayName) {
         $retVal = "";
         asort($id2Name);
@@ -339,7 +339,7 @@ EOM;
         }
         return $retVal;
     }
-    
+
     // Similar to genCheckBox, except we emit JS that limits the available checkboxes
     // based on selected items in a parent.
     function genConstrainedCheckBoxScript($id2Name, $arrayName,
@@ -408,20 +408,20 @@ $(function() {
 });
 </script>
 JS;
-        
+
         return $javascript;
     }
-    
+
     function test_input($data) {
         if (empty($data)) {
             return NULL;
-        }        
+        }
         $data = trim($data);
         $data = stripslashes($data);
         $data = htmlspecialchars($data);
         return $data;
     }
-    
+
     function urlBaseText() {
         $scheme = "http";
         if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
@@ -436,19 +436,19 @@ JS;
         // Return the local URL minus everything after the last slash.
         return $scheme . "://" . $_SERVER['HTTP_HOST'] . $localUrl;
     }
-    
+
     function urlIfy($localLink) {
         return urlBaseText() . $localLink;
     }
-    
+
     function adminLoggedIn() {
         return isset($_SESSION['admin_logged_in']);
     }
-    
+
     function camperLoggedIn() {
         return isset($_SESSION['camper_logged_in']);
     }
-    
+
     function baseUrl() {
         return urlIfy("index.php");
     }
@@ -460,17 +460,17 @@ JS;
             return urlIfy("camperHome.php");
         }
     }
-    
+
     function homeAnchor($text = "home") {
         $homeUrl = homeUrl();
         return "<a href=\"$homeUrl\">$text</a>";
     }
-    
+
     function staffHomeAnchor($text = "home") {
         $homeUrl = urlIfy("staffHome.php");
         return "<a href=\"$homeUrl\">$text</a>";
     }
-    
+
     function loginRequiredMessage() {
         $retVal = "";
         if (! isset($_SESSION['admin_logged_in'])) {
@@ -479,7 +479,7 @@ JS;
         }
         return $retVal;
     }
-    
+
     function bounceToLogin() {
         if (! isset($_SESSION['admin_logged_in'])) {
             $fromUrl = $_SERVER["PHP_SELF"];
@@ -488,7 +488,7 @@ JS;
             exit();
         }
     }
-    
+
     function camperBounceToLogin() {
         if ((! isset($_SESSION['camper_logged_in'])) &&
             (! isset($_SESSION['admin_logged_in']))) {
@@ -498,7 +498,7 @@ JS;
             exit();
         }
     }
-    
+
     function fromBounce() {
         $qs = htmlspecialchars($_SERVER['QUERY_STRING']);
         $parts = explode("=/", $qs);
@@ -508,7 +508,7 @@ JS;
         }
         return FALSE;
     }
-    
+
     function bouncePastIfLoggedIn($localLink) {
         if (isset($_SESSION['admin_logged_in'])) {
             $redirUrl = urlIfy($localLink);
@@ -516,7 +516,7 @@ JS;
             exit();
         }
     }
-    
+
     function staffBounceBackUrl() {
         $url = urlBaseText() . "staffHome.php"; // Default staff redirect
         $parts = array();
@@ -532,10 +532,10 @@ JS;
 	   $len = count($parts);
            $url = urlBaseText() . $parts[$len - 1];
         }
-        
+
         return $url;
     }
-    
+
     function navText() {
         $homeUrl = homeUrl();
         $retVal = "<nav class=\"navbar navbar-default\">";
@@ -554,7 +554,7 @@ JS;
             $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
         }
         $retVal .= "<li><a href=\"$baseUrl\">Site Home</a></li>";
-        
+
         $db = new DbConn();
         $db->addSelectColumn('camp_name');
         $db->addSelectColumn('camp_web');
@@ -569,14 +569,14 @@ JS;
             }
         }
         $retVal .= "</ul></div></div></nav>";
-        
+
         return $retVal;
     }
-    
+
     function footerText() {
         return "";
     }
-    
+
     function headerText($title) {
         $navText = navText();
         $retVal = <<<EOM
@@ -598,17 +598,17 @@ $navText
 EOM;
         return $retVal;
     }
-    
+
     function genErrorPage($err) {
         $retVal = headerText("Error Page");
         $retVal .= genFatalErrorReport(array($err));
         return $retVal;
     }
-    
+
     function errorString($data) {
         return "<font color=\"red\">* $data</font><br>";
     }
-    
+
     function dbErrorString($sql, $data) {
         $msg = "";
         preg_match("/duplicate entry '([^']+)/i", $data,
@@ -624,7 +624,7 @@ EOM;
         }
 	return $retVal;
     }
-    
+
     function yearOfUpcomingSummer() {
         $month = date('n'); // Month, 1-12
         if ($month >= 7) {
@@ -635,7 +635,7 @@ EOM;
             return date('Y');
         }
     }
-    
+
     function yearOfCurrentSummer() {
         $month = date('n'); // Month, 1-12
         if ($month >= 9) {
@@ -646,7 +646,7 @@ EOM;
             return date('Y');
         }
     }
-    
+
     function genPassToEditPageForm($action, $paramHash) {
         $retVal = "<form action=\"$action\" method=\"POST\" name=\"passToEditPageForm\">";
         foreach ($paramHash as $name => $value) {
@@ -664,5 +664,5 @@ EOM;
 
         return $retVal;
     }
-    
+
 ?>

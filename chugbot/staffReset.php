@@ -4,12 +4,12 @@
     include_once 'formItem.php';
     include_once 'dbConn.php';
     bounceToLogin();
-    
+
     $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = $existingPrefCount = $existingSendConfirmEmail = "";
     $deletableTableId2Name = array();
     $deletableTableActiveIdHash = array();
     $dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = $prefCountError = "";
-    
+
     $db = new DbConn();
     $err = "";
     $sql = "SELECT * from admin_data";
@@ -30,7 +30,7 @@
         $existingPrefInstructions = $row["pref_page_instructions"];
         $existingCampWeb = $row["camp_web"];
         $existingPrefCount = $row["pref_count"];
-        
+
         // Set the admin email and password to current values.  These will be
         // clobbered if we have incoming POST data - otherwise, we'll display them
         // on the initial page.
@@ -61,7 +61,7 @@
             $deletableTableId2Name[$tableId] = $table;
         }
     }
-    
+
     $staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = $existingEmailErr = "";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $admin_email = test_input($_POST["admin_email"]);
@@ -76,7 +76,7 @@
         $pref_page_instructions = test_input($_POST["pref_page_instructions"]);
         $camp_web = test_input($_POST["camp_web"]);
         $pref_count = test_input($_POST["pref_count"]);
-        
+
         // Update the deletable tables.  We start by setting all tables to not
         // be editable, and then we enable ones that are active.
         $deletableTableActiveIdHash = array(); // Reset, then populate from POST data.
@@ -98,7 +98,7 @@
                 }
             }
         }
-        
+
         // Add NULL-able column values to the DB object.
         $db = new DbConn();
         $db->addColumn("admin_email_cc", $admin_email_cc, 's');
@@ -109,7 +109,7 @@
         $db->addColumn("regular_user_token", $regular_user_token, 's');
         $db->addColumn("regular_user_token_hint", $regular_user_token_hint, 's');
         $db->addColumn("send_confirm_email", $send_confirm_email, 'i');
-        
+
         // Assume the email is never empty.  Only update it if a valid address was
         // given.
         if ($admin_email) {
@@ -180,12 +180,12 @@
             }
         }
     }
-    
+
     ?>
 
 <?php
     echo headerText("Edit Admin Data");
-    
+
     $errText = genFatalErrorReport(array($dbError, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr, $campNameErr, $prefCountError));
     if (! is_null($errText)) {
         echo $errText;
@@ -194,12 +194,10 @@
     ?>
 
 
-<div class="form_container">
-
-<h1><a>Edit Admin Data</a></h1>
+<div class="well well-white container">
 
 <form id="loginForm" class="appnitro"  method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-<div class="form_description">
+<div class="page-header">
 <h2>Edit Admin Data</h2>
 <p>Please update the staff admin data as needed. For more information about a field, hover over that field.<br>
 After updating successfully, you will be directed to the camp staff home page.<br>
@@ -219,7 +217,7 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailField->setGuideText("Enter the address of a person who can answer leveling questions.");
     $adminEmailField->setError($staffEmailErr);
     echo $adminEmailField->renderHtml();
-    
+
     $adminEmailCcField = new FormItemSingleTextField("Admin Email CC Addresses", FALSE, "admin_email_cc", $counter++);
     $adminEmailCcField->setInputValue($admin_email_cc);
     $adminEmailCcField->setInputType("email");
@@ -229,7 +227,7 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailCcField->setGuideText("Enter one or more emails to be CC'ed on camper correspondence.  Separate multiple addresses with commas.");
     $adminEmailCcField->setError($adminEmailCcErr);
     echo $adminEmailCcField->renderHtml();
-    
+
     $adminEmailFromNameField = new FormItemSingleTextField("Admin Email \"From\" Name", FALSE, "admin_email_from_name", $counter++);
     $adminEmailFromNameField->setInputValue($admin_email_from_name);
     $adminEmailFromNameField->setInputType("text");
@@ -238,12 +236,12 @@ Required values are marked with a <font color="red">*</font>.
     $adminEmailFromNameField->setPlaceHolder("Chug Organizer's Name");
     $adminEmailFromNameField->setGuideText("If set, this name will appear as the \"From\" name when email is sent.  If not set, the camp name will be used.");
     echo $adminEmailFromNameField->renderHtml();
-    
+
     $sendConfirmEmailField = new FormItemCheckBox("Email Ranking Confirmation to Campers", FALSE, "send_confirm_email", $counter++);
     $sendConfirmEmailField->setInputValue($send_confirm_email);
     $sendConfirmEmailField->setGuideText("If this box is checked, confirmation of chug choices will be sent to campers.  If not checked, confirmation email will only be sent to the Admin Email CC address(es), if configured.");
     echo $sendConfirmEmailField->renderHtml();
-    
+
     $regularUserTokenField = new FormItemSingleTextField("Camper Access Token", FALSE, "regular_user_token", $counter++);
     $regularUserTokenField->setInputValue($regular_user_token);
     $regularUserTokenField->setInputType("text");
@@ -252,7 +250,7 @@ Required values are marked with a <font color="red">*</font>.
     $regularUserTokenField->setPlaceHolder("e.g., RamahKayitz");
     $regularUserTokenField->setGuideText("The camper access token is used by non-admin users to confirm their login.  It can be any easy-to-remember string.  This value is not a password, just a token, so it should be something simple, e.g., \"RamahKayitz\".");
     echo $regularUserTokenField->renderHtml();
-    
+
     $hintField = new FormItemTextArea("Camper Access Token Hint Phrase", FALSE, "regular_user_token_hint", $counter++);
     $hintField->setInputValue($regular_user_token_hint);
     $hintField->setInputType("text");
@@ -261,7 +259,7 @@ Required values are marked with a <font color="red">*</font>.
     $hintField->setPlaceHolder(" ");
     $hintField->setGuideText("Optional hint for campers who forget the access token.  Can be anything.");
     echo $hintField->renderHtml();
-    
+
     $prefInstructions = new FormItemTextArea("Camper Instructions for Ranking", FALSE, "pref_page_instructions", $counter++);
     $prefInstructions->setInputValue($pref_page_instructions);
     $prefInstructions->setInputType("text");
@@ -270,7 +268,7 @@ Required values are marked with a <font color="red">*</font>.
     $prefInstructions->setPlaceHolder(" ");
     $prefInstructions->setGuideText("These are the instructions campers will see on the ranking page.  HTML tags are OK.");
     echo $prefInstructions->renderHtml();
-    
+
     $prefCount = new FormItemSingleTextField("Number of Chug Preferences", FALSE, "pref_count", $counter++);
     $prefCount->setInputValue($pref_count);
     $prefCount->setInputType("number");
@@ -279,13 +277,13 @@ Required values are marked with a <font color="red">*</font>.
     $prefCount->setInputMaxLength(2);
     $prefCount->setGuideText("Select the number of chug preferences a camper should select (values between 1 and 6, inclusive, are supported).");
     echo $prefCount->renderHtml();
-    
+
     $deletableTablesField = new FormItemInstanceChooser("Allow Deletion", FALSE, "deletable_tables", $counter++);
     $deletableTablesField->setId2Name($deletableTableId2Name);
     $deletableTablesField->setActiveIdHash($deletableTableActiveIdHash);
     $deletableTablesField->setGuideText("For data protection, administrators may only delete items in the checked categories.  Check a category to permit deletions.");
     echo $deletableTablesField->renderHtml();
-    
+
     $campNameField = new FormItemSingleTextField("Camp Name", TRUE, "camp_name", $counter++);
     $campNameField->setInputValue($camp_name);
     $campNameField->setInputType("text");
@@ -294,7 +292,7 @@ Required values are marked with a <font color="red">*</font>.
     $campNameField->setGuideText("Enter the standard name for this camp, e.g., \"Camp Ramah New England\"");
     $campNameField->setPlaceHolder("Camp Ramah New England");
     echo $campNameField->renderHtml();
-    
+
     $campWebField = new FormItemSingleTextField("Camp Website", FALSE, "camp_web", $counter++);
     $campWebField->setInputValue($camp_web);
     $campWebField->setInputType("text");
@@ -303,7 +301,7 @@ Required values are marked with a <font color="red">*</font>.
     $campWebField->setGuideText("Enter your camp website, if you have one, e.g., \"www.campramahne.org\"");
     $campWebField->setPlaceHolder(" ");
     echo $campWebField->renderHtml();
-    
+
     $staffPasswordField = new FormItemSingleTextField("New Staff Password (leave this field blank to keep staff password the same.)",
                                                       FALSE, "staff_password", $counter++);
     $staffPasswordField->setInputType("password");
@@ -312,7 +310,7 @@ Required values are marked with a <font color="red">*</font>.
     $staffPasswordField->setPlaceHolder(" ");
     $staffPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
     echo $staffPasswordField->renderHtml();
-    
+
     $staffPasswordField2 = new FormItemSingleTextField("Retype New Staff Password", FALSE, "staff_password2", $counter++);
     $staffPasswordField2->setInputType("password");
     $staffPasswordField2->setInputClass("element text medium");

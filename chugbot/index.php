@@ -3,9 +3,9 @@
     include_once 'functions.php';
     include_once 'formItem.php';
     session_start();
-    
+
     $loggedIn = (adminLoggedIn() || camperLoggedIn());
-    
+
     $campName = "Camp Ramah";
     $hint = "No hint available";
     $adminEmail = "";
@@ -25,7 +25,7 @@
             $adminEmail = $row["admin_email"];
         }
     }
-    
+
     if ($loggedIn) {
         $codeMessage = "Click \"Go\" to access the camper site";
     } else {
@@ -46,15 +46,14 @@
             $codeMessage = "Please try the camper code again, and click \"Go!\".  If you still cannot log in, please $contactText for help.  Hint: $hint";
         }
     }
-    
+
     echo headerText("Welcome");
 ?>
 
-<div class="form_container">
-<h1><a>Welcome</a></h1>
+<div class="well well-white container">
 
 <form id="camperForm" class="appnitro form-group" method="GET">
-<div class="form_description">
+<div class="page-header">
 <h2>Welcome to the <?php echo $campName; ?> chug preference ranking system!</h3>
 <p><?php echo $codeMessage; ?></p>
 </div>

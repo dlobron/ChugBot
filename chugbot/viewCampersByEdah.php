@@ -3,7 +3,7 @@
     include_once 'dbConn.php';
     include_once 'functions.php';
     bounceToLogin();
-    
+
     $dbErr = "";
     $deleteOk = TRUE;
     $db = new DbConn();
@@ -16,7 +16,7 @@
     $camperId2Edah = array();
     $edahId2Name = array();
     fillId2Name(NULL, $edahId2Name, $dbErr, "edah_id", "edot");
-    
+
     $forEdahText = "all edot";
     $sql = "SELECT c.camper_id camper_id, c.first first, c.last last, e.name edah_name, e.sort_order edah_sort_order FROM campers c, edot e WHERE c.edah_id = e.edah_id";
     $edah_id = NULL;
@@ -43,7 +43,7 @@
 
 <?php
     echo headerText("View Campers");
-    
+
     $errText = genFatalErrorReport(array($dbErr));
     if (! is_null($errText)) {
         echo $errText;
@@ -51,7 +51,7 @@
     }
     ?>
 
-<div class="container centered_container">
+<div class="container well">
 <h2>Campers for <?php echo $forEdahText; ?></h2>
 <p>This page lists campers in <?php echo $forEdahText; ?> who have entered chug preferences.  To update
 information or settings for a camper, click the Edit button next to that camper's name.  To return to the staff admin
@@ -59,10 +59,10 @@ page, click <?php echo staffHomeAnchor(); ?>.</p>
 </div>
 
 <br>
-<div class="multi_form_container">
+<div class="well container">
 <?php
     if (count($camperId2Name) == 0) {
-        if ($edah_id) {            
+        if ($edah_id) {
             echo "<h3>No $forEdahText campers were found in the system.</h3>";
         } else {
             echo "<h3>No campers were found in the system.</h3>";

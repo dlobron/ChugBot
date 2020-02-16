@@ -3,7 +3,7 @@
     include_once 'functions.php';
     include_once 'formItem.php';
     include_once 'dbConn.php';
-    
+
     function fatalError($err) {
         echo headerText("Password Reset Error");
         $tryAgainUrl = urlIfy("staffLogin.php");
@@ -19,7 +19,7 @@
     // or an email-status flag.
     // - If we have neither of the above, we got here from a link click: we generate
     // an email with a reset link, and display the email send-status.
-    
+
     // Check the query string for a UUID.  If we find one, and the user is not validated
     // yet, validate the code against the database.
     $emailSent = FALSE;
@@ -50,7 +50,7 @@
         if ($dbErr) {
             fatalError($dbErr);
         }
-        
+
         // Select all remaining codes, and compare against the one we received.
         $sql = "SELECT code FROM password_reset_codes";
         $result = $db->runQueryDirectly($sql, $dbErr);
@@ -94,7 +94,7 @@
         if (! $db->updateTable("admin_data", $err)) {
             fatalError("Can't update admin password: $err");
         }
-  
+
         $_SESSION['admin_logged_in'] = TRUE;
         $redirUrl = urlIfy("staffHome.php?update=pw");
         header("Location: $redirUrl");
@@ -126,7 +126,7 @@
 <html>
 <body>
 To reset the administrator password for $campName, please click on the following link:
-            
+
 <a href="$resetUrl">$resetUrl</a>
 
 If the link does not work, simply paste it directly into your browser window.
@@ -141,33 +141,33 @@ EOM;
                               $row,
                               $emailError);
     }
-    
+
     if ($emailError) {
         fatalError("$emailError.  Please try again, or escalate to a database administrator to reset the administrative password manually.");
     }
-    
+
     // Page display for non-error cases starts here.
     echo headerText("Admin Password Reset Page");
-    
+
     if ($emailSent) {
-        echo "<div class=\"container centered_container\">";
+        echo "<div class=\"container well\">";
         echo "<h2>Mail Sent</h2>";
         echo "<p>An email has been sent to $adminEmail.  Please check your Inbox and follow the instructions in the message to reset the administrative password.</p>";
         echo "</div>";
     } else if ($_SESSION['reset_password_ok']) {
-        echo "<div class=\"container centered_container\">";
+        echo "<div class=\"container well\">";
         echo "<h2>Enter New Password</h2>";
         echo "<p>Please enter a new administrative password.  Passwords must be at least 5 characters.</p>";
         echo "</div>";
         $selfTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
         echo "<div class=\"form_container\">";
         echo "<form class=\"appnitro\" method=\"post\" action=\"$selfTarget\">";
-        echo "<div class=\"form_description\">";
+        echo "<div class=\"page-header\">";
         echo "<h2>Enter New Admin Password</h2>";
         echo "<p>Please enter a new administrative password.  Passwords must be at least 5 characters.</p>";
         echo "</div>";
         echo "<ul>";
-        
+
         // Present input for password and retyped password.
         $staffPasswordField = new FormItemSingleTextField("Staff Password", TRUE, "staff_password", 0);
         $staffPasswordField->setInputType("password");
@@ -176,18 +176,18 @@ EOM;
         $staffPasswordField->setPlaceHolder(" ");
         $staffPasswordField->setGuideText("Enter new password here.  The password must be at least 5 characters");
         echo $staffPasswordField->renderHtml();
-        
+
         $staffPasswordField2 = new FormItemSingleTextField("Retype Staff Password", TRUE, "staff_password2", 1);
         $staffPasswordField2->setInputType("password");
         $staffPasswordField2->setInputClass("element text medium");
         $staffPasswordField2->setInputMaxLength(50);
         $staffPasswordField2->setPlaceHolder(" ");
         echo $staffPasswordField2->renderHtml();
-        
+
         echo "<li class=\"buttons\">";
-        echo "<input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
+        echo "<input class=\"btn btn-primary\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
         $cancelUrl = homeUrl();
-        echo "<a href=\"$cancelUrl\">Cancel</a>";
+        echo "<a class=\"btn btn-link\" href=\"$cancelUrl\">Cancel</a>";
         echo "</li></ul></div></form>";
     } else {
         // We shouldn't hit this case.
@@ -201,7 +201,7 @@ EOM;
 
 </body>
 </html>
-    
+
 
 
 

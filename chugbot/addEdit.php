@@ -1,52 +1,52 @@
 <?php
     include_once 'formItem.php';
     include_once 'dbConn.php';
-    
+
     class Column {
         function __construct($name, $required = TRUE, $defaultValue = NULL) {
             $this->name = $name;
             $this->required = $required;
             $this->defaultValue = $defaultValue;
         }
-        
+
         public function setNumeric($n) {
             $this->numeric = $n;
         }
-        
+
         public $name;
         public $required;
         public $defaultValue;
         public $numeric;
     }
-    
+
     abstract class FormPage {
         function __construct($title, $firstParagraph) {
             $this->title = $title;
             $this->firstParagraph = $firstParagraph;
         }
-        
+
         public function addFormItem($fi) {
             array_push($this->formItems, $fi);
         }
-        
+
         public function errForColName($colName) {
             if (! array_key_exists($colName, $this->colName2Error)) {
                 return "";
             }
             return $this->colName2Error[$colName];
         }
-    
+
         public function setSubmitAndContinueTarget($sact, $text) {
             $this->submitAndContinueTarget = $sact;
             $this->submitAndContinueLabel = $text;
         }
-        
+
         public function setSaveAndReturnLabel($text) {
             $this->saveAndReturnLabel = $text;
         }
-        
+
         abstract protected function renderForm();
-        
+
         public $title;
         public $dbErr = "";
         protected $colName2Error = array();
@@ -58,7 +58,7 @@
         protected $submitAndContinueLabel = "";
         protected $saveAndReturnLabel = NULL;
     }
-    
+
     // This class handles most of the work for the add and edit pages.  The
     // subclasses each implement a custom handleSubmit function, since those are
     // substantially different for add and edit actions.
@@ -68,17 +68,17 @@
             $this->mainTable = $mainTable;
             $this->idCol = $idCol;
         }
-        
+
         abstract protected function handleSubmit();
-        
+
         public function addSecondParagraph($p) {
             $this->secondParagraph = $p;
         }
-        
+
         public function addInstanceTable($it) {
             $this->instanceTable = $it;
         }
-        
+
         public function addColumn($name, $required = TRUE,
                                   $numeric = FALSE, $defVal = NULL) {
             $col = new Column($name, $required, $defVal);
@@ -86,32 +86,32 @@
             array_push($this->columns, $col);
             $this->col2Type[$name] = $numeric ? 'i' : 's';
         }
-        
+
         public function columnValue($column) {
             if (! array_key_exists($column, $this->col2Val)) {
                 return NULL;
             }
             return $this->col2Val[$column];
         }
-        
+
         public function fillInstanceId2Name($instanceIdCol, $instanceTable) {
             fillId2Name(NULL, $this->instanceId2Name, $this->dbErr,
                         $instanceIdCol, $instanceTable);
             $this->instanceIdCol = $instanceIdCol;
             $this->instanceIdsIdentifier = $instanceIdCol . "s";
         }
-        
+
         public function setActiveEdotFilterBy($filterBy) {
             fillId2Name(NULL, $this->activeEdotFilterId2Name, $this->dbErr,
                         "edah_id", "edot");
             $this->activeEdotFilterBy = $filterBy;
             $this->activeEdotFilterTable = "edot_for_" . $filterBy;
         }
-        
+
         public function renderForm() {
             camperBounceToLogin(); // Forms require at least camper-level access.
             echo headerText($this->title);
-            
+
             // If the current submitted data is a duplicate, display an overlay
             // that offers options.
             if ($this->duplicateCamperDesc !== NULL) {
@@ -139,7 +139,7 @@
                 $html .= "</script>";
                 echo $html;
             }
-            
+
             $allErrors = array();
             foreach (array_merge(array($this->dbErr), array_values($this->colName2Error)) as $err) {
                 if (! $err) {
@@ -156,7 +156,7 @@
             $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
             $html = "";
             if ($this->resultStr) {
-                $html .= "<div class=\"container centered_container\">$this->resultStr</div>";
+                $html .= "<div class=\"container well\">$this->resultStr</div>";
             }
             $secondParagraphHtml = "";
             if ($this->secondParagraph) {
@@ -166,18 +166,18 @@
 <div class="form_container">
 <h1><a>$this->title</a></h1>
 <form id="$formId" class="appnitro" method="post" action="$actionTarget">
-<div class="form_description">
+<div class="page-header">
 <h2>$this->title</h2>
 <p>$this->firstParagraph (<font color="red">*</font> = required field)</p>
 $secondParagraphHtml
 </div>
 <ul>
-            
+
 EOM;
             foreach ($this->formItems as $formItem) {
                 $html .= $formItem->renderHtml();
             }
-            
+
             $cancelUrl = "";
             if (isset($_SESSION['admin_logged_in'])) {
                 $cancelUrl = urlIfy("staffHome.php");
@@ -242,18 +242,18 @@ $footerText
 EOM;
             echo $html;
         }
-        
+
         protected function populateInstanceActionIds() {
             // If we have active instance IDs, grab them.
             populateActiveIds($this->instanceActiveIdHash, $this->instanceIdsIdentifier);
-            
+
             // Same, for per-edah filter.
             if ($this->activeEdotFilterTable) {
                 $multiColName = $this->activeEdotFilterTable;
                 populateActiveIds($this->activeEdotHash, $multiColName);
             }
         }
-        
+
         protected function updateInstances($idVal, &$activeHash, $edahFilter = FALSE) {
             $instanceIdCol = "";
             $idCol = "";
@@ -274,7 +274,7 @@ EOM;
                 $instanceTable = $this->instanceTable;
                 $idCol = $this->idCol;
             }
-            
+
             $db = new DbConn();
             $db->addSelectColumn($instanceIdCol);
             $db->addWhereColumn($idCol, $idVal, 'i');
@@ -287,7 +287,7 @@ EOM;
                 $activeHash[$row[0]] = 1;
             }
         }
-        
+
         protected function updateActiveInstances($idVal, $edahFilter = FALSE) {
             $instanceIdCol = "";
             $idCol = "";
@@ -310,7 +310,7 @@ EOM;
                 $instanceTable = $this->instanceTable;
                 $activeHash = $this->instanceActiveIdHash;
             }
-            
+
             // First, grab existing IDs from the instance table.
             $db = new DbConn();
             $db->addSelectColumn($instanceIdCol);
@@ -362,31 +362,31 @@ EOM;
                     }
                 }
             }
-            
+
             return TRUE;
         }
-        
+
         public function setConstantIdValue($civ) {
             $this->constantIdValue = $civ;
         }
-        
+
         public function setAlternateResultString($ars) {
             $this->alternateResultString = $ars;
         }
-        
+
         public function setAddEditChugPage() {
             $this->addEditChugPage = 1;
         }
-        
+
         public $mainTable;
-        
+
         protected $idCol; // The ID column name of $this->mainTable
         protected $col2Val = array(); // Column name -> value (filled by us)
         protected $columns = array(); // Column names in order (filled by the caller)
         protected $col2Type = array(); // Like above, but hashed by name.
         protected $editPage = FALSE;
         protected $constantIdValue = NULL;
-        
+
         // The next members pertain to items with per-item instances.
         // We make them public so users can grab them directly.
         public $instanceTable = "";
@@ -394,31 +394,31 @@ EOM;
         public $instanceActiveIdHash = array();
         public $instanceIdsIdentifier = "";
         public $instanceIdCol = "";
-        
+
         // These members pertain to items with per-edah filters.  These have
         // names like edot_for_block or edot_for_chug;
         public $activeEdotHash = array();
         public $activeEdotFilterBy = NULL; // e.g., "chug" or "block"
         public $activeEdotFilterTable = NULL;
         public $activeEdotFilterId2Name = array();
-        
+
         public $fromAddPage = FALSE;
         public $submitData = FALSE;
         public $fromHomePage = FALSE;
-        
+
         protected $infoMessage = "";
         protected $alternateResultString = NULL;
         protected $duplicateCamperDesc = NULL;
-        
+
         protected $addEditChugPage = 0;
     }
-    
+
     class EditPage extends AddEditBase {
         function __construct($title, $firstParagraph, $mainTable, $idCol) {
             parent::__construct($title, $firstParagraph, $mainTable, $idCol);
             $this->editPage = TRUE;
         }
-        
+
         public function handleSubmit() {
             $submitAndContinue = FALSE;
             $saveAndReturn = FALSE;
@@ -480,7 +480,7 @@ EOM;
             // Certain edit pages, such as for campers, need the ID to be
             // stored as a session variable.
             $_SESSION[$this->idCol] = $idVal;
-            
+
             // For the add-edit page, get de-dup data.  If it's in the POST
             // data, use that.  Otherwise, pull from the DB.
             if ($this->addEditChugPage) {
@@ -576,7 +576,7 @@ EOM;
                 $this->colName2Error[$this->idCol] = errorString("ID is required");
                 return;
             }
-            
+
             $homeAnchor = homeAnchor();
             $thisPage = basename($_SERVER['PHP_SELF']);
             $addPage = preg_replace('/^edit/', "add", $thisPage);
@@ -618,7 +618,7 @@ EOM;
                 if (! $instanceUpdateOk) {
                     return;
                 }
-                
+
                 if ($this->addEditChugPage &&
                     $this->displayListSelectedIds) {
                     // If we're editing a chug, update the exclusion table.
@@ -644,7 +644,7 @@ EOM;
                 $this->resultStr =
                 "<h3><font color=\"green\">$name added successfully!</font> $additionalText</h3>";
             }
-            
+
             // If we've been asked to continue, do so here.
             if ($submitAndContinue) {
                 $submitAndContinueUrl = urlIfy($this->submitAndContinueTarget);
@@ -657,7 +657,7 @@ EOM;
                 echo ("<script type=\"text/javascript\">window.location.replace(\"$homeUrl\");</script>");
                 exit();
             }
-            
+
             // If a column is set to its default, set it to the empty string
             // for display.
             foreach ($this->columns as $col) {
@@ -672,11 +672,11 @@ EOM;
                 }
             }
         }
-        
+
         public function displayListSelectedIds() {
             return $this->displayListSelectedIds;
         }
-        
+
         // Display list for dedup IDs, or other drop-down IDs.
         private $displayListSelectedIds = array();
     }
@@ -694,16 +694,16 @@ EOM;
                 (! empty($_POST["fromStaffHomePage"]))) {
                 $this->fromHomePage = TRUE;
             }
-            
+
             // If we have active instance IDs, grab them.
             $this->populateInstanceActionIds();
-            
+
             // If we're coming from the home page, there's nothing further to
             // process: just display the form.
             if ($this->fromHomePage) {
                 return;
             }
-            
+
             // Check for submitted values.  Fire an error if required inputs
             // are missing, and grab defaults if applicable.
             foreach ($this->columns as $col) {
@@ -724,7 +724,7 @@ EOM;
             if (! empty($this->colName2Error)) {
                 return;
             }
-            
+
             // Insert the values we collected above.
             $dbc = new DbConn();
             foreach ($this->col2Val as $colName => $colVal) {
@@ -739,7 +739,7 @@ EOM;
                 error_log("Insert failed: $this->dbErr");
                 return;
             }
-            
+
             // If we have instances, update them.
             $mainTableInsertId = $dbc->insertId();
             $instanceUpdateOk = $this->updateActiveInstances($mainTableInsertId);
@@ -751,7 +751,7 @@ EOM;
             if (! $instanceUpdateOk) {
                 return;
             }
-            
+
             // Add all parameters with values to the hash we'll pass to the edit
             // page.
             $this->col2Val[$this->idCol] = $mainTableInsertId;
@@ -759,19 +759,19 @@ EOM;
             foreach ($this->col2Val as $colName => $colVal) {
                 $paramHash[$colName] = $colVal;
             }
-            
+
             // Add instance info, if we have it.
             if (count($this->instanceActiveIdHash) > 0) {
                 $key = $this->instanceIdsIdentifier . "[]";
                 $paramHash[$key] = array_keys($this->instanceActiveIdHash);
             }
-            
+
             // Same for edah filter.
             if (count($this->activeEdotHash) > 0) {
                 $key = $this->activeEdotFilterTable . "[]";
                 $paramHash[$key] = array_keys($this->activeEdotHash);
             }
-            
+
             // If we are adding a new chug, update the exclusion table.
             if ($this->addEditChugPage) {
                 // First, dedup this chug with itself.
@@ -792,13 +792,13 @@ EOM;
                     }
                 }
             }
-            
+
             $thisPage = basename($_SERVER['PHP_SELF']);
             $editPage = preg_replace('/^add/', "edit", $thisPage); // e.g., "addGroup.php" -> "editGroup.php"
             echo(genPassToEditPageForm($editPage, $paramHash));
         }
     }
-    
+
     // Adding a camper is very different from other add actions, so we define
     // a separate class for this.  The main difference is that when the data is
     // submitted, we store it in session state, to be committed only after
@@ -807,9 +807,9 @@ EOM;
         function __construct($title, $firstParagraph, $mainTable, $idCol) {
             parent::__construct($title, $firstParagraph, $mainTable, $idCol);
         }
-        
+
         public function handleSubmit() {
-            
+
             // If we're coming from the home page, there's nothing further to
             // process: just display the form.
             if ((! empty($_POST["fromHome"])) ||
@@ -819,7 +819,7 @@ EOM;
             if ($this->fromHomePage) {
                 return;
             }
-            
+
             // Clear camper ID from the session, in case multiple campers are
             // being added in the same browser.
             unset($_SESSION["camper_id"]);
@@ -846,7 +846,7 @@ EOM;
                 // can correct them.
                 return;
             }
-            
+
             // Check to see if this camper registration is a duplicate, which
             // we define as having the same first and last name, and edah.  If
             // a dup is detected, display an overlay that lets the user either
@@ -868,20 +868,20 @@ EOM;
                 $this->duplicateCamperDesc = $this->col2Val["first"] . " " . $this->col2Val["last"] . " in " . $row["edah_name"];
                 return;
             }
-            
+
             // At this point, we have valid new-camper data.  Set all our
             // column data in the SESSION hash, so that ajax methods can pick it
             // up.
             foreach ($this->col2Val as $colName => $colVal) {
                 $_SESSION[$colName] = $colVal;
             }
-            
+
             // Go to the choice-ranking page.
             $rankChoicesUrl = urlIfy("rankCamperChoices.html");
             echo ("<script type=\"text/javascript\">window.location.replace(\"$rankChoicesUrl\");</script>");
             exit();
         }
     }
-    
+
 ?>
-    
+

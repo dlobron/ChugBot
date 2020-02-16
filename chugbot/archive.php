@@ -5,7 +5,7 @@
     include_once 'constants.php';
     include_once 'formItem.php';
     bounceToLogin();
-    
+
     // Create an ID to name mapping for tables that we might clear.  We clear
     // these tables from the current DB unless the user instructs us not to.
     // Certain other tables will automatically be cleared due to cascading
@@ -18,7 +18,7 @@
     $preserveTableId2Name[4] = "edot";
     $preserveTableId2Name[5] = "sessions";
     $preserveTableId2Name[6] = "campers";
-    
+
     function restoreCurrentDb(&$dbErr, $mysql, $mysqldump, $thisYearArchive) {
         // 1. Dump the archive database.
         error_log("Writing out archive DB");
@@ -47,9 +47,9 @@
             }
             return;
         }
-        
+
     }
-    
+
     function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
                               $preserveTableId2Name, $thisYearArchive) {
         // 1. Dump the current database.
@@ -108,7 +108,7 @@
             }
         }
     }
-    
+
     // Check to see if the most recently finished summer has already been
     // archived.
     $curYearHasBeenArchived = FALSE;
@@ -180,7 +180,7 @@
             "sufficient permission to create the database.";
         }
     }
-    
+
     $binaryNotFoundError = "";
     $mysqldump = MYSQL_PATH . "/mysqldump";
     $mysql = MYSQL_PATH . "/mysql";
@@ -217,7 +217,7 @@
             }
         }
     }
-    
+
 ?>
 
 <?php
@@ -225,7 +225,7 @@
     $errText = genFatalErrorReport(array($dbErr, $binaryNotFoundError, $permissionsError, $noBackupDbError));
     if (! is_null($errText)) {
         echo $errText;
-        exit();
+        // exit();
     }
 ?>
 
@@ -236,8 +236,8 @@
 <?php
     if ($didRestoreDb) {
         $formHtml = <<<EOM
-        <div class="archive_form_container">
-        <div class="form_description">
+        <div>
+        <div class="page-header">
         $restoreText
         </div>
         <ul>
@@ -249,21 +249,19 @@
 EOM;
         echo $formHtml;
     }
-    
+
     $formAction = htmlspecialchars($_SERVER["PHP_SELF"]);
     $tableChooser = new FormItemInstanceChooser("Items to Preserve", FALSE, "pt", 0);
     $tableChooser->setId2Name($preserveTableId2Name);
     $tableChooser->setActiveIdHash($preserveTables);
     $tableChooser->setGuideText("Put a check next to the items you would like to carry over from $curCampYear to $nextCampYear. " .
                                 "Unchecked categories will be cleared from the current database.");
-    
+
     $formHtml = <<<EOM
     <form id="archiveForm1" class="appnitro" method="GET" action="$formAction">
-    <div class="form_description">
+    <div>
+    <div class="page-header">
     <h2>Archive Current Data</h2>
-    </div>
-    <div class="archive_form_container">
-    <div class="form_description">
     <p>To archive your current data and prepare the database for next year, please click the "Archive"
         button below.</p>
     <p>Before you archive, use the checkboxes to choose those items from the current database that you would like to keep for next year (if any).</p>
@@ -273,7 +271,7 @@ EOM;
 EOM;
     echo $formHtml;
     echo $tableChooser->renderHtml();
-    
+
     $formHtml = <<<EOM
     </li>
     <li class="buttons">
@@ -286,7 +284,7 @@ EOM;
     </div>
 EOM;
     echo $formHtml;
-    
+
     if ($curYearHasBeenArchived &&
         $didRestoreDb == FALSE) {
         if ($didArchiveDb) {
@@ -296,8 +294,8 @@ EOM;
         }
         $formHtml = <<<EOM
         <form id="archiveForm2" class="appnitro" method="GET" action="$formAction">
-        <div class="archive_form_container">
-        <div class="form_description">
+        <div>
+        <div class="page-header">
         $restoreText
         </div>
         <ul>
@@ -312,10 +310,10 @@ EOM;
 EOM;
         echo $formHtml;
     }
-    
+
     echo footerText();
 ?>
 
 </body>
 </html>
-    
+

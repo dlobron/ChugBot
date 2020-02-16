@@ -15,10 +15,10 @@
     $camperIdToEdit = NULL;
     $camperNameToEdit = NULL;
     $nextPage = NULL;
-    
+
     fillId2Name(NULL, $edahId2Name, $dbErr,
                 "edah_id", "edot");
-    
+
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $email = test_input($_GET["email"]); // Email search is currently not displayed, but we support it here.
         $first = test_input($_GET["first"]);
@@ -26,7 +26,7 @@
         $edah_id = test_input($_GET["edah_id"]);
         $nextPage = test_input($_GET["next_page"]); // 1=edit, 2=rank
         $camperIdToEdit = test_input($_GET["camper_id"]);
-        
+
         // Sanity checks.
         if (! empty($email) &&
             filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE) {
@@ -36,7 +36,7 @@
             empty($camperIdToEdit)) {
             $notEnoughInputError = "Please choose at least one search term.";
         }
-        
+
         if (empty($emailErr) && empty($notEnoughInputError)) {
             $db = new DbConn();
             $db->isSelect = TRUE;
@@ -96,7 +96,7 @@
         }
         die();
     }
-  
+
     echo headerText("Choose Edit");
 ?>
 
@@ -120,14 +120,14 @@
                                  $camperHomeUrl);
         exit();
     }
-    
-    echo "<div class=\"form_container\">";
+
+    echo "<div class=\"well well-white container\">";
     echo "<h1><a>Choose Edit</a></h1>";
     echo "<form class=\"appnitro\" method=\"get\" action=\"$thisPageUrl\"/>";
     // If we found more than one camper for the search items, display a drop-down
     // list to select.
     if (count($camperId2Name) > 1) {
-        echo "<div class=\"form_description\">";
+        echo "<div class=\"page-header\">";
         echo "<h4>Your search matched more than one camper! Please choose your camper profile from the list of matches.</h4>";
         echo "</div>";
         echo "<ul>";
@@ -145,7 +145,7 @@
         echo "<p class=\"guidelines\" id=\"guide_camper\"><small>Choose your camper name.</small></p>";
         echo "</li>";
     }
-    
+
     // Let the user choose either to update their info or proceed directly to
     // the chugim ranking.
     echo "<li>";
@@ -171,9 +171,9 @@
         echo "<input type=\"hidden\" name=\"camper_id\" value=\"$camperIdToEdit\" />";
     }
     echo "<input class=\"btn btn-success\" id=\"saveForm\" type=\"submit\" name=\"submit\" value=\"Go\" />";
-    
+
     echo "</form>";
-    
+
     ?>
 
 </div>

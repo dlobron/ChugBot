@@ -2,15 +2,15 @@
     session_start();
     include_once 'assignment.php'; // Includes functions and classes.
     include_once 'dbConn.php';
-    
+
     // Require admin login for these functions.
     if (! adminLoggedIn()) {
         exit();
     }
-    
+
     // All functions past this point return JSON.
     header("content-type:application/json; charset=UTF-8");
-    
+
     function getPrefListsForCampersByGroup($edah_id, $block_id, &$camperId2Name,
                                            &$camperId2Edah, &$edahId2Name, &$camperId2Group2PrefList) {
         $db = new DbConn();
@@ -60,7 +60,7 @@
             }
         }
         $camperInString .= ")";
-        
+
         $keylist = array("first_choice_id", "second_choice_id", "third_choice_id", "fourth_choice_id", "fifth_choice_id", "sixth_choice_id");
         $db = new DbConn();
         $db->isSelect = TRUE;
@@ -93,7 +93,7 @@
             }
         }
     }
-    
+
     // Save changes to the DB.  The "assignments" object is an associative array
     // of the form:
     // assignments[groupId][chugId] = (list of matched camper IDs)
@@ -103,7 +103,7 @@
         $group_ids = $_POST["group_ids"];
         $block_id = $_POST["block"];
         $assignments = $_POST["assignments"];
-        
+
         // First, grab the pref lists, and map camper ID to name and edah.
         $camperId2Name = array();
         $camperId2Edah = array();
@@ -113,7 +113,7 @@
             getPrefListsForCampersByGroup($edah_id, $block_id, $camperId2Name,
                                           $camperId2Edah, $edahId2Name, $camperId2Group2PrefList);
         }
-        
+
         // Step through the assignments for each group, and update the matches table.
         foreach ($assignments as $groupId => $chugId2MatchList) {
             // Only save this group if it's in our list.
@@ -140,7 +140,7 @@
             }
             $edahIdOrText .= ")";
             $sql .= $edahIdOrText;
-            
+
             $err = "";
             $result = $db->doQuery($sql, $err);
             if ($result == FALSE) {
@@ -153,7 +153,7 @@
                 $c->group_id = intval($row["group_id"]);
                 $chugId2Chug[intval($row["chug_id"])] = $c;
             }
-            
+
             foreach ($chugId2MatchList as $chugId => $matchedCamperList) {
                 if (! array_key_exists($chugId, $chugId2Chug)) {
                     error_log("WARNING: No chug found matching ID $chugId");
@@ -232,19 +232,19 @@
                 }
             }
         }
-        
+
         $retVal["ok"] = 1;
         echo json_encode($retVal);
         exit;
     }
-    
+
     // Grab match, chug, and preference info, for display on the main leveling
     // page.
     if (isset($_POST["matches_and_prefs"])) {
         $edah_ids = $_POST["edah_ids"];
         $group_ids = $_POST["group_ids"];
         $block_id = $_POST["block_id"];
-        
+
         $edah_names = "";
         $block_name = "";
         $err = "";
@@ -268,7 +268,7 @@
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             $block_name = $row[0];
         }
-        
+
         // Grab existing matches for all campers.  We'll use this to warn
         // if the user moves a camper into a duplicate chug.
         $existingMatches = array();
@@ -289,7 +289,7 @@
             }
             $existingMatches[$camper_id][$chug_id] = $block_name;
         }
-        
+
         // Compute the de-dup matrix, which we'll use to warn if the user
         // moves a camper to a duplicate chug.
         $deDupMatrix = array();
@@ -312,7 +312,7 @@
             $deDupMatrix[$leftChug][$rightChug] = 1;
             $deDupMatrix[$rightChug][$leftChug] = 1;
         }
-        
+
         // Get preferences (as strings) for these campers.
         // First, map chug ID to name, allowed edot, and min/max, for the edot we
         // are assigning.  Also, define an "unassigned" chug, which we will use
@@ -363,7 +363,7 @@
         $chugId2Beta[$unAssignedIndex]["min_size"] = 0;
         $chugId2Beta[$unAssignedIndex]["max_size"] = 0;
         $chugId2Beta[$unAssignedIndex]["allowed_edot"] = NULL;
-        
+
         // Grab and note the allowed edot for each chug.
         $db = new DbConn();
         $result = $db->doQuery("SELECT chug_id, edah_id FROM edot_for_chug", $err);
@@ -515,11 +515,11 @@
         $retVal["blockName"] = $block_name;
         $retVal["existingMatches"] = $existingMatches;
         $retVal["deDupMatrix"] = $deDupMatrix;
-        
+
         echo json_encode($retVal);
         exit();
     }
-    
+
     // Get the names for an edah and block.
     if (isset($_POST["names_for_id"])) {
         $edah_ids = $_POST["edah_ids"];
@@ -567,11 +567,11 @@
         echo json_encode($retVal);
         exit();
     }
-    
+
     // Get the assignment stats, first running the assignment algorithm if
     // requested.
     if (isset($_POST["reassign"]) ||
-        isset($_POST["get_current_stats"])) {        
+        isset($_POST["get_current_stats"])) {
         $edah_ids = $_POST["edah_ids"];
         $group_ids = $_POST["group_ids"];
         $block_id = $_POST["block"];
@@ -586,9 +586,9 @@
                 }
             }
         }
-        
+
         exit;
     }
-    
-    
+
+
     ?>

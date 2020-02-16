@@ -4,7 +4,7 @@
     include_once 'dbConn.php';
     include_once 'formItem.php';
     bounceToLogin();
-    
+
     $edahId2Name = array();
     fillId2Name(NULL, $edahId2Name, $dbErr,
                 "edah_id", "edot");
@@ -22,12 +22,12 @@
             $this->camper_id = $camper_id;
             $this->email = strtolower($email);
         }
-        
+
         function desc() {
             return $this->printableName .
             " (" . $this->edah . ")";
         }
-        
+
         function debugDesc() {
             return $this->printableName .
             " (" . $this->edah . ", ID " . $this->camper_id . ")";
@@ -40,7 +40,7 @@
         public $camper_id;
         public $email;
     }
-    
+
     function potentialDup($prevCamper, $curCamper) {
         if ($prevCamper === NULL ||
             $curCamper === NULL) {
@@ -65,10 +65,10 @@
             $flev > $maxLev) {
             return FALSE;
         }
-        
+
         return TRUE;
     }
-    
+
     $homeUrl = urlIfy("staffHome.php");
     $dbErr = $nothingToDeleteError = "";
     $numDeleted = 0;
@@ -245,13 +245,13 @@
         echo $errText;
         exit();
     }
-    
+
     $pl = "s";
     if ($numDeleted == 1) {
         $pl = "";
     }
     if ($didDeleteOk || $didMergeOk) {
-        echo "<div class=\"container centered_container\">";
+        echo "<div class=\"container well\">";
         echo "<h3>Deletion Successful!</h3>";
         if ($didDeleteOk) {
             echo "<p>Successfully deleted $numDeleted obsolete assignment" . $pl . ".  ";
@@ -272,7 +272,7 @@
 <div class="form_container">
 <h1><a>Advanced Edit</a></h1>
 <form id="editForm" method="GET" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-<div class="form_description">
+<div class="page-header">
 <h2>Choose Categories to Prune</h2>
 <p>Choose the category from which you would like to prune obsolete items.  You will be prompted to confirm before the system deletes anything.</p>
 </div>
@@ -290,7 +290,7 @@
     }
     $pruneMatchesCheckBox->setInputValue("prune_matches");
     echo $pruneMatchesCheckBox->renderHtml();
-    
+
     $pruneCamperDupsCheckBox = new FormItemRadio("Duplicate Campers", FALSE, "radioGroup", 1);
     $pruneCamperDupsCheckBox->setGuideText("Check this box to compact and prune potential camper dups.");
     if ($pruneCamperDups) {
@@ -298,7 +298,7 @@
     }
     $pruneCamperDupsCheckBox->setInputValue("prune_camper_dups");
     echo $pruneCamperDupsCheckBox->renderHtml();
-    
+
     // If we have data to confirm, display the data here.
     if (count($wouldBeDeleted) > 0) {
         echo "<li>";
@@ -336,7 +336,7 @@
         echo "</div>";
         echo "</li>";
     }
-    
+
     echo "<li class=\"buttons\">";
     $cancelUrl = homeUrl();
     if (count($wouldBeDeleted) > 0) {
@@ -363,4 +363,4 @@
 
 
 
-        
+

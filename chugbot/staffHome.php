@@ -3,7 +3,7 @@
     include_once 'dbConn.php';
     include_once 'functions.php';
     bounceToLogin();
-    
+
     // Check for a query string that signals a message.
     $parts = explode("&", $_SERVER['QUERY_STRING']);
     $message = NULL;
@@ -44,7 +44,7 @@
     $edahId2Name = array();
     $chugId2Name = array();
     $bunkId2Name = array();
-    
+
     fillId2Name(NULL, $chugId2Name, $dbErr,
                 "chug_id", "chugim", "group_id",
                 "groups");
@@ -62,7 +62,7 @@
 
 <?php
     echo headerText("Staff Home");
-    
+
     $errText = genFatalErrorReport(array($dbErr), TRUE);
     if (! is_null($errText)) {
         echo $errText;
@@ -72,7 +72,7 @@
 <?php
     if ($message) {
         $messageText = <<<EOM
-<div class="container centered_container">
+<div class="container well">
 <h2>$message</h2>
 </div>
 EOM;
@@ -80,7 +80,7 @@ EOM;
     }
     ?>
 
-<div class="centered_container container-fluid">
+<div class="well well-white container">
 <h2>Camp Staff Control Panel</h2>
 <p>To add and edit Edot, Sessions, Blocks, Groups, and Chugim, expand the relevant group below.  You may also view and edit campers according to edah.</p>
 <p>Use the Leveling section to run the leveling algorithm.</p>
@@ -101,33 +101,33 @@ EOM;
 
 </div>
 
-<div class="panel-group" id="accordion">
-<div class="multi_form_container">
+<div class="panel-group well well-white container" id="accordion">
+<div class="mb-4">
 <?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
 </div>
 
-<div class="multi_form_container">
+<div class="mb-4">
 <?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
 </div>
 
-<div class="multi_form_container">
+<div class="mb-4">
 <?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
 </div>
 
-<div class="multi_form_container">
+<div class="mb-4">
 <?php echo genPickListForm($groupId2Name, "group", "groups"); ?>
 </div>
 
-<div class="multi_form_container">
+<div class="mb-4">
 <?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
 </div>
 
-<div class="multi_form_container">
+<div class="mb-4">
 <?php echo genPickListForm($bunkId2Name, "bunk", "bunks"); ?>
 </div>
 </div>
 
-<div class="multi_form_container">
+<div class="well well-white container">
 <h3>Leveling</h3>
 <p>To view the leveling page, choose a time block and <b>one</b> or <b>two</b> edot, and click "Go."</p>
 <p>If there is an existing saved assignment for the selected edah/edot and block, it will be displayed.  Nothing will be
@@ -135,7 +135,7 @@ changed until you click the Save or Reassign buttons on the leveling page.  If t
 will be created and then displayed.</p>
 <p>If you choose two edot, make sure they share at least some chugim.</p>
 <p>To generate a printable chug assigment report, click "Report".
-<form id="leveling_choice_form" class="appnitro" method="get" action="<?php echo $levelingUrl; ?>">
+<form id="leveling_choice_form" class="appnitro well" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
 <label class="description" for="edah">Edah (choose one or two)</label>
@@ -173,8 +173,8 @@ shown here are the ones common to all selected edot.</small></p>
 </form>
 
 <form class="appnitro" action="<?php echo $reportUrl; ?>" method="GET">
-<div class="form_description">
-<p>Click "Report" to go to the camper assigment report page.</p>
+<div class="page-header">
+<small>Click "Report" to go to the camper assigment report page.</small>
 </div>
 <button title="Go to the Report page" class="btn btn-primary" type="submit">Report</button>
 <input type="hidden" name="reset" id="reset" value="1" />

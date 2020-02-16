@@ -1,13 +1,10 @@
 body
 {
     background: url(../images/Agam.JPG) no-repeat center center fixed;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
-    font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
-    font-size:small;
-    margin:8px 0 16px;
-    text-align:center;
+}
+
+.well.well-white {
+    background-color: #FFFFFF;
 }
 
 /* Overlay, for duplicate handling. */
@@ -80,7 +77,7 @@ body
     cursor:move;
 }
 
-.toggler 
+.toggler
 {
     position: relative;
     margin: auto;
@@ -174,74 +171,6 @@ body
     padding-right: 5px;
 }
 
-.centered_container
-{
-    width: 90%;
-    background-color: rgba(245, 245, 245, 0.4);
-    padding-top: 2%;
-    padding-bottom: 2%;
-    margin-bottom: 2%;
-    border-radius: 2%;
-    -moz-border-radius: 2%;
-    -webkit-border-radius: 2%;
-}
-
-.message_container
-{
-    position: relative;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-size: 1.2em;
-    top: 2px;
-    background:#fff;
-    margin:0 auto;
-    text-align: center;
-    width:20%;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    padding-left: 5px;
-    padding-right: 5px;
-    border: 2px solid red;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-}
-
-.multi_form_container
-{
-    position: relative;
-    margin-top:5px;
-    left: 10px;
-    top: 5px;
-    background:#fff;
-    margin:5 auto;
-    text-align:left;
-    width:55%;
-    padding-bottom: 1%;
-    padding-left: 2%;
-    border: 1px solid silver;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-}
-
-.text_container
-{
-    position: relative;
-    margin-top:5px;
-    left: 10px;
-    top: 5px;
-    background:#fff;
-    margin:5 auto;
-    text-align:left;
-    width:35%;
-    padding-bottom: 1px;
-    border: 1px solid silver;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-}
-
 .form_container
 {
     background:#fff;
@@ -249,22 +178,6 @@ body
     padding-left: 5px;
     text-align:left;
     width:60%;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-}
-
-.archive_form_container
-{
-    background:#fff;
-    margin:0 auto;
-    margin-left: 2%;
-    margin-right: 2%;
-    margin-top: 2%;
-    margin-bottom: 2%;
-    padding: 2%;
-    text-align:left;
-    border: 2px dotted silver;
     border-radius: 10px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
@@ -296,42 +209,32 @@ body
 
 /**** Overrides for mobile devices ****/
 @media all and (max-device-width: 750px) {
-    
+
     .form_item_instance_chooser
     {
         width: 100%;
     }
-    
+
     .toggler
     {
         width: 90%;
     }
-    
+
     .chug_choice_container
     {
         width: 90%;
     }
-    
-    .archive_form_container
-    {
-        width: 90%;
-    }
-    
+
     .form_container
     {
         width:90%;
     }
-    
-    .multi_form_container
-    {
-        width:90%;
-    }
-    
+
     .report_form_container
     {
         width:90%;
     }
-    
+
 }
 
 #top
@@ -377,12 +280,12 @@ h1
     padding:0;
     text-decoration:none;
     text-indent:-8000px;
-    
+
 }
 
 h1 a
 {
-    
+
     display:block;
     height:100%;
     min-height:40px;
@@ -557,34 +460,6 @@ form li .datepicker
     width:16px;
 }
 
-.form_description
-{
-    border-bottom:1px dotted #ccc;
-    clear:both;
-    display:inline-block;
-    margin:0 0 1em;
-}
-
-.form_description[class]
-{
-    display:block;
-}
-
-.form_description h2
-{
-    clear:left;
-    font-size:160%;
-    font-weight:400;
-    margin:0 0 3px;
-}
-
-.form_description p
-{
-    font-size:95%;
-    line-height:130%;
-    margin:0 0 12px;
-}
-
 form hr
 {
     display:none;
@@ -618,7 +493,7 @@ form .section_break h3
 form .section_break p
 {
     font-size:85%;
-    
+
     margin:0 0 10px;
 }
 
@@ -901,7 +776,7 @@ form li:hover .guidelines
 }
 
 /*** Success Message ****/
-.form_success 
+.form_success
 {
     clear: both;
     margin: 0;
@@ -938,36 +813,6 @@ ul.password{
     font-size:120% !important;
     padding-top:10px;
     font-weight:bold;
-}
-
-/** Embedded Form **/
-
-.embed #form_container{
-    border: none;
-}
-
-.embed #top, .embed #bottom, .embed h1{
-    display: none;
-}
-
-.embed #form_container{
-    width: 100%;
-}
-
-.embed #footer{
-    text-align: left;
-    padding-left: 10px;
-    width: 99%;
-}
-
-.embed #footer.success{
-    text-align: center;
-}
-
-.embed form.appnitro
-{
-    margin:0px 0px 0;
-    
 }
 
 /*** Zebra table **********************/

@@ -3,12 +3,12 @@
     include_once 'functions.php';
     include_once 'dbConn.php';
     bounceToLogin();
-    
+
     $dbErr = $itemIdErr = $qsErr = "";
     $comma_sep = $table_name = $item_id = $id_col = "";
     $deletedOk = FALSE;
     $tryAgainUrl = NULL;
-    
+
     $parts = explode("&", $_SERVER['QUERY_STRING']); // Expect: idCol=$idcol&tableName=$tableName
     foreach ($parts as $part) {
         $cparts = explode("=", $part);
@@ -27,7 +27,7 @@
             break;
         }
     }
-    
+
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $item_id = test_input($_POST["$id_col"]);
         if (empty($item_id)) {
@@ -41,12 +41,12 @@
             $deletedOk = $db->deleteFromTable($table_name, $dbErr);
         }
     }
-    
+
     ?>
 
 <?php
     echo headerText("Delete Item");
-    
+
     $errText = genFatalErrorReport(array($dbErr, $qsErr, $itemIdErr), FALSE, $tryAgainUrl);
     if (! is_null($errText)) {
         echo $errText;
@@ -57,7 +57,7 @@
 <?php
     if ($deletedOk) {
         $homeUrl = urlIfy("staffHome.php");
-        echo "<div class=\"centered_container\">";
+        echo "<div class=\"well\">";
         echo "<h3>Deletion Successful!</h3>";
         echo "<p>Deletion successful.  Please click <a href=\"$homeUrl\">here</a> to go back, or wait to be redirected.<p>";
         echo "</div>";
