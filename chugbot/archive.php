@@ -226,7 +226,7 @@ echo headerText("Archive Data");
 $errText = genFatalErrorReport(array($dbErr, $binaryNotFoundError, $permissionsError, $noBackupDbError));
 if (!is_null($errText)) {
     echo $errText;
-    // exit();
+    exit();
 }
 ?>
 

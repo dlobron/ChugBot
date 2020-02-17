@@ -193,7 +193,7 @@ function getNameAndFillChoices() {
 				return $(this).text().replace("INSTRUCTIONS",
 							      // data.instructions might be encoded, so use our
 							      // helper function.
-							      htmlDecode(data.instruction));
+							      htmlDecode(data.instructions));
 			    }
 			});
 		},

@@ -89,7 +89,7 @@ function sendMail($address,
     $mail = new PHPMailer;
     // JQuery is unable to parse our JSON if an email error
     // occurs when SMTPDebug is enabled, so I'm not using it for now.
-    $mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
+    // $mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
     $toAddress = null;
     $sendToCamper = $admin_data_row["send_confirm_email"];
     if ($confirmationMessage == false ||
@@ -120,7 +120,7 @@ function sendMail($address,
     $mail->Body = $body;
     $mail->isSMTP();
     $mail->isHTML(true);
-    $mail->SMTPAuth = false;
+    $mail->SMTPAuth = true;
     $mail->Host = 'localhost';
     $mail->Port = 25;
     $mail->Username = ADMIN_EMAIL_USERNAME;

@@ -51,7 +51,7 @@ echo headerText("Welcome");
 ?>
 
 <div class="well well-white container">
-
+<h1><a>Welcome</a></h1>
 <form id="camperForm" class="form-group" method="GET">
 <div class="page-header">
 <h2>Welcome to the <?php echo $campName; ?> chug preference ranking system!</h3>
