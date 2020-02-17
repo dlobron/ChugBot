@@ -151,17 +151,17 @@ if ($emailError) {
 echo headerText("Admin Password Reset Page");
 
 if ($emailSent) {
-    echo "<div class=\"container well\">";
+    echo "<div class=\"container well well-white\">";
     echo "<h2>Mail Sent</h2>";
     echo "<p>An email has been sent to $adminEmail.  Please check your Inbox and follow the instructions in the message to reset the administrative password.</p>";
     echo "</div>";
 } else if ($_SESSION['reset_password_ok']) {
-    echo "<div class=\"container well\">";
+    echo "<div class=\"container well well-white\">";
     echo "<h2>Enter New Password</h2>";
     echo "<p>Please enter a new administrative password.  Passwords must be at least 5 characters.</p>";
     echo "</div>";
     $selfTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
-    echo "<div class=\"form_container\">";
+    echo "<div class=\"container well well-white\">";
     echo "<form method=\"post\" action=\"$selfTarget\">";
     echo "<div class=\"page-header\">";
     echo "<h2>Enter New Admin Password</h2>";

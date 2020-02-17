@@ -87,6 +87,7 @@ EOM;
 <p>For help, hover your mouse over an item, or press on mobile.<p>
 <p>To archive your data at the end of a summer, and prepare the database for the next summer, click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
 
+<div class="btn-group" role="group">
 <form action="<?php echo $resetUrl; ?>">
 <button title="Click here to update the administrative settings, including staff password and camper code" class="btn btn-primary" type="submit" value="1">Edit Admin Settings</button>
 </form>
@@ -98,6 +99,7 @@ EOM;
 <form action="<?php echo $advancedUrl; ?>" method="post">
 <button title="Click here to prune illegal or obsolete assignments" class="btn btn-primary" type="submit" value="1">Fix Illegal And Duplicate</button>
 </form>
+</div>
 
 </div>
 

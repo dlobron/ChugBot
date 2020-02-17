@@ -230,7 +230,7 @@ if (!is_null($errText)) {
 }
 ?>
 
-<div class="form_container">
+<div class="well well-white container">
 
 <h1><a>Archive Page</a></h1>
 

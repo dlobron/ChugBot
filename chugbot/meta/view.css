@@ -7,6 +7,10 @@ body
     background-color: #FFFFFF;
 }
 
+.btn-group form {
+    display: inline-block;
+}
+
 .connectedSortable li {
     cursor:move;
 }
@@ -105,30 +109,6 @@ body
     padding-right: 5px;
 }
 
-.form_container
-{
-    background:#fff;
-    margin:0 auto;
-    padding-left: 5px;
-    text-align:left;
-    width:60%;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-}
-
-.report_form_container
-{
-    background:#fff;
-    margin:0 auto;
-    margin-left: 2%;
-    margin-right: 2%;
-    text-align:left;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-}
-
 .form_item_instance_chooser
 {
     border:2px solid #ccc;
@@ -158,17 +138,6 @@ body
     {
         width: 90%;
     }
-
-    .form_container
-    {
-        width:90%;
-    }
-
-    .report_form_container
-    {
-        width:90%;
-    }
-
 }
 
 #top

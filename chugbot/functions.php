@@ -200,6 +200,7 @@ function genFatalErrorReport($errorList, $fixOnSamePage = false,
         $desc = "An error";
     }
     $retVal = <<<EOM
+<div class="row">
 <div class="panel panel-danger col-lg-6 col-lg-offset-3">
 <div class="panel-heading">
 <h3>Oops! $desc occurred:</h3>
@@ -212,9 +213,9 @@ EOM;
     }
     $retVal = $retVal . $errorHtml;
     if ($fixOnSamePage) {
-        $retVal = $retVal . "<p>Please fix the errors and try again.</p></div></div>";
+        $retVal = $retVal . "<p>Please fix the errors and try again.</p></div></div></div>";
     } else {
-        $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div>";
+        $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div></div>";
     }
     if ($closePage) {
         $retVal = $retVal . footerText();

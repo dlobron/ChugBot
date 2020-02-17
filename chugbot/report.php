@@ -722,7 +722,7 @@ if (!empty($availableArchiveYears)) {
 
 $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
 $pageStart = <<<EOM
-<div class="report_form_container">
+<div class="well well-white container">
 
 <h1><a>Chug Assignment Report</a></h1>
 <form id="main_form" method="GET" action="$actionTarget">
