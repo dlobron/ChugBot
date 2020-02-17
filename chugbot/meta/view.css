@@ -11,6 +11,10 @@ body
     display: inline-block;
 }
 
+form li {
+    max-width: 61%;
+}
+
 .connectedSortable li {
     cursor:move;
 }
