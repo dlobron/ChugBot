@@ -1,259 +1,265 @@
 <?php
-    include_once 'constants.php';
-    include_once 'functions.php';
-    require_once 'PHPMailer/PHPMailerAutoload.php';
+include_once 'constants.php';
+include_once 'functions.php';
+require_once 'PHPMailer/PHPMailerAutoload.php';
 
-
-    function getArchiveYears(&$dbErr) {
-        $retVal = array();
-        $db = new DbConn();
-        $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
-        if ($result === NULL) {
-            return retVal;
-        }
-        $years = array();
-        $matched = array();
-        $archiveDbPattern = "/^" . MYSQL_DB . "(?<dbyear>\d+)$/";
-        while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
-            // Expected format: MYSQL_DB . YEAR
-            if (preg_match($archiveDbPattern, $row[0], $matched)) {
-                array_push($years, $matched["dbyear"]);
-            }
-        }
-        // Next, for each configured year, check to see if the archive contains
-        // campers.
-        foreach ($years as $year) {
-            $db = new DbConn($year);
-            $result = $db->runQueryDirectly("SHOW TABLES", $dbErr);
-            $rc = 0;
-            while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-                $rc++;
-            }
-            if ($rc === 0) {
-                continue;
-            }
-            $db = new DbConn($year);
-            $db->addSelectColumn("count(*)");
-            $result = $db->simpleSelectFromTable("campers", $dbErr);
-            if ($result === NULL) {
-                return $retVal;
-            }
-            while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-
-                if (intval($row[0]) > 0) {
-                    array_push($retVal, $year);
-                }
-            }
-        }
-
-        return $retVal;
+function getArchiveYears(&$dbErr)
+{
+    $retVal = array();
+    $db = new DbConn();
+    $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
+    if ($result === null) {
+        return retVal;
     }
-
-    function startsWith($haystack, $needle) {
-        // search backwards starting from haystack length characters from the end
-        return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
-    }
-
-    function endsWith($haystack, $needle) {
-        // search forward starting from end minus needle length characters
-        return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== false);
-    }
-
-    function forwardNoHistory($url) {
-        $retVal = '<script type="text/javascript">';
-        $retVal .= "window.location.replace(\"$url\")";
-        $retVal .= '</script>';
-        $retVal .= '<noscript>';
-        $retVal .= '<meta http-equiv="refresh" content="0;url='.$url.'" />';
-        $retVal .= '</noscript>';
-
-        return $retVal;
-    }
-
-    function sendMail($address,
-                      $subject,
-                      $body,
-                      $admin_data_row,
-                      &$error,
-                      $confirmationMessage = FALSE) {
-        if ($admin_data_row === NULL) {
-            return FALSE;
+    $years = array();
+    $matched = array();
+    $archiveDbPattern = "/^" . MYSQL_DB . "(?<dbyear>\d+)$/";
+    while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+        // Expected format: MYSQL_DB . YEAR
+        if (preg_match($archiveDbPattern, $row[0], $matched)) {
+            array_push($years, $matched["dbyear"]);
         }
-        // An example of the possible parameters for PHPMailer can be found here:
-        // https://github.com/Synchro/PHPMailer/blob/master/examples/gmail.phps
-        // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
-        // of 2016.
-        $mail = new PHPMailer;
-        // JQuery is unable to parse our JSON if an email error
-        // occurs when SMTPDebug is enabled, so I'm not using it for now.
-        $mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
-        $toAddress = NULL;
-        $sendToCamper = $admin_data_row["send_confirm_email"];
-        if ($confirmationMessage == FALSE ||
-            $sendToCamper == TRUE) {
-            // If this is not a confirmation message, or if we're configured to
-            // send camper confirmations, use the main address as the TO.
-            $mail->addAddress($address);
-            $toAddress = $address;
+    }
+    // Next, for each configured year, check to see if the archive contains
+    // campers.
+    foreach ($years as $year) {
+        $db = new DbConn($year);
+        $result = $db->runQueryDirectly("SHOW TABLES", $dbErr);
+        $rc = 0;
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+            $rc++;
         }
-        if ($admin_data_row["admin_email_cc"] != NULL &&
-            (! empty($admin_data_row["admin_email_cc"]))) {
-            $ccs = preg_split("/[,:; ]/", $admin_data_row["admin_email_cc"]);
-            foreach ($ccs as $cc) {
-                if ($toAddress === NULL) {
-                    // If we did not use the main address as the TO, use the first
-                    // CC as the TO.
-                    $mail->addAddress($cc);
-                    $toAddress = $cc;
-                } else {
-                    $mail->AddCC($cc);
-                }
+        if ($rc === 0) {
+            continue;
+        }
+        $db = new DbConn($year);
+        $db->addSelectColumn("count(*)");
+        $result = $db->simpleSelectFromTable("campers", $dbErr);
+        if ($result === null) {
+            return $retVal;
+        }
+        while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+
+            if (intval($row[0]) > 0) {
+                array_push($retVal, $year);
             }
-        }
-        if ($toAddress === NULL) {
-            return FALSE; // We need at least a TO address.
-        }
-        $mail->Subject = $subject;
-        $mail->Body = $body;
-        $mail->isSMTP();
-        $mail->isHTML(true);
-        $mail->SMTPAuth = false;
-        $mail->Host = 'localhost';
-        $mail->Port = 25;
-        $mail->Username = ADMIN_EMAIL_USERNAME;
-        $mail->Password = ADMIN_EMAIL_PASSWORD;
-        // GMail's filter rejects our messages when the source is something like foo@gmail.com,
-        // so we set the from to the admin email username (normally, the address of our email
-        // account on this ISP), and we set the reply-to to whatever the administrator's
-        // actual email is.
-        $fromName = $admin_data_row["camp_name"];
-        if (array_key_exists("admin_email_from_name", $admin_data_row)) {
-            $fromName = $admin_data_row["admin_email_from_name"];
-        }
-        $mail->setFrom(ADMIN_EMAIL_USERNAME, $fromName);
-        $mail->addReplyTo($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
-        $sentOk = $mail->send();
-        if (! $sentOk) {
-            error_log("Failed to send email to $toAddress");
-            error_log("Mailer error: " . $mail->ErrorInfo);
-            $error = $mail->ErrorInfo;
-        } else {
-            error_log("Mail sent to $toAddress OK");
-        }
-
-        return $sentOk;
-    }
-
-    function debugLog($message) {
-        if (DEBUG) {
-            error_log("DBG: $message");
         }
     }
 
-    function populateActiveIds(&$idHash, $key) {
-        // If we have active instance IDs, grab them.
-        if (empty($key) ||
-            (array_key_exists($key, $_POST) == FALSE
-             &&
-             array_key_exists($key, $_GET) == FALSE)) {
-            return; // No instances.
-        }
-        $arr = array();
-        if (array_key_exists($key, $_POST)) {
-            $arr = $_POST[$key];
-        } else if (array_key_exists($key, $_GET)) {
-            $arr = $_GET[$key];
-        }
-        foreach ($arr as $instance_id) {
-            $instanceId = test_input($instance_id);
-            if ($instanceId == NULL) {
-                continue;
-            }
-            $idHash[$instanceId] = 1;
-        }
-    }
+    return $retVal;
+}
 
-    function genFatalErrorReport($errorList, $fixOnSamePage = FALSE,
-                                 $backUrl = NULL, $closePage = TRUE) {
-        $errorHtml = "";
-        $ec = 0;
-        foreach ($errorList as $errorText) {
-            if (empty($errorText)) {
-                continue;
-            }
-            if ($ec > 0) {
-                $errorHtml .= ", " . $errorText;
+function startsWith($haystack, $needle)
+{
+    // search backwards starting from haystack length characters from the end
+    return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
+}
+
+function endsWith($haystack, $needle)
+{
+    // search forward starting from end minus needle length characters
+    return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== false);
+}
+
+function forwardNoHistory($url)
+{
+    $retVal = '<script type="text/javascript">';
+    $retVal .= "window.location.replace(\"$url\")";
+    $retVal .= '</script>';
+    $retVal .= '<noscript>';
+    $retVal .= '<meta http-equiv="refresh" content="0;url=' . $url . '" />';
+    $retVal .= '</noscript>';
+
+    return $retVal;
+}
+
+function sendMail($address,
+    $subject,
+    $body,
+    $admin_data_row,
+    &$error,
+    $confirmationMessage = false) {
+    if ($admin_data_row === null) {
+        return false;
+    }
+    // An example of the possible parameters for PHPMailer can be found here:
+    // https://github.com/Synchro/PHPMailer/blob/master/examples/gmail.phps
+    // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
+    // of 2016.
+    $mail = new PHPMailer;
+    // JQuery is unable to parse our JSON if an email error
+    // occurs when SMTPDebug is enabled, so I'm not using it for now.
+    $mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
+    $toAddress = null;
+    $sendToCamper = $admin_data_row["send_confirm_email"];
+    if ($confirmationMessage == false ||
+        $sendToCamper == true) {
+        // If this is not a confirmation message, or if we're configured to
+        // send camper confirmations, use the main address as the TO.
+        $mail->addAddress($address);
+        $toAddress = $address;
+    }
+    if ($admin_data_row["admin_email_cc"] != null &&
+        (!empty($admin_data_row["admin_email_cc"]))) {
+        $ccs = preg_split("/[,:; ]/", $admin_data_row["admin_email_cc"]);
+        foreach ($ccs as $cc) {
+            if ($toAddress === null) {
+                // If we did not use the main address as the TO, use the first
+                // CC as the TO.
+                $mail->addAddress($cc);
+                $toAddress = $cc;
             } else {
-                $errorHtml = $errorText;
+                $mail->AddCC($cc);
             }
-            $ec++;
         }
-        $desc = "Errors";
-        if ($ec == 0) {
-            return NULL;
-        } else if ($ec == 1) {
-            $desc = "An error";
+    }
+    if ($toAddress === null) {
+        return false; // We need at least a TO address.
+    }
+    $mail->Subject = $subject;
+    $mail->Body = $body;
+    $mail->isSMTP();
+    $mail->isHTML(true);
+    $mail->SMTPAuth = false;
+    $mail->Host = 'localhost';
+    $mail->Port = 25;
+    $mail->Username = ADMIN_EMAIL_USERNAME;
+    $mail->Password = ADMIN_EMAIL_PASSWORD;
+    // GMail's filter rejects our messages when the source is something like foo@gmail.com,
+    // so we set the from to the admin email username (normally, the address of our email
+    // account on this ISP), and we set the reply-to to whatever the administrator's
+    // actual email is.
+    $fromName = $admin_data_row["camp_name"];
+    if (array_key_exists("admin_email_from_name", $admin_data_row)) {
+        $fromName = $admin_data_row["admin_email_from_name"];
+    }
+    $mail->setFrom(ADMIN_EMAIL_USERNAME, $fromName);
+    $mail->addReplyTo($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
+    $sentOk = $mail->send();
+    if (!$sentOk) {
+        error_log("Failed to send email to $toAddress");
+        error_log("Mailer error: " . $mail->ErrorInfo);
+        $error = $mail->ErrorInfo;
+    } else {
+        error_log("Mail sent to $toAddress OK");
+    }
+
+    return $sentOk;
+}
+
+function debugLog($message)
+{
+    if (DEBUG) {
+        error_log("DBG: $message");
+    }
+}
+
+function populateActiveIds(&$idHash, $key)
+{
+    // If we have active instance IDs, grab them.
+    if (empty($key) ||
+        (array_key_exists($key, $_POST) == false
+            &&
+            array_key_exists($key, $_GET) == false)) {
+        return; // No instances.
+    }
+    $arr = array();
+    if (array_key_exists($key, $_POST)) {
+        $arr = $_POST[$key];
+    } else if (array_key_exists($key, $_GET)) {
+        $arr = $_GET[$key];
+    }
+    foreach ($arr as $instance_id) {
+        $instanceId = test_input($instance_id);
+        if ($instanceId == null) {
+            continue;
         }
-        $retVal = <<<EOM
+        $idHash[$instanceId] = 1;
+    }
+}
+
+function genFatalErrorReport($errorList, $fixOnSamePage = false,
+    $backUrl = null, $closePage = true) {
+    $errorHtml = "";
+    $ec = 0;
+    foreach ($errorList as $errorText) {
+        if (empty($errorText)) {
+            continue;
+        }
+        if ($ec > 0) {
+            $errorHtml .= ", " . $errorText;
+        } else {
+            $errorHtml = $errorText;
+        }
+        $ec++;
+    }
+    $desc = "Errors";
+    if ($ec == 0) {
+        return null;
+    } else if ($ec == 1) {
+        $desc = "An error";
+    }
+    $retVal = <<<EOM
 <div class="panel panel-danger col-lg-6 col-lg-offset-3">
 <div class="panel-heading">
 <h3>Oops! $desc occurred:</h3>
 </div>
 <div class="panel-body">
 EOM;
-        $backText = "<a href=\"javascript:history.back()\">here</a>";
-        if ($backUrl) {
-            $backText = "<a href=\"$backUrl\">here</a>";
-        }
-        $retVal = $retVal . $errorHtml;
-        if ($fixOnSamePage) {
-            $retVal = $retVal . "<p>Please fix the errors and try again.</p></div></div>";
-        } else {
-            $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div>";
-        }
-        if ($closePage) {
-            $retVal = $retVal . footerText();
-            $retVal = $retVal . "</body></html>";
-        }
-
-        return $retVal;
+    $backText = "<a href=\"javascript:history.back()\">here</a>";
+    if ($backUrl) {
+        $backText = "<a href=\"$backUrl\">here</a>";
+    }
+    $retVal = $retVal . $errorHtml;
+    if ($fixOnSamePage) {
+        $retVal = $retVal . "<p>Please fix the errors and try again.</p></div></div>";
+    } else {
+        $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div>";
+    }
+    if ($closePage) {
+        $retVal = $retVal . footerText();
+        $retVal = $retVal . "</body></html>";
     }
 
-    function genPickListForm($id2Name, $name, $tableName, $method = "POST") {
-        // Check to see if items in this table may be deleted.
-        $err = "";
-        $deleteAllowed = TRUE;
-        $db = new DbConn();
-        $db->addSelectColumn('delete_ok');
-        $db->addWhereColumn('name', $tableName, 's');
-        $result = $db->simpleSelectFromTable('category_tables', $err);
-        if ($result) {
-            $row = $result->fetch_assoc();
-            $deleteAllowed = intval($row["delete_ok"]);
-        }
-        $ucName = ucfirst($name);
-        $ucPlural = ucfirst($tableName);
-        $formName = "form_" . $name;
-        $idCol = $name . "_id";
-        $editUrl = urlIfy("edit" . $ucName . ".php");
-        $addUrl = urlIfy("add" . $ucName . ".php");
-        $deleteUrl = urlIfy("delete.php?tableName=$tableName&idCol=$idCol");
-        $article = "a";
-        if (preg_match('/^[aeiou]/i', $name)) {
-            $article = "an";
-        }
-        $edahExtraText = "";
-        if ($name == "edah") {
-            $edahExtraText = " To view the campers in an edah, select an edah and click <font color=\"red\">\"Show Campers\"</font>.";
-        }
-        $guideText = "";
-        if ($deleteAllowed) {
-            $guideText = "To add, edit or delete $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName, Edit or Delete. $edahExtraText";
-        } else {
-            $guideText = "To add or edit $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName or Edit. Deletion of $tableName " .
+    return $retVal;
+}
+
+function genPickListForm($id2Name, $name, $tableName, $method = "POST")
+{
+    // Check to see if items in this table may be deleted.
+    $err = "";
+    $deleteAllowed = true;
+    $db = new DbConn();
+    $db->addSelectColumn('delete_ok');
+    $db->addWhereColumn('name', $tableName, 's');
+    $result = $db->simpleSelectFromTable('category_tables', $err);
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $deleteAllowed = intval($row["delete_ok"]);
+    }
+    $ucName = ucfirst($name);
+    $ucPlural = ucfirst($tableName);
+    $formName = "form_" . $name;
+    $idCol = $name . "_id";
+    $editUrl = urlIfy("edit" . $ucName . ".php");
+    $addUrl = urlIfy("add" . $ucName . ".php");
+    $deleteUrl = urlIfy("delete.php?tableName=$tableName&idCol=$idCol");
+    $article = "a";
+    if (preg_match('/^[aeiou]/i', $name)) {
+        $article = "an";
+    }
+    $edahExtraText = "";
+    if ($name == "edah") {
+        $edahExtraText = " To view the campers in an edah, select an edah and click <font color=\"red\">\"Show Campers\"</font>.";
+    }
+    $guideText = "";
+    if ($deleteAllowed) {
+        $guideText = "To add, edit or delete $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName, Edit or Delete. $edahExtraText";
+    } else {
+        $guideText = "To add or edit $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName or Edit. Deletion of $tableName " .
             "is currently disallowed: to allow deletion, click \"Edit Admin Settings\" at the top of this page and adjust the check boxes. $edahExtraText";
-        }
-        $retVal = <<<EOM
+    }
+    $retVal = <<<EOM
 <div class="panel panel-default">
  <div class="panel-heading">
   <h4 class="panel-title">
@@ -269,28 +275,28 @@ EOM;
  <select class="form-control" id="$idCol" name="$idCol">
  <option value="" disabled=disabled selected>---</option>
 EOM;
-        foreach ($id2Name as $itemId => $itemName) {
-            $retVal  = $retVal . "<option value=\"$itemId\">$itemName</option>";
-        }
-        $formEnd = <<<EOM
+    foreach ($id2Name as $itemId => $itemName) {
+        $retVal = $retVal . "<option value=\"$itemId\">$itemName</option>";
+    }
+    $formEnd = <<<EOM
  </select>
  <p class="guidelines"><small>$guideText</small></p>
  <input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
  <input class="btn btn-default btn-sm" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
 
 EOM;
-        $retVal = $retVal . $formEnd;
-        if ($deleteAllowed) {
-            $delText = "<input class=\"btn btn-default btn-sm\" type=\"submit\" name=\"submit\" value=\"Delete\" " .
+    $retVal = $retVal . $formEnd;
+    if ($deleteAllowed) {
+        $delText = "<input class=\"btn btn-default btn-sm\" type=\"submit\" name=\"submit\" value=\"Delete\" " .
             "onclick=\"return confirm('Are you sure you want to delete this $ucName?')\" formaction=\"$deleteUrl\" />";
-            $retVal = $retVal . $delText;
-        }
-        if ($name == "edah") {
-            $camperUrl = urlIfy("viewCampersByEdah.php");
-            $retVal =
-                $retVal . "<input class=\"btn btn-danger btn-sm\" type=\"submit\" name=\"submit\" value=\"Show Campers\" formaction=\"$camperUrl\"/>";
-        }
-        $formEnd = <<<EOM
+        $retVal = $retVal . $delText;
+    }
+    if ($name == "edah") {
+        $camperUrl = urlIfy("viewCampersByEdah.php");
+        $retVal =
+            $retVal . "<input class=\"btn btn-danger btn-sm\" type=\"submit\" name=\"submit\" value=\"Show Campers\" formaction=\"$camperUrl\"/>";
+    }
+    $formEnd = <<<EOM
  </li>
  <li>
  </form>
@@ -301,51 +307,53 @@ EOM;
  </div>
 </div>
 EOM;
-        $retVal = $retVal . $formEnd;
+    $retVal = $retVal . $formEnd;
 
-        return $retVal;
+    return $retVal;
+}
+
+function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
+{
+    $ucName = ucfirst($name);
+    $ddMsg = "Choose $ucName";
+    if ($defaultMessage !== null) {
+        $ddMsg = $defaultMessage;
     }
-
-    function genPickList($id2Name, $selectedMap, $name, $defaultMessage = NULL) {
-        $ucName = ucfirst($name);
-        $ddMsg = "Choose $ucName";
-        if ($defaultMessage !== NULL) {
-            $ddMsg = $defaultMessage;
+    $retVal = "<option value=\"\" >-- $ddMsg --</option>";
+    asort($id2Name);
+    foreach ($id2Name as $id => $name) {
+        $selStr = "";
+        if (array_key_exists($id, $selectedMap)) {
+            $selStr = "selected";
         }
-        $retVal = "<option value=\"\" >-- $ddMsg --</option>";
-        asort($id2Name);
-        foreach ($id2Name as $id => $name) {
-            $selStr = "";
-            if (array_key_exists($id, $selectedMap)) {
-                $selStr = "selected";
-            }
-            $retVal  = $retVal . "<option value=\"$id\" $selStr>$name</option>";
-        }
-        return $retVal;
+        $retVal = $retVal . "<option value=\"$id\" $selStr>$name</option>";
     }
+    return $retVal;
+}
 
-    function genCheckBox($id2Name, $activeIds, $arrayName) {
-        $retVal = "";
-        asort($id2Name);
-        foreach ($id2Name as $id => $name) {
-            $selStr = "";
-            $idStr = strval($id); // Use strings in forms, for consistency.
-            if ($idStr !== NULL &&
-                $activeIds !== NULL &&
-                array_key_exists($idStr, $activeIds)) {
-                $selStr = "checked=checked";
-            }
-            $retVal = $retVal . "<input type=\"checkbox\" name=\"${arrayName}[]\" value=\"$idStr\" $selStr />$name<br>";
+function genCheckBox($id2Name, $activeIds, $arrayName)
+{
+    $retVal = "";
+    asort($id2Name);
+    foreach ($id2Name as $id => $name) {
+        $selStr = "";
+        $idStr = strval($id); // Use strings in forms, for consistency.
+        if ($idStr !== null &&
+            $activeIds !== null &&
+            array_key_exists($idStr, $activeIds)) {
+            $selStr = "checked=checked";
         }
-        return $retVal;
+        $retVal = $retVal . "<input type=\"checkbox\" name=\"${arrayName}[]\" value=\"$idStr\" $selStr />$name<br>";
     }
+    return $retVal;
+}
 
-    // Similar to genCheckBox, except we emit JS that limits the available checkboxes
-    // based on selected items in a parent.
-    function genConstrainedCheckBoxScript($id2Name, $arrayName,
-                                          $ourId, $parentId, $descId) {
-        asort($id2Name);
-        $javascript = <<<JS
+// Similar to genCheckBox, except we emit JS that limits the available checkboxes
+// based on selected items in a parent.
+function genConstrainedCheckBoxScript($id2Name, $arrayName,
+    $ourId, $parentId, $descId) {
+    asort($id2Name);
+    $javascript = <<<JS
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
 <script>
@@ -409,177 +417,195 @@ $(function() {
 </script>
 JS;
 
-        return $javascript;
-    }
+    return $javascript;
+}
 
-    function test_input($data) {
-        if (empty($data)) {
-            return NULL;
-        }
-        $data = trim($data);
-        $data = stripslashes($data);
-        $data = htmlspecialchars($data);
-        return $data;
+function test_input($data)
+{
+    if (empty($data)) {
+        return null;
     }
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
 
-    function urlBaseText() {
-        $scheme = "http";
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-            $scheme = "https";
-        }
-        $localUrl = "/";
-        $lastSlashPos = strrpos($_SERVER["PHP_SELF"], "/"); // Note that we're reverse-searching.
-        if ($lastSlashPos != FALSE) {
-            // Remove everything after the last slash (keep the slash).
-            $localUrl = substr($_SERVER["PHP_SELF"], 0, $lastSlashPos + 1);
-        }
-        // Return the local URL minus everything after the last slash.
-        return $scheme . "://" . $_SERVER['HTTP_HOST'] . $localUrl;
+function urlBaseText()
+{
+    $scheme = "http";
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+        $scheme = "https";
     }
-
-    function urlIfy($localLink) {
-        return urlBaseText() . $localLink;
+    $localUrl = "/";
+    $lastSlashPos = strrpos($_SERVER["PHP_SELF"], "/"); // Note that we're reverse-searching.
+    if ($lastSlashPos != false) {
+        // Remove everything after the last slash (keep the slash).
+        $localUrl = substr($_SERVER["PHP_SELF"], 0, $lastSlashPos + 1);
     }
+    // Return the local URL minus everything after the last slash.
+    return $scheme . "://" . $_SERVER['HTTP_HOST'] . $localUrl;
+}
 
-    function adminLoggedIn() {
-        return isset($_SESSION['admin_logged_in']);
+function urlIfy($localLink)
+{
+    return urlBaseText() . $localLink;
+}
+
+function adminLoggedIn()
+{
+    return isset($_SESSION['admin_logged_in']);
+}
+
+function camperLoggedIn()
+{
+    return isset($_SESSION['camper_logged_in']);
+}
+
+function baseUrl()
+{
+    return urlIfy("index.php");
+}
+
+function homeUrl()
+{
+    if (isset($_SESSION['admin_logged_in'])) {
+        return urlIfy("staffHome.php");
+    } else {
+        return urlIfy("camperHome.php");
     }
+}
 
-    function camperLoggedIn() {
-        return isset($_SESSION['camper_logged_in']);
-    }
+function homeAnchor($text = "home")
+{
+    $homeUrl = homeUrl();
+    return "<a href=\"$homeUrl\">$text</a>";
+}
 
-    function baseUrl() {
-        return urlIfy("index.php");
-    }
+function staffHomeAnchor($text = "home")
+{
+    $homeUrl = urlIfy("staffHome.php");
+    return "<a href=\"$homeUrl\">$text</a>";
+}
 
-    function homeUrl() {
-        if (isset($_SESSION['admin_logged_in'])) {
-            return urlIfy("staffHome.php");
-        } else {
-            return urlIfy("camperHome.php");
-        }
-    }
-
-    function homeAnchor($text = "home") {
-        $homeUrl = homeUrl();
-        return "<a href=\"$homeUrl\">$text</a>";
-    }
-
-    function staffHomeAnchor($text = "home") {
-        $homeUrl = urlIfy("staffHome.php");
-        return "<a href=\"$homeUrl\">$text</a>";
-    }
-
-    function loginRequiredMessage() {
-        $retVal = "";
-        if (! isset($_SESSION['admin_logged_in'])) {
-            $retVal = "<font color=\"red\"><b>Login required!</b></font><br>The page you are " .
+function loginRequiredMessage()
+{
+    $retVal = "";
+    if (!isset($_SESSION['admin_logged_in'])) {
+        $retVal = "<font color=\"red\"><b>Login required!</b></font><br>The page you are " .
             "accessing requires that you log in with the admin password.<br>";
-        }
-        return $retVal;
+    }
+    return $retVal;
+}
+
+function bounceToLogin()
+{
+    if (!isset($_SESSION['admin_logged_in'])) {
+        $fromUrl = $_SERVER["PHP_SELF"];
+        $redirUrl = urlIfy("staffLogin.php?from=$fromUrl");
+        header("Location: $redirUrl");
+        exit();
+    }
+}
+
+function camperBounceToLogin()
+{
+    if ((!isset($_SESSION['camper_logged_in'])) &&
+        (!isset($_SESSION['admin_logged_in']))) {
+        $fromUrl = $_SERVER["PHP_SELF"];
+        $redirUrl = urlIfy("index.php?retry=1");
+        header("Location: $redirUrl");
+        exit();
+    }
+}
+
+function fromBounce()
+{
+    $qs = htmlspecialchars($_SERVER['QUERY_STRING']);
+    $parts = explode("=/", $qs);
+    if (count($parts) == 2 &&
+        $parts[0] == "from") {
+        return true;
+    }
+    return false;
+}
+
+function bouncePastIfLoggedIn($localLink)
+{
+    if (isset($_SESSION['admin_logged_in'])) {
+        $redirUrl = urlIfy($localLink);
+        header("Location: $redirUrl");
+        exit();
+    }
+}
+
+function staffBounceBackUrl()
+{
+    $url = urlBaseText() . "staffHome.php"; // Default staff redirect
+    $parts = array();
+    $qs = htmlspecialchars($_SERVER['QUERY_STRING']);
+    $qs_from_post = test_input($_POST['query_string']);
+    $qs_from_post = preg_replace("/&#?[a-z0-9]+;/i", "", $qs_from_post);
+    if (!empty($qs)) {
+        $parts = explode("/", $qs);
+    } else if (!empty($qs_from_post)) {
+        $parts = explode("/", $qs_from_post);
+    }
+    if (count($parts) > 0) {
+        $len = count($parts);
+        $url = urlBaseText() . $parts[$len - 1];
     }
 
-    function bounceToLogin() {
-        if (! isset($_SESSION['admin_logged_in'])) {
-            $fromUrl = $_SERVER["PHP_SELF"];
-            $redirUrl = urlIfy("staffLogin.php?from=$fromUrl");
-            header("Location: $redirUrl");
-            exit();
+    return $url;
+}
+
+function navText()
+{
+    $homeUrl = homeUrl();
+    $retVal = "<nav class=\"navbar navbar-default\">";
+    $baseUrl = baseUrl();
+    $retVal .= "<div class=\"container-fluid\">";
+    $retVal .= "<div class=\"navbar-header\">";
+    $retVal .= "<button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#myNavbar\">";
+    $retVal .= "<span class=\"icon-bar\"></span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span></button>";
+    if (adminLoggedIn()) {
+        $retVal .= "<a class=\"navbar-brand\" href=\"$homeUrl\">Staff Home</a></div>";
+        $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
+        $camperUrl = urlIfy("camperHome.php");
+        $retVal .= "<li><a href=\"$camperUrl\">Camper Home</a></li>";
+    } else {
+        $retVal .= "<a class=\"navbar-brand\" href=\"$homeUrl\">Camper Home</a></div>";
+        $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
+    }
+    $retVal .= "<li><a href=\"$baseUrl\">Site Home</a></li>";
+
+    $db = new DbConn();
+    $db->addSelectColumn('camp_name');
+    $db->addSelectColumn('camp_web');
+    $result = $db->simpleSelectFromTable('admin_data', $err);
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $campUrl = $row["camp_web"];
+        $campName = $row["camp_name"];
+        if ((!empty($campUrl)) &&
+            (!empty($campName))) {
+            $retVal .= "<li><a href=\"http://$campUrl/\">$campName Home</a></li>";
         }
     }
+    $retVal .= "</ul></div></div></nav>";
 
-    function camperBounceToLogin() {
-        if ((! isset($_SESSION['camper_logged_in'])) &&
-            (! isset($_SESSION['admin_logged_in']))) {
-            $fromUrl = $_SERVER["PHP_SELF"];
-            $redirUrl = urlIfy("index.php?retry=1");
-            header("Location: $redirUrl");
-            exit();
-        }
-    }
+    return $retVal;
+}
 
-    function fromBounce() {
-        $qs = htmlspecialchars($_SERVER['QUERY_STRING']);
-        $parts = explode("=/", $qs);
-        if (count($parts) == 2 &&
-            $parts[0] == "from") {
-            return TRUE;
-        }
-        return FALSE;
-    }
+function footerText()
+{
+    return "";
+}
 
-    function bouncePastIfLoggedIn($localLink) {
-        if (isset($_SESSION['admin_logged_in'])) {
-            $redirUrl = urlIfy($localLink);
-            header("Location: $redirUrl");
-            exit();
-        }
-    }
-
-    function staffBounceBackUrl() {
-        $url = urlBaseText() . "staffHome.php"; // Default staff redirect
-        $parts = array();
-        $qs = htmlspecialchars($_SERVER['QUERY_STRING']);
-        $qs_from_post = test_input($_POST['query_string']);
-        $qs_from_post = preg_replace("/&#?[a-z0-9]+;/i","", $qs_from_post);
-        if (! empty($qs)) {
-            $parts = explode("/", $qs);
-        } else if (! empty($qs_from_post)) {
-            $parts = explode("/", $qs_from_post);
-        }
-	if (count($parts) > 0) {
-	   $len = count($parts);
-           $url = urlBaseText() . $parts[$len - 1];
-        }
-
-        return $url;
-    }
-
-    function navText() {
-        $homeUrl = homeUrl();
-        $retVal = "<nav class=\"navbar navbar-default\">";
-        $baseUrl = baseUrl();
-        $retVal .= "<div class=\"container-fluid\">";
-        $retVal .= "<div class=\"navbar-header\">";
-        $retVal .= "<button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#myNavbar\">";
-        $retVal .= "<span class=\"icon-bar\"></span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span></button>";
-        if (adminLoggedIn()) {
-            $retVal .= "<a class=\"navbar-brand\" href=\"$homeUrl\">Staff Home</a></div>";
-            $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
-            $camperUrl = urlIfy("camperHome.php");
-            $retVal .= "<li><a href=\"$camperUrl\">Camper Home</a></li>";
-        } else {
-            $retVal .= "<a class=\"navbar-brand\" href=\"$homeUrl\">Camper Home</a></div>";
-            $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
-        }
-        $retVal .= "<li><a href=\"$baseUrl\">Site Home</a></li>";
-
-        $db = new DbConn();
-        $db->addSelectColumn('camp_name');
-        $db->addSelectColumn('camp_web');
-        $result = $db->simpleSelectFromTable('admin_data', $err);
-        if ($result) {
-            $row = $result->fetch_assoc();
-            $campUrl = $row["camp_web"];
-            $campName = $row["camp_name"];
-            if ((! empty($campUrl)) &&
-                (! empty($campName))) {
-                $retVal .= "<li><a href=\"http://$campUrl/\">$campName Home</a></li>";
-            }
-        }
-        $retVal .= "</ul></div></div></nav>";
-
-        return $retVal;
-    }
-
-    function footerText() {
-        return "";
-    }
-
-    function headerText($title) {
-        $navText = navText();
-        $retVal = <<<EOM
+function headerText($title)
+{
+    $navText = navText();
+    $retVal = <<<EOM
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -596,73 +622,77 @@ JS;
 <body id="main_body">
 $navText
 EOM;
-        return $retVal;
-    }
+    return $retVal;
+}
 
-    function genErrorPage($err) {
-        $retVal = headerText("Error Page");
-        $retVal .= genFatalErrorReport(array($err));
-        return $retVal;
-    }
+function genErrorPage($err)
+{
+    $retVal = headerText("Error Page");
+    $retVal .= genFatalErrorReport(array($err));
+    return $retVal;
+}
 
-    function errorString($data) {
-        return "<font color=\"red\">* $data</font><br>";
-    }
+function errorString($data)
+{
+    return "<font color=\"red\">* $data</font><br>";
+}
 
-    function dbErrorString($sql, $data) {
-        $msg = "";
-        preg_match("/duplicate entry '([^']+)/i", $data,
-                   $array);
-        if (count($array)) {
-            $msg = "$array[1] already exists in the database";
-        } else {
-            $msg = "Database Error: $data";
-        }
-        $retVal = "<font color=\"red\">$msg</font><br>";
-        if (DEBUG) {
-            $retVal .= "Error: " . $sql . "<br>";
-        }
-	return $retVal;
+function dbErrorString($sql, $data)
+{
+    $msg = "";
+    preg_match("/duplicate entry '([^']+)/i", $data,
+        $array);
+    if (count($array)) {
+        $msg = "$array[1] already exists in the database";
+    } else {
+        $msg = "Database Error: $data";
     }
-
-    function yearOfUpcomingSummer() {
-        $month = date('n'); // Month, 1-12
-        if ($month >= 7) {
-            // Jul or later: return next year
-            return strval((intval(date('Y')) + 1));
-        } else {
-            // Jan-Jun: return current year.
-            return date('Y');
-        }
+    $retVal = "<font color=\"red\">$msg</font><br>";
+    if (DEBUG) {
+        $retVal .= "Error: " . $sql . "<br>";
     }
+    return $retVal;
+}
 
-    function yearOfCurrentSummer() {
-        $month = date('n'); // Month, 1-12
-        if ($month >= 9) {
-            // Sep or later: return next year
-            return strval((intval(date('Y')) + 1));
-        } else {
-            // Jan-Jun: return current year.
-            return date('Y');
-        }
+function yearOfUpcomingSummer()
+{
+    $month = date('n'); // Month, 1-12
+    if ($month >= 7) {
+        // Jul or later: return next year
+        return strval((intval(date('Y')) + 1));
+    } else {
+        // Jan-Jun: return current year.
+        return date('Y');
     }
+}
 
-    function genPassToEditPageForm($action, $paramHash) {
-        $retVal = "<form action=\"$action\" method=\"POST\" name=\"passToEditPageForm\">";
-        foreach ($paramHash as $name => $value) {
-            if (is_array($value)) {
-                foreach ($value as $valueElement) {
-                    $retVal = $retVal . "<input type=\"hidden\" name=\"$name\" value=\"$valueElement\">";
-                }
-            } else {
-                $retVal = $retVal . "<input type=\"hidden\" name=\"$name\" value=\"$value\">";
+function yearOfCurrentSummer()
+{
+    $month = date('n'); // Month, 1-12
+    if ($month >= 9) {
+        // Sep or later: return next year
+        return strval((intval(date('Y')) + 1));
+    } else {
+        // Jan-Jun: return current year.
+        return date('Y');
+    }
+}
+
+function genPassToEditPageForm($action, $paramHash)
+{
+    $retVal = "<form action=\"$action\" method=\"POST\" name=\"passToEditPageForm\">";
+    foreach ($paramHash as $name => $value) {
+        if (is_array($value)) {
+            foreach ($value as $valueElement) {
+                $retVal = $retVal . "<input type=\"hidden\" name=\"$name\" value=\"$valueElement\">";
             }
+        } else {
+            $retVal = $retVal . "<input type=\"hidden\" name=\"$name\" value=\"$value\">";
         }
-        $retVal = $retVal . '<input type="hidden" name="fromAddPage" value="1">';
-        $retVal = $retVal . '</form>';
-        $retVal = $retVal . '<script type="text/javascript">document.passToEditPageForm.submit();</script>';
-
-        return $retVal;
     }
+    $retVal = $retVal . '<input type="hidden" name="fromAddPage" value="1">';
+    $retVal = $retVal . '</form>';
+    $retVal = $retVal . '<script type="text/javascript">document.passToEditPageForm.submit();</script>';
 
-?>
+    return $retVal;
+}
