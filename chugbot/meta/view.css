@@ -144,40 +144,6 @@ form li {
     }
 }
 
-#top
-{
-    display:block;
-    height:10px;
-    margin:10px auto 0;
-    width:650px;
-}
-
-#footer
-{
-    width:640px;
-    clear:both;
-    margin:0 auto;
-    color:#999999;
-    text-align:center;
-    width:640px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-}
-
-#footer a{
-    color:#999999;
-    text-decoration: none;
-    border-bottom: 1px dotted #999999;
-}
-
-#bottom
-{
-    display:block;
-    height:10px;
-    margin:0 auto;
-    width:650px;
-}
-
 /**** Logo Section  *****/
 h1
 {
