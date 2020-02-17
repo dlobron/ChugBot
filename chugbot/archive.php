@@ -258,7 +258,7 @@ EOM;
                                 "Unchecked categories will be cleared from the current database.");
 
     $formHtml = <<<EOM
-    <form id="archiveForm1" class="appnitro" method="GET" action="$formAction">
+    <form id="archiveForm1" method="GET" action="$formAction">
     <div>
     <div class="page-header">
     <h2>Archive Current Data</h2>
@@ -293,7 +293,7 @@ EOM;
             $noActionButton = "<button class=\"btn btn-link\" type=\"button\" data-toggle=\"tooltip\" title=\"Exit with no changes\" onclick=\"window.location.href='$homeUrl'\">Cancel</button>";
         }
         $formHtml = <<<EOM
-        <form id="archiveForm2" class="appnitro" method="GET" action="$formAction">
+        <form id="archiveForm2" method="GET" action="$formAction">
         <div>
         <div class="page-header">
         $restoreText

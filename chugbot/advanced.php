@@ -269,7 +269,7 @@
     }
 ?>
 
-<div class="form_container">
+<div class="well well-white container">
 <h1><a>Advanced Edit</a></h1>
 <form id="editForm" method="GET" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <div class="page-header">
@@ -349,7 +349,7 @@
         echo "<input class=\"btn btn-default\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
         echo "<input type=\"hidden\" name=\"confirm_delete\" value=\"0\" />";
     }
-    echo "<a href=\"$cancelUrl\">Cancel</a>";
+    echo "<a class=\"btn btn-link\" href=\"$cancelUrl\">Cancel</a>";
     echo "<br><br></li></ul>";
     echo "</form></div>";
     echo footerText();

@@ -123,7 +123,7 @@
 
     echo "<div class=\"well well-white container\">";
     echo "<h1><a>Choose Edit</a></h1>";
-    echo "<form class=\"appnitro\" method=\"get\" action=\"$thisPageUrl\"/>";
+    echo "<form method=\"get\" action=\"$thisPageUrl\"/>";
     // If we found more than one camper for the search items, display a drop-down
     // list to select.
     if (count($camperId2Name) > 1) {

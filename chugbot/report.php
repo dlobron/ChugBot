@@ -696,7 +696,7 @@
 <div class="report_form_container">
 
 <h1><a>Chug Assignment Report</a></h1>
-<form id="main_form" class="appnitro" method="GET" action="$actionTarget">
+<form id="main_form" method="GET" action="$actionTarget">
 <div class="page-header">
 <h2>Chug Assignment Report</h2>
 <p>Start by choosing a report type, then select filters as needed.  Required options are marked with a <font color="red">*</font>.</p>
@@ -886,7 +886,7 @@ EOM;
         }
         echo "</li></ul></form>";
 
-        echo "<form id=\"reset_form\" class=\"appnitro\" method=\"GET\" action=\"$actionTarget\">";
+        echo "<form id=\"reset_form\" method=\"GET\" action=\"$actionTarget\">";
         echo "<ul><li class=\"buttons\">";
         echo "<input id=\"resetFormButton\" class=\"btn btn-default\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
         echo "</li></ul></form>";

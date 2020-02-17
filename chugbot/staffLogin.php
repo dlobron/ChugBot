@@ -123,8 +123,8 @@
     ?>
 
 <div class="well well-white container">
-
-<form id="loginForm" class="appnitro"  method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+<h1><a>Staff Login</a></h1>
+<form id="loginForm" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <div class="page-header">
 <h2>Admin Staff Login</h2>
 <?php

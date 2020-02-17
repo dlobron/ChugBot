@@ -116,14 +116,18 @@
             // that offers options.
             if ($this->duplicateCamperDesc !== NULL) {
                 $html = "";
-                $html .= "<div id=\"dupMsgBox\" class=\"overlay\">";
+                $html .= "<div id=\"dupMsgBox\" class=\"modal show\">";
                 $html .= "<a href=\"javascript:void(0)\" class=\"closebtn\" onclick=\"closeNav()\">&times;</a>";
-                $html .= "<div id=\"dupMsgContents\">";
+                $html .= "<div class=\"modal-dialog\">";
+                $html .= "<div class=\"modal-content\">";
                 // Display a message that we detected a duplicate, and offer
                 // two buttons.  One directs to the edit page, with the currently
                 // selected camper activated.  The other redirects to the add-camper
                 // page, with the fields cleared.
-                $html .= "<h2><i>Oops!</i><h2>";
+                $html .= "<div class=\"modal-header\">";
+                $html .= "<h2><i>Oops!</i></h2>";
+                $html .= "</div>";
+                $html .= "<div class=\"modal-body\">";
                 $html .= "<h3>" . $this->duplicateCamperDesc . " is already in the database for Kayitz " . yearOfCurrentSummer() . "!</h3>";
                 $html .= "<ul><li><b>If you are " . $this->col2Val["first"] . "</b>, click <a href=";
                 $link = urlIfy("preEditCamper.php");
@@ -133,10 +137,15 @@
                 $html .= $link;
                 $html .= ">here</a> to add or update your personal info or chugim.</li>";
                 $html .= "<li><b>Otherwise</b>, <a href=\"javascript:void(0)\" onclick=\"closeNav()\">close this window</a> and try registering again with a different name (you can use a nickname).</li></ul>";
-                $html .= "</div></div>";
+                $html .= "</div>";
+                $html .= "<div class=\"modal-footer\">";
+                $html .= "<button class=\"btn btn-secondary\" onclick=\"closeNav()\">Close</button>";
+                $html .= "</div></div></div>";
                 $html .= "<script>";
-                $html .= "function closeNav() { document.getElementById(\"dupMsgBox\").style.width = \"0%\"; }";
+                $html .= "function closeNav() { document.getElementById(\"dupMsgBox\").style.width = \"0%\"; document.getElementById(\"dupMsgBoxBackdrop\").style.width = \"0%\"; }";
                 $html .= "</script>";
+                $html .= "</div>";
+                $html .= "<div id=\"dupMsgBoxBackdrop\" class=\"modal-backdrop in\"></div>";
                 echo $html;
             }
 
@@ -163,9 +172,9 @@
                 $secondParagraphHtml = "<p>$this->secondParagraph</p>";
             }
             $html .= <<<EOM
-<div class="form_container">
+<div class="well well-white container">
 <h1><a>$this->title</a></h1>
-<form id="$formId" class="appnitro" method="post" action="$actionTarget">
+<form id="$formId" method="post" action="$actionTarget">
 <div class="page-header">
 <h2>$this->title</h2>
 <p>$this->firstParagraph (<font color="red">*</font> = required field)</p>
@@ -184,7 +193,7 @@ EOM;
             } else {
                 $cancelUrl = urlIfy("index.php");
             }
-            $cancelText = "<a href=\"$cancelUrl\">Cancel</a>";
+            $cancelText = "<a class=\"btn btn-link\" href=\"$cancelUrl\">Cancel</a>";
             $footerText = footerText();
             $fromText = "";
             $submitAndContinueText = "";

@@ -87,42 +87,42 @@ EOM;
 <p>For help, hover your mouse over an item, or press on mobile.<p>
 <p>To archive your data at the end of a summer, and prepare the database for the next summer, click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
 
-<form class="appnitro" action="<?php echo $resetUrl; ?>">
+<form action="<?php echo $resetUrl; ?>">
 <button title="Click here to update the administrative settings, including staff password and camper code" class="btn btn-primary" type="submit" value="1">Edit Admin Settings</button>
 </form>
 
-<form class="appnitro" action="<?php echo $matrixUrl; ?>" method="post">
+<form action="<?php echo $matrixUrl; ?>" method="post">
 <button title="Click here to update the de-duplication settings" class="btn btn-primary" type="submit" value="1">De-Duplication Matrix</button>
 </form>
 
-<form class="appnitro" action="<?php echo $advancedUrl; ?>" method="post">
+<form action="<?php echo $advancedUrl; ?>" method="post">
 <button title="Click here to prune illegal or obsolete assignments" class="btn btn-primary" type="submit" value="1">Fix Illegal And Duplicate</button>
 </form>
 
 </div>
 
 <div class="panel-group well well-white container" id="accordion">
-<div class="mb-4">
+<div>
 <?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
 </div>
 
-<div class="mb-4">
+<div>
 <?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
 </div>
 
-<div class="mb-4">
+<div>
 <?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
 </div>
 
-<div class="mb-4">
+<div>
 <?php echo genPickListForm($groupId2Name, "group", "groups"); ?>
 </div>
 
-<div class="mb-4">
+<div>
 <?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
 </div>
 
-<div class="mb-4">
+<div>
 <?php echo genPickListForm($bunkId2Name, "bunk", "bunks"); ?>
 </div>
 </div>
@@ -135,7 +135,7 @@ changed until you click the Save or Reassign buttons on the leveling page.  If t
 will be created and then displayed.</p>
 <p>If you choose two edot, make sure they share at least some chugim.</p>
 <p>To generate a printable chug assigment report, click "Report".
-<form id="leveling_choice_form" class="appnitro well" method="get" action="<?php echo $levelingUrl; ?>">
+<form id="leveling_choice_form" class="well" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
 <label class="description" for="edah">Edah (choose one or two)</label>
@@ -172,7 +172,7 @@ shown here are the ones common to all selected edot.</small></p>
 </ul>
 </form>
 
-<form class="appnitro" action="<?php echo $reportUrl; ?>" method="GET">
+<form action="<?php echo $reportUrl; ?>" method="GET">
 <div class="page-header">
 <small>Click "Report" to go to the camper assigment report page.</small>
 </div>

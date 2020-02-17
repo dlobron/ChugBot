@@ -260,8 +260,8 @@ EOM;
    <a data-toggle="collapse" data-parent="#accordion" href="#$formName">Manage $ucPlural</a>
   </h4>
  </div>
-<div id="$formName" class="panel-collapse collapse ">
- <form class="appnitro" method="$method">
+<div id="$formName" class="panel-collapse collapse panel-body">
+ <form method="$method">
  <div class="page-header">
  <h3>$ucPlural</h3></div>
  <ul><li>

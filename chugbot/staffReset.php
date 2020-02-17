@@ -195,8 +195,9 @@
 
 
 <div class="well well-white container">
+<h1><a>Edit Admin Data</a></h1>
+<form id="loginForm" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 
-<form id="loginForm" class="appnitro"  method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 <div class="page-header">
 <h2>Edit Admin Data</h2>
 <p>Please update the staff admin data as needed. For more information about a field, hover over that field.<br>
@@ -323,7 +324,7 @@ Required values are marked with a <font color="red">*</font>.
 <input id="saveForm" class="btn btn-primary" type="submit" name="submit" value="Submit" />
 <?php
     $cancelUrl = urlIfy("staffHome.php");
-    echo "<a href=\"$cancelUrl\">Cancel</a>";
+    echo "<a class=\"btn btn-link\" href=\"$cancelUrl\">Cancel</a>";
     ?>
 </li>
 </ul>

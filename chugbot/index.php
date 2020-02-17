@@ -52,7 +52,7 @@
 
 <div class="well well-white container">
 
-<form id="camperForm" class="appnitro form-group" method="GET">
+<form id="camperForm" class="form-group" method="GET">
 <div class="page-header">
 <h2>Welcome to the <?php echo $campName; ?> chug preference ranking system!</h3>
 <p><?php echo $codeMessage; ?></p>
@@ -77,7 +77,7 @@
 <button class="btn btn-default" type="submit" form="camperForm" formaction="camperHome.php">Go</button>
 </form>
 
-<form id="staffForm" class="appnitro form-group" method="post">
+<form id="staffForm" class="form-group" method="post">
 <button class = "btn btn-default" type="submit" name="staffInit" form="staffForm" formaction="staffLogin.php" value="1">Admin</button>
 </form>
 </div>

@@ -59,7 +59,7 @@ page, click <?php echo staffHomeAnchor(); ?>.</p>
 </div>
 
 <br>
-<div class="well container">
+<div class="well well-white container">
 <?php
     if (count($camperId2Name) == 0) {
         if ($edah_id) {
@@ -75,7 +75,7 @@ page, click <?php echo staffHomeAnchor(); ?>.</p>
             $editUrl = urlIfy("editCamper.php");
             $edahName = $camperId2Edah[$camperId];
             $deleteUrl = $deleteUrlBase . "?idCol=camper_id&tableName=campers&tryAgainPage=staffHome.php";
-            echo "<form class=\"appnitro\" method=\"POST\" action=\"$editUrl\">";
+            echo "<form method=\"POST\" action=\"$editUrl\">";
             echo "<input type=hidden name=\"camper_id\" id=\"camper_id\" value=$camperId />";
             echo "<input type=hidden name=\"fromHome\" id=\"fromHome\" value=1 />";
             echo "<p>$camperName ($edahName) &nbsp; &nbsp; <input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit\" /> ";

@@ -161,7 +161,7 @@ EOM;
         echo "</div>";
         $selfTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
         echo "<div class=\"form_container\">";
-        echo "<form class=\"appnitro\" method=\"post\" action=\"$selfTarget\">";
+        echo "<form method=\"post\" action=\"$selfTarget\">";
         echo "<div class=\"page-header\">";
         echo "<h2>Enter New Admin Password</h2>";
         echo "<p>Please enter a new administrative password.  Passwords must be at least 5 characters.</p>";
