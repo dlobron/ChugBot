@@ -78,9 +78,9 @@ if (count($camperId2Name) == 0) {
         echo "<form method=\"POST\" action=\"$editUrl\">";
         echo "<input type=hidden name=\"camper_id\" id=\"camper_id\" value=$camperId />";
         echo "<input type=hidden name=\"fromHome\" id=\"fromHome\" value=1 />";
-        echo "<p>$camperName ($edahName) &nbsp; &nbsp; <input class=\"button_text\" type=\"submit\" name=\"submit\" value=\"Edit\" /> ";
+        echo "<p>$camperName ($edahName) &nbsp; &nbsp; <input class=\"btn btn-primary\" type=\"submit\" name=\"submit\" value=\"Edit\" /> ";
         if ($deleteOk) {
-            echo "<input class=\"button_text\" type=\"submit\" name=\"delete\" value=\"Delete\" onclick=\"return confirm('Are you sure you want to remove this camper?')\" " .
+            echo "<input class=\"btn btn-danger\" type=\"submit\" name=\"delete\" value=\"Delete\" onclick=\"return confirm('Are you sure you want to remove this camper?')\" " .
                 "formaction=\"$deleteUrl\"/> </p>";
         }
         echo "</form>";
