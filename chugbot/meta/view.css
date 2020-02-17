@@ -66,11 +66,6 @@ form li {
     margin-left: 15%;
 }
 
-.right_invisible
-{
-    opacity: 0.2;
-}
-
 .error_box
 {
     position: relative;
@@ -82,21 +77,6 @@ form li {
     padding-right: 5px;
     border: 2px solid red;
     border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-}
-
-.confirm_delete_box
-{
-    position: relative;
-    width: 100%;
-    text-align: left;
-    border: 1px solid #33ffff;
-    margin-bottom: 15px;
-    border-radius: 10px;
-    padding-left: 10px;
-    padding-bottom: 5px;
-    padding-top: 5px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
 }
@@ -115,22 +95,14 @@ form li {
 
 .form_item_instance_chooser
 {
-    border:2px solid #ccc;
     max-height: 300px;
     overflow-y: scroll;
-    padding-right: 1%;
-    padding-left: 1%;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
 }
 
 /**** Overrides for mobile devices ****/
-@media all and (max-device-width: 750px) {
-
-    .form_item_instance_chooser
-    {
-        width: 100%;
+@media all and (max-width: 750px) {
+    form li {
+        max-width: 100%;
     }
 
     .toggler

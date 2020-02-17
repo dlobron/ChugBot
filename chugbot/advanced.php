@@ -308,7 +308,7 @@ echo $pruneCamperDupsCheckBox->renderHtml();
 if (count($wouldBeDeleted) > 0) {
     echo "<li>";
     echo "<p><h3>Found the following illegal chug assignments.</h3> Hit \"Confirm Delete\" to remove them, or \"Cancel\" to exit.</p>";
-    echo "<div class=\"confirm_delete_box\" >";
+    echo "<div class=\"well\" >";
     foreach ($wouldBeDeleted as $wouldDelText) {
         echo "$wouldDelText<br>";
     }
@@ -316,7 +316,7 @@ if (count($wouldBeDeleted) > 0) {
     echo "</li>";
 } else if ($pruneMatches) {
     echo "<li>";
-    echo "<div class=\"confirm_delete_box\" >";
+    echo "<div class=\"well\" >";
     echo "<h3>No obsolete assignments were found to delete.</h3>";
     echo "</div>";
     echo "</li>";
@@ -336,7 +336,7 @@ if (count($wouldBeDeleted) > 0) {
     echo "</li>";
 } else if ($pruneCamperDups) {
     echo "<li>";
-    echo "<div class=\"confirm_delete_box\" >";
+    echo "<div class=\"well\" >";
     echo "<h3>No duplicate camper registrations were found.</h3>";
     echo "</div>";
     echo "</li>";

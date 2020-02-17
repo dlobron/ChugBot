@@ -221,7 +221,7 @@ class FormItemInstanceChooser extends FormItem
 JSEND;
         $this->html .= "$javascript \n";
         $this->html .= "<input type=\"checkbox\" onClick=\"toggle${num}(this)\" />Toggle All<br>";
-        $this->html .= "<div class=\"form_item_instance_chooser\" id=\"$idString\" >\n";
+        $this->html .= "<div class=\"form_item_instance_chooser well well-sm\" id=\"$idString\" >\n";
         $this->html .= genCheckBox($this->id2Name, $this->activeIdHash, $this->inputName);
         $this->html .= "</div>";
         if ($this->guideText) {
