@@ -321,36 +321,11 @@ form hr
     display:none;
 }
 
-form li.section_break
-{
-    border-top:1px dotted #ccc;
-    margin-top:9px;
-    padding-bottom:0;
-    padding-left:9px;
-    padding-top:13px;
-    width:97% !important;
-}
-
 form ul li.first
 {
     border-top:none !important;
     margin-top:0 !important;
     padding-top:0 !important;
-}
-
-form .section_break h3
-{
-    font-size:110%;
-    font-weight:400;
-    line-height:130%;
-    margin:0 0 2px;
-}
-
-form .section_break p
-{
-    font-size:85%;
-
-    margin:0 0 10px;
 }
 
 /**** Inputs and Labels ****/
@@ -363,12 +338,6 @@ label.description
     font-weight:700;
     line-height:150%;
     padding:0 0 1px;
-}
-
-span.symbol
-{
-    font-size:115%;
-    line-height:130%;
 }
 
 input.file
@@ -489,40 +458,6 @@ textarea.large
 }
 
 /**** Errors ****/
-#error_message
-{
-    background:#fff;
-    border:1px dotted red;
-    margin-bottom:1em;
-    padding-left:0;
-    padding-right:0;
-    padding-top:4px;
-    text-align:center;
-    width:99%;
-}
-
-#error_message_title
-{
-    color:#DF0000;
-    font-size:125%;
-    margin:7px 0 5px;
-    padding:0;
-}
-
-#error_message_desc
-{
-    color:#000;
-    font-size:100%;
-    margin:0 0 .8em;
-}
-
-#error_message_desc strong
-{
-    background-color:#FFDFDF;
-    color:red;
-    padding:2px 3px;
-}
-
 form li.error
 {
     background-color:#FFDFDF !important;
