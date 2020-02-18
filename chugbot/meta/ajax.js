@@ -25,13 +25,13 @@ $(function() {
 $(function() {
 	$.when(
 	       getPrefCount(),
-	       getExistingChoices(), 
+	       getExistingChoices(),
 	       getNav()
 	       ).then(getNameAndFillChoices).then(footer);
     });
 
 // Helper function to decode escaped HTML for the dynamic instructions in the ajax call to
-// get_first_name_and_instructions.  
+// get_first_name_and_instructions.
 function htmlDecode(input) {
     var doc = new DOMParser().parseFromString(input, "text/html");
     return doc.documentElement.textContent;
@@ -120,7 +120,7 @@ $(function() {
 			    orderedList.push(value);
 			}
 		    }
-		    arrayOrderedLists.push(orderedList);		    
+		    arrayOrderedLists.push(orderedList);
 		}
 		// Jump to the top so the user sees either an error box or a confirmation box.
 		$("body").scrollTop(0);
@@ -190,7 +190,7 @@ function getNameAndFillChoices() {
 		    $( ".pref_page_instructions" ).html(function() {
 			    if (data.instructions &&
 				data.instructions.length > 0) {
-				return $(this).text().replace("INSTRUCTIONS", 
+				return $(this).text().replace("INSTRUCTIONS",
 							      // data.instructions might be encoded, so use our
 							      // helper function.
 							      htmlDecode(data.instructions));
@@ -219,7 +219,7 @@ function getNameAndFillChoices() {
 		    // the DB.
 		    var html = "";
 		    var baseName = "sortedSource";
-		    $.each(json, 
+		    $.each(json,
 			   function(blockname, block2groupmap) {
 			       $.each(block2groupmap, function(groupname, chugNameAndId2DescList) {
 				       var destName = blockname + "||" + groupname;
@@ -250,7 +250,7 @@ function getNameAndFillChoices() {
 						       if (key in blockGroupChugInUse) {
 							   return true; // This is like "continue"
 						       }
-						       html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " + 
+						       html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " +
 							   titleText + " >" + chugName + "</li>";
 						   });
 					   });
@@ -267,7 +267,7 @@ function getNameAndFillChoices() {
 					       // If we have a chug description, write it as a tool tip.
 					       //    titleText = "title=\"" + chugName + ": " + chugDesc + "\"";
 					       //}
-					       html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " + 
+					       html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " +
 						   titleText + " >" + chugName + "</li>";
 					   });
 				       html += "</ul>";
@@ -282,7 +282,7 @@ function getNameAndFillChoices() {
 			$("#exit_button").show();
 			$(".SubmitPrefsButton").hide();
 			$(".center_block").hide();
-		    } 
+		    }
 		    $("#filltarget").html(html);
 		},
 		    error: function(xhr, desc, err) {
@@ -351,7 +351,7 @@ function getNameAndFillChoices() {
                                                 label.html(text);
                                                 $(this).find( ".ui-progressbar-value" ).css({ 'background': color });
                                             }
-					});	    
+					});
 				}
 			    }).disableSelection();
 		    }});

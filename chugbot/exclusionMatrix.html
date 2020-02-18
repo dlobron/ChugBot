@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Exclusion Matrix</title>
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" integrity="sha384-Nlo8b0yiGl7Dn+BgLn4mxhIIBU6We7aeeiulNCjHdUv/eKHx59s3anfSUjExbDxn" crossorigin="anonymous">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
@@ -50,16 +50,16 @@
   </style>
   </head>
   <body>
-    
+
     <div id="page">
     <div id="nav"></div>
 
-    <div class="container centered_container">
+    <div class="container well">
       <h2>De-Duplication Matrix</h2>
       <p>This page lets you tell the system that certain chugim should not be
 	assigned to the same camper in the same block as certain other chugim.
 	To disallow a chug combination, find the first chug on the left side, and
-	match it to the column headed by the second chug.  
+	match it to the column headed by the second chug.
       <p>For example, to prevent the system from assigning both Cooking and
 	Outdoor Cooking, find the row with "Cooking" on the left, then locate
 	the column with "Outdoor Cooking" at the top, and click the checkbox at
@@ -68,17 +68,17 @@
     </div>
 
     <div id="errors"></div>
-    
+
     <div class="image_container"><img src="images/Matrix.jpg" alt="" /></div>
 
     <div id="checkboxes"></div>
-    
+
     <div class="control_buttons">
       <input title="Save changes and exit this page" class="btn btn-primary btn-lg" type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
     </div>
     </div>
 
-    <div id="loading"><div class="message_container">Building matrix - please wait...</div></div>
-    
+    <div id="loading"><div class="container well well-lg">Building matrix - please wait...</div></div>
+
   </body>
 </html>
