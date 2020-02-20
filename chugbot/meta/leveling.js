@@ -1,4 +1,4 @@
-// On page load, clear some structures, grab nav data, 
+// On page load, clear some structures, grab nav data,
 // and then get and display current matches.
 $(function() {
         $.when(
@@ -60,7 +60,7 @@ function getColorForCount(curCount, chugMin,chugMax) {
     return colorClass;
 }
 
-// Loop through all chugim in a group, and update their 
+// Loop through all chugim in a group, and update their
 // current count and associated count color.
 function updateCount(chugId2Beta, curChugHolder) {
     var groupHolder = $(curChugHolder).closest(".groupholder");
@@ -119,7 +119,7 @@ function chugIdsSortedByName(chugId2Beta, chugId2Entity) {
 	    var betaY = chugId2Beta[y];
 	    if (betaX.name.toLowerCase() < betaY.name.toLowerCase()) {
 		return -1;
-	    } 
+	    }
 	    if (betaX.name.toLowerCase() > betaY.name.toLowerCase()) {
 		return 1;
 	    }
@@ -153,7 +153,7 @@ function isDupOf(droppedChugId, matchHash, deDupMatrix, chugId2MatchedCampers, m
 		// Don't flag our own ID as a dup: it will be in the hash.
 		continue;
 	    }
-	    if (matchedChugId in forbiddenToDupSet) {	       
+	    if (matchedChugId in forbiddenToDupSet) {
 		return matchedChugId;
 	    }
 	}
@@ -173,7 +173,7 @@ function getNav() {
 }
 
 function doAssignmentAjax(action, title, errText,
-			  edah_ids, group_ids, block) {    
+			  edah_ids, group_ids, block) {
     var values = {};
     values[action] = 1;
     values["edah_ids"] = edah_ids;
@@ -201,7 +201,7 @@ function doAssignmentAjax(action, title, errText,
 	    });
 }
 
-// Get the current match and chug info for this edah/block, and display it by group. 
+// Get the current match and chug info for this edah/block, and display it by group.
 // Also, display chugim with no matches, because the user needs the ability to drag
 // to them.
 function getAndDisplayCurrentMatches() {
@@ -225,7 +225,7 @@ function getAndDisplayCurrentMatches() {
                     type: 'post',
 		    async: false,
                     data:{ matches_and_prefs: 1,
-			edah_ids: edah_ids, 
+			edah_ids: edah_ids,
 			group_ids: group_ids,
 			block_id: block },
                     success: function(json) {
@@ -237,7 +237,7 @@ function getAndDisplayCurrentMatches() {
 		    // to the pref level of the assignment.  They should be draggable between chug fields,
 		    // but only within the enclosing group (i.e., when changing the aleph assignment for
 		    // a camper, it should be possible to move within aleph choices only).  Also, the tooltip
-		    // for the camper boxes should show an ordered list of chugim, top to bottom.  
+		    // for the camper boxes should show an ordered list of chugim, top to bottom.
 		    // "This, I know from nothing!" - N. Lobachevsky.
 		    var html = "";
 		    var edahNames = json["edahNames"];
@@ -262,7 +262,7 @@ function getAndDisplayCurrentMatches() {
 			var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
 			// Add a holder for each group (aleph, bet, gimel).
 			var groupName = groupId2Name[groupId];
-			html += "<div class=\"groupholder\" name=\"" + groupId + "\" >\n";
+			html += "<div class=\"groupholder well\" name=\"" + groupId + "\" >\n";
 			if (showEdahForCamper) {
 			    html += "<h3>" + groupName + " assignments</h3>\n";
 			} else {
@@ -356,7 +356,7 @@ function getAndDisplayCurrentMatches() {
 		    };
 		    // Compute and display chugim with space.  Link to the reporting page.
 		    var loc = window.location;
-		    var basePath = removeLastDirectoryPartOf(loc.pathname);		    
+		    var basePath = removeLastDirectoryPartOf(loc.pathname);
 		    var edahQueryString = "";
 		    $.each(edahId2Name, function(edahId, edahName) {
 			    edahQueryString += "&edah_ids%5B%5D=" + edahId;
@@ -497,7 +497,7 @@ function getAndDisplayCurrentMatches() {
 						delete matchHash[sourceChugId];
 						var ourBlockName = $(".blockfill").text().substring(12);
 						matchHash[droppedChugId] = ourBlockName;
-						var dupId = isDupOf(droppedChugId, matchHash, 
+						var dupId = isDupOf(droppedChugId, matchHash,
 								    deDupMatrix, chugId2MatchedCampers,
 								    $(dropped).attr('value'));
 						if (dupId in chugId2Beta) {
@@ -513,7 +513,7 @@ function getAndDisplayCurrentMatches() {
 					}
 				    });
 			    });
-		    } // End if succeeded	      
+		    } // End if succeeded
 		});
 }
 
@@ -526,7 +526,7 @@ $(function() {
                     type: 'post',
 		    async: false,
                     data:{ names_for_id: 1,
-		           edah_ids: edahIds, 
+		           edah_ids: edahIds,
 			   block_id: blockId },
                     success: function(json) {
                     $( ".edahfill" ).text(function() {
@@ -602,7 +602,7 @@ $(function() {
 		    ra.resolve();
 		    return ra;
 		};
-		var displayAction = function() {                    
+		var displayAction = function() {
 		    getAndDisplayCurrentMatches();
 		};
 		ajaxAction().then(displayAction);
@@ -622,7 +622,7 @@ $(function() {
 		if (r != true) {
 		    return;
 		}
-		// Loop through the groups, and then loop through the 
+		// Loop through the groups, and then loop through the
 		// chugim within each group.
 		var assignments = new Object(); // Associative array
                 var groupDivs = $(document).find(".groupholder");
@@ -630,7 +630,7 @@ $(function() {
                     var groupElement = groupDivs[i];
 		    var groupId = groupElement.getAttribute("name");
 		    var chugDivs = $(groupElement).find(".chugholder");
-		    assignments[groupId] = new Object();// Associative array 
+		    assignments[groupId] = new Object();// Associative array
                     for (var j = 0; j < chugDivs.length; j++) {
 			var chugDiv = chugDivs[j];
 			var chugId = chugDiv.getAttribute("name");

@@ -138,7 +138,7 @@ if ($result === false) {
     $permissionsError = "Failed to show database grants: $dbErr";
     error_log($permissionsError);
 } else {
-    while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
         foreach ($requiredPermissions as $rp => $count) {
             if (strpos($row[0], $rp) !== false) {
                 $requiredPermissions[$rp]++;
@@ -162,7 +162,7 @@ $haveDb = false;
 $noBackupDbError = "";
 $db = new DbConn();
 $result = $db->runQueryDirectly("SHOW DATABASES", $dbErr);
-while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
     if ($row[0] == $thisYearArchive) {
         $haveDb = true;
         break;

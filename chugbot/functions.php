@@ -14,7 +14,7 @@ function getArchiveYears(&$dbErr)
     $years = array();
     $matched = array();
     $archiveDbPattern = "/^" . MYSQL_DB . "(?<dbyear>\d+)$/";
-    while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
         // Expected format: MYSQL_DB . YEAR
         if (preg_match($archiveDbPattern, $row[0], $matched)) {
             array_push($years, $matched["dbyear"]);
