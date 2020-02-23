@@ -365,7 +365,7 @@ function getAndDisplayCurrentMatches() {
 		    $.each(groupId2Name, function(groupId, groupName) {
                             groupQueryString += "&group_ids%5B%5D=" + groupId;
                         });
-		    var reportLink = "<a class=\"btn btn-primary btn-med btn-with-padding\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
+		    var reportLink = "<a class=\"btn btn-primary btn-with-padding\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
 		    var freeHtml = "<h4>Chugim with Free Space:</h4>";
 		    var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2Beta);
 		    for (var i = 0; i < sortedChugIds.length; i++) {
