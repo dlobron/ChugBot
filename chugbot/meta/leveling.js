@@ -301,7 +301,7 @@ function getAndDisplayCurrentMatches() {
 				chugId2FreeSpace[chugId] = chugMax - curCount;
 			    }
 			    var colorClass = getColorForCount(curCount, chugMin, chugMax);
-			    html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder\">\n";
+			    html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder well well-sm well-white\">\n";
 			    if (chugName == "Not Assigned Yet") {
 				html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
 			    } else {
