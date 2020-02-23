@@ -1158,10 +1158,10 @@ if ($doReport) {
             "b.block_id", true);
         addWhereClause($inner, $db, $activeEdahIds,
             "ca.edah_id", true);
-        $inner .= " GROUP BY 1";
+        $inner .= " GROUP BY 1, 2";
 
         // Now, build and fun the full query.
-        $fullSql = "SELECT c.name chug_id, CONCAT(c.name, ' (', g.name, ')') chug_name, " .
+        $fullSql = "SELECT c.chug_id chug_id, CONCAT(c.name, ' (', g.name, ')') chug_name, " .
             "a.match_count num_campers_assigned, a.block_name block_name, " .
             "CASE WHEN c.max_size = 0 OR c.max_size = " . MAX_SIZE_NUM . " THEN \"No limit\" ELSE c.max_size END num_campers_allowed " .
             "FROM chugim c, groups g, (";
