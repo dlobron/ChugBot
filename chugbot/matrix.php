@@ -17,7 +17,7 @@ if (isset($_POST["get_chug_map"])) {
     $db = new DbConn();
     $db->addSelectColumn("name");
     $db->addSelectColumn("chug_id");
-    $db->addOrderByClause("GROUP BY name ORDER BY name ");
+    $db->addOrderByClause("GROUP BY name, chug_id ORDER BY name ");
     $err = "";
     $result = $db->simpleSelectFromTable("chugim", $err);
     if ($result == false) {

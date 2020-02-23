@@ -40,7 +40,7 @@ $(function() {
 				    }
 				    chugChecked[leftChug][rightChug] = 1;
 				});
-			});    
+			});
 		}, error: function(xhr, desc, err) {
 		    console.log(xhr);
 		    console.log("Details: " + desc + "\nError:" + err);
@@ -50,8 +50,8 @@ $(function() {
             }).then(function() {
 		    var target = $('#checkboxes');
 		    var i, x, y, checkbox, html;
-		    html = "<div class=matrix_container><table id=\"matrix\" class=\"display hover compact\"><thead><tr><th></th>";
-		    // Table column headers                                                   
+		    html = "<div class=\"well container\"><table id=\"matrix\" class=\"display hover compact\"><thead><tr><th></th>";
+		    // Table column headers
 		    for (i = 0; i < chugNames.length; i++) {
 			html += "<th>" + chugNames[i] + "</th>";
 		    }
@@ -111,7 +111,7 @@ $(function() {
 		    homeUrl = homeUrl.substr(0, qpos);
 		}
 		// Prepare to send ajax.  We send and reset the array when we hit our max
-		// value, because PHP only allows a configurable number of input vars in a 
+		// value, because PHP only allows a configurable number of input vars in a
 		// submit (max-input-vars, default 1,000).  See:
 		// php.net/manual/en/info.configuration.php#ini.max-input-vars
 		var maxSubmitSize = 750;
@@ -172,5 +172,5 @@ $(function() {
 		}
 	    });
     });
-		    
-		
+
+
