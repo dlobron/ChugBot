@@ -144,7 +144,7 @@ EOM;
 }
 
 if ($emailError) {
-    fatalError("$emailError.  Please try again, or escalate to a database administrator to reset the administrative password manually.");
+    fatalError("Failed to send reset email to $adminEmail: $emailError.  Please try again, or escalate to a database administrator to reset the administrative password manually.");
 }
 
 // Page display for non-error cases starts here.
