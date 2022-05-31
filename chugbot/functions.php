@@ -1,7 +1,7 @@
 <?php
 include_once 'constants.php';
 include_once 'functions.php';
-require_once 'PHPMailer/PHPMailerAutoload.php';
+require_once 'PHPMailer/PHPMailer.php';
 
 function getArchiveYears(&$dbErr)
 {
