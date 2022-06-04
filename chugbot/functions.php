@@ -1,7 +1,13 @@
 <?php
 include_once 'constants.php';
 include_once 'functions.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once 'PHPMailer/Exception.php';
 require_once 'PHPMailer/PHPMailer.php';
+require_once 'PHPMailer/SMTP.php';
 
 function getArchiveYears(&$dbErr)
 {
@@ -86,7 +92,7 @@ function sendMail($address,
     // https://github.com/Synchro/PHPMailer/blob/master/examples/gmail.phps
     // The settings below are the ones needed by CRNE's ISP, A Small Orange, as
     // of 2016.
-    $mail = new PHPMailer;
+    $mail = new PHPMailer();
     // JQuery is unable to parse our JSON if an email error
     // occurs when SMTPDebug is enabled, so I'm not using it for now.
     // $mail->SMTPDebug = 1; // DBG: 1 = errors and messages, 2 = messages only
