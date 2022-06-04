@@ -211,7 +211,7 @@ function do_assignment($edah_ids, $block_id, $group_id, &$err)
     $db = new DbConn();
     $db->addSelectColumn("name");
     $db->addWhereColumn("group_id", $group_id, 'i');
-    $result = $db->simpleSelectFromTable("groups", $err);
+    $result = $db->simpleSelectFromTable("chug_groups", $err);
     if ($result == false) {
         error_log($err);
         return false;

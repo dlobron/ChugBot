@@ -368,7 +368,7 @@ function fillConstraintsCheckBox() {
     $("#${parentId} input:checked").each(function() {
        curSelectedEdahIds.push($(this).attr('value'));
     });
-    var sql = "SELECT e.group_id group_id, g.name group_name FROM edot_for_group e, groups g WHERE e.edah_id IN (";
+    var sql = "SELECT e.group_id group_id, g.name group_name FROM edot_for_group e, chug_groups g WHERE e.edah_id IN (";
     var ct = 0;
     for (var i = 0; i < curSelectedEdahIds.length; i++) {
         if (ct++ > 0) {

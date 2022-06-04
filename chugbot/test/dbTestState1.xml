@@ -19,7 +19,7 @@
 		<field name="name">Mini Aleph</field>
 	</row>
 	</table_data>
-	<table_data name="groups">
+	<table_data name="chug_groups">
 	<row>
 		<field name="group_id">1</field>
 		<field name="name">aleph</field>

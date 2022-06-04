@@ -46,7 +46,7 @@ COLLATE utf8_unicode_ci
 ENGINE = INNODB;
 
 # A block is a division of a session, e.g.,
-# "July 1" or "August 2".  
+# "July 1" or "August 2".
 CREATE TABLE IF NOT EXISTS blocks(
 block_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL,
@@ -60,7 +60,7 @@ ENGINE = INNODB;
 # should be assigned for.  For example, campers in the July session need
 # assignments for the July 1 block, and so do campers signed up for
 # July + August and Mini Aleph.  In theory, we could ask campers to just
-# indicate the blocks they are signed up for, but they sign up for things 
+# indicate the blocks they are signed up for, but they sign up for things
 # in terms of sessions.
 CREATE TABLE IF NOT EXISTS block_instances(
 block_id int NOT NULL,
@@ -110,7 +110,7 @@ PRIMARY KEY pk_bunk_instances(bunk_id, edah_id))
 COLLATE utf8_unicode_ci
 ENGINE = INNODB;
 
-# This table stores camper registration for the summer.  Each 
+# This table stores camper registration for the summer.  Each
 # camper signs up for one edah in a summer, and they choose
 # a session.
 CREATE TABLE IF NOT EXISTS campers(
@@ -137,7 +137,7 @@ ENGINE = INNODB;
 
 # Each chug instance is assigned to a group for the whole summer.
 # For example, swimming might be in group aleph.
-CREATE TABLE IF NOT EXISTS groups(
+CREATE TABLE IF NOT EXISTS chug_groups(
 group_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name varchar(50) NOT NULL, # aleph, bet, or gimel
 UNIQUE KEY uk_groups(name))
@@ -147,13 +147,13 @@ ENGINE = INNODB;
 # This table holds data on each chug.  Each chug belongs to exactly one group (aleph, bet, or gimel), and
 # the group is consistent across all edot for the whole summer.  We assume for now
 # that all chugim are offered in all sessions to all edot, and that size limits are consistent for all
-# edot and sessions.  
+# edot and sessions.
 # To check: I think that chugim with the same name can exist in more than one group (for example, Swimming aleph,
-# Swimming bet).  
+# Swimming bet).
 CREATE TABLE IF NOT EXISTS chugim(
 name varchar(50) NOT NULL,
 group_id int,
-FOREIGN KEY fk_group(group_id) REFERENCES groups(group_id)
+FOREIGN KEY fk_group(group_id) REFERENCES chug_groups(group_id)
 ON DELETE SET NULL
 ON UPDATE CASCADE,
 max_size int NULL,
@@ -197,7 +197,7 @@ chug_instance_id int NOT NULL AUTO_INCREMENT PRIMARY KEY)
 COLLATE utf8_unicode_ci
 ENGINE = INNODB;
 
-# Each entry in this table represents a camper preference list for a given group of chugim in a 
+# Each entry in this table represents a camper preference list for a given group of chugim in a
 # given block.  For example, a camper would make a pref list for the aleph chugim in July, first week.
 # Up to 6 choices are allowed for each group/block tuple.
 CREATE TABLE IF NOT EXISTS preferences(
@@ -206,7 +206,7 @@ FOREIGN KEY fk_camper_id(camper_id) REFERENCES campers(camper_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
 group_id int NOT NULL, # aleph, bet, or gimel
-FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
+FOREIGN KEY fk_group_id(group_id) REFERENCES chug_groups(group_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
 block_id int NOT NULL,
@@ -289,7 +289,7 @@ ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS edot_for_group(
 group_id int NOT NULL,
-FOREIGN KEY fk_group_id(group_id) REFERENCES groups(group_id)
+FOREIGN KEY fk_group_id(group_id) REFERENCES chug_groups(group_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
 edah_id int NOT NULL,
@@ -314,7 +314,7 @@ INSERT INTO category_tables (name, delete_ok) VALUES ("bunks", 0);
 INSERT INTO category_tables (name, delete_ok) VALUES ("campers", 1);
 INSERT INTO category_tables (name, delete_ok) VALUES ("chugim", 1);
 INSERT INTO category_tables (name, delete_ok) VALUES ("edot", 0);
-INSERT INTO category_tables (name, delete_ok) VALUES ("groups", 0);
+INSERT INTO category_tables (name, delete_ok) VALUES ("chug_groups", 0);
 INSERT INTO category_tables (name, delete_ok) VALUES ("sessions", 0);
 
 # SOURCE /Applications/MAMP/htdocs/SampleData.sql;

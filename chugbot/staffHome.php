@@ -47,13 +47,13 @@ $bunkId2Name = array();
 
 fillId2Name(null, $chugId2Name, $dbErr,
     "chug_id", "chugim", "group_id",
-    "groups");
+    "chug_groups");
 fillId2Name(null, $sessionId2Name, $dbErr,
     "session_id", "sessions");
 fillId2Name(null, $blockId2Name, $dbErr,
     "block_id", "blocks");
 fillId2Name(null, $groupId2Name, $dbErr,
-    "group_id", "groups");
+    "group_id", "chug_groups");
 fillId2Name(null, $edahId2Name, $dbErr,
     "edah_id", "edot");
 fillId2Name(null, $bunkId2Name, $dbErr,
@@ -117,7 +117,7 @@ EOM;
 </div>
 
 <div>
-<?php echo genPickListForm($groupId2Name, "group", "groups"); ?>
+<?php echo genPickListForm($groupId2Name, "group", "chug_groups"); ?>
 </div>
 
 <div>
