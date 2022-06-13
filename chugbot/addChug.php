@@ -38,7 +38,7 @@ $groupDropDown->setInputClass("element select medium");
 $groupDropDown->setInputSingular("group");
 $groupDropDown->setColVal($groupIdVal);
 $groupDropDown->fillDropDownId2Name($addChugPage->dbErr,
-    "group_id", "groups");
+    "group_id", "chug_groups");
 $addChugPage->addFormItem($groupDropDown);
 
 $sessionChooserField = new FormItemInstanceChooser("Active Blocks", false, "block_ids", 2);
@@ -86,7 +86,7 @@ $dedupDropDown->setDefaultMsg("Choose Chug(im)");
 $dedupDropDown->setInputClass("element select medium");
 $db = new DbConn();
 $err = "";
-$result = $db->runQueryDirectly("SELECT c.name, c.chug_id, g.name FROM chugim c, groups g WHERE c.group_id = g.group_id", $err);
+$result = $db->runQueryDirectly("SELECT c.name, c.chug_id, g.name FROM chugim c, chug_groups g WHERE c.group_id = g.group_id", $err);
 $chugId2Name = array();
 while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
     $chugId2Name[$row[1]] = $row[0] . " (" . $row[2] . ")";

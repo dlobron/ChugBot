@@ -5,7 +5,7 @@ include_once 'formItem.php';
 bounceToLogin();
 
 $editGroupPage = new EditPage("Edit Group", "Please update group information as needed",
-    "groups", "group_id");
+    "chug_groups", "group_id");
 $editGroupPage->addColumn("name");
 $editGroupPage->setActiveEdotFilterBy("group");
 $secondParagraph = <<<EOM

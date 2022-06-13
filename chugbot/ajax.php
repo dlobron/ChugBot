@@ -107,22 +107,22 @@ if (isset($_POST["get_existing_choices"])) {
     }
     $sql =
         "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 1 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
+        "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.first_choice_id=c.chug_id UNION ALL " .
         "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 2 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
+        "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.second_choice_id=c.chug_id UNION ALL " .
         "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 3 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
+        "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.third_choice_id=c.chug_id UNION ALL " .
         "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 4 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
+        "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fourth_choice_id=c.chug_id UNION ALL " .
         "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 5 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
+        "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fifth_choice_id=c.chug_id UNION ALL " .
         "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 6 rank " .
-        "FROM blocks b, groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
+        "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.sixth_choice_id=c.chug_id " .
         "order by blockname, groupname, rank";
     $db->isSelect = true; // Must set manually for direct queries.
@@ -276,7 +276,7 @@ END;
                 $db2->addSelectColumn("group_id");
                 $db2->addWhereColumn("name", $group, 's');
                 $err = "";
-                $result = $db2->simpleSelectFromTable("groups", $err);
+                $result = $db2->simpleSelectFromTable("chug_groups", $err);
                 if ($result == false) {
                     header('HTTP/1.1 500 Internal Server Error');
                     die(json_encode(array("error" => $err)));
@@ -407,7 +407,7 @@ if (isset($_POST["get_chug_info"])) {
         // If we have a camper ID, use it to grab the chug lists.
         $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
             "FROM " .
-            "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb, edot_for_group eg " .
+            "campers cm, block_instances bi, blocks b, chug_instances ci, chugim c, chug_groups g, edot_for_chug e, edot_for_block eb, edot_for_group eg " .
             "WHERE " .
             "cm.camper_id = ? AND " .
             "cm.session_id = bi.session_id AND " .
@@ -435,7 +435,7 @@ if (isset($_POST["get_chug_info"])) {
         $edah_id = $_SESSION["edah_id"];
         $sql = "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, c.description chugdesc " .
             "FROM " .
-            "block_instances bi, blocks b, chug_instances ci, chugim c, groups g, edot_for_chug e, edot_for_block eb, edot_for_group eg " .
+            "block_instances bi, blocks b, chug_instances ci, chugim c, chug_groups g, edot_for_chug e, edot_for_block eb, edot_for_group eg " .
             "WHERE " .
             "bi.session_id = ? AND " .
             "bi.block_id = b.block_id AND " .

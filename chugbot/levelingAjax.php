@@ -321,7 +321,7 @@ if (isset($_POST["matches_and_prefs"])) {
     $chugId2Beta = array();
     $sql = "SELECT c.chug_id chugid, c.name chugname, c.min_size minsize, " .
         "c.max_size maxsize, g.name groupname, e.edah_id edahid " .
-        "FROM chugim c, groups g, edot_for_chug e WHERE c.group_id = g.group_id AND ";
+        "FROM chugim c, chug_groups g, edot_for_chug e WHERE c.group_id = g.group_id AND ";
     $edahIdOrText = "";
     foreach ($edah_ids as $edah_id) {
         $db->addColVal($edah_id, 'i');
@@ -414,11 +414,11 @@ if (isset($_POST["matches_and_prefs"])) {
         $db->addColVal($group_id, 'i');
     }
     $groupInText .= ")";
-    $sql = "SELECT g.group_id group_id, g.name name FROM groups g, edot_for_group e " .
+    $sql = "SELECT g.group_id group_id, g.name name FROM chug_groups g, edot_for_group e " .
         "WHERE g.group_id = e.group_id AND $edahIdOrText $groupInText";
     $result = $db->doQuery($sql, $dbErr);
     if ($result == false) {
-        error_log("Unable to select groups: $err");
+        error_log("Unable to select chug_groups: $err");
         header('HTTP/1.1 500 Internal Server Error');
         die(json_encode(array("error" => $err)));
     }

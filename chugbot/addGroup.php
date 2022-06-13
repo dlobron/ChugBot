@@ -6,7 +6,7 @@ bounceToLogin();
 
 $addGroupPage = new AddPage("Add Group",
     "Please enter your group information",
-    "groups", "group_id");
+    "chug_groups", "group_id");
 $addGroupPage->addColumn("name");
 $addGroupPage->setActiveEdotFilterBy("group");
 $secondParagraph = <<<EOM

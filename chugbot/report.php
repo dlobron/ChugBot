@@ -703,13 +703,13 @@ if (!is_null($errText)) {
 // menus.
 fillId2Name($archiveYear, $chugId2Name, $dbErr,
     "chug_id", "chugim", "group_id",
-    "groups");
+    "chug_groups");
 fillId2Name($archiveYear, $sessionId2Name, $dbErr,
     "session_id", "sessions");
 fillId2Name($archiveYear, $blockId2Name, $dbErr,
     "block_id", "blocks");
 fillId2Name($archiveYear, $groupId2Name, $dbErr,
-    "group_id", "groups");
+    "group_id", "chug_groups");
 fillId2Name($archiveYear, $edahId2Name, $dbErr,
     "edah_id", "edot");
 fillId2Name($archiveYear, $bunkId2Name, $dbErr,
@@ -973,7 +973,7 @@ if ($doReport) {
             "JOIN chugim AS ch ON i.chug_id = ch.chug_id " .
             "JOIN campers AS c ON c.camper_id = m.camper_id " .
             "JOIN edot AS e ON c.edah_id = e.edah_id " .
-            "JOIN groups AS g ON g.group_id = ch.group_id " .
+            "JOIN chug_groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id ";
         $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
         $haveWhere = addWhereClause($sql, $db, $activeEdahIds,
@@ -1009,7 +1009,7 @@ if ($doReport) {
             "JOIN chugim AS ch ON i.chug_id = ch.chug_id " .
             "JOIN campers AS c ON c.camper_id = m.camper_id " .
             "JOIN edot AS e ON c.edah_id = e.edah_id " .
-            "JOIN groups AS g ON g.group_id = ch.group_id " .
+            "JOIN chug_groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id ";
         $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
         if ($bunkId) {
@@ -1082,7 +1082,7 @@ if ($doReport) {
             "p.fourth_choice_id fourth_choice, p.fifth_choice_id fifth_choice, p.sixth_choice_id sixth_choice " .
             "FROM campers AS c " .
             "JOIN preferences AS p ON c.camper_id = p.camper_id " .
-            "JOIN groups AS g ON g.group_id = p.group_id " .
+            "JOIN chug_groups AS g ON g.group_id = p.group_id " .
             "JOIN blocks AS bl ON bl.block_id = p.block_id " .
             "JOIN edot AS e ON c.edah_id = e.edah_id " .
             "LEFT OUTER JOIN  " .
@@ -1127,7 +1127,7 @@ if ($doReport) {
             "JOIN chugim AS ch ON ch.chug_id = i.chug_id " .
             "JOIN campers AS c ON c.camper_id = m.camper_id " .
             "JOIN edot AS e ON e.edah_id = c.edah_id " .
-            "JOIN groups AS g ON g.group_id = ch.group_id " .
+            "JOIN chug_groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
         addWhereClause($sql, $db, $activeBlockIds);
         $sql .= " ORDER BY edah_sort_order, edah, name, block, group_name";
@@ -1164,7 +1164,7 @@ if ($doReport) {
         $fullSql = "SELECT c.chug_id chug_id, CONCAT(c.name, ' (', g.name, ')') chug_name, " .
             "a.match_count num_campers_assigned, a.block_name block_name, " .
             "CASE WHEN c.max_size = 0 OR c.max_size = " . MAX_SIZE_NUM . " THEN \"No limit\" ELSE c.max_size END num_campers_allowed " .
-            "FROM chugim c, groups g, (";
+            "FROM chugim c, chug_groups g, (";
         $fullSql .= $inner;
         $fullSql .= ") a " .
             "WHERE c.chug_id = a.chug_id AND c.group_id = g.group_id AND " .
@@ -1186,7 +1186,7 @@ if ($doReport) {
         $localErr = "";
         $dbc = new DbConn();
         $sql = "SELECT DISTINCT g.name groupname " .
-            "FROM groups g, matches m, chug_instances i, chugim c, campers ca " .
+            "FROM chug_groups g, matches m, chug_instances i, chugim c, campers ca " .
             "WHERE i.chug_instance_id = m.chug_instance_id " .
             "AND i.chug_id = c.chug_id " .
             "AND c.group_id = g.group_id " .
@@ -1242,7 +1242,7 @@ if ($doReport) {
                 "WHEN i.chug_id = p.sixth_choice_id THEN 6 " .
                 "ELSE \"no pref\" " .
                 "END AS happiness_level " .
-                "FROM groups g, blocks b, (matches m, chug_instances i, chugim c) " .
+                "FROM chug_groups g, blocks b, (matches m, chug_instances i, chugim c) " .
                 "LEFT OUTER JOIN preferences p " .
                 "ON p.group_id = c.group_id AND p.block_id = i.block_id AND m.camper_id = p.camper_id " .
                 "WHERE i.block_id = b.block_id " .
