@@ -17,11 +17,16 @@ if (!camperLoggedIn()) {
     $code = $hint = "";
     if ($result) {
         $row = $result->fetch_assoc();
-        $code = $row["regular_user_token"];
-        $hint = $row["regular_user_token_hint"];
+        if ($row) {
+            $code = $row["regular_user_token"];
+            $hint = $row["regular_user_token_hint"];
+        }
     }
 
-    $accessCode = test_input($_POST['camper_code']);
+    $accessCode = null;
+    if (array_key_exists('camper_code', $_POST)) {
+        $accessCode = test_input($_POST['camper_code']);
+    }
     if (!$accessCode) {
         $accessCode = test_input($_GET['camper_code']);
     }
