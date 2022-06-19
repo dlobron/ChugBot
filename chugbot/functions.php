@@ -592,12 +592,14 @@ function navText()
     $result = $db->simpleSelectFromTable('admin_data', $err);
     if ($result) {
         $row = $result->fetch_assoc();
-        $campUrl = $row["camp_web"];
-        $campName = $row["camp_name"];
-        if ((!empty($campUrl)) &&
-            (!empty($campName))) {
-            $retVal .= "<li><a href=\"http://$campUrl/\">$campName Home</a></li>";
-        }
+	if ($row) {
+           $campUrl = $row["camp_web"];
+           $campName = $row["camp_name"];
+           if ((!empty($campUrl)) &&
+              (!empty($campName))) {
+              $retVal .= "<li><a href=\"http://$campUrl/\">$campName Home</a></li>";
+           }
+	}
     }
     $retVal .= "</ul></div></div></nav>";
 
