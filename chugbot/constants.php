@@ -8,12 +8,12 @@
 // Important: use 127.0.0.1:8889 as the host when running PHPUnit tests.  For regular use,
 // use localhost.
 //    define("MYSQL_HOST", "127.0.0.1:8889");
-    define("MYSQL_HOST", "localhost");
-    define("MYSQL_USER", "root");
-    define("MYSQL_PASSWD", "3SEk@DGPtyE@2@1");
-    define("MYSQL_DB", "camprama_chugbot_db");
-    define("MYSQL_PATH", "/usr/loca/bin/");
+    define("MYSQL_HOST", getenv("MYSQL_HOST"));
+    define("MYSQL_USER", getenv("MYSQL_USER"));
+    define("MYSQL_PASSWD", getenv("MYSQL_PASSWD"));             // This should be changed in production use.
+    define("MYSQL_DB", getenv("MYSQL_DB"));
+    define("MYSQL_PATH", "/Applications/MAMP/Library/bin"); // This should be changed in production use.
 
-    define("ADMIN_EMAIL_USERNAME", "dlobron@gmail.com");
-    define("ADMIN_EMAIL_PASSWORD", "3SEk@DGPtyE@2@1");
+    define("ADMIN_EMAIL_USERNAME", "chug@campramahne.org");
+    define("ADMIN_EMAIL_PASSWORD", "chug@campramahne.org"); // This should be changed in production use
 ?>
