@@ -10,10 +10,11 @@
 //    define("MYSQL_HOST", "127.0.0.1:8889");
     define("MYSQL_HOST", getenv("MYSQL_HOST"));
     define("MYSQL_USER", getenv("MYSQL_USER"));
-    define("MYSQL_PASSWD", getenv("MYSQL_PASSWD"));             // This should be changed in production use.
+    define("MYSQL_PASSWD", getenv("MYSQL_PASSWD"));
     define("MYSQL_DB", getenv("MYSQL_DB"));
-    define("MYSQL_PATH", "/Applications/MAMP/Library/bin"); // This should be changed in production use.
 
+    define("EMAIL_HOST", "email-smtp.us-east-2.amazonaws.com");
+    define("EMAIL_PORT", 587);
     define("ADMIN_EMAIL_USERNAME", "chug@campramahne.org");
-    define("ADMIN_EMAIL_PASSWORD", "chug@campramahne.org"); // This should be changed in production use
+    define("ADMIN_EMAIL_PASSWORD", "chug@campramahne.org");
 ?>

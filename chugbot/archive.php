@@ -183,13 +183,13 @@ if (!$haveDb) {
 }
 
 $binaryNotFoundError = "";
-$mysqldump = MYSQL_PATH . "/mysqldump";
-$mysql = MYSQL_PATH . "/mysql";
+$mysqldump = `which mysqldump`;
+$mysql = `which mysql`;
 if (!file_exists($mysqldump)) {
-    $binaryNotFoundError = "DB backup utility not found at $mysqldump: check with administrator";
+    $binaryNotFoundError = "DB backup utility mysqldump not found in PATH: check with administrator";
 }
 if (!file_exists($mysql)) {
-    $binaryNotFoundError = "DB utility not found at $mysql: check with administrator";
+    $binaryNotFoundError = "DB utility mysql not found in PATH: check with administrator";
 }
 
 // Check the GET data to find out what action to take.

@@ -125,10 +125,12 @@ function sendMail($address,
     $mail->Subject = $subject;
     $mail->Body = $body;
     $mail->isSMTP();
+    // Uncomment the next line to enable debug messages.
+    // $mail->SMTPDebug = \PHPMailer\PHPMailer\SMTP::DEBUG_SERVER;
     $mail->isHTML(true);
     $mail->SMTPAuth = true;
-    $mail->Host = 'localhost';
-    $mail->Port = 25;
+    $mail->Host = EMAIL_HOST;
+    $mail->Port = EMAIL_PORT;
     $mail->Username = ADMIN_EMAIL_USERNAME;
     $mail->Password = ADMIN_EMAIL_PASSWORD;
     // GMail's filter rejects our messages when the source is something like foo@gmail.com,
