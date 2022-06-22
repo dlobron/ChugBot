@@ -15,6 +15,6 @@
 
     define("EMAIL_HOST", "email-smtp.us-east-2.amazonaws.com");
     define("EMAIL_PORT", 587);
-    define("ADMIN_EMAIL_USERNAME", "chug@campramahne.org");
-    define("ADMIN_EMAIL_PASSWORD", "chug@campramahne.org");
+    define("ADMIN_EMAIL_USERNAME", getenv("ADMIN_EMAIL_USERNAME"));
+    define("ADMIN_EMAIL_PASSWORD", getenv("ADMIN_EMAIL_PASSWORD"));
 ?>

@@ -15,6 +15,6 @@
 
     define("EMAIL_HOST", "smtp.mailtrap.io");
     define("EMAIL_PORT", 25);
-    define("ADMIN_EMAIL_USERNAME", "abbab081eb9a7c");
-    define("ADMIN_EMAIL_PASSWORD", "c61a5bc3b91779");
+    define("ADMIN_EMAIL_USERNAME", getenv("ADMIN_EMAIL_USERNAME"));
+    define("ADMIN_EMAIL_PASSWORD", getenv("ADMIN_EMAIL_PASSWORD"));
 ?>

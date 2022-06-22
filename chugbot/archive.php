@@ -183,13 +183,13 @@ if (!$haveDb) {
 }
 
 $binaryNotFoundError = "";
-$mysqldump = `which mysqldump`;
-$mysql = `which mysql`;
+$mysqldump = trim(`export PATH="\$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"; which mysqldump`);
+$mysql = trim(`export PATH="\$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"; which mysql`);
 if (!file_exists($mysqldump)) {
     $binaryNotFoundError = "DB backup utility mysqldump not found in PATH: check with administrator";
 }
-if (!file_exists($mysql)) {
-    $binaryNotFoundError = "DB utility mysql not found in PATH: check with administrator";
+if (!file_exists("$mysql")) {
+    $binaryNotFoundError = "DB utility mysql not found in PATH (got $mysql): check with administrator";
 }
 
 // Check the GET data to find out what action to take.
@@ -197,8 +197,14 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" &&
     empty($dbErr) &&
     empty($binaryNotFoundError) &&
     empty($noBackupDbError)) {
-    $doArchive = test_input($_GET["archive"]);
-    $restoreFromArchive = test_input($_GET["restore"]);
+    $doArchive = false;
+    if (array_key_exists("archive", $_GET)) {
+        $doArchive = test_input($_GET["archive"]);
+    }
+    $restoreFromArchive = false;
+    if (array_key_exists("restore", $_GET)) {
+        $restoreFromArchive = test_input($_GET["restore"]);
+    }
     $preserveTables = array();
     populateActiveIds($preserveTables, "pt");
     if ($doArchive) {
@@ -268,13 +274,11 @@ $formHtml = <<<EOM
     <p>Before you archive, use the checkboxes to choose those items from the current database that you would like to keep for next year (if any).</p>
     </div>
     <ul>
-    <li>
 EOM;
 echo $formHtml;
 echo $tableChooser->renderHtml();
 
 $formHtml = <<<EOM
-    </li>
     <li class="buttons">
     <input class="btn btn-primary" type="submit" name="submit" value="Archive" data-toggle="tooltip" title="Archive your $curCampYear data" />
     <button class="btn btn-link" type="button" data-toggle="tooltip" title="Exit with no changes" onclick="window.location.href='$homeUrl'">Cancel</button>
