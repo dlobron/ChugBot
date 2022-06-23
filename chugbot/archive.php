@@ -133,7 +133,7 @@ foreach ($archiveYears as $archiveYear) {
 }
 $requiredPermissions = array("DELETE" => 0, "LOCK TABLES" => 0);
 $db = new DbConn();
-$result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'@'" . MYSQL_HOST . "'", $dbErr);
+$result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'", $dbErr);
 if ($result === false) {
     $permissionsError = "Failed to show database grants: $dbErr";
     error_log($permissionsError);
