@@ -19,68 +19,57 @@ $preserveTableId2Name[4] = "edot";
 $preserveTableId2Name[5] = "sessions";
 $preserveTableId2Name[6] = "campers";
 
-function restoreCurrentDb(&$dbErr, $mysql, $mysqldump, $thisYearArchive)
+function restoreCurrentDb(&$dbErr, $thisYearArchive)
 {
-    // 1. Dump the archive database.
-    error_log("Writing out archive DB");
-    $dbPath = "/tmp/ardb.sql";
-    error_log("Dumping archive database to $dbPath using $mysqldump");
-    $cmd = "$mysqldump --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " $thisYearArchive > $dbPath";
-    $output = array();
-    $retVal;
-    $result = exec($cmd, $output, $retVal);
-    if ($retVal) {
-        $dbErr = errorString("Failed to write out archive database:\n");
-        foreach ($output as $line) {
-            $dbErr .= "$line";
+    $nextCampYear = yearOfUpcomingSummer();
+    $curCampYear = $nextCampYear - 1;
+    $db = new DbConn();
+    $archive_db = new DbConn($curCampYear);
+    $result = $archive_db->runQueryDirectly("SHOW TABLES", $dbErr);
+    $i = 0;
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $dbErr = "";
+        $table = $row[$i];
+        $r2 = $db->runQueryDirectly("SELECT * FROM $table", $dbErr);
+        if ($dbErr) {
+            $dbErr = "Restore failed to select from table: $dbErr";
+            return;
         }
-        return;
-    }
-    // 2. Import the archive DB data into the current DB.
-    error_log("Importing archive DB to current DB");
-    $cmd = $mysql . " --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " " . MYSQL_DB . " < $dbPath";
-    $retVal;
-    $result = exec($cmd, $output, $retVal);
-    if ($retVal) {
-        $dbErr = errorString("Failed to restore to " . MYSQL_DB . " :\n");
-        foreach ($output as $line) {
-            $dbErr .= $line;
+        // If the table has no rows, restore it.
+        if ($r2->num_rows > 0) {
+            continue;
         }
-        return;
+        $db->runQueryDirectly("INSERT INTO $table SELECT * FROM $thisYearArchive " . "." . "$table", $dbErr);
+        if ($dbErr) {
+            $dbErr = "Restore failed to populate table: $dbErr";
+            return;
+        }
     }
-
+    $db->runQueryDirectly("SET FOREIGN_KEY_CHECKS = 1", $dbErr);
+    return;
 }
 
-function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
-    $preserveTableId2Name, $thisYearArchive) {
-    // 1. Dump the current database.
-    error_log("Writing out current DB contents");
-    $dbPath = "/tmp/curdb.sql";
-    error_log("Dumping current database to $dbPath using $mysqldump");
-    $cmd = "$mysqldump --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " " . MYSQL_DB . " > $dbPath";
-    $output = array();
-    $retVal;
-    $result = exec($cmd, $output, $retVal);
-    if ($retVal) {
-        $dbErr = errorString("Failed to back up current database:\n");
-        foreach ($output as $line) {
-            $dbErr .= "$line";
+function archiveCurrentDb(&$dbErr, $preserveTables, $preserveTableId2Name) {
+    $nextCampYear = yearOfUpcomingSummer();
+    $curCampYear = $nextCampYear - 1;
+    $db = new DbConn();
+    $archive_db = new DbConn($curCampYear);
+    $result = $db->runQueryDirectly("SHOW TABLES", $dbErr);
+    $i = 0;
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $table = $row[$i];
+        $archive_db->runQueryDirectly("DROP TABLE IF EXISTS $table;", $dbErr);
+        if ($dbErr) {
+            $dbErr = "Archive failed to drop table: $dbErr";
+            return;
         }
-        return;
-    }
-    // 2. Import dumped data to the archive DB.
-    error_log("Importing data to $thisYearArchive");
-    $cmd = "$mysql --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " $thisYearArchive < $dbPath";
-    $retVal;
-    $result = exec($cmd, $output, $retVal);
-    if ($retVal) {
-        $dbErr = errorString("Failed to import backup data to $thisYearArchive:\n");
-        foreach ($output as $line) {
-            $dbErr .= $line;
+        $archive_db->runQueryDirectly("CREATE TABLE $table AS SELECT * FROM " . MYSQL_DB . ".$table;", $dbErr);
+        if ($dbErr) {
+            $dbErr = "Archive failed to create table: $dbErr";
+            return;
         }
-        return;
     }
-    // 3. Clear matches and prefs from the current DB, since these always switch over from year
+    // Clear matches and prefs from the current DB, since these always switch over from year
     // to year.
     $delTables = array("matches", "preferences");
     foreach ($delTables as $delTable) {
@@ -91,7 +80,7 @@ function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
             return;
         }
     }
-    // 4. Empty dynamic tables from the current DB, unless their ID appears in $preserveTables.
+    // Empty dynamic tables from the current DB, unless their ID appears in $preserveTables.
     foreach ($preserveTableId2Name as $delTableId => $delTableName) {
         if (array_key_exists("$delTableId", $preserveTables)) {
             error_log("Not clearing dynamic $delTableName per checkbox");
@@ -208,8 +197,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" &&
     $preserveTables = array();
     populateActiveIds($preserveTables, "pt");
     if ($doArchive) {
-        archiveCurrentDb($dbErr, $preserveTables, $mysql, $mysqldump,
-            $preserveTableId2Name, $thisYearArchive);
+        archiveCurrentDb($dbErr, $preserveTables, $preserveTableId2Name);
         if (empty($dbErr)) {
             $didArchiveDb = true;
             $curYearHasBeenArchived = true;
@@ -217,7 +205,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" &&
                 "or click \"Done\" to exit.</p>";
         }
     } else if ($restoreFromArchive) {
-        restoreCurrentDb($dbErr, $mysql, $mysqldump, $thisYearArchive);
+        restoreCurrentDb($dbErr, $thisYearArchive);
         if (empty($dbErr)) {
             $restoreText = "<p>Restore succeeded!</p>";
             $didRestoreDb = true;
