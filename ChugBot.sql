@@ -1,6 +1,8 @@
 # To load this file:
 # source <path-to-file>
-# For production use, remember to comment-out the last "source" line so as not to import test data.
+# Note that this file only contains table structure.  To load a database with
+# sample data for testing, use ChugBotWithData.sql (for local development), or
+# ChugBotWithDataProdVers.sql (for AWS development).
 
 # Create the database
 CREATE DATABASE IF NOT EXISTS camprama_chugbot_db COLLATE utf8_unicode_ci;
@@ -318,5 +320,3 @@ INSERT INTO category_tables (name, delete_ok) VALUES ("chugim", 1);
 INSERT INTO category_tables (name, delete_ok) VALUES ("edot", 0);
 INSERT INTO category_tables (name, delete_ok) VALUES ("chug_groups", 0);
 INSERT INTO category_tables (name, delete_ok) VALUES ("sessions", 0);
-
-# SOURCE /Applications/MAMP/htdocs/SampleData.sql;

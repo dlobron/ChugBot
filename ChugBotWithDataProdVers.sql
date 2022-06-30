@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.29, for Linux (x86_64)
 --
--- Host: localhost    Database: camprama_chugbot_db
+-- Host: localhost    Database: chugbot_test
 -- ------------------------------------------------------
 -- Server version	8.0.29-0ubuntu0.20.04.3
 
@@ -16,15 +16,15 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 # Create the database
-CREATE DATABASE IF NOT EXISTS camprama_chugbot_db COLLATE utf8_unicode_ci;
+CREATE DATABASE IF NOT EXISTS chugbot_test COLLATE utf8_unicode_ci;
 
 # Create a user for the chugbot program (if it does not already exist), and
 # grant the access it needs.
-CREATE USER IF NOT EXISTS 'root'@'localhost' IDENTIFIED BY '$2y$10$P1hpl8Hj2fdZnE3hokjeK.SyRFacwhqtS0I8Wn0NKOTUhFZmoMRva';
-GRANT CREATE,INSERT,SELECT,UPDATE,DELETE,LOCK TABLES ON camprama_chugbot_db.* TO 'root'@'localhost';
+CREATE USER IF NOT EXISTS 'admin'@'localhost' IDENTIFIED BY '$2y$10$q6aySPsIgbfkmD6eDAYOy.GNtn01.QTMsAUS/vIfoRZpq0WZHArmW';
+GRANT CREATE,INSERT,SELECT,UPDATE,DELETE,LOCK TABLES ON chugbot_test.* TO 'admin'@'localhost';
 
 # Switch to the new database, in preparation for creating tables.
-USE camprama_chugbot_db;
+USE chugbot_test;
 
 --
 -- Table structure for table `admin_data`
