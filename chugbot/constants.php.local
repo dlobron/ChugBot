@@ -12,7 +12,7 @@
     define("MYSQL_USER", "root");
     define("MYSQL_PASSWD", "3SEk@DGPtyE@2@1");
     define("MYSQL_DB", "camprama_chugbot_db");
-    define("MYSQL_PATH", "/usr/local/bin/");
+    define("MYSQL_PATH", "/usr/bin");
 
     define("ADMIN_EMAIL_USERNAME", "dlobron@gmail.com");
     define("ADMIN_EMAIL_PASSWORD", "3SEk@DGPtyE@2@1");
