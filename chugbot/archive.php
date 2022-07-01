@@ -57,12 +57,12 @@ function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
     error_log("Writing out current DB contents");
     $dbPath = "/tmp/curdb.sql";
     error_log("Dumping current database to $dbPath using $mysqldump");
-    $cmd = "$mysqldump --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " " . MYSQL_DB . " > $dbPath";
+    $cmd = "$mysqldump --user " . MYSQL_USER . " --password='" . MYSQL_PASSWD . "' " . MYSQL_DB . " > $dbPath";
     $output = array();
-    $retVal;
+    $retVal = 0;
     $result = exec($cmd, $output, $retVal);
-    if ($retVal) {
-        $dbErr = errorString("Failed to back up current database:\n");
+    if ($retVal != 0) {
+        $dbErr = errorString("Failed to back up current database (return code from $mysqldump = $retVal):\n");
         foreach ($output as $line) {
             $dbErr .= "$line";
         }
@@ -71,10 +71,10 @@ function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
     // 2. Import dumped data to the archive DB.
     error_log("Importing data to $thisYearArchive");
     $cmd = "$mysql --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " $thisYearArchive < $dbPath";
-    $retVal;
+    $retVal = 0;
     $result = exec($cmd, $output, $retVal);
-    if ($retVal) {
-        $dbErr = errorString("Failed to import backup data to $thisYearArchive:\n");
+    if ($retVal != 0) {
+        $dbErr = errorString("Failed to import backup data to $thisYearArchive (return code from $mysql = $retVal):\n");
         foreach ($output as $line) {
             $dbErr .= $line;
         }
