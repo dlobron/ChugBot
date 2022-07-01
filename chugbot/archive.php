@@ -19,13 +19,32 @@ $preserveTableId2Name[4] = "edot";
 $preserveTableId2Name[5] = "sessions";
 $preserveTableId2Name[6] = "campers";
 
+function generateToolCommand($bin_path, $database, $dir, $dbPath)
+{
+    $cmd = "$bin_path --host " . MYSQL_HOST . " --user " . MYSQL_USER;
+    $cmd .= " --password='" . MYSQL_PASSWD . "' " . $database;
+    if ($dir == "out") {
+        $cmd .= " > $dbPath";
+    } else if ($dir == "in") {
+        $cmd .= " < $dbPath";
+    } else {
+        error_log("Invalid tool direction $dir");
+        return NULL;
+    }
+    error_log("Prepared tool command \'$cmd\'");
+    return $cmd;
+}
+
 function restoreCurrentDb(&$dbErr, $mysql, $mysqldump, $thisYearArchive)
 {
     // 1. Dump the archive database.
     error_log("Writing out archive DB");
     $dbPath = "/tmp/ardb.sql";
-    error_log("Dumping archive database to $dbPath using $mysqldump");
-    $cmd = "$mysqldump --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " $thisYearArchive > $dbPath";
+    $cmd = generateToolCommand($mysqldump, $thisYearArchive, "out", $dbPath);
+    if (is_null($cmd)) {
+        $dbErr = errorString("Failed to generate database dump command");
+        return;
+    }
     $output = array();
     $retVal;
     $result = exec($cmd, $output, $retVal);
@@ -38,7 +57,11 @@ function restoreCurrentDb(&$dbErr, $mysql, $mysqldump, $thisYearArchive)
     }
     // 2. Import the archive DB data into the current DB.
     error_log("Importing archive DB to current DB");
-    $cmd = $mysql . " --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " " . MYSQL_DB . " < $dbPath";
+    $cmd = generateToolCommand($mysql, MYSQL_DB, "in", $dbPath);
+    if (is_null($cmd)) {
+        $dbErr = errorString("Failed to generate database import command");
+        return;
+    }
     $retVal;
     $result = exec($cmd, $output, $retVal);
     if ($retVal) {
@@ -56,13 +79,16 @@ function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
     // 1. Dump the current database.
     error_log("Writing out current DB contents");
     $dbPath = "/tmp/curdb.sql";
-    error_log("Dumping current database to $dbPath using $mysqldump");
-    $cmd = "$mysqldump --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " " . MYSQL_DB . " > $dbPath";
+    $cmd = generateToolCommand($mysqldump, MYSQL_DB, "out", $dbPath);
+    if (is_null($cmd)) {
+        $dbErr = errorString("Failed to generate database dump command");
+        return;
+    }
     $output = array();
-    $retVal;
+    $retVal = 0;
     $result = exec($cmd, $output, $retVal);
-    if ($retVal) {
-        $dbErr = errorString("Failed to back up current database:\n");
+    if ($retVal != 0) {
+        $dbErr = errorString("Failed to back up current database (return code from $mysqldump = $retVal):\n");
         foreach ($output as $line) {
             $dbErr .= "$line";
         }
@@ -70,11 +96,15 @@ function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
     }
     // 2. Import dumped data to the archive DB.
     error_log("Importing data to $thisYearArchive");
-    $cmd = "$mysql --user " . MYSQL_USER . " --password=" . MYSQL_PASSWD . " $thisYearArchive < $dbPath";
-    $retVal;
+    $cmd = generateToolCommand($mysql, $thisYearArchive, "in", $dbPath);
+    if (is_null($cmd)) {
+        $dbErr = errorString("Failed to generate database import command");
+        return;
+    }
+    $retVal = 0;
     $result = exec($cmd, $output, $retVal);
-    if ($retVal) {
-        $dbErr = errorString("Failed to import backup data to $thisYearArchive:\n");
+    if ($retVal != 0) {
+        $dbErr = errorString("Failed to import backup data to $thisYearArchive (return code from $mysql = $retVal):\n");
         foreach ($output as $line) {
             $dbErr .= $line;
         }
@@ -133,7 +163,10 @@ foreach ($archiveYears as $archiveYear) {
 }
 $requiredPermissions = array("DELETE" => 0, "LOCK TABLES" => 0);
 $db = new DbConn();
-$result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'@'" . MYSQL_HOST . "'", $dbErr);
+# Older MySQL versions require the .@.host syntax.  Switch the commented lines
+# if using an older version.
+# $result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'@'" . MYSQL_HOST . "'", $dbErr);
+$result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'", $dbErr);
 if ($result === false) {
     $permissionsError = "Failed to show database grants: $dbErr";
     error_log($permissionsError);

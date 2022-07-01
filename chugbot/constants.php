@@ -12,7 +12,7 @@
     define("MYSQL_USER", getenv("MYSQL_USER"));
     define("MYSQL_PASSWD", getenv("MYSQL_PASSWD"));             // This should be changed in production use.
     define("MYSQL_DB", getenv("MYSQL_DB"));
-    define("MYSQL_PATH", "/Applications/MAMP/Library/bin"); // This should be changed in production use.
+    define("MYSQL_PATH", "/usr/bin");
 
     define("ADMIN_EMAIL_USERNAME", "chug@campramahne.org");
     define("ADMIN_EMAIL_PASSWORD", "chug@campramahne.org"); // This should be changed in production use
