@@ -71,6 +71,7 @@ function restoreCurrentDb(&$dbErr, $mysql, $mysqldump, $thisYearArchive)
         }
         return;
     }
+
 }
 
 function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
@@ -107,8 +108,9 @@ function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
         foreach ($output as $line) {
             $dbErr .= $line;
         }
+        return;
     }
-    // Clear matches and prefs from the current DB, since these always switch over from year
+    // 3. Clear matches and prefs from the current DB, since these always switch over from year
     // to year.
     $delTables = array("matches", "preferences");
     foreach ($delTables as $delTable) {
@@ -119,7 +121,7 @@ function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
             return;
         }
     }
-    // Empty dynamic tables from the current DB, unless their ID appears in $preserveTables.
+    // 4. Empty dynamic tables from the current DB, unless their ID appears in $preserveTables.
     foreach ($preserveTableId2Name as $delTableId => $delTableName) {
         if (array_key_exists("$delTableId", $preserveTables)) {
             error_log("Not clearing dynamic $delTableName per checkbox");
@@ -214,13 +216,13 @@ if (!$haveDb) {
 }
 
 $binaryNotFoundError = "";
-$mysqldump = trim(`export PATH="\$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"; which mysqldump`);
-$mysql = trim(`export PATH="\$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"; which mysql`);
+$mysqldump = MYSQL_PATH . "/mysqldump";
+$mysql = MYSQL_PATH . "/mysql";
 if (!file_exists($mysqldump)) {
-    $binaryNotFoundError = "DB backup utility mysqldump not found in PATH: check with administrator";
+    $binaryNotFoundError = "DB backup utility not found at $mysqldump: check with administrator";
 }
-if (!file_exists("$mysql")) {
-    $binaryNotFoundError = "DB utility mysql not found in PATH (got $mysql): check with administrator";
+if (!file_exists($mysql)) {
+    $binaryNotFoundError = "DB utility not found at $mysql: check with administrator";
 }
 
 // Check the GET data to find out what action to take.
@@ -228,18 +230,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" &&
     empty($dbErr) &&
     empty($binaryNotFoundError) &&
     empty($noBackupDbError)) {
-    $doArchive = false;
-    if (array_key_exists("archive", $_GET)) {
-        $doArchive = test_input($_GET["archive"]);
-    }
-    $restoreFromArchive = false;
-    if (array_key_exists("restore", $_GET)) {
-        $restoreFromArchive = test_input($_GET["restore"]);
-    }
+    $doArchive = test_input($_GET["archive"]);
+    $restoreFromArchive = test_input($_GET["restore"]);
     $preserveTables = array();
     populateActiveIds($preserveTables, "pt");
     if ($doArchive) {
-        archiveCurrentDb($dbErr, $preserveTables, $preserveTableId2Name);
+        archiveCurrentDb($dbErr, $preserveTables, $mysql, $mysqldump,
+            $preserveTableId2Name, $thisYearArchive);
         if (empty($dbErr)) {
             $didArchiveDb = true;
             $curYearHasBeenArchived = true;
@@ -247,7 +244,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" &&
                 "or click \"Done\" to exit.</p>";
         }
     } else if ($restoreFromArchive) {
-        restoreCurrentDb($dbErr, $thisYearArchive);
+        restoreCurrentDb($dbErr, $mysql, $mysqldump, $thisYearArchive);
         if (empty($dbErr)) {
             $restoreText = "<p>Restore succeeded!</p>";
             $didRestoreDb = true;
@@ -304,11 +301,13 @@ $formHtml = <<<EOM
     <p>Before you archive, use the checkboxes to choose those items from the current database that you would like to keep for next year (if any).</p>
     </div>
     <ul>
+    <li>
 EOM;
 echo $formHtml;
 echo $tableChooser->renderHtml();
 
 $formHtml = <<<EOM
+    </li>
     <li class="buttons">
     <input class="btn btn-primary" type="submit" name="submit" value="Archive" data-toggle="tooltip" title="Archive your $curCampYear data" />
     <button class="btn btn-link" type="button" data-toggle="tooltip" title="Exit with no changes" onclick="window.location.href='$homeUrl'">Cancel</button>
@@ -351,4 +350,3 @@ echo footerText();
 
 </body>
 </html>
-
