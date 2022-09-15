@@ -19,54 +19,93 @@ $preserveTableId2Name[4] = "edot";
 $preserveTableId2Name[5] = "sessions";
 $preserveTableId2Name[6] = "campers";
 
-function restoreCurrentDb(&$dbErr, $thisYearArchive)
+function generateToolCommand($bin_path, $database, $dir, $dbPath)
 {
-    $nextCampYear = yearOfUpcomingSummer();
-    $curCampYear = $nextCampYear - 1;
-    $db = new DbConn();
-    $archive_db = new DbConn($curCampYear);
-    $result = $archive_db->runQueryDirectly("SHOW TABLES", $dbErr);
-    $i = 0;
-    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-        $dbErr = "";
-        $table = $row[$i];
-        $r2 = $db->runQueryDirectly("SELECT * FROM $table", $dbErr);
-        if ($dbErr) {
-            $dbErr = "Restore failed to select from table: $dbErr";
-            return;
-        }
-        // If the table has no rows, restore it.
-        if ($r2->num_rows > 0) {
-            continue;
-        }
-        $db->runQueryDirectly("INSERT INTO $table SELECT * FROM $thisYearArchive " . "." . "$table", $dbErr);
-        if ($dbErr) {
-            $dbErr = "Restore failed to populate table: $dbErr";
-            return;
-        }
+    $cmd = "$bin_path --host " . MYSQL_HOST . " --user " . MYSQL_USER;
+    $cmd .= " --password='" . MYSQL_PASSWD . "' " . $database;
+    if ($dir == "out") {
+        $cmd .= " > $dbPath";
+    } else if ($dir == "in") {
+        $cmd .= " < $dbPath";
+    } else {
+        error_log("Invalid tool direction $dir");
+        return NULL;
     }
-    $db->runQueryDirectly("SET FOREIGN_KEY_CHECKS = 1", $dbErr);
-    return;
+    error_log("Prepared tool command \'$cmd\'");
+    return $cmd;
 }
 
-function archiveCurrentDb(&$dbErr, $preserveTables, $preserveTableId2Name) {
-    $nextCampYear = yearOfUpcomingSummer();
-    $curCampYear = $nextCampYear - 1;
-    $db = new DbConn();
-    $archive_db = new DbConn($curCampYear);
-    $result = $db->runQueryDirectly("SHOW TABLES", $dbErr);
-    $i = 0;
-    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-        $table = $row[$i];
-        $archive_db->runQueryDirectly("DROP TABLE IF EXISTS $table;", $dbErr);
-        if ($dbErr) {
-            $dbErr = "Archive failed to drop table: $dbErr";
-            return;
+function restoreCurrentDb(&$dbErr, $mysql, $mysqldump, $thisYearArchive)
+{
+    // 1. Dump the archive database.
+    error_log("Writing out archive DB");
+    $dbPath = "/tmp/ardb.sql";
+    $cmd = generateToolCommand($mysqldump, $thisYearArchive, "out", $dbPath);
+    if (is_null($cmd)) {
+        $dbErr = errorString("Failed to generate database dump command");
+        return;
+    }
+    $output = array();
+    $retVal;
+    $result = exec($cmd, $output, $retVal);
+    if ($retVal) {
+        $dbErr = errorString("Failed to write out archive database:\n");
+        foreach ($output as $line) {
+            $dbErr .= "$line";
         }
-        $archive_db->runQueryDirectly("CREATE TABLE $table AS SELECT * FROM " . MYSQL_DB . ".$table;", $dbErr);
-        if ($dbErr) {
-            $dbErr = "Archive failed to create table: $dbErr";
-            return;
+        return;
+    }
+    // 2. Import the archive DB data into the current DB.
+    error_log("Importing archive DB to current DB");
+    $cmd = generateToolCommand($mysql, MYSQL_DB, "in", $dbPath);
+    if (is_null($cmd)) {
+        $dbErr = errorString("Failed to generate database import command");
+        return;
+    }
+    $retVal;
+    $result = exec($cmd, $output, $retVal);
+    if ($retVal) {
+        $dbErr = errorString("Failed to restore to " . MYSQL_DB . " :\n");
+        foreach ($output as $line) {
+            $dbErr .= $line;
+        }
+        return;
+    }
+}
+
+function archiveCurrentDb(&$dbErr, $preserveTables, $mysql, $mysqldump,
+    $preserveTableId2Name, $thisYearArchive) {
+    // 1. Dump the current database.
+    error_log("Writing out current DB contents");
+    $dbPath = "/tmp/curdb.sql";
+    $cmd = generateToolCommand($mysqldump, MYSQL_DB, "out", $dbPath);
+    if (is_null($cmd)) {
+        $dbErr = errorString("Failed to generate database dump command");
+        return;
+    }
+    $output = array();
+    $retVal = 0;
+    $result = exec($cmd, $output, $retVal);
+    if ($retVal != 0) {
+        $dbErr = errorString("Failed to back up current database (return code from $mysqldump = $retVal):\n");
+        foreach ($output as $line) {
+            $dbErr .= "$line";
+        }
+        return;
+    }
+    // 2. Import dumped data to the archive DB.
+    error_log("Importing data to $thisYearArchive");
+    $cmd = generateToolCommand($mysql, $thisYearArchive, "in", $dbPath);
+    if (is_null($cmd)) {
+        $dbErr = errorString("Failed to generate database import command");
+        return;
+    }
+    $retVal = 0;
+    $result = exec($cmd, $output, $retVal);
+    if ($retVal != 0) {
+        $dbErr = errorString("Failed to import backup data to $thisYearArchive (return code from $mysql = $retVal):\n");
+        foreach ($output as $line) {
+            $dbErr .= $line;
         }
     }
     // Clear matches and prefs from the current DB, since these always switch over from year
@@ -122,6 +161,9 @@ foreach ($archiveYears as $archiveYear) {
 }
 $requiredPermissions = array("DELETE" => 0, "LOCK TABLES" => 0);
 $db = new DbConn();
+# Older MySQL versions require the .@.host syntax.  Switch the commented lines
+# if using an older version.
+# $result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'@'" . MYSQL_HOST . "'", $dbErr);
 $result = $db->runQueryDirectly("SHOW GRANTS FOR '" . MYSQL_USER . "'", $dbErr);
 if ($result === false) {
     $permissionsError = "Failed to show database grants: $dbErr";

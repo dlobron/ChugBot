@@ -12,6 +12,7 @@
     define("MYSQL_USER", getenv("MYSQL_USER"));
     define("MYSQL_PASSWD", getenv("MYSQL_PASSWD"));
     define("MYSQL_DB", getenv("MYSQL_DB"));
+    define("MYSQL_PATH", "/usr/bin");
 
     define("EMAIL_HOST", "email-smtp.us-east-2.amazonaws.com");
     define("EMAIL_PORT", 587);
