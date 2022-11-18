@@ -92,7 +92,7 @@ EOM;
 <button title="Click here to update the administrative settings, including staff password and camper code" class="btn btn-primary" type="submit" value="1">Edit Admin Settings</button>
 </form>
 
-<form action="<?php echo $matrixUrl; ?>" method="post">
+<form action="<?php echo $matrixUrl; ?>" method="get">
 <button title="Click here to update the de-duplication settings" class="btn btn-primary" type="submit" value="1">De-Duplication Matrix</button>
 </form>
 
