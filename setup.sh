@@ -18,3 +18,6 @@ esac
 	  
 
 for i in nginx php@8.0 mysql; do brew services $1 $i; done
+
+export ADMIN_EMAIL_USERNAME="abbab081eb9a7c"
+export ADMIN_EMAIL_PASSWORD="c61a5bc3b91779"
