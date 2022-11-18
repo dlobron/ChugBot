@@ -14,8 +14,8 @@
     define("MYSQL_DB", getenv("MYSQL_DB"));
     define("MYSQL_PATH", "/usr/bin");
 
-    define("EMAIL_HOST", "email-smtp.us-east-2.amazonaws.com");
-    define("EMAIL_PORT", 587);
-    define("ADMIN_EMAIL_USERNAME", getenv("ADMIN_EMAIL_USERNAME"));
-    define("ADMIN_EMAIL_PASSWORD", getenv("ADMIN_EMAIL_PASSWORD"));
+    define("EMAIL_HOST", getenv("EMAIL_HOST"));
+    define("EMAIL_PORT", getenv("EMAIL_PORT"));
+    define("ADMIN_EMAIL_USERNAME", getenv("EMAIL_USERNAME"));
+    define("ADMIN_EMAIL_PASSWORD", getenv("EMAIL_PASSWORD"));
 ?>

@@ -141,7 +141,7 @@ function sendMail($address,
     if (array_key_exists("admin_email_from_name", $admin_data_row)) {
         $fromName = $admin_data_row["admin_email_from_name"];
     }
-    $mail->setFrom(ADMIN_EMAIL_USERNAME, $fromName);
+    $mail->setFrom("noreply@campramahchug.org", $fromName);
     $mail->addReplyTo($admin_data_row["admin_email"], $admin_data_row["camp_name"]);
     $sentOk = $mail->send();
     if (!$sentOk) {
