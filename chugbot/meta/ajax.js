@@ -123,7 +123,7 @@ $(function() {
 		    arrayOrderedLists.push(orderedList);
 		}
 		// Jump to the top so the user sees either an error box or a confirmation box.
-		$("body").scrollTop(0);
+		$(window).scrollTop(0);
 		// Report an error if no chugim were selected.
 		if (arrayOrderedLists.length == 0) {
 		    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
