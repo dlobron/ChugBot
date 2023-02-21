@@ -457,6 +457,16 @@ class ZebraReport
                 }
                 $i++;
             }
+
+            // add a set of blank checkboxes (used for things like attendance)
+            // to every row of every report
+            $NUM_OF_CHECKBOXES = 10;
+            $html .= "<td style=\"font-size: 20px\">";
+            foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
+                $html .= "&#9744;&nbsp;";
+            }
+            $html .= "</td>";
+
             $html .= "</tr>";
             array_push($pdfData, $pdfDataRow); // Save this row.
             $pdfDataRow = array(); // Start a new row.
@@ -1127,7 +1137,7 @@ if ($doReport) {
         $camperReport->renderTable();
     } else if ($reportMethod == ReportTypes::Director) {
         // The director report is similar to the edah report, but unfiltered.
-        $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name, \"-\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
+        $sql = "SELECT c.last AS last_name, c.first AS first_name, IFNULL(b.name, \"-\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
             "g.name group_name, ch.name assignment, c.camper_id camper_id, b.bunk_id bunk_id, e.edah_id edah_id, g.group_id group_id, " .
             "ch.chug_id chug_id, bl.block_id block_id " .
             "FROM matches AS m " .
@@ -1139,14 +1149,14 @@ if ($doReport) {
             "JOIN chug_groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
         addWhereClause($sql, $db, $activeBlockIds);
-        $sql .= " ORDER BY edah_sort_order, edah, name, block, group_name";
+        $sql .= " ORDER BY edah_sort_order, edah, last_name, first_name, block, group_name";
 
         // Create and display the report.
         $directorReport = new ZebraReport($db, $sql, $outputType);
         $directorReport->addNewTableColumn("edah");
         $directorReport->setCaption("Chug Assignments by Edah for LINK0");
         $directorReport->addIgnoreColumn("edah_sort_order");
-        $directorReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
+        $directorReport->setIdCol2EditPage("camper_id", "editCamper.php", "last_name");
         $directorReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
         $directorReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
         $directorReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
