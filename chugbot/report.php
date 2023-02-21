@@ -722,6 +722,15 @@ if (!empty($availableArchiveYears)) {
 
 $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
 $pageStart = <<<EOM
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var report_method = document.getElementById("report_method");
+        report_method.addEventListener("change", function(e) {
+            window.location.href = window.location.pathname + "?report_method=" + e.target.value
+        });
+    });
+</script>
+
 <div class="well well-white container">
 
 <h1><a>Chug Assignment Report</a></h1>
