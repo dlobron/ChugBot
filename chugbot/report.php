@@ -457,6 +457,16 @@ class ZebraReport
                 }
                 $i++;
             }
+
+            // add a set of blank checkboxes (used for things like attendance)
+            // to every row of every report
+            $NUM_OF_CHECKBOXES = 10;
+            $html .= "<td style=\"font-size: 20px\">";
+            foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
+                $html .= "&#9744;&nbsp;";
+            }
+            $html .= "</td>";
+
             $html .= "</tr>";
             array_push($pdfData, $pdfDataRow); // Save this row.
             $pdfDataRow = array(); // Start a new row.
