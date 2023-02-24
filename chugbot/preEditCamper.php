@@ -2,6 +2,7 @@
 session_start();
 include_once 'dbConn.php';
 include_once 'functions.php';
+setup_camp_specific_terminology_constants();
 
 $thisPageUrl = urlIfy("preEditCamper.php");
 $editPageUrl = urlIfy("editCamper.php");
@@ -150,7 +151,7 @@ if (count($camperId2Name) > 1) {
 // the chugim ranking.
 echo "<li>";
 echo "<h3>Welcome, $camperNameToEdit!</h3>";
-echo "<p>You can update your personal data, or go directly to the chug ranking page - please choose one.</p>";
+echo "<p>You can update your personal data, or go directly to the " . chug_term_singular . " ranking page - please choose one.</p>";
 if ($nextPage === null ||
     $nextPage == 1) {
     echo "<input type=\"radio\" name=\"next_page\" value=1 checked>Update Personal Data<br>";
@@ -158,12 +159,12 @@ if ($nextPage === null ||
     echo "<input type=\"radio\" name=\"next_page\" value=1>Update Personal Data<br>";
 }
 if ($nextPage == 2) {
-    echo "<input type=\"radio\" name=\"next_page\" value=2 checked>Update Chugim<br>";
+    echo "<input type=\"radio\" name=\"next_page\" value=2 checked>Update " . ucfirst(chug_term_plural) . "<br>";
 } else {
-    echo "<input type=\"radio\" name=\"next_page\" value=2>Update Chugim<br>";
+    echo "<input type=\"radio\" name=\"next_page\" value=2>Update " . ucfirst(chug_term_plural) . "<br>";
 }
-echo "<p class=\"guidelines\"><small>Choose Update Personal Data to edit personal info, or Update Chugim to proceed directly to " .
-    "the chug ranking page.</small></p>";
+echo "<p class=\"guidelines\"><small>Choose Update Personal Data to edit personal info, or Update " . ucfirst(chug_term_plural) . " to proceed directly to " .
+    "the " . chug_term_singular . " ranking page.</small></p>";
 echo "</li>";
 echo "</ul>";
 echo "<input type=\"hidden\" id=\"fromHome\" name=\"fromHome\" value=\"1\" />";

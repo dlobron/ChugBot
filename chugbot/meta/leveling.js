@@ -6,6 +6,10 @@ $(function() {
                ).then(getAndDisplayCurrentMatches);
     });
 
+function capitalize(string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 function getParameterByName(nameTok) {
     var nameTokArray = nameTok + "[]";
     var query = window.location.search.substring(1);
@@ -366,7 +370,7 @@ function getAndDisplayCurrentMatches() {
                             groupQueryString += "&group_ids%5B%5D=" + groupId;
                         });
 		    var reportLink = "<a class=\"btn btn-primary btn-with-padding\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
-		    var freeHtml = "<h4>Chugim with Free Space:</h4>";
+		    var freeHtml = "<h4>" + capitalize(json['chugimTerm']) + " with Free Space:</h4>";
 		    var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2Beta);
 		    for (var i = 0; i < sortedChugIds.length; i++) {
 			var betaHash = chugId2Beta[sortedChugIds[i]];
@@ -535,12 +539,30 @@ $(function() {
                                 return $(this).text().replace("EDAH", json.edahNames);
                             }
                         });
-		    $( ".blockfill" ).text(function() {
-                            if (json.blockName &&
-                                json.blockName.length > 0) {
-                                return $(this).text().replace("BLOCK", json.blockName);
-                            }
-                        });
+					$( ".chugimfill" ).text(function() {
+						if (json.chugimTerm &&
+							json.chugimTerm.length > 0) {
+							return $(this).text().replace("CHUGIM", json.chugimTerm);
+						}
+					});
+					$( ".chugfill" ).text(function() {
+						if (json.chugTerm &&
+							json.chugTerm.length > 0) {
+							return $(this).text().replace("CHUG", json.chugTerm);
+						}
+					});
+		    		$( ".blockfill" ).text(function() {
+						if (json.blockName &&
+							json.blockName.length > 0) {
+							return $(this).text().replace("BLOCK", json.blockName);
+						}
+					});
+					$( ".blocktermfill" ).text(function() {
+						if (json.blockTerm &&
+							json.blockTerm.length > 0) {
+							return $(this).text().replace("BLOCK_TERM", json.blockTerm);
+						}
+					});
                 },
                     error: function(xhr, desc, err) {
 		    console.log(xhr);

@@ -3,6 +3,7 @@ include_once 'dbConn.php';
 include_once 'functions.php';
 include_once 'formItem.php';
 session_start();
+setup_camp_specific_terminology_constants();
 
 $loggedIn = (adminLoggedIn() || camperLoggedIn());
 
@@ -56,7 +57,7 @@ echo headerText("Welcome");
 <h1><a>Welcome</a></h1>
 <form id="camperForm" class="form-group" method="GET">
 <div class="page-header">
-<h2>Welcome to the <?php echo $campName; ?> chug preference ranking system!</h3>
+<h2>Welcome to the <?php echo $campName; ?> <?php echo chug_term_singular ?> preference ranking system!</h3>
 <p><?php echo $codeMessage; ?></p>
 </div>
 <ul>
@@ -64,7 +65,7 @@ echo headerText("Welcome");
 <?php
 if (!$loggedIn) {
     $ccField = new FormItemSingleTextField("Camper Access Code", true, "camper_code", 0);
-    $ccField->setInputValue($adminEmail);
+    // $ccField->setInputValue($adminEmail);
     $ccField->setInputType("text");
     $ccField->setInputClass("element text medium");
     $ccField->setInputMaxLength(50);

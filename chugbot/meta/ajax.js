@@ -107,11 +107,11 @@ $(function() {
 			var sessionAndGroup = listName.split("||");
 			if (listElements.length < expectedChugCount) {
 			    errorCount++;
-			    chugCountError += "Only " + listElements.length + " chugim selected for " + sessionAndGroup[0] + ", " + sessionAndGroup[1] + " (you must choose " + expectedChugCount + ")<br>";
+			    chugCountError += "Only " + listElements.length + " choices selected for " + sessionAndGroup[0] + ", " + sessionAndGroup[1] + " (you must choose " + expectedChugCount + ")<br>";
 			    continue;
 			} else if (listElements.length > expectedChugCount) {
 			    errorCount++;
-			    chugCountError += "Too many chugim were chosen for " + sessionAndGroup[0] + ", " + sessionAndGroup[1] + " (you must choose " + expectedChugCount + ")<br>";
+			    chugCountError += "Too many items were chosen for " + sessionAndGroup[0] + ", " + sessionAndGroup[1] + " (you must choose " + expectedChugCount + ")<br>";
 			    continue;
 			}
 			for (var k = 0; k < listElements.length; k++) {
@@ -127,7 +127,7 @@ $(function() {
 		// Report an error if no chugim were selected.
 		if (arrayOrderedLists.length == 0) {
 		    $( "#results:visible" ).removeAttr( "style" ).fadeOut();
-		    $( "#results" ).text("No chugim were selected.");
+		    $( "#results" ).text("Nothing was selected.");
 		    $( "#results" ).show("slide", 250 );
 		    return;
 		}
@@ -278,7 +278,7 @@ function getNameAndFillChoices() {
 				   });
 			   });
 		    if (html.length == 0) {
-			html = "<div class=\"panel_body error_box\"><h3>No chugim were found for your edah and session.</h3></div>";
+			html = "<div class=\"panel_body error_box\"><h3>Nothing was found for your edah and session.</h3></div>";
 			$("#exit_button").show();
 			$(".SubmitPrefsButton").hide();
 			$(".center_block").hide();

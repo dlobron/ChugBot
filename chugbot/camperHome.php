@@ -4,6 +4,7 @@ include_once 'functions.php';
 include_once 'formItem.php';
 session_start();
 
+setup_camp_specific_terminology_constants();
 echo headerText("Camper/Family Home");
 
 // If the user is not logged in as a camper, validate the incoming access
@@ -52,7 +53,7 @@ if (!camperLoggedIn()) {
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
-<p>If this is your first time picking chugim for this summer, click First Time for <?php echo yearOfCurrentSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
+<p>If this is your first time picking <?php echo chug_term_plural ?> for this summer, click First Time for <?php echo yearOfCurrentSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
 
 <div class="panel panel-default">
 <div class="panel-heading">

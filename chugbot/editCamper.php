@@ -3,12 +3,13 @@ session_start();
 include_once 'addEdit.php';
 include_once 'formItem.php';
 camperBounceToLogin();
+setup_camp_specific_terminology_constants();
 
 $editCamperPage = new EditPage("Review Camper Information",
     "Please review your information below, and make any necessary edits.",
     "campers", "camper_id");
-$editCamperPage->addSecondParagraph("Then click <b>Update Chugim</b> to update your chug preferences, or click <b>Save and Exit</b> to save your changes without updating chug preferences.");
-$editCamperPage->setAlternateResultString("Please review your information below, make any edits needed, and then click <b>Choose Chugim</b> to make your chug rankings.");
+$editCamperPage->addSecondParagraph("Then click <b>Update " . ucfirst(chug_term_plural) . "</b> to update your " . chug_term_singular . " preferences, or click <b>Save and Exit</b> to save your changes without updating " . chug_term_singular . " preferences.");
+$editCamperPage->setAlternateResultString("Please review your information below, make any edits needed, and then click <b>Choose " . chug_term_plural . "</b> to make your " . chug_term_singular . " rankings.");
 $editCamperPage->addColumn("first");
 $editCamperPage->addColumn("last");
 $editCamperPage->addColumn("email");
@@ -17,7 +18,7 @@ $editCamperPage->addColumn("edah_id", true, true);
 $editCamperPage->addColumn("bunk_id", false, true);
 $editCamperPage->addColumn("needs_first_choice", false, true, 0);
 $editCamperPage->addColumn("inactive", false, true, 0);
-$editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html", "Update Chugim");
+$editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html", "Update " . ucfirst(chug_term_plural));
 $editCamperPage->setSaveAndReturnLabel("Save and Exit");
 
 $editCamperPage->handleSubmit();
@@ -86,7 +87,7 @@ $editCamperPage->addFormItem($bunkDropDown);
 // page.
 $needsFirstChoiceVal = $editCamperPage->columnValue("needs_first_choice");
 $needsFirstChoiceBox = new FormItemCheckBox("Needs first choice", false, "needs_first_choice", 6);
-$needsFirstChoiceBox->setGuideText("Check this box if this camper should always get their first choice chug.");
+$needsFirstChoiceBox->setGuideText("Check this box if this camper should always get their first choice " . chug_term_singular . ".");
 $needsFirstChoiceBox->setStaffOnly(true);
 $needsFirstChoiceBox->setInputValue($needsFirstChoiceVal);
 $editCamperPage->addFormItem($needsFirstChoiceBox);

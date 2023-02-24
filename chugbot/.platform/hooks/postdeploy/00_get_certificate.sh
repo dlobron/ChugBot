@@ -2,13 +2,15 @@
 
 ENV=$(/opt/elasticbeanstalk/bin/get-config container -k environment_name)
 
-if [[ $ENV == "Chugbotwi-env" ]]; then    
+if [[ $ENV == "Chugbotwi-env" ]]; then
   DOMAIN="wi.campramahchug.org"
 elif [[ $ENV == "Chugbotne-env" ]]; then
   DOMAIN="ne.campramahchug.org"
 elif [[ $ENV == "Chugbotdc-env" ]]; then
   DOMAIN="dc.campramahchug.org"
-else   
+elif [[ $ENV == "Chugbotrb-env" ]]; then
+  DOMAIN="rb.campramahchug.org"
+else
   DOMAIN="test.campramahchug.org"
 fi
 

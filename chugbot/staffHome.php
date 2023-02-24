@@ -3,6 +3,7 @@ session_start();
 include_once 'dbConn.php';
 include_once 'functions.php';
 bounceToLogin();
+setup_camp_specific_terminology_constants();
 
 // Check for a query string that signals a message.
 $parts = explode("&", $_SERVER['QUERY_STRING']);
@@ -82,7 +83,7 @@ EOM;
 
 <div class="well well-white container">
 <h2>Camp Staff Control Panel</h2>
-<p>To add and edit Edot, Sessions, Blocks, Groups, and Chugim, expand the relevant group below.  You may also view and edit campers according to edah.</p>
+<p>To add and edit Edot, Sessions, <?php echo ucfirst(block_term_plural) ?>, Groups, and <?php echo ucfirst(chug_term_plural) ?>, expand the relevant group below.  You may also view and edit campers according to edah.</p>
 <p>Use the Leveling section to run the leveling algorithm.</p>
 <p>For help, hover your mouse over an item, or press on mobile.<p>
 <p>To archive your data at the end of a summer, and prepare the database for the next summer, click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
@@ -131,12 +132,12 @@ EOM;
 
 <div class="well well-white container">
 <h3>Leveling</h3>
-<p>To view the leveling page, choose a time block and <b>one</b> or <b>two</b> edot, and click "Go."</p>
-<p>If there is an existing saved assignment for the selected edah/edot and block, it will be displayed.  Nothing will be
+<p>To view the leveling page, choose a time <?php echo block_term_singular ?> and <b>one</b> or <b>two</b> edot, and click "Go."</p>
+<p>If there is an existing saved assignment for the selected edah/edot and <?php echo block_term_singular ?>, it will be displayed.  Nothing will be
 changed until you click the Save or Reassign buttons on the leveling page.  If there is no existing assignment, one
 will be created and then displayed.</p>
-<p>If you choose two edot, make sure they share at least some chugim.</p>
-<p>To generate a printable chug assigment report, click "Report".
+<p>If you choose two edot, make sure they share at least some <?php echo chug_term_plural ?>.</p>
+<p>To generate a printable <?php echo chug_term_singular ?> assigment report, click "Report".
 <form id="leveling_choice_form" class="well" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
@@ -159,14 +160,14 @@ echo genConstrainedCheckBoxScript($groupId2Name, "group_ids",
 shown here are the ones common to all selected edot.</small></p>
 </li>
 <li>
-<label class="description" for="block">Block</label>
+<label class="description" for="block"><?php echo ucfirst(block_term_singular) ?></label>
 <div>
 <select class="form-control" id="block" name="block">
 <?php
 echo genPickList($blockId2Name, array(), "block");
 ?>
 </select>
-</div><p class="guidelines" id="guide_3"><small>Choose a Block.</small></p>
+</div><p class="guidelines" id="guide_3"><small>Choose a <?php echo ucfirst(block_term_singular) ?>.</small></p>
 </li>
 <li>
 <input title="Launch the leveling page" class="btn btn-primary" type="submit" value="Level" />

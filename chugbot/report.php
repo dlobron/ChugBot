@@ -5,6 +5,7 @@ include_once 'functions.php';
 include_once 'formItem.php';
 require_once 'fpdf/fpdf.php';
 bounceToLogin();
+setup_camp_specific_terminology_constants();
 
 abstract class OutputTypes
 {
@@ -581,13 +582,13 @@ $bunkId2Name = array();
 $reportMethodId2Name = array(
     ReportTypes::ByEdah => "Yoetzet/Rosh Edah (by edah)",
     ReportTypes::ByBunk => "Madrich (by bunk)",
-    ReportTypes::ByChug => "Chug Leader (by chug)",
+    ReportTypes::ByChug => ucfirst(chug_term_singular) . " Leader (by " . chug_term_singular . ")",
     ReportTypes::Director => "Director (whole camp, sorted by edah)",
     ReportTypes::CamperChoices => "Camper Prefs and Assignment",
     ReportTypes::AllRegisteredCampers => "All Campers Who Have Submitted Preferences",
-    ReportTypes::ChugimWithSpace => "Chugim With Free Space",
+    ReportTypes::ChugimWithSpace => ucfirst(chug_term_plural) . " With Free Space",
     ReportTypes::CamperHappiness => "Camper Happiness",
-    ReportTypes::RegisteredMissingPrefs => "Campers Missing Preferences for Time Block(s)",
+    ReportTypes::RegisteredMissingPrefs => "Campers Missing Preferences for Time " . ucfirst(block_term_plural),
 );
 
 // Check for archived databases.
@@ -676,13 +677,13 @@ if ($doReport && ($reportMethod === null)) {
 }
 
 if ($outputType == OutputTypes::Html) {
-    echo headerText("Chug Report");
+    echo headerText(ucfirst(chug_term_singular). " Report");
 }
 
 $errText = genFatalErrorReport(array($dbErr));
 if (!is_null($errText)) {
     if ($outputType == OutputTypes::Html) {
-        echo headerText("Chug Report");
+        echo headerText(ucfirst(chug_term_singular). " Report");
     }
     echo $errText;
     exit();
@@ -692,14 +693,14 @@ if (!is_null($errText)) {
 if ($reportMethod == ReportTypes::ByChug &&
     $doReport &&
     count($activeChugIds) == 0) {
-    array_push($errors, errorString("Please choose at least one chug for this report"));
+    array_push($errors, errorString("Please choose at least one " . chug_term_singular . " for this report"));
 }
 
 // Campers missing data for a time block requires at least one time block.
 if ($reportMethod == ReportTypes::RegisteredMissingPrefs &&
     $doReport &&
     empty($blockId)) {
-    array_push($errors, errorString("Please choose a time block from which we'll report preferences missing"));
+    array_push($errors, errorString("Please choose a time " . block_term_singular . " from which we'll report preferences missing"));
 }
 
 // Display errors and exit, if needed.
@@ -730,6 +731,7 @@ if (!empty($availableArchiveYears)) {
     $archiveText = "<p>To view data from previous summers, choose a year from the Year drop-down menu</p>";
 }
 
+$chug_term_singular = ucfirst(chug_term_singular);
 $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
 $pageStart = <<<EOM
 <script type="text/javascript">
@@ -743,10 +745,10 @@ $pageStart = <<<EOM
 
 <div class="well well-white container">
 
-<h1><a>Chug Assignment Report</a></h1>
+<h1><a>$chug_term_singular Assignment Report</a></h1>
 <form id="main_form" method="GET" action="$actionTarget">
 <div class="page-header">
-<h2>Chug Assignment Report</h2>
+<h2>$chug_term_singular Assignment Report</h2>
 <p>Start by choosing a report type, then select filters as needed.  Required options are marked with a <font color="red">*</font>.</p>
 $archiveText
 </div>
@@ -759,7 +761,7 @@ if ($outputType == OutputTypes::Html) {
 
 // Always show the report method drop-down and archive year menu (if any).
 $reportMethodDropDown = new FormItemDropDown("Report Type", true, "report_method", 0);
-$reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, Chug leader by chug, and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.  Chugim With Free Space shows chugim with space remaining.  Campers missing preferences shows campers who are in the system, but who have not entered preferences for a particular time block.");
+$reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, " . ucfirst(chug_term_singular) . " leader by " . chug_term_singular . ", and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.  " . $reportMethodId2Name[ReportTypes::ChugimWithSpace] . " shows " . chug_term_plural . " with space remaining.  Campers missing preferences shows campers who are in the system, but who have not entered preferences for a particular time " . block_term_singular . ".");
 $reportMethodDropDown->setPlaceHolder("Choose Type");
 $reportMethodDropDown->setId2Name($reportMethodId2Name);
 $reportMethodDropDown->setColVal($reportMethod);
@@ -803,18 +805,18 @@ if ($reportMethod &&
     $reportMethod != ReportTypes::AllRegisteredCampers) {
     if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
         // For missing prefs, the user must select exactly one time block (to avoid confusion by the user).
-        $blockChooser = new FormItemDropDown("Time Blocks Missing Preferences", true, "block_id", $liNumCounter++);
-        $blockChooser->setGuideText("Step 2: Select one time block. The report will show campers who are missing preferences for this block.");
-        $blockChooser->setPlaceHolder("Choose a Time Block");
+        $blockChooser = new FormItemDropDown("Time " . ucfirst(block_term_plural) . " Missing Preferences", true, "block_id", $liNumCounter++);
+        $blockChooser->setGuideText("Step 2: Select one time " . block_term_singular . ". The report will show campers who are missing preferences for this " . block_term_singular . ".");
+        $blockChooser->setPlaceHolder("Choose a Time " . ucfirst(block_term_singular));
         $blockChooser->setInputClass("element select medium");
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setColVal($blockId);
         $blockChooser->setInputSingular("block");
     } else {
-        $blockChooser = new FormItemInstanceChooser("Time Blocks", false, "block_ids", $liNumCounter++);
+        $blockChooser = new FormItemInstanceChooser("Time " . ucfirst(block_term_plural), false, "block_ids", $liNumCounter++);
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setActiveIdHash($activeBlockIds);
-        $blockChooser->setGuideText("Step 2: Choose the time block(s) you wish to display.  If you do not choose any, all blocks will be shown.");
+        $blockChooser->setGuideText("Step 2: Choose the time " . block_term_plural . " you wish to display.  If you do not choose any, all " . block_term_plural . " will be shown.");
     }
     if ($outputType == OutputTypes::Html) {
         echo $blockChooser->renderHtml();
@@ -846,10 +848,10 @@ if ($reportMethod == ReportTypes::ByEdah) {
 } else if ($reportMethod == ReportTypes::ByChug) {
     // Similar to the above, but the filter is by chug.  Also, in this case, the
     // input is required (the user must choose at least one chug).
-    $chugChooser = new FormItemInstanceChooser("Chugim", true, "chug_ids", $liNumCounter++);
+    $chugChooser = new FormItemInstanceChooser(ucfirst(chug_term_plural), true, "chug_ids", $liNumCounter++);
     $chugChooser->setId2Name($chugId2Name);
     $chugChooser->setActiveIdHash($activeChugIds);
-    $chugChooser->setGuideText("Step 3: Choose one or more chugim for this report.");
+    $chugChooser->setGuideText("Step 3: Choose one or more " . chug_term_plural . " for this report.");
 
     if ($outputType == OutputTypes::Html) {
         echo $chugChooser->renderHtml();
@@ -872,7 +874,7 @@ if ($reportMethod == ReportTypes::ByEdah) {
         $sessionChooser->setId2Name($sessionId2Name);
     } else {
         $groupChooser = new FormItemInstanceChooser("Groups", false, "group_ids", $liNumCounter++);
-        $groupChooser->setGuideText("Choose on or more chug groups, or leave empty to see all groups.");
+        $groupChooser->setGuideText("Choose on or more " . chug_term_singular . " groups, or leave empty to see all groups.");
         $groupChooser->setActiveIdHash($activeGroupIds);
         $groupChooser->setId2Name($groupId2Name);
     }
@@ -1003,7 +1005,7 @@ if ($doReport) {
         $edahReport = new ZebraReport($db, $sql, $outputType);
         $edahReport->setReportTypeAndNameOfItem("Edah", $edahText);
         $edahReport->addNewTableColumn("edah");
-        $edahReport->setCaption("Chug Assignments by Edah for LINK0<br>Rosh: ROSH, PHONE");
+        $edahReport->setCaption(ucfirst(chug_term_singular). " Assignments by Edah for LINK0<br>Rosh: ROSH, PHONE");
         $edahReport->addIgnoreColumn("edah_sort_order");
         $edahReport->addIgnoreColumn("rosh");
         $edahReport->addIgnoreColumn("roshphone");
@@ -1045,7 +1047,7 @@ if ($doReport) {
         $bunkReport = new ZebraReport($db, $sql, $outputType);
         $bunkReport->setReportTypeAndNameOfItem("Bunk", $bunkId2Name[$bunkId]);
         $bunkReport->addNewTableColumn("bunk");
-        $bunkReport->setCaption("Chug Assignments by Bunk for LINK0");
+        $bunkReport->setCaption(ucfirst(chug_term_singular). " Assignments by Bunk for LINK0");
         $bunkReport->addIgnoreColumn("edah_sort_order");
         $bunkReport->setIdCol2EditPage("camper_id", "editCamper.php", "name");
         $bunkReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
@@ -1091,7 +1093,7 @@ if ($doReport) {
         $chugReport->setCaption("LINK0: LINK1 campers for LINK2<br>Rosh: ROSH, PHONE");
         $chugReport->addCaptionReplaceColKey("ROSH", "rosh", "none listed");
         $chugReport->addCaptionReplaceColKey("PHONE", "roshphone", "no rosh phone");
-        $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no block name");
+        $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no " . block_term_singular . " name");
         $chugReport->renderTable();
     } else if ($reportMethod == ReportTypes::CamperChoices) {
         // Report camper choices (1-6) and assignment, if any.
@@ -1132,7 +1134,7 @@ if ($doReport) {
         $camperReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
         $camperReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
         $camperReport->setIdCol2EditPage("group_id", "editGroup.php", "group_name");
-        $camperReport->addCaptionReplaceColKey("BLOCK", "block", "no block name");
+        $camperReport->addCaptionReplaceColKey("BLOCK", "block", "no " . block_term_singular . " name");
         $camperReport->setPdfFontSizeAndMult(9.0, 2.0);
         $camperReport->renderTable();
     } else if ($reportMethod == ReportTypes::Director) {
@@ -1154,7 +1156,7 @@ if ($doReport) {
         // Create and display the report.
         $directorReport = new ZebraReport($db, $sql, $outputType);
         $directorReport->addNewTableColumn("edah");
-        $directorReport->setCaption("Chug Assignments by Edah for LINK0");
+        $directorReport->setCaption(ucfirst(chug_term_singular). " Assignments by Edah for LINK0");
         $directorReport->addIgnoreColumn("edah_sort_order");
         $directorReport->setIdCol2EditPage("camper_id", "editCamper.php", "last_name");
         $directorReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
@@ -1190,7 +1192,7 @@ if ($doReport) {
             "(a.match_count < c.max_size OR c.max_size = 0 OR c.max_size = " . MAX_SIZE_NUM . ")";
         $chugimWithSpaceReport = new ZebraReport($db, $fullSql, $outputType);
         $chugimWithSpaceReport->addNewTableColumn("edah");
-        $caption = "Chugim With Free Space";
+        $caption = ucfirst(chug_term_plural) . " With Free Space";
         if (!empty($edahText)) {
             $caption .= " for " . $edahText;
         }

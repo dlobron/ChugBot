@@ -2,6 +2,7 @@
 session_start();
 include_once 'assignment.php'; // Includes functions and classes.
 include_once 'dbConn.php';
+setup_camp_specific_terminology_constants();
 
 // Require admin login for these functions.
 if (!adminLoggedIn()) {
@@ -515,6 +516,9 @@ if (isset($_POST["matches_and_prefs"])) {
     $retVal["blockName"] = $block_name;
     $retVal["existingMatches"] = $existingMatches;
     $retVal["deDupMatrix"] = $deDupMatrix;
+    $retVal["chugimTerm"] = chug_term_plural;
+    $retVal["chugTerm"] = chug_term_singular;
+    $retVal["blockTerm"] = block_term_singular;
 
     echo json_encode($retVal);
     exit();
@@ -563,6 +567,9 @@ if (isset($_POST["names_for_id"])) {
     $retVal = array(
         'edahNames' => $edah_names,
         'blockName' => $block_name,
+        'chugimTerm' => chug_term_plural,
+        'chugTerm' => chug_term_singular,
+        'blockTerm' => block_term_singular,
     );
     echo json_encode($retVal);
     exit();
