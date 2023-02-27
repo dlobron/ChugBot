@@ -65,7 +65,6 @@ echo headerText("Welcome");
 <?php
 if (!$loggedIn) {
     $ccField = new FormItemSingleTextField("Camper Access Code", true, "camper_code", 0);
-    // $ccField->setInputValue($adminEmail);
     $ccField->setInputType("text");
     $ccField->setInputClass("element text medium");
     $ccField->setInputMaxLength(50);

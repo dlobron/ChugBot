@@ -3,6 +3,7 @@ session_start();
 include_once 'constants.php';
 include_once 'functions.php';
 include_once 'dbConn.php';
+setup_camp_specific_terminology_constants();
 
 // Require camper-level access to use any functions.
 if (!camperLoggedIn()) {
