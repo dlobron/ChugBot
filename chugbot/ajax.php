@@ -3,6 +3,7 @@ session_start();
 include_once 'constants.php';
 include_once 'functions.php';
 include_once 'dbConn.php';
+setup_camp_specific_terminology_constants();
 
 // Require camper-level access to use any functions.
 if (!camperLoggedIn()) {
@@ -229,10 +230,11 @@ if (isset($_POST["submit_prefs"])) {
     }
     $homeUrl = urlIfy("index.php");
     $homeAnchor = "<a href=\"$homeUrl\">here</a>";
+    $chug_term_singular = chug_term_singular;
     $email_text = <<<END
 <html><body>
 <h3>Preferences Recorded!</h3>
-<p>We have received your chug preferences, <b>$first</b>!  Please review your choices to make sure they are correct.
+<p>We have received your $chug_term_singular preferences, <b>$first</b>!  Please review your choices to make sure they are correct.
 If anything is incorrect or missing, you can edit your choices by following these instructions:
 <ol>
         <li>Click $homeAnchor, or paste this link into your browser: $homeUrl.</li>
@@ -326,7 +328,7 @@ END;
         $row = $result->fetch_assoc();
         $mailError = "";
         $sentOk = sendMail($email,
-            "Camp Ramah chug preferences for $first $last",
+            "Camp Ramah " . chug_term_singular . " preferences for $first $last",
             $email_text,
             $row,
             $mailError,

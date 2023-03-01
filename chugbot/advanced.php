@@ -4,6 +4,7 @@ include_once 'functions.php';
 include_once 'dbConn.php';
 include_once 'formItem.php';
 bounceToLogin();
+setup_camp_specific_terminology_constants();
 
 $edahId2Name = array();
 fillId2Name(null, $edahId2Name, $dbErr,
@@ -288,8 +289,8 @@ if ($pruneMatches == false &&
     $pruneCamperDups == false) {
     $checkDefault = true;
 }
-$pruneMatchesCheckBox = new FormItemRadio("Illegal Chug Assignments", false, "radioGroup", 0);
-$pruneMatchesCheckBox->setGuideText("Check this box to delete chug matches that are not valid.");
+$pruneMatchesCheckBox = new FormItemRadio("Illegal " . chug_term_singular . " Assignments", false, "radioGroup", 0);
+$pruneMatchesCheckBox->setGuideText("Check this box to delete " . chug_term_singular . " matches that are not valid.");
 if ($pruneMatches || $checkDefault) {
     $pruneMatchesCheckBox->radioSetChecked();
 }
@@ -307,7 +308,7 @@ echo $pruneCamperDupsCheckBox->renderHtml();
 // If we have data to confirm, display the data here.
 if (count($wouldBeDeleted) > 0) {
     echo "<li>";
-    echo "<p><h3>Found the following illegal chug assignments.</h3> Hit \"Confirm Delete\" to remove them, or \"Cancel\" to exit.</p>";
+    echo "<p><h3>Found the following illegal " . chug_term_singular . " assignments.</h3> Hit \"Confirm Delete\" to remove them, or \"Cancel\" to exit.</p>";
     echo "<div class=\"well\" >";
     foreach ($wouldBeDeleted as $wouldDelText) {
         echo "$wouldDelText<br>";

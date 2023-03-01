@@ -27,6 +27,24 @@ $(function() {
                     data: {get_chug_map: 1},
                     success: function(json) {
 		    var obj = JSON.parse(json);
+			$( ".chugimfill" ).text(function() {
+				if (obj.chugimTerm &&
+					obj.chugimTerm.length > 0) {
+					return $(this).text().replace("CHUGIM", obj.chugimTerm);
+				}
+			});
+			$( ".chugfill" ).text(function() {
+				if (obj.chugTerm &&
+					obj.chugTerm.length > 0) {
+					return $(this).text().replace("CHUG", obj.chugTerm);
+				}
+			});
+			$( ".blocktermfill" ).text(function() {
+				if (obj.blockTerm &&
+					obj.blockTerm.length > 0) {
+					return $(this).text().replace("BLOCK_TERM", obj.blockTerm);
+				}
+			});
 		    $.each(obj.chugMap, function(index, chugName) {
 			    chugNames.push(chugName);
 			});

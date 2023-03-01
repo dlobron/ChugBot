@@ -3,6 +3,7 @@ session_start();
 include_once 'dbConn.php';
 include_once 'functions.php';
 bounceToLogin();
+setup_camp_specific_terminology_constants();
 
 $dbErr = "";
 $deleteOk = true;
@@ -53,7 +54,7 @@ if (!is_null($errText)) {
 
 <div class="container well">
 <h2>Campers for <?php echo $forEdahText; ?></h2>
-<p>This page lists campers in <?php echo $forEdahText; ?> who have entered chug preferences.  To update
+<p>This page lists campers in <?php echo $forEdahText; ?> who have entered <?php echo chug_term_singular ?> preferences.  To update
 information or settings for a camper, click the Edit button next to that camper's name.  To return to the staff admin
 page, click <?php echo staffHomeAnchor(); ?>.</p>
 </div>

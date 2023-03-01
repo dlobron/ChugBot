@@ -1,6 +1,7 @@
 <?php
 include_once 'formItem.php';
 include_once 'dbConn.php';
+setup_camp_specific_terminology_constants();
 
 class Column
 {
@@ -152,7 +153,7 @@ abstract class AddEditBase extends FormPage
             $link .= "&last=" . $this->col2Val["last"];
             $link .= "&edah_id=" . $this->col2Val["edah_id"];
             $html .= $link;
-            $html .= ">here</a> to add or update your personal info or chugim.</li>";
+            $html .= ">here</a> to add or update your personal info or " . chug_term_plural . ".</li>";
             $html .= "<li><b>Otherwise</b>, <a href=\"javascript:void(0)\" onclick=\"closeNav()\">close this window</a> and try registering again with a different name (you can use a nickname).</li></ul>";
             $html .= "</div>";
             $html .= "<div class=\"modal-footer\">";

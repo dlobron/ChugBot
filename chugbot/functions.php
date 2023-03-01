@@ -248,6 +248,15 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     }
     $ucName = ucfirst($name);
     $ucPlural = ucfirst($tableName);
+
+    if ($tableName == 'chugim') {
+        $ucPlural = ucfirst(chug_term_plural);
+    } else if ($tableName == 'blocks') {
+        $ucPlural = ucfirst(block_term_plural);
+    } else if ($tableName == 'chug_groups') {
+        $ucPlural = ucfirst(chug_term_singular) . '_groups';
+    }
+
     $formName = "form_" . $name;
     $idCol = $name . "_id";
     $editUrl = urlIfy("edit" . $ucName . ".php");
@@ -706,4 +715,18 @@ function genPassToEditPageForm($action, $paramHash)
     $retVal = $retVal . '<script type="text/javascript">document.passToEditPageForm.submit();</script>';
 
     return $retVal;
+}
+
+function setup_camp_specific_terminology_constants() {
+    $db = new DbConn();
+    $sql = "SELECT chug_term_singular, chug_term_plural, block_term_singular, block_term_plural FROM admin_data";
+    $result = $db->runQueryDirectly($sql, $dbErr);
+    if ($dbErr) {
+        fatalError($dbErr);
+    }
+    $row = $result->fetch_assoc();
+
+    foreach ($row as $key => $value) {
+        define($key, $value);
+    }
 }

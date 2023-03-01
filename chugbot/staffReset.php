@@ -4,11 +4,12 @@ include_once 'functions.php';
 include_once 'formItem.php';
 include_once 'dbConn.php';
 bounceToLogin();
+setup_camp_specific_terminology_constants();
 
-$existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = $existingPrefCount = $existingSendConfirmEmail = "";
+$existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = $existingPrefCount = $existingSendConfirmEmail = $existingChugTermSingular = $existingChugTermPlural = $existingBlockTermSingular = $existingBlockTermPlural = "";
 $deletableTableId2Name = array();
 $deletableTableActiveIdHash = array();
-$dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = $prefCountError = "";
+$dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = $prefCountError = $campTerminologyErr = "";
 
 $db = new DbConn();
 $err = "";
@@ -30,6 +31,10 @@ if ($result == false) {
     $existingPrefInstructions = $row["pref_page_instructions"];
     $existingCampWeb = $row["camp_web"];
     $existingPrefCount = $row["pref_count"];
+    $existingChugTermSingular = $row["chug_term_singular"];
+    $existingChugTermPlural = $row["chug_term_plural"];
+    $existingBlockTermSingular = $row["block_term_singular"];
+    $existingBlockTermPlural = $row["block_term_plural"];
 
     // Set the admin email and password to current values.  These will be
     // clobbered if we have incoming POST data - otherwise, we'll display them
@@ -44,6 +49,10 @@ if ($result == false) {
     $pref_page_instructions = $existingPrefInstructions;
     $camp_web = $existingCampWeb;
     $pref_count = $existingPrefCount;
+    $chug_term_singular = $existingChugTermSingular;
+    $chug_term_plural = $existingChugTermPlural;
+    $block_term_singular = $existingBlockTermSingular;
+    $block_term_plural = $existingBlockTermPlural;
 }
 // Grab existing category_tables data, if we don't have an update below.
 $db = new DbConn();
@@ -76,6 +85,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pref_page_instructions = test_input($_POST["pref_page_instructions"]);
     $camp_web = test_input($_POST["camp_web"]);
     $pref_count = test_input($_POST["pref_count"]);
+    $chug_term_singular = test_input($_POST["chug_term_singular"]);
+    $chug_term_plural = test_input($_POST["chug_term_plural"]);
+    $block_term_singular = test_input($_POST["block_term_singular"]);
+    $block_term_plural = test_input($_POST["block_term_plural"]);
 
     // Update the deletable tables.  We start by setting all tables to not
     // be editable, and then we enable ones that are active.
@@ -109,6 +122,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $db->addColumn("regular_user_token", $regular_user_token, 's');
     $db->addColumn("regular_user_token_hint", $regular_user_token_hint, 's');
     $db->addColumn("send_confirm_email", $send_confirm_email, 'i');
+    $db->addColumn("chug_term_singular", strtolower($chug_term_singular), 's');
+    $db->addColumn("chug_term_plural", strtolower($chug_term_plural), 's');
+    $db->addColumn("block_term_singular", strtolower($block_term_singular), 's');
+    $db->addColumn("block_term_plural", strtolower($block_term_plural), 's');
 
     // Assume the email is never empty.  Only update it if a valid address was
     // given.
@@ -158,13 +175,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $db->addColumn("pref_count", $prefCount, 'i');
         }
     }
+    // Camp terminologies cannot be empty
+    if (!$chug_term_singular || !$chug_term_plural || !$block_term_singular || !$block_term_plural) {
+        $campTerminologyErr = errorString("Camp terminologies are required");
+    }
     if (empty($staffEmailErr) &&
         empty($staffPasswordErr) &&
         empty($staffPasswordErr2) &&
         empty($adminEmailCcErr) &&
         empty($dbError) &&
         empty($campNameErr) &&
-        empty($prefCountError)) {
+        empty($prefCountError) &&
+        empty($campTerminologyErr)) {
         // No errors: insert the new/updated data, and then redirect
         // to the admin home page.
         $updateOk = $db->updateTable("admin_data", $dbError);
@@ -186,7 +208,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php
 echo headerText("Edit Admin Data");
 
-$errText = genFatalErrorReport(array($dbError, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr, $campNameErr, $prefCountError));
+$errText = genFatalErrorReport(array($dbError, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr, $campNameErr, $prefCountError, $campTerminologyErr));
 if (!is_null($errText)) {
     echo $errText;
     exit();
@@ -234,13 +256,13 @@ $adminEmailFromNameField->setInputValue($admin_email_from_name);
 $adminEmailFromNameField->setInputType("text");
 $adminEmailFromNameField->setInputClass("element text medium");
 $adminEmailFromNameField->setInputMaxLength(255);
-$adminEmailFromNameField->setPlaceHolder("Chug Organizer's Name");
+$adminEmailFromNameField->setPlaceHolder(ucfirst(chug_term_singular). " Organizer's Name");
 $adminEmailFromNameField->setGuideText("If set, this name will appear as the \"From\" name when email is sent.  If not set, the camp name will be used.");
 echo $adminEmailFromNameField->renderHtml();
 
 $sendConfirmEmailField = new FormItemCheckBox("Email Ranking Confirmation to Campers", false, "send_confirm_email", $counter++);
 $sendConfirmEmailField->setInputValue($send_confirm_email);
-$sendConfirmEmailField->setGuideText("If this box is checked, confirmation of chug choices will be sent to campers.  If not checked, confirmation email will only be sent to the Admin Email CC address(es), if configured.");
+$sendConfirmEmailField->setGuideText("If this box is checked, confirmation of " . chug_term_singular . " choices will be sent to campers.  If not checked, confirmation email will only be sent to the Admin Email CC address(es), if configured.");
 echo $sendConfirmEmailField->renderHtml();
 
 $regularUserTokenField = new FormItemSingleTextField("Camper Access Token", false, "regular_user_token", $counter++);
@@ -270,13 +292,13 @@ $prefInstructions->setPlaceHolder(" ");
 $prefInstructions->setGuideText("These are the instructions campers will see on the ranking page.  HTML tags are OK.");
 echo $prefInstructions->renderHtml();
 
-$prefCount = new FormItemSingleTextField("Number of Chug Preferences", false, "pref_count", $counter++);
+$prefCount = new FormItemSingleTextField("Number of " . ucfirst(chug_term_singular) . " Preferences", false, "pref_count", $counter++);
 $prefCount->setInputValue($pref_count);
 $prefCount->setInputType("number");
 $prefCount->setInputClass("element textarea medium");
 $prefCount->setInputClass("element text medium");
 $prefCount->setInputMaxLength(2);
-$prefCount->setGuideText("Select the number of chug preferences a camper should select (values between 1 and 6, inclusive, are supported).");
+$prefCount->setGuideText("Select the number of " . chug_term_singular . " preferences a camper should select (values between 1 and 6, inclusive, are supported).");
 echo $prefCount->renderHtml();
 
 $deletableTablesField = new FormItemInstanceChooser("Allow Deletion", false, "deletable_tables", $counter++);
@@ -318,6 +340,38 @@ $staffPasswordField2->setInputClass("element text medium");
 $staffPasswordField2->setInputMaxLength(50);
 $staffPasswordField2->setPlaceHolder(" ");
 echo $staffPasswordField2->renderHtml();
+
+$chugTermSingularField = new FormItemSingleTextField("Chug Term (singular)", false, "chug_term_singular", $counter++);
+$chugTermSingularField->setInputType("text");
+$chugTermSingularField->setInputClass("element text medium");
+$chugTermSingularField->setInputMaxLength(50);
+$chugTermSingularField->setPlaceHolder(" ");
+$chugTermSingularField->setInputValue(chug_term_singular);
+echo $chugTermSingularField->renderHtml();
+
+$chugTermPluralField = new FormItemSingleTextField("Chug Term (plural)", false, "chug_term_plural", $counter++);
+$chugTermPluralField->setInputType("text");
+$chugTermPluralField->setInputClass("element text medium");
+$chugTermPluralField->setInputMaxLength(50);
+$chugTermPluralField->setPlaceHolder(" ");
+$chugTermPluralField->setInputValue(chug_term_plural);
+echo $chugTermPluralField->renderHtml();
+
+$blockTermSingularField = new FormItemSingleTextField("Block Term (singular)", false, "block_term_singular", $counter++);
+$blockTermSingularField->setInputType("text");
+$blockTermSingularField->setInputClass("element text medium");
+$blockTermSingularField->setInputMaxLength(50);
+$blockTermSingularField->setPlaceHolder(" ");
+$blockTermSingularField->setInputValue(block_term_singular);
+echo $blockTermSingularField->renderHtml();
+
+$blockTermPluralField = new FormItemSingleTextField("Block Term (plural)", false, "block_term_plural", $counter++);
+$blockTermPluralField->setInputType("text");
+$blockTermPluralField->setInputClass("element text medium");
+$blockTermPluralField->setInputMaxLength(50);
+$blockTermPluralField->setPlaceHolder(" ");
+$blockTermPluralField->setInputValue(block_term_plural);
+echo $blockTermPluralField->renderHtml();
 ?>
 
 <li class="buttons">

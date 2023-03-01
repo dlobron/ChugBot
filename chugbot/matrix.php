@@ -2,6 +2,7 @@
 session_start();
 include_once 'functions.php';
 include_once 'dbConn.php';
+setup_camp_specific_terminology_constants();
 
 // Require admin-level access to use any functions.
 if (!adminLoggedIn()) {
@@ -48,6 +49,9 @@ if (isset($_POST["get_chug_map"])) {
         $matrixMap[$row["left_chug_id"]][$row["right_chug_id"]] = 1;
     }
     $retVal["matrixMap"] = $matrixMap;
+    $retVal["chugimTerm"] = chug_term_plural;
+    $retVal["chugTerm"] = chug_term_singular;
+    $retVal["blockTerm"] = block_term_singular;
 
     echo json_encode($retVal);
     exit();
