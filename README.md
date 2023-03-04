@@ -20,11 +20,11 @@ The application assumes that you have PHP installed in your webserver, and that 
             'allow_self_signed' => true
         )
     );
-    
+
 4. Copy the contents of the "chugbot" directory to the directory where you want the website to run.  For example, if your webserver root is /home/web/htdocs (assuming a Unix-like directory structure), and you want this application to appear in a browser as mycamp.org/leveling/, you should copy these files to /home/web/htdocs/leveling/.
 5. In order for ChugBot to archive the current summer's data, the MYSQL_USER defined in constants.php needs permission to create a backup database.  If you do not want the user to have permission to create a database, then you should use your ISP's database admin tool (or the mysql command-line tool) to create a database called DB2016, where DB is the name of your main database from step (1).  For example, if your database is called camprama_chugbot_db, and the current summer year is 2016, you would create camprama_chugbot_db2016.
 
-That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: they use a plain text token for access.  If campers need to modify their choices after entering them, they identify themselves with their email address.  
+That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: they use a plain text token for access.  If campers need to modify their choices after entering them, they identify themselves with their email address.
 
 **Important**: this design obviously favors ease of use over security.  It's trivial for one camper to impersonate another, or for someone to view or modify any camper's choices or registration data.  If your data is considered sensitive, then additional security **must** be added.  The admin staff section is password-protected, but even this depends on the security of your hosting provider, e.g., whether TLS encryption is used across the site.  I'm not a security professional, so if you have major security concerns, please consult a qualified person.
 
@@ -41,3 +41,7 @@ This project is dedicated to Danny Lewin z"l (1970-2001), [co-founder](https://w
 My daughter drew a picture of what the bot might look like in real life.  He's pretty cool:
 
 ![bot image](chugbot/images/ChugBot.JPG?raw=true)
+
+## Adding a new ChugBot instance
+When adding a new ChugBot instance, be sure to also add an entry to
+`chugbot/.platform/hooks/postdeploy/00_get_certificate.sh` for the new domain.
