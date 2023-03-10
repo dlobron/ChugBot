@@ -72,6 +72,13 @@ class PDF extends FPDF
                     0); //$fill);
                 $this->SetXY($x + $w, $y);
             }
+
+            // add a set of blank checkboxes (used for things like attendance)
+            // to every row of every report
+            $NUM_OF_CHECKBOXES = 10;
+            foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
+                $this->Cell(10, 10, ' ', 1);
+            }
             $this->Ln($h);
             $fill = !$fill;
         }
@@ -488,6 +495,13 @@ class ZebraReport
             fputcsv($output, array($csvTitle));
             fputcsv($output, $pdfHeader);
             foreach ($pdfData as $pdfRow) {
+                // add a set of blank checkboxes (used for things like attendance)
+                // to every row of every report
+                $NUM_OF_CHECKBOXES = 10;
+                foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
+                    $pdfRow[str_repeat(' ', $index)] = ' ';
+                }
+
                 fputcsv($output, $pdfRow);
             }
             fclose($output);
