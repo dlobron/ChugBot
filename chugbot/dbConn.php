@@ -28,6 +28,11 @@ class DbConn
         $this->mysqli->close();
     }
 
+    public function mysqliClient()
+    {
+        return $this->mysqli;
+    }
+
     // Run a query directly, with no interpolation.  Use only for queries
     // without user-supplied parameters.
     public function runQueryDirectly($sql, &$err)

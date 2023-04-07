@@ -53,27 +53,8 @@ if (!camperLoggedIn()) {
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
-<p>If this is your first time picking <?php echo chug_term_plural ?> for this summer, click First Time for <?php echo yearOfCurrentSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
 
-<div class="panel panel-default">
-<div class="panel-heading">
-  <h4 class="panel-title">
-     <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm1">First Time for <?php echo yearOfCurrentSummer(); ?></a>
-  </h4>
-</div>
-<div id="choiceForm1" class="panel-collapse collapse panel-body">
-  <form method="POST" />
-    <button title="Add a camper" class="btn btn-primary" type="submit" name="add" formaction="addCamper.php" >Start</button>
-    <input type="hidden" id="fromHome" name="fromHome" value="1" />
-   </form>
-</div>
-
-<div class="panel-heading">
-  <h4 class="panel-title">
-      <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm2">Update Existing</a>
-  </h4>
-</div>
-<div id="choiceForm2" class="panel-collapse collapse panel-body">
+<div>
   <form method="GET" />
      <p>Please enter data below to retrieve your record. You may fill in any combination of boxes.</p>
   <ul>

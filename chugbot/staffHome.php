@@ -38,6 +38,7 @@ $archiveUrl = urlIfy("archive.php");
 $resetUrl = urlIfy("staffReset.php");
 $levelingUrl = urlIfy("levelHomeLaunch.php");
 $reportUrl = urlIfy("report.php");
+$camperUploadUrl = urlIfy("camperUpload.php");
 $dbErr = "";
 $sessionId2Name = array();
 $blockId2Name = array();
@@ -99,6 +100,10 @@ EOM;
 
 <form action="<?php echo $advancedUrl; ?>" method="post">
 <button title="Click here to prune illegal or obsolete assignments" class="btn btn-primary" type="submit" value="1">Fix Illegal And Duplicate</button>
+</form>
+
+<form action="<?php echo $camperUploadUrl; ?>" method="post">
+<button title="Click here to upload campers" class="btn btn-primary" type="submit" value="1">Upload Campers</button>
 </form>
 </div>
 
