@@ -32,12 +32,25 @@ foreach ($parts as $part) {
     }
 }
 
+$db = new DbConn();
+$sql = "SELECT enable_camper_importer FROM admin_data";
+$err = "";
+$result = $db->runQueryDirectly($sql, $err);
+$enableCamperImporter = false;
+if ($result) {
+    $row = $result->fetch_assoc();
+    if ($row) {
+        $enableCamperImporter = (bool)$row["enable_camper_importer"];
+    }
+}
+
 $matrixUrl = urlIfy("exclusionMatrix.html");
 $advancedUrl = urlIfy("advanced.php");
 $archiveUrl = urlIfy("archive.php");
 $resetUrl = urlIfy("staffReset.php");
 $levelingUrl = urlIfy("levelHomeLaunch.php");
 $reportUrl = urlIfy("report.php");
+$camperUploadUrl = urlIfy("camperUpload.php");
 $dbErr = "";
 $sessionId2Name = array();
 $blockId2Name = array();
@@ -100,6 +113,12 @@ EOM;
 <form action="<?php echo $advancedUrl; ?>" method="post">
 <button title="Click here to prune illegal or obsolete assignments" class="btn btn-primary" type="submit" value="1">Fix Illegal And Duplicate</button>
 </form>
+
+<?php if ($enableCamperImporter) : ?>
+<form action="<?php echo $camperUploadUrl; ?>" method="post">
+<button title="Click here to upload campers" class="btn btn-primary" type="submit" value="1">Upload Campers</button>
+</form>
+<?php endif; ?>
 </div>
 
 </div>

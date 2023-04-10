@@ -5,6 +5,19 @@ include_once 'formItem.php';
 session_start();
 
 setup_camp_specific_terminology_constants();
+
+$db = new DbConn();
+$sql = "SELECT enable_camper_importer FROM admin_data";
+$err = "";
+$result = $db->runQueryDirectly($sql, $err);
+$enableCamperImporter = false;
+if ($result) {
+    $row = $result->fetch_assoc();
+    if ($row) {
+        $enableCamperImporter = (bool)$row["enable_camper_importer"];
+    }
+}
+
 echo headerText("Camper/Family Home");
 
 // If the user is not logged in as a camper, validate the incoming access
@@ -53,27 +66,31 @@ if (!camperLoggedIn()) {
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
+<?php if (!$enableCamperImporter) : ?>
 <p>If this is your first time picking <?php echo chug_term_plural ?> for this summer, click First Time for <?php echo yearOfCurrentSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
+<?php endif; ?>
 
+<?php if (!$enableCamperImporter) : ?>
 <div class="panel panel-default">
 <div class="panel-heading">
-  <h4 class="panel-title">
-     <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm1">First Time for <?php echo yearOfCurrentSummer(); ?></a>
-  </h4>
+<h4 class="panel-title">
+    <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm1">First Time for <?php echo yearOfCurrentSummer(); ?></a>
+</h4>
 </div>
 <div id="choiceForm1" class="panel-collapse collapse panel-body">
-  <form method="POST" />
+<form method="POST" />
     <button title="Add a camper" class="btn btn-primary" type="submit" name="add" formaction="addCamper.php" >Start</button>
     <input type="hidden" id="fromHome" name="fromHome" value="1" />
-   </form>
+</form>
 </div>
 
 <div class="panel-heading">
-  <h4 class="panel-title">
-      <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm2">Update Existing</a>
-  </h4>
+<h4 class="panel-title">
+    <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm2">Update Existing</a>
+</h4>
 </div>
-<div id="choiceForm2" class="panel-collapse collapse panel-body">
+<?php endif; ?>
+<div id="choiceForm2" <?php if (!$enableCamperImporter) : ?>class="panel-collapse collapse panel-body"<?php endif; ?>>
   <form method="GET" />
      <p>Please enter data below to retrieve your record. You may fill in any combination of boxes.</p>
   <ul>
@@ -121,7 +138,9 @@ echo $edahField->renderHtml();
   </ul>
   <input type="hidden" id="fromHome" name="fromHome" value="1" />
   </form>
+<?php if (!$enableCamperImporter) : ?>
 </div>
+<?php endif; ?>
 
 <?php
 echo footerText();
