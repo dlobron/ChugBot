@@ -71,7 +71,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
     array_shift($csv); # remove header row
 
     $dbConn->mysqliClient()->begin_transaction();
-    $dbConn->mysqliClient()->query("DELETE FROM campers");
     $campersWithErrors = array();
     foreach($csv as $camper) {
         $edahId = $edah_name_to_id[$camper["edah"]];
