@@ -66,7 +66,7 @@ if ($dbErr) {
 if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) {
     $csv = array_map("str_getcsv", file($_FILES["csv"]["tmp_name"]));
     array_walk($csv, function(&$a) use ($csv) {
-        $a = array_combine($csv[0], $a);
+        $a = array_combine(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $csv[0]), $a);
       });
     array_shift($csv); # remove header row
 
@@ -134,7 +134,6 @@ EOM;
   <input type="file" name="csv" id="csv">
   <input type="submit" class="btn btn-primary" value="Upload" name="submit">
 </form>
-<p>Clicking "Upload" will overwrite ALL existing campers for this year.</p>
 </div>
 
 <?php
