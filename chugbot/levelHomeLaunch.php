@@ -14,8 +14,8 @@ $block_id = intval(test_input($_GET["block"]));
 if ($edah_ids == null || $block_id == null || $group_ids == null ||
     empty($edah_ids) || empty($group_ids)) {
     $err = errorString("Block and at least one edah and group must be specified.");
-} else if (count($edah_ids) > 2) {
-    $err = errorString("No more than 2 edot may be leveled together.");
+} else if (count($edah_ids) > 3) {
+    $err = errorString("No more than 3 edot may be leveled together.");
 }
 if ($err) {
     echo genErrorPage($err);
