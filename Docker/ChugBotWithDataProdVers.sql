@@ -20,8 +20,8 @@ CREATE DATABASE IF NOT EXISTS chugbot_test COLLATE utf8_unicode_ci;
 
 # Create a user for the chugbot program (if it does not already exist), and
 # grant the access it needs.
-CREATE USER IF NOT EXISTS 'admin'@'localhost' IDENTIFIED BY '$2y$10$q6aySPsIgbfkmD6eDAYOy.GNtn01.QTMsAUS/vIfoRZpq0WZHArmW';
-GRANT CREATE,INSERT,SELECT,UPDATE,DELETE,LOCK TABLES ON chugbot_test.* TO 'admin'@'localhost';
+CREATE USER IF NOT EXISTS 'admin'@'localhost' IDENTIFIED by 'chugbot_test';
+GRANT all privileges ON chugbot_test.* TO 'admin'@'localhost';
 
 # Switch to the new database, in preparation for creating tables.
 USE chugbot_test;
