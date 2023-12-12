@@ -1312,8 +1312,8 @@ if ($doReport) {
         $camperHappinessReport->addIgnoreColumn("block_id");
         $camperHappinessReport->renderTable();
     } else if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
-        $sql = "SELECT DISTINCT a.name name, a.edah edah, a.session session FROM " .
-            "(SELECT CONCAT(c.last, ', ', c.first) AS name, e.name edah, s.name session, p.preference_id pref_id " .
+        $sql = "SELECT DISTINCT a.name name, a.email email, a.edah edah, a.session session FROM " .
+            "(SELECT CONCAT(c.last, ', ', c.first) AS name, c.email email, e.name edah, s.name session, p.preference_id pref_id " .
             "FROM edot e, sessions s, campers c LEFT OUTER JOIN " .
             "(SELECT * FROM preferences ";
         // Optionally filter prefs by block.
