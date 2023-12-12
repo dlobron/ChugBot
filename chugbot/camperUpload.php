@@ -83,8 +83,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
             break;
         }
 
-        $stmt = $dbConn->mysqliClient()->prepare("INSERT INTO campers(edah_id, session_id, first, last, bunk_id, email, needs_first_choice) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssi", $edahId, $sessionId, $camper["first_name"], $camper["last_name"], $bunkId, $camper["email"], $needsFirstChoice);
+        $stmt = $dbConn->mysqliClient()->prepare("INSERT INTO campers(edah_id, session_id, first, last, bunk_id, email, email2, needs_first_choice) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssssi", $edahId, $sessionId, $camper["first_name"], $camper["last_name"], $bunkId, $camper["email"], $camper["email2"], $needsFirstChoice);
         $stmt->execute();
     }
 
@@ -125,7 +125,7 @@ EOM;
 
 <div class="well well-white container">
 <h2>Upload Campers</h2>
-<p><b>Upload a CSV file with the following columns</b>: edah, session, first_name, last_name, bunk, email, needs_first_choice</p>
+<p><b>Upload a CSV file with the following columns</b>: edah, session, first_name, last_name, bunk, email, email2, needs_first_choice</p>
 <p>Valid values for <b>edah</b>: <?php echo implode(", ", array_keys($edah_name_to_id)); ?></p>
 <p>Valid values for <b>session</b>: <?php echo implode(", ", array_keys($session_name_to_id)); ?></p>
 <p>Valid values for <b>bunk</b>: <?php echo implode(", ", array_keys($bunk_name_to_id)); ?></p>

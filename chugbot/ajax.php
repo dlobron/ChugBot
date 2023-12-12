@@ -164,6 +164,7 @@ if (isset($_POST["submit_prefs"])) {
         $db->addColumn("first", $_SESSION["first"], 's');
         $db->addColumn("last", $_SESSION["last"], 's');
         $db->addColumn("email", $_SESSION["email"], 's');
+        $db->addColumn("email2", $_SESSION["email2"], 's');
         $db->addColumn("session_id", intval($_SESSION["session_id"]), 'i');
         $db->addColumn("edah_id", intval($_SESSION["edah_id"]), 'i');
         $bunkIdVal = null;
@@ -203,8 +204,10 @@ if (isset($_POST["submit_prefs"])) {
     $first = "";
     $last = "";
     $email = "";
+    $email2 = "";
     $db = new DbConn();
     $db->addSelectColumn("email");
+    $db->addSelectColumn("email2");
     $db->addSelectColumn("first");
     $db->addSelectColumn("last");
     $db->addWhereColumn("camper_id", $camper_id, 'i');
@@ -217,8 +220,9 @@ if (isset($_POST["submit_prefs"])) {
     if ($result->num_rows > 0) {
         $row = $result->fetch_row();
         $email = $row[0]; // Might be NULL
-        $first = $row[1];
-        $last = $row[2];
+        $email2 = $row[1]; // Might be NULL
+        $first = $row[2];
+        $last = $row[3];
     }
     $camperCodeText = "";
     $db = new DbConn();
@@ -327,12 +331,11 @@ END;
         }
         $row = $result->fetch_assoc();
         $mailError = "";
-        $sentOk = sendMail($email,
-            "Camp Ramah " . chug_term_singular . " preferences for $first $last",
-            $email_text,
-            $row,
-            $mailError,
-            true);
+        $subject = "Camp Ramah " . chug_term_singular . " preferences for $first $last";
+        $sentOk = sendMail($email, $subject, $email_text, $row, $mailError, true);
+        if ($email2) {
+            $sentOk = $sentOk && sendMail($email2, $subject, $email_text, $row, $mailError, true);
+        }
     } else {
         error_log("No email is configured for $first $last: Not sending confirmation");
     }
@@ -342,6 +345,7 @@ END;
     $db = new DbConn();
     $db->addSelectColumn("first");
     $db->addSelectColumn("email");
+    $db->addSelectColumn("email2");
     $db->addWhereColumn("camper_id", $camper_id, 'i');
     $err = "";
     $result = $db->simpleSelectFromTable("campers", $err);
@@ -355,6 +359,7 @@ END;
     if ($sentOk &&
         $row["send_confirm_email"]) {
         $retVal["email"] = $email;
+        $retVal["email2"] = $email2;
     }
     $retVal["homeUrl"] = homeUrl();
 

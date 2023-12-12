@@ -153,7 +153,8 @@ $(function() {
 				    }
 				    txt = $(this).html().replace("NAME", data.name);
 				    if (data.hasOwnProperty('email')) {
-					var mailText = "Confirmation email sent to " + data.email + ".<br><br>";
+					var emails = [data.email, data.email2];
+					var mailText = "Confirmation email sent to " + emails.filter(e => !!e).join(',') + ".<br><br>";
 					txt = txt.replace("You may", mailText);
 				    }
 				    return txt.replace("URL", data.homeUrl);
