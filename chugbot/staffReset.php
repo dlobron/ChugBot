@@ -25,6 +25,7 @@ if ($result == false) {
     $existingAdminEmailCc = $row["admin_email_cc"];
     $existingAdminEmailFromName = $row["admin_email_from_name"];
     $existingEnableCamperImporter = $row["enable_camper_importer"];
+    $existingEnableSelectionProcess = $row["enable_selection_process"];
     $existingSendConfirmEmail = $row["send_confirm_email"];
     $existingRegularUserToken = $row["regular_user_token"];
     $existingRegularUserTokenHint = $row["regular_user_token_hint"];
@@ -44,6 +45,7 @@ if ($result == false) {
     $admin_email_cc = $existingAdminEmailCc;
     $admin_email_from_name = $existingAdminEmailFromName;
     $enable_camper_importer = $existingEnableCamperImporter;
+    $enable_selection_process = $existingEnableSelectionProcess;
     $send_confirm_email = $existingSendConfirmEmail;
     $regular_user_token = $existingRegularUserToken;
     $regular_user_token_hint = $existingRegularUserTokenHint;
@@ -79,6 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $admin_email_from_name = test_input($_POST["admin_email_from_name"]);
     $send_confirm_email = boolval(test_input($_POST["send_confirm_email"]));
     $enable_camper_importer = boolval(test_input($_POST["enable_camper_importer"]));
+    $enable_selection_process = boolval(test_input($_POST["enable_selection_process"]));
     $staff_password = test_input($_POST["staff_password"]);
     $staff_password2 = test_input($_POST["staff_password2"]);
     $admin_email_cc = test_input($_POST["admin_email_cc"]);
@@ -126,6 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $db->addColumn("regular_user_token_hint", $regular_user_token_hint, 's');
     $db->addColumn("send_confirm_email", $send_confirm_email, 'i');
     $db->addColumn("enable_camper_importer", $enable_camper_importer, 'i');
+    $db->addColumn("enable_selection_process", $enable_selection_process, 'i');
     $db->addColumn("chug_term_singular", strtolower($chug_term_singular), 's');
     $db->addColumn("chug_term_plural", strtolower($chug_term_plural), 's');
     $db->addColumn("block_term_singular", strtolower($block_term_singular), 's');
@@ -266,8 +270,13 @@ echo $adminEmailFromNameField->renderHtml();
 
 $enableCamperImporterField = new FormItemCheckBox("Enable Camper Importer", false, "enable_camper_importer", $counter++);
 $enableCamperImporterField->setInputValue($enable_camper_importer);
-$enableCamperImporterField->setGuideText("If this box is checked, campers will not be able to sign up for ChugBot themselves. Instead, an administrator will upload a CSV of camper data.");
+$enableCamperImporterField->setGuideText("If this box is checked, an administrator can upload a CSV of camper data.");
 echo $enableCamperImporterField->renderHtml();
+
+$enableSelectionProcessField = new FormItemCheckBox("Enable Selection Process", false, "enable_selection_process", $counter++);
+$enableSelectionProcessField->setInputValue($enable_selection_process);
+$enableSelectionProcessField->setGuideText("If this box is checked, campers will be able to submit preferences for " . chug_term_plural . ".");
+echo $enableSelectionProcessField->renderHtml();
 
 $sendConfirmEmailField = new FormItemCheckBox("Email Ranking Confirmation to Campers", false, "send_confirm_email", $counter++);
 $sendConfirmEmailField->setInputValue($send_confirm_email);

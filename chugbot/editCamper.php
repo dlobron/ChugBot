@@ -5,6 +5,18 @@ include_once 'formItem.php';
 camperBounceToLogin();
 setup_camp_specific_terminology_constants();
 
+$db = new DbConn();
+$sql = "SELECT enable_selection_process FROM admin_data";
+$err = "";
+$result = $db->runQueryDirectly($sql, $err);
+$enableSelectionProcess = true;
+if ($result) {
+    $row = $result->fetch_assoc();
+    if ($row) {
+        $enableSelectionProcess = (bool)$row["enable_selection_process"];
+    }
+}
+
 $editCamperPage = new EditPage("Review Camper Information",
     "Please review your information below, and make any necessary edits.",
     "campers", "camper_id");
@@ -19,8 +31,10 @@ $editCamperPage->addColumn("edah_id", true, true);
 $editCamperPage->addColumn("bunk_id", false, true);
 $editCamperPage->addColumn("needs_first_choice", false, true, 0);
 $editCamperPage->addColumn("inactive", false, true, 0);
-$editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html", "Update " . ucfirst(chug_term_plural));
-$editCamperPage->setSaveAndReturnLabel("Save and Exit");
+if ($enableSelectionProcess) {
+    $editCamperPage->setSubmitAndContinueTarget("rankCamperChoices.html", "Update " . ucfirst(chug_term_plural));
+    $editCamperPage->setSaveAndReturnLabel("Save and Exit");
+}
 
 $editCamperPage->handleSubmit();
 
