@@ -151,7 +151,7 @@ EOM;
 
 <div class="well well-white container">
 <h3>Leveling</h3>
-<p>To view the leveling page, choose a time <?php echo block_term_singular ?> and <b>1-3</b> edot, and click "Go."</p>
+<p>To view the leveling page, choose a time <?php echo block_term_singular ?> and <b>1-8</b> edot, and click "Go."</p>
 <p>If there is an existing saved assignment for the selected edah/edot and <?php echo block_term_singular ?>, it will be displayed.  Nothing will be
 changed until you click the Save or Reassign buttons on the leveling page.  If there is no existing assignment, one
 will be created and then displayed.</p>
@@ -160,12 +160,12 @@ will be created and then displayed.</p>
 <form id="leveling_choice_form" class="well" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
-<label class="description" for="edah">Edah (choose 1-3)</label>
+<label class="description" for="edah">Edah (choose 1-8)</label>
 <div id="edah_checkbox">
 <?php
 echo genCheckBox($edahId2Name, array(), "edah_ids");
 ?>
-</div><p class="guidelines" id="guide_1"><small>Choose 1-3 Edot.</small></p>
+</div><p class="guidelines" id="guide_1"><small>Choose 1-8 Edot.</small></p>
 </li>
 <li>
 <label class="description" for="group" id="group_desc">Group (choose one or more)</label>
