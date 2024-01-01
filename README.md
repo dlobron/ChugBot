@@ -11,7 +11,7 @@ The application assumes that you have PHP installed in your webserver, and that 
 
 1. Enter the MySQL command line as root, and run "source ChugBot.sql". Alternately, you can cut-and-paste the file into a database admin window.  You may have to change the name of the database to fit your ISP's naming conventions.  Make sure to grant database permissions to the user that this program will run as: I recommend using an admin window for this.
 2. Because some ISPs do not allow PHP scripts to create databases, I recommend manually creating archive databases for the next few years.  This program expects the archive database for a given year to have the same name as the database, with the year appended.  So if your database is called camprama_chugbot_db, the archive for summer 2016 would be called camprama_chugbot_db2016.  I suggest creating camprama_chugbot_dbYEAR databases for the next couple of years.
-3. Update constants.php with the login information for your MySQL database and your email account, the database user for this program, and the path to your mysql and mysqldump binaries.  If your ISP's email authentication is broken, you might also need to add the following to the sendMail function in functions.php (please see https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting for details):
+3. Update constants.php with the login information for your MySQL database and your email account, the database user for this program, and the path to your mysql binary.  If your ISP's email authentication is broken, you might also need to add the following to the sendMail function in functions.php (please see https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting for details):
 
     $mail->SMTPOptions = array(
         'ssl' => array(
@@ -34,14 +34,22 @@ That's it!  You should now be able to use the admin staff pages to add groups, b
 
 3. Get the mysql container name by running "docker ps", and note the name in the first column. This should be a value such as "0c09502785a2".
 
-4. Log into the container, and load the data:
+4. Log into the container, and load the data (TODO: Make this a docker entrypoint). Assuming "0c09502785a2" is the container name:
 
-    docker exec -it 0c09502785a2 bash
-    /usr/bin/mysql -u root -pdeveloper < /tmp/ChugBotWithData.sql
+```
+docker exec -it 0c09502785a2 bash
+/usr/bin/mysql -u root -pdeveloper < /tmp/ChugBotWithData.sql
+```
 
 The application should now be reachable on http://127.0.0.1:8000.
 
 **Important**: this design obviously favors ease of use over security.  It's trivial for one camper to impersonate another, or for someone to view or modify any camper's choices or registration data.  If your data is considered sensitive, then additional security **must** be added.  The admin staff section is password-protected, but even this depends on the security of your hosting provider, e.g., whether TLS encryption is used across the site.  I'm not a security professional, so if you have major security concerns, please consult a qualified person.
+
+## Adding a new ChugBot instance
+When adding a new ChugBot instance, be sure to also add an entry to
+`chugbot/.platform/hooks/postdeploy/00_get_certificate.sh` for the new domain.
+
+### About
 
 The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which means "circle" or "camp activity group." Some of the terms in the application are also transliterated Hebrew (our kids attend a Jewish summer camp).  Feel free to change these for your camp, or keep them as-is.  A quick glossary of terms:
 
@@ -57,6 +65,3 @@ My daughter drew a picture of what the bot might look like in real life.  He's p
 
 ![bot image](chugbot/images/ChugBot.JPG?raw=true)
 
-## Adding a new ChugBot instance
-When adding a new ChugBot instance, be sure to also add an entry to
-`chugbot/.platform/hooks/postdeploy/00_get_certificate.sh` for the new domain.
