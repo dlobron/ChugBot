@@ -11,15 +11,15 @@ services:
             - ./chugbot:/var/www/html/
         ports:
             - 8000:80
+        environment:
+            MYSQL_HOST: db
+            MYSQL_DB: camprama_chugbot_db
+            MYSQL_USER: root
+            MYSQL_PASSWORD: developer
+            MYSQL_ROOT_PASSWORD: developer
     db:
         container_name: db
         image: mysql
         restart: always
-        environment:
-            MYSQL_HOST: localhost
-            MYSQL_ROOT_PASSWORD: MYSQL_ROOT_PASSWORD
-            MYSQL_DATABASE: camprama_chugbot_db
-            MYSQL_USER: MYSQL_USER
-            MYSQL_PASSWORD: MYSQL_PASSWORD
         ports:
             - "9906:3306"
