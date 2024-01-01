@@ -26,6 +26,21 @@ The application assumes that you have PHP installed in your webserver, and that 
 
 That's it!  You should now be able to use the admin staff pages to add groups, blocks, activities, and groups.  Campers can log into the camper view to add or modify their preferences.  Note that when you first log in as the administrator, you will be prompted to enter an admin email and password.  Campers do not need a password: they use a plain text token for access.  If campers need to modify their choices after entering them, they identify themselves with their email address.
 
+## Docker instructions for testing
+
+1. Start Docker locally. On Mac, download and run "Docker Desktop" from Applications.
+
+2. Run the ./start.sh script to bring up the containers.
+
+3. Get the mysql container name by running "docker ps", and note the name in the first column. This should be a value such as "0c09502785a2".
+
+4. Log into the container, and load the data:
+
+    docker exec -it 0c09502785a2 bash
+    /usr/bin/mysql -u root -pdeveloper < /tmp/ChugBotWithData.sql
+
+The application should now be reachable on http://127.0.0.1:8000.
+
 **Important**: this design obviously favors ease of use over security.  It's trivial for one camper to impersonate another, or for someone to view or modify any camper's choices or registration data.  If your data is considered sensitive, then additional security **must** be added.  The admin staff section is password-protected, but even this depends on the security of your hosting provider, e.g., whether TLS encryption is used across the site.  I'm not a security professional, so if you have major security concerns, please consult a qualified person.
 
 The name "ChugBot" comes from the Hebrew word "chug", pronounced "HOOG", which means "circle" or "camp activity group." Some of the terms in the application are also transliterated Hebrew (our kids attend a Jewish summer camp).  Feel free to change these for your camp, or keep them as-is.  A quick glossary of terms:

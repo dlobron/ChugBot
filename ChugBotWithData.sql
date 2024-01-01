@@ -18,13 +18,12 @@
 # Create the database
 CREATE DATABASE IF NOT EXISTS camprama_chugbot_db COLLATE utf8_unicode_ci;
 
-# Create a user for the chugbot program (if it does not already exist), and
-# grant the access it needs.
-CREATE USER IF NOT EXISTS 'root'@'localhost' IDENTIFIED BY '$2y$10$P1hpl8Hj2fdZnE3hokjeK.SyRFacwhqtS0I8Wn0NKOTUhFZmoMRva';
-GRANT CREATE,INSERT,SELECT,UPDATE,DELETE,LOCK TABLES ON camprama_chugbot_db.* TO 'root'@'localhost';
-
 # Switch to the new database, in preparation for creating tables.
 USE camprama_chugbot_db;
+
+# Create database user.
+CREATE USER IF NOT EXISTS 'admin'@'localhost' IDENTIFIED BY '*9544A130E94A2CA6A3EB631F163AA85CFFD9BF48';
+GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%';
 
 --
 -- Table structure for table `admin_data`
@@ -38,6 +37,10 @@ CREATE TABLE `admin_data` (
   `admin_password` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `admin_email_cc` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `admin_email_from_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `chug_term_singular` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `chug_term_plural` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `block_term_singular` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `block_term_plural` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `send_confirm_email` tinyint(1) NOT NULL DEFAULT '1',
   `pref_count` int NOT NULL DEFAULT '6',
   `regular_user_token` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'kayitz',
@@ -54,7 +57,7 @@ CREATE TABLE `admin_data` (
 
 LOCK TABLES `admin_data` WRITE;
 /*!40000 ALTER TABLE `admin_data` DISABLE KEYS */;
-INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$iiybvL07fs/HKOgoKJN8MOIvqGDORDyOYbeApqiXd9hOJg1eB4rni',NULL,NULL,1,6,'kayitz','Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose six Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Camp Ramah New England','www.campramahne.org');
+INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','*9544A130E94A2CA6A3EB631F163AA85CFFD9BF48',NULL,NULL,'chug','chugim','block','blocks',1,6,'kayitz','Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose six Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Camp Ramah New England','www.campramahne.org');
 /*!40000 ALTER TABLE `admin_data` ENABLE KEYS */;
 UNLOCK TABLES;
 
