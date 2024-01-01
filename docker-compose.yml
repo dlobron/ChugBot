@@ -14,12 +14,22 @@ services:
         environment:
             MYSQL_HOST: db
             MYSQL_DB: camprama_chugbot_db
-            MYSQL_USER: root
+            MYSQL_USER: admin
             MYSQL_PASSWORD: developer
+            MYSQL_PASSWD: developer
             MYSQL_ROOT_PASSWORD: developer
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
     db:
         container_name: db
         image: mysql
         restart: always
+        environment:
+            MYSQL_HOST: db
+            MYSQL_DB: camprama_chugbot_db
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: developer
+            MYSQL_PASSWD: developer
+            MYSQL_ROOT_PASSWORD: developer
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
         ports:
             - "9906:3306"
