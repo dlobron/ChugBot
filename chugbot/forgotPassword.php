@@ -76,8 +76,8 @@ if ($uuid) {
         fatalError("You must present a valid reset code before attempting a password reset");
     }
     // Check for a new and re-typed password, and make sure they match.
-    $staff_password = test_input($_POST["staff_password"]);
-    $staff_password2 = test_input($_POST["staff_password2"]);
+    $staff_password = test_post_input("staff_password");
+    $staff_password2 = test_post_input("staff_password2");
     if (strlen($staff_password) < 5 ||
         strlen($staff_password) > 255) {
         fatalError("Password must be between 5 and 255 characters");

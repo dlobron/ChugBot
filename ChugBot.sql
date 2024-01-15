@@ -90,7 +90,7 @@ name varchar(50) NOT NULL,
 rosh_name varchar(100) DEFAULT "",
 rosh_phone varchar(20) DEFAULT "",
 comments varchar(512) DEFAULT "",
-sort_order int NOT NULL DEFAULT 0,
+sort_order int DEFAULT 0,
 UNIQUE KEY uk_edot(name))
 COLLATE utf8_unicode_ci
 ENGINE = INNODB;

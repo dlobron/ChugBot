@@ -624,17 +624,17 @@ $errors = array();
 $reportMethod = ReportTypes::None;
 $outputType = OutputTypes::Html;
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    $reset = test_input($_GET["reset"]);
-    $reportMethod = test_input($_GET["report_method"]);
-    $sessionId = test_input($_GET["session_id"]);
-    $bunkId = test_input($_GET["bunk_id"]);
-    $groupId = test_input($_GET["group_id"]);
-    $blockId = test_input($_GET["block_id"]);
-    $doReport = test_input($_GET["do_report"]);
-    $archiveYear = test_input($_GET["archive_year"]);
-    if (test_input($_GET["print"])) {
+    $reset = test_get_input("reset");
+    $reportMethod = test_get_input("report_method");
+    $sessionId = test_get_input("session_id");
+    $bunkId = test_get_input("bunk_id");
+    $groupId = test_get_input("group_id");
+    $blockId = test_get_input("block_id");
+    $doReport = test_get_input("do_report");
+    $archiveYear = test_get_input("archive_year");
+    if (test_get_input("print")) {
         $outputType = OutputTypes::Pdf;
-    } else if (test_input($_GET["export"])) {
+    } else if (test_get_input("export")) {
         $outputType = OutputTypes::Csv;
     }
     // Populate active IDs, if any.

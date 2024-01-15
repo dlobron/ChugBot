@@ -22,7 +22,7 @@ CREATE DATABASE IF NOT EXISTS camprama_chugbot_db COLLATE utf8_unicode_ci;
 USE camprama_chugbot_db;
 
 # Create database user.
-CREATE USER IF NOT EXISTS 'admin'@'localhost' IDENTIFIED BY '*9544A130E94A2CA6A3EB631F163AA85CFFD9BF48';
+CREATE USER IF NOT EXISTS 'admin'@'localhost' IDENTIFIED BY '$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu';
 GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%';
 
 --
@@ -57,7 +57,7 @@ CREATE TABLE `admin_data` (
 
 LOCK TABLES `admin_data` WRITE;
 /*!40000 ALTER TABLE `admin_data` DISABLE KEYS */;
-INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','*9544A130E94A2CA6A3EB631F163AA85CFFD9BF48',NULL,NULL,'chug','chugim','block','blocks',1,6,'kayitz','Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose six Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Camp Ramah New England','www.campramahne.org');
+INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,'NULL','chug','chugim','block','blocks',1,6,'kayitz','Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose six Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Camp Ramah New England','www.campramahne.org');
 /*!40000 ALTER TABLE `admin_data` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -351,7 +351,7 @@ CREATE TABLE `edot` (
   `rosh_name` varchar(100) COLLATE utf8_unicode_ci DEFAULT '',
   `rosh_phone` varchar(20) COLLATE utf8_unicode_ci DEFAULT '',
   `comments` varchar(512) COLLATE utf8_unicode_ci DEFAULT '',
-  `sort_order` int NOT NULL DEFAULT '0',
+  `sort_order` int DEFAULT '0',
   PRIMARY KEY (`edah_id`),
   UNIQUE KEY `uk_edot` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
