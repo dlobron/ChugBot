@@ -30,18 +30,9 @@ That's it!  You should now be able to use the admin staff pages to add groups, b
 
 1. Start Docker locally. On Mac, download and run "Docker Desktop" from Applications.
 
-2. Run the ./start.sh script to bring up the containers.
+2. Run the ./start.sh script to bring up the containers (note that the script's database load may take up to 10 tries: this is expected).
 
-3. Get the mysql container name by running "docker ps", and note the name in the first column. This should be a value such as "0c09502785a2".
-
-4. Log into the container, and load the data (TODO: Make this a docker entrypoint). Assuming "0c09502785a2" is the container name:
-
-```
-docker exec -it 0c09502785a2 bash
-/usr/bin/mysql -u root -pdeveloper < /tmp/ChugBotWithData.sql
-```
-
-The application should now be reachable on http://127.0.0.1:8000.
+The application should now be reachable on http://127.0.0.1:8000. The admin password is "developer".
 
 **Important**: this design obviously favors ease of use over security.  It's trivial for one camper to impersonate another, or for someone to view or modify any camper's choices or registration data.  If your data is considered sensitive, then additional security **must** be added.  The admin staff section is password-protected, but even this depends on the security of your hosting provider, e.g., whether TLS encryption is used across the site.  I'm not a security professional, so if you have major security concerns, please consult a qualified person.
 

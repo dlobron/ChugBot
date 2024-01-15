@@ -12,6 +12,9 @@ if (!camperLoggedIn()) {
 
 function getCamperId()
 {
+    if (!array_key_exists("camper_id", $_SESSION)) {
+        return null;
+    }
     $camper_id = $_SESSION["camper_id"];
     if (!isset($camper_id)) {
         return null;

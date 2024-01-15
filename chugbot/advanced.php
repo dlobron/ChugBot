@@ -88,13 +88,13 @@ $wouldBeDeleted = array();
 $deleteFromMatchesIds = array();
 $dupIndices = array();
 if ($_GET) {
-    $action = test_input($_GET["radioGroup"]);
+    $action = test_get_input("radioGroup");
     if ($action == "prune_matches") {
         $pruneMatches = true;
     } else if ($action == "prune_camper_dups") {
         $pruneCamperDups = true;
     }
-    $confirmDelete = test_input($_GET["confirm_delete"]);
+    $confirmDelete = test_get_input("confirm_delete");
     if (!empty($_GET["dup_index"])) {
         foreach ($_GET["dup_index"] as $dup_index) {
             $dupIndex = intval(test_input($dup_index));

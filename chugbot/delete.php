@@ -29,7 +29,7 @@ foreach ($parts as $part) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $item_id = test_input($_POST["$id_col"]);
+    $item_id = test_post_input("$id_col");
     if (empty($item_id)) {
         $itemIdErr = errorString("Could not parse item ID from input");
     }

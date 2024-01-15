@@ -230,8 +230,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" &&
     empty($dbErr) &&
     empty($binaryNotFoundError) &&
     empty($noBackupDbError)) {
-    $doArchive = test_input($_GET["archive"]);
-    $restoreFromArchive = test_input($_GET["restore"]);
+    $doArchive = test_get_input("archive");
+    $restoreFromArchive = test_get_input("restore");
     $preserveTables = array();
     populateActiveIds($preserveTables, "pt");
     if ($doArchive) {
