@@ -32,7 +32,9 @@ That's it!  You should now be able to use the admin staff pages to add groups, b
 
 2. Run the ./start.sh script to bring up the containers (note that the script's database load may take up to 10 tries: this is expected).
 
-The application should now be reachable on http://127.0.0.1:8000. The admin password is "developer".
+The application should now be reachable on http://127.0.0.1:8000. The admin password is "developer". To see webserver and PHP logs in real time, run:
+
+    docker logs -f --details <container name>
 
 **Important**: this design obviously favors ease of use over security.  It's trivial for one camper to impersonate another, or for someone to view or modify any camper's choices or registration data.  If your data is considered sensitive, then additional security **must** be added.  The admin staff section is password-protected, but even this depends on the security of your hosting provider, e.g., whether TLS encryption is used across the site.  I'm not a security professional, so if you have major security concerns, please consult a qualified person.
 
