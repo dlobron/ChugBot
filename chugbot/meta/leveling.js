@@ -347,6 +347,9 @@ function getAndDisplayCurrentMatches() {
 									});
 								}
 							}
+							else {
+								prefClass = "li_no_pref";
+							}
 							var titleText = "title=\"<no preferences>\"";
 							if (prefListText) {
 								// If we have a pref list, write it as a tool tip.
@@ -478,6 +481,9 @@ function getAndDisplayCurrentMatches() {
 									}
 								});
 							}
+						}
+						else {
+							prefClass = "li_no_pref";
 						}
 						if (prefClass) {
 							$.each(prefClasses, function (index, prefClassToRemove) {
