@@ -346,6 +346,9 @@ function getAndDisplayCurrentMatches() {
 										}
 									});
 								}
+								else {
+									prefClass = "li_no_pref";
+								}
 							}
 							else {
 								prefClass = "li_no_pref";
@@ -480,6 +483,9 @@ function getAndDisplayCurrentMatches() {
 										return false; // break
 									}
 								});
+							}
+							else {
+								prefClass = "li_no_pref";
 							}
 						}
 						else {
