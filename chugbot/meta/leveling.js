@@ -346,6 +346,12 @@ function getAndDisplayCurrentMatches() {
 										}
 									});
 								}
+								else {
+									prefClass = "li_no_pref";
+								}
+							}
+							else {
+								prefClass = "li_no_pref";
 							}
 							var titleText = "title=\"<no preferences>\"";
 							if (prefListText) {
@@ -478,6 +484,12 @@ function getAndDisplayCurrentMatches() {
 									}
 								});
 							}
+							else {
+								prefClass = "li_no_pref";
+							}
+						}
+						else {
+							prefClass = "li_no_pref";
 						}
 						if (prefClass) {
 							$.each(prefClasses, function (index, prefClassToRemove) {
