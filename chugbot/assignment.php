@@ -254,6 +254,8 @@ function do_assignment($edah_ids, $block_id, $group_id, &$err)
             return false;
         }
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+            // $row[4] contains each camper's first choice, so if it is null, they do not have choices recorded
+            // instead, pass over campers without preferences and DO NOT automatically assign them to chugim
             if(!is_null($row[4])) {
                 $c = new Camper($row[0], $row[1], $row[2], $row[3]);
                 for ($i = 4; $i < count($row); $i++) {
