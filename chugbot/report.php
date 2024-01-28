@@ -1370,9 +1370,12 @@ if ($doReport) {
         $inner = "SELECT CONCAT(c.last, ', ', c.first) AS name, c.camper_id AS c_id, c.edah_id, e.name AS edah, e.sort_order edah_sort_order, " .
             "IFNULL(b.name,\"-\") bunk, bl.name AS block, bl.block_id as bl_id, c.camper_id, c.bunk_id, cg.name AS chug_group, cg.group_id " .
             "FROM campers AS c " .
-            "JOIN edot AS e " .
-            "JOIN blocks AS bl " .
-            "JOIN chug_groups AS cg " .
+            "JOIN edot AS e on c.edah_id = e.edah_id " .
+            "JOIN edot_for_block AS eb ON c.edah_id = eb.edah_id " .
+            "JOIN block_instances AS bi ON c.session_id=bi.session_id " . 
+            "JOIN blocks AS bl ON eb.edah_id = e.edah_id AND eb.block_id = bl.block_id AND bi.block_id=bl.block_id " .
+            "JOIN edot_for_group AS eg ON c.edah_id = eg.edah_id " .
+            "JOIN chug_groups AS cg ON eg.edah_id = e.edah_id AND eg.group_id = cg.group_id " .
             "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id";
         
         $haveWhere = false;
