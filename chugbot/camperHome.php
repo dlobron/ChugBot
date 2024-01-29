@@ -27,10 +27,10 @@ if (!camperLoggedIn()) {
 
     $accessCode = null;
     if (array_key_exists('camper_code', $_POST)) {
-        $accessCode = test_input($_POST['camper_code']);
+        $accessCode = test_post_input('camper_code');
     }
     if (!$accessCode) {
-        $accessCode = test_input($_GET['camper_code']);
+        $accessCode = test_get_input('camper_code');
     }
 
     $n = strlen($accessCode);

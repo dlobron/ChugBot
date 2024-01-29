@@ -33,12 +33,12 @@ fillId2Name(null, $edahId2Name, $dbErr,
     "edah_id", "edot");
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    $email = test_input($_GET["email"]); // Email search is currently not displayed, but we support it here.
-    $first = test_input($_GET["first"]);
-    $last = test_input($_GET["last"]);
-    $edah_id = test_input($_GET["edah_id"]);
-    $nextPage = test_input($_GET["next_page"]); // 1=edit, 2=rank
-    $camperIdToEdit = test_input($_GET["camper_id"]);
+    $email = test_get_input("email"); // Email search is currently not displayed, but we support it here.
+    $first = test_get_input("first");
+    $last = test_get_input("last");
+    $edah_id = test_get_input("edah_id");
+    $nextPage = test_get_input("next_page"); // 1=edit, 2=rank
+    $camperIdToEdit = test_get_input("camper_id");
 
     // Sanity checks.
     if (!empty($email) &&

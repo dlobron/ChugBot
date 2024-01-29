@@ -22,9 +22,9 @@ $forEdahText = "all edot";
 $sql = "SELECT c.camper_id camper_id, c.first first, c.last last, e.name edah_name, e.sort_order edah_sort_order FROM campers c, edot e WHERE c.edah_id = e.edah_id";
 $edah_id = null;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $edah_id = test_input($_POST["edah_id"]);
+    $edah_id = test_post_input("edah_id");
 } else if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    $edah_id = test_input($_GET["edah_id"]);
+    $edah_id = test_get_input("edah_id");
 }
 if ($edah_id) {
     $sql .= " AND e.edah_id = \"$edah_id\"";

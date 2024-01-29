@@ -17,7 +17,7 @@ abstract class OutputTypes
 // A class to generate a printable PDF report.
 class PDF extends FPDF
 {
-    public function GenTable($title, $header, $data)
+    public function GenTable($title, $header, $data, $generateCheckboxes=true)
     {
         // Split line break in title into two lines.
         $titleParts = explode("<br>", $title);
@@ -73,11 +73,13 @@ class PDF extends FPDF
                 $this->SetXY($x + $w, $y);
             }
 
-            // add a set of blank checkboxes (used for things like attendance)
-            // to every row of every report
-            $NUM_OF_CHECKBOXES = 10;
-            foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
-                $this->Cell(10, 10, ' ', 1);
+            // optionaly add a set of blank checkboxes (used for things like attendance)
+            // to every row of every report (done by default)
+            if($generateCheckboxes) {
+                $NUM_OF_CHECKBOXES = 10;
+                foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
+                    $this->Cell(10, 10, ' ', 1);
+                }
             }
             $this->Ln($h);
             $fill = !$fill;
@@ -272,7 +274,7 @@ class ZebraReport
         return false;
     }
 
-    public function renderTable()
+    public function renderTable($generateCheckboxes=true)
     {
         if ($this->sql === null) {
             echo genFatalErrorReport(array("No table query was specified"));
@@ -330,7 +332,7 @@ class ZebraReport
                     // Add the table we just built to the PDF.
                     $pdf->AddPage();
                     $pdf->setColWidths($pdfColWidths);
-                    $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
+                    $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData, $generateCheckboxes);
                     // Re-initialize the PDF header and data arrays.  If we have
                     // CSV output, write the title, column headers, and data of
                     // the table we just built.
@@ -389,11 +391,20 @@ class ZebraReport
 
                 // Use the column keys as table headers.
                 $colKeys = array_keys($row);
+
+                // Count number of columns included
+                $numberOfColumns = 0;
+                foreach ($colKeys as $tableHeader) {
+                    if (!$this->shouldSkipColumn($tableHeader)) {
+                        $numberOfColumns++;
+                    }
+                }
+
                 foreach ($colKeys as $tableHeader) {
                     if ($this->shouldSkipColumn($tableHeader)) {
                         continue;
                     }
-                    $html .= "<th>$tableHeader</th>";
+                    $html .= "<th style=\"width: " . 100/$numberOfColumns . "%;\">$tableHeader</th>";
                     array_push($pdfHeader, $tableHeader);
                     // Initialize the width for the column corresponding to this
                     // header.
@@ -443,7 +454,7 @@ class ZebraReport
                         }
                     }
                 }
-                $html .= "<td>$tableData</td>";
+                $html .= "<td style=\"padding: 5px;\">$tableData</td>";
                 // Look up and replace the PDF/report column.
                 if (array_key_exists($tableDataKey, $this->idNameMapCols) &&
                     array_key_exists($d, $this->idNameMap)) {
@@ -466,14 +477,16 @@ class ZebraReport
                 $i++;
             }
 
-            // add a set of blank checkboxes (used for things like attendance)
-            // to every row of every report
-            $NUM_OF_CHECKBOXES = 10;
-            $html .= "<td style=\"font-size: 20px\">";
-            foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
-                $html .= "&#9744;&nbsp;";
+            // optionally add a set of blank checkboxes (used for things like attendance)
+            // to every row of every report (does by default)
+            if($generateCheckboxes) {
+                $NUM_OF_CHECKBOXES = 10;
+                $html .= "<td style=\"font-size: 20px\">";
+                foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
+                    $html .= "&#9744;&nbsp;";
+                }
+                $html .= "</td>";
             }
-            $html .= "</td>";
 
             $html .= "</tr>";
             array_push($pdfData, $pdfDataRow); // Save this row.
@@ -481,7 +494,7 @@ class ZebraReport
         }
         $pdf->AddPage();
         $pdf->setColWidths($pdfColWidths);
-        $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData);
+        $pdf->GenTable($pdfCaptionText, $pdfHeader, $pdfData, $generateCheckboxes);
         $html .= "</table></div>";
 
         if ($this->outputType == OutputTypes::Pdf) {
@@ -495,11 +508,13 @@ class ZebraReport
             fputcsv($output, array($csvTitle));
             fputcsv($output, $pdfHeader);
             foreach ($pdfData as $pdfRow) {
-                // add a set of blank checkboxes (used for things like attendance)
-                // to every row of every report
-                $NUM_OF_CHECKBOXES = 10;
-                foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
-                    $pdfRow[str_repeat(' ', $index)] = ' ';
+                // optionally add a set of blank checkboxes (used for things like attendance)
+                // to every row of every report (does by default)
+                if($generateCheckboxes) {
+                    $NUM_OF_CHECKBOXES = 10;
+                    foreach(range(1, $NUM_OF_CHECKBOXES) as $index) {
+                        $pdfRow[str_repeat(' ', $index)] = ' ';
+                    }
                 }
 
                 fputcsv($output, $pdfRow);
@@ -559,7 +574,7 @@ function addActiveItemsToCaption(&$caption, $activeIdHash, $itemPluralName, $id2
 {
     if (!empty($activeIdHash)) {
         $ucName = ucfirst($itemPluralName);
-        $caption .= "<br><b>$ucName</b>: ";
+        $caption .= "<br><u>$ucName</u>: ";
         $ct = 0;
         foreach ($activeIdHash as $itemId => $active) {
             $itemName = $id2Name[$itemId];
@@ -584,6 +599,7 @@ abstract class ReportTypes
     const ChugimWithSpace = 7;
     const CamperHappiness = 8;
     const RegisteredMissingPrefs = 9;
+    const NotAssignedCampers = 10;
 }
 
 $dbErr = "";
@@ -603,6 +619,7 @@ $reportMethodId2Name = array(
     ReportTypes::ChugimWithSpace => ucfirst(chug_term_plural) . " With Free Space",
     ReportTypes::CamperHappiness => "Camper Happiness",
     ReportTypes::RegisteredMissingPrefs => "Campers Missing Preferences for Time " . ucfirst(block_term_plural),
+    ReportTypes::NotAssignedCampers => "Campers Not Assigned to " . ucfirst(chug_term_singular),
 );
 
 // Check for archived databases.
@@ -624,17 +641,17 @@ $errors = array();
 $reportMethod = ReportTypes::None;
 $outputType = OutputTypes::Html;
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    $reset = test_input($_GET["reset"]);
-    $reportMethod = test_input($_GET["report_method"]);
-    $sessionId = test_input($_GET["session_id"]);
-    $bunkId = test_input($_GET["bunk_id"]);
-    $groupId = test_input($_GET["group_id"]);
-    $blockId = test_input($_GET["block_id"]);
-    $doReport = test_input($_GET["do_report"]);
-    $archiveYear = test_input($_GET["archive_year"]);
-    if (test_input($_GET["print"])) {
+    $reset = test_get_input("reset");
+    $reportMethod = test_get_input("report_method");
+    $sessionId = test_get_input("session_id");
+    $bunkId = test_get_input("bunk_id");
+    $groupId = test_get_input("group_id");
+    $blockId = test_get_input("block_id");
+    $doReport = test_get_input("do_report");
+    $archiveYear = test_get_input("archive_year");
+    if (test_get_input("print")) {
         $outputType = OutputTypes::Pdf;
-    } else if (test_input($_GET["export"])) {
+    } else if (test_get_input("export")) {
         $outputType = OutputTypes::Csv;
     }
     // Populate active IDs, if any.
@@ -775,7 +792,7 @@ if ($outputType == OutputTypes::Html) {
 
 // Always show the report method drop-down and archive year menu (if any).
 $reportMethodDropDown = new FormItemDropDown("Report Type", true, "report_method", 0);
-$reportMethodDropDown->setGuideText("Step 1: Choose your report type.  Yoetzet/Rosh Edah report is by edah, Madrich by bunk, " . ucfirst(chug_term_singular) . " leader by " . chug_term_singular . ", and Director shows assignments for the whole camp.  Camper Prefs shows camper preferences and assignment, if any.  " . $reportMethodId2Name[ReportTypes::ChugimWithSpace] . " shows " . chug_term_plural . " with space remaining.  Campers missing preferences shows campers who are in the system, but who have not entered preferences for a particular time " . block_term_singular . ".");
+$reportMethodDropDown->setGuideText("<b>Step 1:</b> Choose your report type.  <br><u>Yoetzet/Rosh Edah</u> report is by edah.<br><u>Madrich</u> report is by bunk.<br><u>" . ucfirst(chug_term_singular) . " leader</u> report is by " . chug_term_singular . ".<br><u>Director</u> report shows assignments for the whole camp.<br><u>Camper Prefs</u> report shows camper preferences and assignment, if any.<br><u>" . $reportMethodId2Name[ReportTypes::ChugimWithSpace] . "</u> report shows " . chug_term_plural . " with space remaining.<br><u>Campers missing preferences</u> report shows campers who are in the system, but who have not entered preferences for a particular time " . block_term_singular . ".<br><u>Campers not Assigned to " . ucfirst(chug_term_singular) . "</u> report shows which campers do not yet have " . chug_term_singular . " assignments.");
 $reportMethodDropDown->setPlaceHolder("Choose Type");
 $reportMethodDropDown->setId2Name($reportMethodId2Name);
 $reportMethodDropDown->setColVal($reportMethod);
@@ -788,7 +805,7 @@ $archiveYearDropDown = null;
 if (!empty($availableArchiveYears)) {
     $defaultYear = yearOfCurrentSummer();
     $archiveYearDropDown = new FormItemDropDown("Year", false, "archive_year", 1);
-    $archiveYearDropDown->setGuideText("Optional: To view archived data from a previous summer, choose the year here. To see current data, leave this option set to $defaultYear.");
+    $archiveYearDropDown->setGuideText("<b>Optional:</b> To view archived data from a previous summer, choose the year here. To see current data, leave this option set to $defaultYear.");
     $archiveYearDropDown->setPlaceHolder("Current Year");
     $archiveYearDropDown->setId2Name($availableArchiveYears);
     $archiveYearDropDown->setColVal($archiveYear);
@@ -820,7 +837,7 @@ if ($reportMethod &&
     if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
         // For missing prefs, the user must select exactly one time block (to avoid confusion by the user).
         $blockChooser = new FormItemDropDown("Time " . ucfirst(block_term_plural) . " Missing Preferences", true, "block_id", $liNumCounter++);
-        $blockChooser->setGuideText("Step 2: Select one time " . block_term_singular . ". The report will show campers who are missing preferences for this " . block_term_singular . ".");
+        $blockChooser->setGuideText("<b>Step 2:</b> Select one time " . block_term_singular . ". The report will show campers who are missing preferences for this " . block_term_singular . ".");
         $blockChooser->setPlaceHolder("Choose a Time " . ucfirst(block_term_singular));
         $blockChooser->setInputClass("element select medium");
         $blockChooser->setId2Name($blockId2Name);
@@ -830,7 +847,7 @@ if ($reportMethod &&
         $blockChooser = new FormItemInstanceChooser("Time " . ucfirst(block_term_plural), false, "block_ids", $liNumCounter++);
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setActiveIdHash($activeBlockIds);
-        $blockChooser->setGuideText("Step 2: Choose the time " . block_term_plural . " you wish to display.  If you do not choose any, all " . block_term_plural . " will be shown.");
+        $blockChooser->setGuideText("<b>Step 2:</b> Choose the time " . block_term_plural . " you wish to display.  If you do not choose any, all " . block_term_plural . " will be shown.");
     }
     if ($outputType == OutputTypes::Html) {
         echo $blockChooser->renderHtml();
@@ -843,14 +860,14 @@ if ($reportMethod == ReportTypes::ByEdah) {
     $edahChooser = new FormItemInstanceChooser("Edah Ids", false, "edah_ids", $liNumCounter++);
     $edahChooser->setId2Name($edahId2Name);
     $edahChooser->setActiveIdHash($activeEdahIds);
-    $edahChooser->setGuideText("Step 3: Choose one or more edot for your report, or leave empty to see all edot");
+    $edahChooser->setGuideText("<b>Step 3:</b> Choose one or more edot for your report, or leave empty to see all edot");
     if ($outputType == OutputTypes::Html) {
         echo $edahChooser->renderHtml();
     }
 } else if ($reportMethod == ReportTypes::ByBunk) {
     // Same as edah, but with a bunk filter.
     $bunkChooser = new FormItemDropDown("Bunk", false, "bunk_id", $liNumCounter++);
-    $bunkChooser->setGuideText("Step 3: Choose a bunk/tzrif, or leave empty to see all bunks");
+    $bunkChooser->setGuideText("<b>Step 3:</b> Choose a bunk/tzrif, or leave empty to see all bunks");
     $bunkChooser->setInputClass("element select medium");
     $bunkChooser->setInputSingular("bunk");
     $bunkChooser->setColVal($bunkId);
@@ -865,30 +882,32 @@ if ($reportMethod == ReportTypes::ByEdah) {
     $chugChooser = new FormItemInstanceChooser(ucfirst(chug_term_plural), true, "chug_ids", $liNumCounter++);
     $chugChooser->setId2Name($chugId2Name);
     $chugChooser->setActiveIdHash($activeChugIds);
-    $chugChooser->setGuideText("Step 3: Choose one or more " . chug_term_plural . " for this report.");
+    $chugChooser->setGuideText("<b>Step 3:</b> Choose one or more " . chug_term_plural . " for this report.");
 
     if ($outputType == OutputTypes::Html) {
         echo $chugChooser->renderHtml();
     }
 } else if ($reportMethod == ReportTypes::CamperChoices ||
     $reportMethod == ReportTypes::ChugimWithSpace ||
-    $reportMethod == ReportTypes::RegisteredMissingPrefs) {
+    $reportMethod == ReportTypes::RegisteredMissingPrefs ||
+    $reportMethod == ReportTypes::NotAssignedCampers) {
     // The camper choices report can be filtered by group and
-    // block.  The same applies to chugim with space.  Missing prefs is similar,
+    // block.  The same applies to chugim with space and campers not 
+    // assigned to a chug.  Missing prefs is similar,
     // except it filters by session and not by group.
     $edahChooser = new FormItemInstanceChooser("Show Campers in these Edot", false, "edah_ids", $liNumCounter++);
-    $edahChooser->setGuideText("Step 3: Choose one or more edot, or leave empty to see all edot.");
+    $edahChooser->setGuideText("<b>Step 3:</b> Choose one or more edot, or leave empty to see all edot.");
     $edahChooser->setActiveIdHash($activeEdahIds);
     $edahChooser->setId2Name($edahId2Name);
 
     if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
         $sessionChooser = new FormItemInstanceChooser("Show Campers Registered for these Sessions", false, "session_ids", $liNumCounter++);
-        $sessionChooser->setGuideText("Choose a session, or leave empty to see all sessions");
+        $sessionChooser->setGuideText("<b>Step 4:</b> Choose a session, or leave empty to see all sessions");
         $sessionChooser->setActiveIdHash($activeSessionIds);
         $sessionChooser->setId2Name($sessionId2Name);
     } else {
         $groupChooser = new FormItemInstanceChooser("Groups", false, "group_ids", $liNumCounter++);
-        $groupChooser->setGuideText("Choose on or more " . chug_term_singular . " groups, or leave empty to see all groups.");
+        $groupChooser->setGuideText("<b>Step 4:</b> Choose one or more " . chug_term_singular . " groups, or leave empty to see all groups.");
         $groupChooser->setActiveIdHash($activeGroupIds);
         $groupChooser->setId2Name($groupId2Name);
     }
@@ -912,12 +931,14 @@ if ($reportMethod == ReportTypes::ByEdah) {
     // here is 2, because we did not display a block filter.
     $step = ($reportMethod == ReportTypes::AllRegisteredCampers) ? 2 : 3;
     $edahChooser = new FormItemInstanceChooser("Show Campers in these Edot", false, "edah_ids", $liNumCounter++);
-    $edahChooser->setGuideText("Step $step: Choose one or more edot, or leave empty to see all edot.");
+    $edahChooser->setGuideText("<b>Step $step:</b> Choose one or more edot, or leave empty to see all edot.");
     $edahChooser->setActiveIdHash($activeEdahIds);
     $edahChooser->setId2Name($edahId2Name);
+    $step++;
+
 
     $sessionChooser = new FormItemInstanceChooser("Show Campers Registered for these Sessions", false, "session_ids", $liNumCounter++);
-    $sessionChooser->setGuideText("Choose a session, or leave empty to see all sessions");
+    $sessionChooser->setGuideText("<b>Step $step:</b> Choose a session, or leave empty to see all sessions");
     $sessionChooser->setActiveIdHash($activeSessionIds);
     $sessionChooser->setId2Name($sessionId2Name);
 
@@ -995,7 +1016,7 @@ if ($doReport) {
         //$allCampersReport->setCaption("LINK0 Campers in Session LINK1");
         //$allCampersReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
         //$allCampersReport->setIdCol2EditPage("session_id", "editSession.php", "session");
-        $allCampersReport->renderTable();
+        $allCampersReport->renderTable($generateCheckboxes=false);
     } else if ($reportMethod == ReportTypes::ByEdah) {
         // Per-edah report.
         $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, IFNULL(b.name,\"-\") bunk, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
@@ -1213,7 +1234,7 @@ if ($doReport) {
         $chugimWithSpaceReport->setCaption($caption);
         $chugimWithSpaceReport->setIdCol2EditPage("chug_id", "editChug.php", "chug_name");
         $chugimWithSpaceReport->addIgnoreColumn("max_campers");
-        $chugimWithSpaceReport->renderTable();
+        $chugimWithSpaceReport->renderTable($generateCheckboxes=false);
     } else if ($reportMethod == ReportTypes::CamperHappiness) {
         // First, get a list of all groups with at least one match for the selected
         // block/edot/session.  Use this to make a chug-group clause, which we'll
@@ -1310,7 +1331,7 @@ if ($doReport) {
         $camperHappinessReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
         $camperHappinessReport->addIgnoreColumn("camper_id");
         $camperHappinessReport->addIgnoreColumn("block_id");
-        $camperHappinessReport->renderTable();
+        $camperHappinessReport->renderTable($generateCheckboxes=false);
     } else if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
         $sql = "SELECT DISTINCT a.name name, a.email email, a.edah edah, a.session session FROM " .
             "(SELECT CONCAT(c.last, ', ', c.first) AS name, c.email email, e.name edah, s.name session, p.preference_id pref_id " .
@@ -1341,7 +1362,58 @@ if ($doReport) {
         $campersMissingPrefsReport->setCaption($caption);
         //$campersMissingPrefsReport->addNewTableColumn("edah");
         //$campersMissingPrefsReport->addNewTableColumn("session");
-        $campersMissingPrefsReport->renderTable();
+        $campersMissingPrefsReport->renderTable($generateCheckboxes=false);
+    } else if ($reportMethod == ReportTypes::NotAssignedCampers) {
+        // Display a list of campers (by perek) who have not yet been assigned to a chug
+
+        // First, build an inner sql query creating a table with every camper and the desired chug groups/time blocks:
+        $inner = "SELECT CONCAT(c.last, ', ', c.first) AS name, c.camper_id AS c_id, c.edah_id, e.name AS edah, e.sort_order edah_sort_order, " .
+            "IFNULL(b.name,\"-\") bunk, bl.name AS block, bl.block_id as bl_id, c.camper_id, c.bunk_id, cg.name AS chug_group, cg.group_id " .
+            "FROM campers AS c " .
+            "JOIN edot AS e on c.edah_id = e.edah_id " .
+            "JOIN edot_for_block AS eb ON c.edah_id = eb.edah_id " .
+            "JOIN block_instances AS bi ON c.session_id=bi.session_id " . 
+            "JOIN blocks AS bl ON eb.edah_id = e.edah_id AND eb.block_id = bl.block_id AND bi.block_id=bl.block_id " .
+            "JOIN edot_for_group AS eg ON c.edah_id = eg.edah_id " .
+            "JOIN chug_groups AS cg ON eg.edah_id = e.edah_id AND eg.group_id = cg.group_id " .
+            "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id";
+        
+        $haveWhere = false;
+        $haveWhere = addWhereClause($inner, $db, $activeGroupIds, "cg.group_id");
+        $haveWhere = addWhereClause($inner, $db, $activeBlockIds, "bl.block_id", $haveWhere);
+        $haveWhere = addWhereClause($inner, $db, $activeEdahIds, "c.edah_id", $haveWhere);
+
+        // Now, build the full query.
+        $fullSql = "SELECT * FROM (" . $inner . ") AS ca ";
+        $fullSql .= "LEFT OUTER JOIN (SELECT m.camper_id, m.chug_instance_id, i.block_id, i.chug_instance_id AS \"inst\", ch.chug_id, ch.group_id AS g_id " .
+            "FROM matches m, chug_instances i, chugim ch " .
+            "WHERE m.chug_instance_id=i.chug_instance_id AND ch.chug_id=i.chug_id) AS ma " .
+            "ON ma.camper_id=ca.camper_id AND ma.block_id=ca.bl_id AND ma.g_id=ca.group_id " .
+            "WHERE ma.chug_instance_id IS NULL " .
+            "ORDER BY edah_sort_order, edah, name, block, chug_group";
+        
+        $notAssignedReport = new ZebraReport($db, $fullSql, $outputType);
+        $caption = "Campers Missing " . ucfirst(chug_term_singular) . " Assignment(s)";
+        $notAssignedReport->setCaption($caption);
+
+        $notAssignedReport->setIdCol2EditPage("c_id", "editCamper.php", "name");
+        $notAssignedReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
+        $notAssignedReport->setIdCol2EditPage("bl_id", "editBlock.php", "block");
+        $notAssignedReport->setIdCol2EditPage("group_id", "editGroup.php", "chug_group");
+        $notAssignedReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+
+        $notAssignedReport->addIgnoreColumn("block_id");
+        $notAssignedReport->addIgnoreColumn("bunk_id");
+        $notAssignedReport->addIgnoreColumn("edah_id");
+        $notAssignedReport->addIgnoreColumn("edah_sort_order");
+        $notAssignedReport->addIgnoreColumn("group_id");
+        $notAssignedReport->addIgnoreColumn("camper_id");
+        $notAssignedReport->addIgnoreColumn("chug_instance_id");
+        $notAssignedReport->addIgnoreColumn("inst");
+        $notAssignedReport->addIgnoreColumn("chug_id");
+        $notAssignedReport->addIgnoreColumn("g_id");
+
+        $notAssignedReport->renderTable($generateCheckboxes=false);
     }
 }
 

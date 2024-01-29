@@ -502,7 +502,7 @@ class EditPage extends AddEditBase
             }
             // Get the ID of the item to be edited: this is required to either
             // exist in the POST or be set as a constant.
-            $idVal = test_input($_POST[$this->idCol]);
+            $idVal = test_post_input($this->idCol);
             if (!$idVal) {
                 if (!is_null($this->constantIdValue)) {
                     $idVal = $this->constantIdValue;
@@ -574,7 +574,7 @@ class EditPage extends AddEditBase
             // From other sources (our add page or this page), column values should
             // be in the form data.
             foreach ($this->columns as $col) {
-                $val = test_input($_POST[$col->name]);
+                $val = test_post_input($col->name);
                 // Translate numeric values as needed, but keep NULL as-is.
                 if ($col->numeric &&
                     $val !== null) {
@@ -632,6 +632,9 @@ class EditPage extends AddEditBase
         if ($this->submitData) {
             $db = new DbConn();
             foreach ($this->col2Val as $colName => $colVal) {
+                if (!array_key_exists($colName, $this->col2Type)) {
+                    continue;
+                }
                 $type = $this->col2Type[$colName];
                 if ($type === null || empty($type)) {
                     $type = 'i'; // Assume unknown columns are always numeric IDs.
@@ -747,7 +750,7 @@ class AddPage extends AddEditBase
         // Check for submitted values.  Fire an error if required inputs
         // are missing, and grab defaults if applicable.
         foreach ($this->columns as $col) {
-            $val = test_input($_POST[$col->name]);
+            $val = test_post_input($col->name);
             if ($val === null) {
                 if ($col->required) {
                     $this->colName2Error[$col->name] = errorString("Missing value for required field");
@@ -870,7 +873,7 @@ class AddCamperPage extends AddEditBase
         // Check for submitted values.  Fire an error if required inputs
         // are missing, and grab defaults if applicable.
         foreach ($this->columns as $col) {
-            $val = test_input($_POST[$col->name]);
+            $val = test_post_input($col->name);
             if ($val === null) {
                 if ($col->required) {
                     $this->colName2Error[$col->name] = errorString("Missing value for required field");

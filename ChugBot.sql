@@ -24,10 +24,16 @@ admin_password varchar(255) NOT NULL,
 admin_email_cc varchar(255),
 admin_email_from_name varchar(255),
 send_confirm_email boolean NOT NULL DEFAULT 1,
+chug_term_singular varchar(255) NOT NULL DEFAULT 'chug',
+chug_term_plural varchar(255) NOT NULL DEFAULT 'chugim',
+block_term_singular varchar(255) NOT NULL DEFAULT 'block',
+block_term_plural varchar(255) NOT NULL DEFAULT 'blocks',
 pref_count int NOT NULL DEFAULT 6,
 regular_user_token varchar(255) NOT NULL DEFAULT 'kayitz',
 regular_user_token_hint varchar(512) DEFAULT 'Hebrew word for summer',
 pref_page_instructions varchar(2048) DEFAULT '&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose six Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;',
+`enable_camper_importer` int NOT NULL DEFAULT '1',
+`enable_selection_process` int NOT NULL DEFAULT '0',
 camp_name varchar(255) NOT NULL DEFAULT 'Camp Ramah New England',
 camp_web varchar(128) NOT NULL DEFAULT 'www.campramahne.org')
 COLLATE utf8_unicode_ci
@@ -86,7 +92,7 @@ name varchar(50) NOT NULL,
 rosh_name varchar(100) DEFAULT "",
 rosh_phone varchar(20) DEFAULT "",
 comments varchar(512) DEFAULT "",
-sort_order int NOT NULL DEFAULT 0,
+sort_order int DEFAULT 0,
 UNIQUE KEY uk_edot(name))
 COLLATE utf8_unicode_ci
 ENGINE = INNODB;

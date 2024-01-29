@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] != "GET") {
 }
 $edah_ids = $_GET["edah_ids"];
 $group_ids = $_GET["group_ids"];
-$block_id = intval(test_input($_GET["block"]));
+$block_id = intval(test_get_input("block"));
 if ($edah_ids == null || $block_id == null || $group_ids == null ||
     empty($edah_ids) || empty($group_ids)) {
     $err = errorString("Block and at least one edah and group must be specified.");

@@ -77,24 +77,24 @@ if ($result == false) {
 
 $staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = $existingEmailErr = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $admin_email = test_input($_POST["admin_email"]);
-    $admin_email_from_name = test_input($_POST["admin_email_from_name"]);
-    $send_confirm_email = boolval(test_input($_POST["send_confirm_email"]));
-    $enable_camper_importer = boolval(test_input($_POST["enable_camper_importer"]));
-    $enable_selection_process = boolval(test_input($_POST["enable_selection_process"]));
-    $staff_password = test_input($_POST["staff_password"]);
-    $staff_password2 = test_input($_POST["staff_password2"]);
-    $admin_email_cc = test_input($_POST["admin_email_cc"]);
-    $regular_user_token = test_input($_POST["regular_user_token"]);
-    $regular_user_token_hint = test_input($_POST["regular_user_token_hint"]);
-    $camp_name = test_input($_POST["camp_name"]);
-    $pref_page_instructions = test_input($_POST["pref_page_instructions"]);
-    $camp_web = test_input($_POST["camp_web"]);
-    $pref_count = test_input($_POST["pref_count"]);
-    $chug_term_singular = test_input($_POST["chug_term_singular"]);
-    $chug_term_plural = test_input($_POST["chug_term_plural"]);
-    $block_term_singular = test_input($_POST["block_term_singular"]);
-    $block_term_plural = test_input($_POST["block_term_plural"]);
+    $admin_email = test_post_input("admin_email");
+    $admin_email_from_name = test_post_input("admin_email_from_name");
+    $send_confirm_email = boolval(test_post_input("send_confirm_email"));
+    $enable_camper_importer = boolval(test_post_input("enable_camper_importer"));
+    $enable_selection_process = boolval(test_post_input("enable_selection_process"));
+    $staff_password = test_post_input("staff_password");
+    $staff_password2 = test_post_input("staff_password2");
+    $admin_email_cc = test_post_input("admin_email_cc");
+    $regular_user_token = test_post_input("regular_user_token");
+    $regular_user_token_hint = test_post_input("regular_user_token_hint");
+    $camp_name = test_post_input("camp_name");
+    $pref_page_instructions = test_post_input("pref_page_instructions");
+    $camp_web = test_post_input("camp_web");
+    $pref_count = test_post_input("pref_count");
+    $chug_term_singular = test_post_input("chug_term_singular");
+    $chug_term_plural = test_post_input("chug_term_plural");
+    $block_term_singular = test_post_input("block_term_singular");
+    $block_term_plural = test_post_input("block_term_plural");
 
     // Update the deletable tables.  We start by setting all tables to not
     // be editable, and then we enable ones that are active.

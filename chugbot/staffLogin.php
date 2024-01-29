@@ -39,11 +39,11 @@ if (fromBounce()) {
 }
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $staff_email = test_input($_POST["staff_email"]);
-    $staff_password = test_input($_POST["staff_password"]);
-    $staff_password2 = test_input($_POST["staff_password2"]);
+    $staff_email = test_post_input("staff_email");
+    $staff_password = test_post_input("staff_password");
+    $staff_password2 = test_post_input("staff_password2");
 
-    if (empty(test_input($_POST["staffInit"]))) {
+    if (empty(test_post_input("staffInit"))) {
         // If we have POST data, we validate it, and update as needed.
         if (empty($staff_password)) {
             $staffPasswordErr = errorString("Please enter a staff password");

@@ -12,6 +12,9 @@ if (!camperLoggedIn()) {
 
 function getCamperId()
 {
+    if (!array_key_exists("camper_id", $_SESSION)) {
+        return null;
+    }
     $camper_id = $_SESSION["camper_id"];
     if (!isset($camper_id)) {
         return null;
@@ -107,25 +110,25 @@ if (isset($_POST["get_existing_choices"])) {
         $db->addColVal($camper_id, 'i');
     }
     $sql =
-        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 1 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 1 chug_rank " .
         "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.first_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 2 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 2 chug_rank " .
         "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.second_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 3 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 3 chug_rank " .
         "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.third_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 4 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 4 chug_rank " .
         "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fourth_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 5 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 5 chug_rank " .
         "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.fifth_choice_id=c.chug_id UNION ALL " .
-        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 6 rank " .
+        "SELECT b.name blockname, g.name groupname, c.name chugname, c.chug_id chug_id, 6 chug_rank " .
         "FROM blocks b, chug_groups g, chugim c, preferences p WHERE p.camper_id = ? AND " .
         "b.block_id=p.block_id AND g.group_id=p.group_id AND p.sixth_choice_id=c.chug_id " .
-        "order by blockname, groupname, rank";
+        "order by blockname, groupname, chug_rank";
     $db->isSelect = true; // Must set manually for direct queries.
     $result = $db->doQuery($sql, $err);
     if ($result == false) {

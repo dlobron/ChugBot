@@ -1,51 +1,70 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
+
+<head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Exclusion Matrix</title>
-  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" integrity="sha384-Nlo8b0yiGl7Dn+BgLn4mxhIIBU6We7aeeiulNCjHdUv/eKHx59s3anfSUjExbDxn" crossorigin="anonymous">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js" integrity="sha256-AAhU14J4Gv8bFupUUcHaPQfvrdNauRHMt+S4UVcaJb0=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
+    integrity="sha384-Nlo8b0yiGl7Dn+BgLn4mxhIIBU6We7aeeiulNCjHdUv/eKHx59s3anfSUjExbDxn" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"
+    integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
+    crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"
+    integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"
+    integrity="sha256-AAhU14J4Gv8bFupUUcHaPQfvrdNauRHMt+S4UVcaJb0=" crossorigin="anonymous"></script>
   <script src="meta/matrix.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/u/dt/jqc-1.12.3,dt-1.10.12,fc-3.2.2,fh-3.1.2/datatables.min.css"/>
-  <script type="text/javascript" src="https://cdn.datatables.net/u/dt/jqc-1.12.3,dt-1.10.12,fc-3.2.2,fh-3.1.2/datatables.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" integrity="sha384-VI5+XuguQ/l3kUhh4knz7Hxptx47wpQbVRDnp8v7Vvuhzwn1PEYb/uvtH6KLxv6d" crossorigin="anonymous"></script>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Ej0hUpn6wbrOTJtRExp8jvboBagaz+Or6E9zzWT+gHCQuuZQQVZUcbmhXQzSG17s" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.datatables.net/u/dt/jqc-1.12.3,dt-1.10.12,fc-3.2.2,fh-3.1.2/datatables.min.css" />
+  <script type="text/javascript"
+    src="https://cdn.datatables.net/u/dt/jqc-1.12.3,dt-1.10.12,fc-3.2.2,fh-3.1.2/datatables.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"
+    integrity="sha384-VI5+XuguQ/l3kUhh4knz7Hxptx47wpQbVRDnp8v7Vvuhzwn1PEYb/uvtH6KLxv6d"
+    crossorigin="anonymous"></script>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-Ej0hUpn6wbrOTJtRExp8jvboBagaz+Or6E9zzWT+gHCQuuZQQVZUcbmhXQzSG17s" crossorigin="anonymous">
   <link rel="stylesheet" href="meta/view.css" />
   <style>
     @keyframes fadeIn {
-    from { opacity: 0; }
+      from {
+        opacity: 0;
+      }
     }
+
     #loading {
-    animation: fadeIn 1s infinite alternate;
+      animation: fadeIn 1s infinite alternate;
     }
+
     .control_buttons {
-    position: relative;
-    margin: auto;
-    margin-top: 20px;
-    text-align: center;
-    width:35%;
+      position: relative;
+      margin: auto;
+      margin-top: 20px;
+      text-align: center;
+      width: 35%;
     }
   </style>
-  </head>
-  <body>
+</head>
 
-    <div id="page">
+<body>
+
+  <div id="page">
     <div id="nav"></div>
 
     <div class="container well">
       <h2>De-Duplication Matrix</h2>
       <p>This page lets you tell the system that certain <span class="chugimfill">CHUGIM</span> should not be
-	assigned to the same camper in the same <span class="blocktermfill">BLOCK_TERM</span> as certain other <span class="chugimfill">CHUGIM</span>.
-	To disallow a <span class="chugfill">CHUG</span> combination, find the first <span class="chugfill">CHUG</span> on the left side, and
-	match it to the column headed by the second <span class="chugfill">CHUG</span>.
+        assigned to the same camper in the same <span class="blocktermfill">BLOCK_TERM</span> as certain other <span
+          class="chugimfill">CHUGIM</span>.
+        To disallow a <span class="chugfill">CHUG</span> combination, find the first <span class="chugfill">CHUG</span>
+        on the left side, and
+        match it to the column headed by the second <span class="chugfill">CHUG</span>.
       <p>For example, to prevent the system from assigning both Cooking and
-	Outdoor Cooking, find the row with "Cooking" on the left, then locate
-	the column with "Outdoor Cooking" at the top, and click the checkbox at
-	the intersection of that row/column.</p>
+        Outdoor Cooking, find the row with "Cooking" on the left, then locate
+        the column with "Outdoor Cooking" at the top, and click the checkbox at
+        the intersection of that row/column.</p>
       <p>When you are done, click "Save Changes" at the bottom of the matrix.</p>
     </div>
 
@@ -56,11 +75,15 @@
     <div id="checkboxes"></div>
 
     <div class="control_buttons">
-      <input title="Save changes and exit this page" class="btn btn-primary btn-lg" type="submit" name="SaveChanges" id="SaveChanges" value="Save Changes" />
+      <input title="Save changes and exit this page" class="btn btn-primary btn-lg" type="submit" name="SaveChanges"
+        id="SaveChanges" value="Save Changes" />
     </div>
-    </div>
+  </div>
 
-    <div id="loading"><div class="container well well-lg">Building matrix - please wait...</div></div>
+  <div id="loading">
+    <div class="container well well-lg">Building matrix - please wait...</div>
+  </div>
 
-  </body>
+</body>
+
 </html>

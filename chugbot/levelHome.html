@@ -1,100 +1,129 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
+
+<head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Leveling Page</title>
-  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" integrity="sha384-Nlo8b0yiGl7Dn+BgLn4mxhIIBU6We7aeeiulNCjHdUv/eKHx59s3anfSUjExbDxn" crossorigin="anonymous">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js" integrity="sha256-AAhU14J4Gv8bFupUUcHaPQfvrdNauRHMt+S4UVcaJb0=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
+    integrity="sha384-Nlo8b0yiGl7Dn+BgLn4mxhIIBU6We7aeeiulNCjHdUv/eKHx59s3anfSUjExbDxn" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"
+    integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
+    crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"
+    integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"
+    integrity="sha256-AAhU14J4Gv8bFupUUcHaPQfvrdNauRHMt+S4UVcaJb0=" crossorigin="anonymous"></script>
   <script src="meta/leveling.js"></script>
   <link rel="stylesheet" href="meta/view.css" />
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" integrity="sha384-VI5+XuguQ/l3kUhh4knz7Hxptx47wpQbVRDnp8v7Vvuhzwn1PEYb/uvtH6KLxv6d" crossorigin="anonymous"></script>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Ej0hUpn6wbrOTJtRExp8jvboBagaz+Or6E9zzWT+gHCQuuZQQVZUcbmhXQzSG17s" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"
+    integrity="sha384-VI5+XuguQ/l3kUhh4knz7Hxptx47wpQbVRDnp8v7Vvuhzwn1PEYb/uvtH6KLxv6d"
+    crossorigin="anonymous"></script>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-Ej0hUpn6wbrOTJtRExp8jvboBagaz+Or6E9zzWT+gHCQuuZQQVZUcbmhXQzSG17s" crossorigin="anonymous">
   <style>
     .control_buttons {
-    position: relative;
-    margin: auto;
-    margin-top: 20px;
-    text-align: center;
-    width:35%;
+      position: relative;
+      margin: auto;
+      margin-top: 20px;
+      text-align: center;
+      width: 35%;
     }
+
     .control_buttons input[type=submit] {
-    padding:3px 8px;
+      padding: 3px 8px;
     }
-   .chugholder.custom-state-active {
-    background: #eee;
+
+    .chugholder.custom-state-active {
+      background: #eee;
     }
-   .gallery li {
-    float: left;
-    width: 96px;
-    padding: 0.2em;
-    margin: 0 0.4em 0.4em 0;
-    text-align: center;
-    font-size: 1.2em;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
+
+    .gallery li {
+      float: left;
+      width: 96px;
+      padding: 0.2em;
+      margin: 0 0.4em 0.4em 0;
+      text-align: center;
+      font-size: 1.2em;
+      border-radius: 5px;
+      -moz-border-radius: 5px;
+      -webkit-border-radius: 5px;
     }
+
     .chugholder li h5 {
-    margin: 0 0 0.4em;
-    cursor: move;
+      margin: 0 0 0.4em;
+      cursor: move;
     }
+
     .li_first_choice {
-    background: #1aff1a;
+      background: #1aff1a;
     }
+
     .li_second_choice {
-    background: #ffff80;
+      background: #ffff80;
     }
+
     .li_third_choice {
-    background: #ffa500;
+      background: #ffa500;
     }
+
     .li_fourth_choice {
-    background: #ff3333;
+      background: #ff3333;
+    }
+
+    .li_no_pref {
+      background: #ef60ff;
     }
   </style>
 
-  </head>
-  <body>
+</head>
+
+<body>
 
   <div id="nav"></div>
 
   <div class="container well well-white">
     <h2>Welcome to the Leveling Page!</h2>
     <h2 class="edahfill">Edah: EDAH</h2>
-    <h2 class="blockfill">Time <span class="blocktermfill">BLOCK_TERM</span>: BLOCK</h2>
+    <h2><span class="blocktermfill">Time BLOCK_TERM:</span><span class="blockfill"> BLOCK</span></h2>
     <p>This page displays suggested <span class="chugfill">CHUG</span> assignments for one edah in a time
-    <span class="blocktermfill">BLOCK_TERM</span>.  Assignments are highlighted according to the camper's preference:
-    <span class="li_first_choice">first</span>, <span class="li_second_choice">second</span>,
-    <span class="li_third_choice">third</span>, <span class="li_fourth_choice">fourth or worse</span>.
+      <span class="blocktermfill">BLOCK_TERM</span>. Assignments are highlighted according to the camper's preference:
+      <span class="li_first_choice">first</span>, <span class="li_second_choice">second</span>,
+      <span class="li_third_choice">third</span>, <span class="li_fourth_choice">fourth or worse</span>.
+      Campers with no preferences for a <span class="chugfill">CHUG</span> group are highlighted in <span class="li_no_pref">purple</span>.
     </p>
     <ul>
-    <li>To change a camper's assignment, drag the camper's bubble from one
-    activity to another.  When you are ready to save your manual changes, click
-    <b>Save</b>.  To see a camper's preferred <span class="chugimfill">CHUGIM</span>, hover your mouse over
-    the bubble for that camper.</li>
-    <li>To re-run the assignment algorithm, click <b>Reassign</b>.  This will
-    reassign campers automatically.</li>
-    <li>If a camper signed up late, or changed registration, they might not have
-    an assignment yet.  Such campers will appear in a box
-    labeled <font color="red">Not Assigned Yet</font>.  To assign these campers,
-    you can drag them to a <span class="chugfill">CHUG</span> and click Save, or click the Reassign button.</p>
-    <li>To exit this page and return to the staff home page, click <b>Done</b>.
+      <li>To change a camper's assignment, drag the camper's bubble from one
+        activity to another. When you are ready to save your manual changes, click
+        <b>Save</b>. To see a camper's preferred <span class="chugimfill">CHUGIM</span>, hover your mouse over
+        the bubble for that camper.
+      </li>
+      <li>To re-run the assignment algorithm, click <b>Reassign</b>. This will
+        reassign campers automatically.</li>
+      <li>If a camper signed up late, or changed registration, they might not have
+        an assignment yet. Such campers will appear in a box
+        labeled <font color="red">Not Assigned Yet</font>. To assign these campers,
+        you can drag them to a <span class="chugfill">CHUG</span> and click Save, or click the Reassign button.</li>
+      <li>NOTE: campers who have not submitted preferences are NOT automatically assigned; they are highlighted in <span class="li_no_pref">purple</span>
+        and appear in the <font color="red">Not Assigned Yet</font> box.</li></p>
+      <li>To exit this page and return to the staff home page, click <b>Done</b>.
     </ul>
   </div>
   <div class="toggler">
-    <div id="results" class="ui-widget-content ui-corner-all"
-	 style="display:none">
+    <div id="results" class="ui-widget-content ui-corner-all" style="display:none">
     </div>
   </div>
 
   <div class="control_buttons">
-    <input class="btn btn-primary" title="Re-run the assignment algorithm"  type="submit" name="Reassign" id="Reassign" value="Reassign" />
+    <input class="btn btn-primary" title="Re-run the assignment algorithm" type="submit" name="Reassign" id="Reassign"
+      value="Reassign" />
     <input class="btn btn-primary" title="Save current changes" type="submit" name="Save" id="Save" value="Save" />
-    <input class="btn btn-primary" title="Create a printable report" type="submit" name="Report" id="Report" value="Report" />
-    <input class="btn btn-primary" title="Return to previous page" type="submit" name="Cancel" id="Cancel" value="Done" />
+    <input class="btn btn-primary" title="Create a printable report" type="submit" name="Report" id="Report"
+      value="Report" />
+    <input class="btn btn-primary" title="Return to previous page" type="submit" name="Cancel" id="Cancel"
+      value="Done" />
   </div>
 
   <div id="filltarget"></div>
@@ -103,5 +132,6 @@
     <div id="fillmatches"></div>
   </div>
 
-  </body>
+</body>
+
 </html>

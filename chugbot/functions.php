@@ -449,6 +449,22 @@ function test_input($data)
     return $data;
 }
 
+function test_post_input($data)
+{
+    if (!isset($_POST[$data])) {
+        return null;
+    }
+    return test_input($_POST[$data]);
+}
+
+function test_get_input($data)
+{
+    if (!isset($_GET[$data])) {
+        return null;
+    }
+    return test_input($_GET[$data]);
+}
+
 function urlBaseText()
 {
     $scheme = "http";
@@ -562,7 +578,7 @@ function staffBounceBackUrl()
     $url = urlBaseText() . "staffHome.php"; // Default staff redirect
     $parts = array();
     $qs = htmlspecialchars($_SERVER['QUERY_STRING']);
-    $qs_from_post = test_input($_POST['query_string']);
+    $qs_from_post = test_post_input('query_string');
     $qs_from_post = preg_replace("/&#?[a-z0-9]+;/i", "", $qs_from_post);
     if (!empty($qs)) {
         $parts = explode("/", $qs);
@@ -727,6 +743,8 @@ function setup_camp_specific_terminology_constants() {
     $row = $result->fetch_assoc();
 
     foreach ($row as $key => $value) {
-        define($key, $value);
+        if (!defined($key)) {
+            define($key, $value);
+        }
     }
 }
