@@ -51,7 +51,6 @@ $email2Field->setInputClass("element text medium");
 $email2Field->setInputMaxLength(255);
 $email2Field->setInputValue($addCamperPage->columnValue("email2"));
 $email2Field->setPlaceHolder("Secondary email address");
-$email2Field->setError($addCamperPage->errForColName("email2"));
 $email2Field->setGuideText("If you have an alternative/second email address that should receive alerts, please include it here");
 $addCamperPage->addFormItem($email2Field);
 
