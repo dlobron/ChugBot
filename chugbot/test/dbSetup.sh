@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DBNAME="camprama_chugbot_db"
-SQLPATH="/Applications/MAMP/htdocs/ChugBot.sql"
+SQLPATH="/Applications/MAMP/htdocs/ChugBotWithTestDBData.sql"
 MYSQL="/Applications/MAMP/Library/bin/mysql"
 
 echo "Clearing old database"
