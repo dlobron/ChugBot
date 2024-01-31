@@ -600,6 +600,7 @@ abstract class ReportTypes
     const CamperHappiness = 8;
     const RegisteredMissingPrefs = 9;
     const NotAssignedCampers = 10;
+    const ByChugRoshAndDepartment = 11;
 }
 
 $dbErr = "";
@@ -613,6 +614,7 @@ $reportMethodId2Name = array(
     ReportTypes::ByEdah => "Yoetzet/Rosh Edah (by edah)",
     ReportTypes::ByBunk => "Madrich (by bunk)",
     ReportTypes::ByChug => ucfirst(chug_term_singular) . " Leader (by " . chug_term_singular . ")",
+    ReportTypes::ByChugRoshAndDepartment => ucfirst(chug_term_singular) . " Leader (by department and rosh)",
     ReportTypes::Director => "Director (whole camp, sorted by edah)",
     ReportTypes::CamperChoices => "Camper Prefs and Assignment",
     ReportTypes::AllRegisteredCampers => "All Campers Who Have Submitted Preferences",
@@ -721,7 +723,7 @@ if (!is_null($errText)) {
 }
 
 // Per-chug report require at least one chug ID to display.
-if ($reportMethod == ReportTypes::ByChug &&
+if (($reportMethod == ReportTypes::ByChug || $reportMethod == ReportTypes::ByChugRoshAndDepartment) &&
     $doReport &&
     count($activeChugIds) == 0) {
     array_push($errors, errorString("Please choose at least one " . chug_term_singular . " for this report"));
@@ -876,7 +878,7 @@ if ($reportMethod == ReportTypes::ByEdah) {
     if ($outputType == OutputTypes::Html) {
         echo $bunkChooser->renderHtml();
     }
-} else if ($reportMethod == ReportTypes::ByChug) {
+} else if ($reportMethod == ReportTypes::ByChug || $reportMethod == ReportTypes::ByChugRoshAndDepartment) {
     // Similar to the above, but the filter is by chug.  Also, in this case, the
     // input is required (the user must choose at least one chug).
     $chugChooser = new FormItemInstanceChooser(ucfirst(chug_term_plural), true, "chug_ids", $liNumCounter++);
@@ -892,7 +894,7 @@ if ($reportMethod == ReportTypes::ByEdah) {
     $reportMethod == ReportTypes::RegisteredMissingPrefs ||
     $reportMethod == ReportTypes::NotAssignedCampers) {
     // The camper choices report can be filtered by group and
-    // block.  The same applies to chugim with space and campers not 
+    // block.  The same applies to chugim with space and campers not
     // assigned to a chug.  Missing prefs is similar,
     // except it filters by session and not by group.
     $edahChooser = new FormItemInstanceChooser("Show Campers in these Edot", false, "edah_ids", $liNumCounter++);
@@ -1130,6 +1132,41 @@ if ($doReport) {
         $chugReport->addCaptionReplaceColKey("PHONE", "roshphone", "no rosh phone");
         $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no " . block_term_singular . " name");
         $chugReport->renderTable();
+    } else if ($reportMethod == ReportTypes::ByChugRoshAndDepartment) {
+        $sql = "SELECT CONCAT(c.last, ', ', c.first) AS camper, e.name edah, e.sort_order edah_sort_order, " .
+            "ch.rosh_name rosh, ch.department_name department_name, ch.name chug_name, IFNULL(b.name, \"-\") bunk, bl.name block, " .
+            "ch.chug_id chug_id, bl.block_id block_id, b.bunk_id bunk_id, e.edah_id edah_id, c.camper_id " .
+            "FROM edot AS e " .
+            "JOIN campers AS c ON c.edah_id = e.edah_id " .
+            "JOIN matches AS m ON m.camper_id = c.camper_id " .
+            "JOIN chug_instances AS i ON i.chug_instance_id = m.chug_instance_id " .
+            "JOIN chugim AS ch ON ch.chug_id = i.chug_id " .
+            "JOIN blocks AS bl ON bl.block_id = i.block_id " .
+            "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
+        $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
+        addWhereClause($sql, $db, $activeChugIds, "ch.chug_id",
+            $haveWhere);
+        $sql .= " ORDER BY department_name, rosh, chug_name, edah_sort_order, edah, block, camper, bunk";
+
+        $chugReport = new ZebraReport($db, $sql, $outputType);
+        $chugReport->addNewTableColumn("chug_name");
+        $chugReport->addNewTableColumn("edah");
+        $chugReport->addNewTableColumn("block");
+        $chugReport->addIgnoreColumn("edah_sort_order");
+        $chugReport->addIgnoreColumn("rosh");
+        $chugReport->addIgnoreColumn("department_name");
+        $chugReport->addIgnoreColumn("chug_name");
+        $chugReport->addIgnoreColumn("block");
+        $chugReport->setIdCol2EditPage("camper_id", "editCamper.php", "camper");
+        $chugReport->setIdCol2EditPage("chug_id", "editChug.php", "chug_name");
+        $chugReport->setIdCol2EditPage("bunk_id", "editBunk.php", "bunk");
+        $chugReport->setIdCol2EditPage("block_id", "editBlock.php", "block");
+        $chugReport->setIdCol2EditPage("edah_id", "editEdah.php", "edah");
+        $chugReport->setCaption("DEPARTMENT - LINK0: LINK1 campers for LINK2<br>Rosh: ROSH");
+        $chugReport->addCaptionReplaceColKey("ROSH", "rosh", "none listed");
+        $chugReport->addCaptionReplaceColKey("DEPARTMENT", "department_name", "No department");
+        $chugReport->addCaptionReplaceColKey("BLOCK", "block", "no " . block_term_singular . " name");
+        $chugReport->renderTable();
     } else if ($reportMethod == ReportTypes::CamperChoices) {
         // Report camper choices (1-6) and assignment, if any.
         $sql = "SELECT CONCAT(c.last, ', ', c.first) AS name, bl.name block, e.name edah, e.sort_order edah_sort_order, " .
@@ -1333,8 +1370,8 @@ if ($doReport) {
         $camperHappinessReport->addIgnoreColumn("block_id");
         $camperHappinessReport->renderTable($generateCheckboxes=false);
     } else if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
-        $sql = "SELECT DISTINCT a.name name, a.edah edah, a.session session FROM " .
-            "(SELECT CONCAT(c.last, ', ', c.first) AS name, e.name edah, s.name session, p.preference_id pref_id " .
+        $sql = "SELECT DISTINCT a.name name, a.email email, a.edah edah, a.session session FROM " .
+            "(SELECT CONCAT(c.last, ', ', c.first) AS name, c.email email, e.name edah, s.name session, p.preference_id pref_id " .
             "FROM edot e, sessions s, campers c LEFT OUTER JOIN " .
             "(SELECT * FROM preferences ";
         // Optionally filter prefs by block.
@@ -1372,12 +1409,12 @@ if ($doReport) {
             "FROM campers AS c " .
             "JOIN edot AS e on c.edah_id = e.edah_id " .
             "JOIN edot_for_block AS eb ON c.edah_id = eb.edah_id " .
-            "JOIN block_instances AS bi ON c.session_id=bi.session_id " . 
+            "JOIN block_instances AS bi ON c.session_id=bi.session_id " .
             "JOIN blocks AS bl ON eb.edah_id = e.edah_id AND eb.block_id = bl.block_id AND bi.block_id=bl.block_id " .
             "JOIN edot_for_group AS eg ON c.edah_id = eg.edah_id " .
             "JOIN chug_groups AS cg ON eg.edah_id = e.edah_id AND eg.group_id = cg.group_id " .
             "LEFT OUTER JOIN bunks b ON c.bunk_id = b.bunk_id";
-        
+
         $haveWhere = false;
         $haveWhere = addWhereClause($inner, $db, $activeGroupIds, "cg.group_id");
         $haveWhere = addWhereClause($inner, $db, $activeBlockIds, "bl.block_id", $haveWhere);
@@ -1391,7 +1428,7 @@ if ($doReport) {
             "ON ma.camper_id=ca.camper_id AND ma.block_id=ca.bl_id AND ma.g_id=ca.group_id " .
             "WHERE ma.chug_instance_id IS NULL " .
             "ORDER BY edah_sort_order, edah, name, block, chug_group";
-        
+
         $notAssignedReport = new ZebraReport($db, $fullSql, $outputType);
         $caption = "Campers Missing " . ucfirst(chug_term_singular) . " Assignment(s)";
         $notAssignedReport->setCaption($caption);

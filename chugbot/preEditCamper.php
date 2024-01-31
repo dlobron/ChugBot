@@ -4,6 +4,18 @@ include_once 'dbConn.php';
 include_once 'functions.php';
 setup_camp_specific_terminology_constants();
 
+$db = new DbConn();
+$sql = "SELECT enable_selection_process FROM admin_data";
+$err = "";
+$result = $db->runQueryDirectly($sql, $err);
+$enableSelectionProcess = true;
+if ($result) {
+    $row = $result->fetch_assoc();
+    if ($row) {
+        $enableSelectionProcess = (bool)$row["enable_selection_process"];
+    }
+}
+
 $thisPageUrl = urlIfy("preEditCamper.php");
 $editPageUrl = urlIfy("editCamper.php");
 $rankPageUrl = urlIfy("rankCamperChoices.html");
@@ -158,10 +170,13 @@ if ($nextPage === null ||
 } else {
     echo "<input type=\"radio\" name=\"next_page\" value=1>Update Personal Data<br>";
 }
-if ($nextPage == 2) {
-    echo "<input type=\"radio\" name=\"next_page\" value=2 checked>Update " . ucfirst(chug_term_plural) . "<br>";
-} else {
-    echo "<input type=\"radio\" name=\"next_page\" value=2>Update " . ucfirst(chug_term_plural) . "<br>";
+
+if ($enableSelectionProcess) {
+    if ($nextPage == 2) {
+        echo "<input type=\"radio\" name=\"next_page\" value=2 checked>Update " . ucfirst(chug_term_plural) . "<br>";
+    } else {
+        echo "<input type=\"radio\" name=\"next_page\" value=2>Update " . ucfirst(chug_term_plural) . "<br>";
+    }
 }
 echo "<p class=\"guidelines\"><small>Choose Update Personal Data to edit personal info, or Update " . ucfirst(chug_term_plural) . " to proceed directly to " .
     "the " . chug_term_singular . " ranking page.</small></p>";
