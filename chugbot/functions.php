@@ -648,6 +648,7 @@ function headerText($title)
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>$title</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 <script type="text/javascript" src="meta/view.js"></script>
 <link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
