@@ -438,6 +438,88 @@ JS;
     return $javascript;
 }
 
+// Modified from genConstrainedCheckbox to work for drop down menus, and
+// to be applicable to more types
+// NOTE: fillConstraintsPickList() must be called as an `onchange` method
+//     from the element which it relies upon
+function genConstrainedPickListScript($id2Name, $arrayName,
+    $ourId, $parentId, $descId, $type) {
+    asort($id2Name);
+    $javascript = <<<JS
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
+<script>
+function fillConstraintsPickList() {
+    var parent = $("#${parentId}");
+    var ourPickList = $("#${ourId}");
+    var ourDesc = $("#${descId}");
+    var values = {};
+    values["get_legal_id_to_name"] = 1;
+    $(ourDesc).hide();
+    var parentField = document.getElementsByName("${parentId}")[0];
+    var curSelectedEdahIds = [];
+    curSelectedEdahIds.push(parentField.value)
+    if("${type}" == "group" || "${type}" == "block") {
+        var sql = "SELECT e.${type}_id ${type}_id, g.name ${type}_name FROM edot_for_${type} e, "
+        // Determine right table to search from
+        if ("${type}" == "group") {
+            sql += "chug_groups g WHERE e.edah_id IN (";
+        }
+        else if ("${type}" == "block") {
+            sql += "blocks g WHERE e.edah_id IN (";
+        }
+        var ct = 0;
+        for (var i = 0; i < curSelectedEdahIds.length; i++) {
+            if (ct++ > 0) {
+                sql += ",";
+            }
+            sql += "?";
+        }
+        sql += ") AND e.${type}_id = g.${type}_id GROUP BY e.${type}_id HAVING COUNT(e.edah_id) = " + ct;
+    }
+    values["sql"] = sql;
+    values["instance_ids"] = curSelectedEdahIds;
+    $.ajax({
+        url: 'ajax.php',
+        type: 'post',
+        data: values,
+        success: function(data) {
+        ourPickList.empty();
+        var html = "";
+        if (data == "none") {
+            $(ourPickList).hide();
+            $(ourDesc).hide();
+            return;
+        } else if (data == "no-intersection") {
+            $(ourPickList).html(html);
+            $(ourPickList).show();
+            $(ourDesc).hide();
+            return;
+        }
+        html = "<select class=\"form-control\" id=\"${ourId}\" name=\"${type}\">";
+        $.each(data, function(itemId, itemName) {
+                html += "<option value=\""+itemId+"\">"+itemName+"</option>";
+            });
+        $(ourPickList).append(html);
+        $(ourPickList).show();
+        $(ourDesc).show();
+        },
+        error: function(xhr, desc, err) {
+        console.log(xhr);
+        console.log("Details: " + desc + " Error:" + err);
+        }
+    });
+}
+$(function() {
+  $("#${parentId}").load(fillConstraintsPickList());
+  $("#${parentId}").bind('change',fillConstraintsPickList);
+});
+</script>
+JS;
+
+    return $javascript;
+}
+
 function test_input($data)
 {
     if (empty($data)) {
@@ -650,6 +732,36 @@ function headerText($title)
 <title>$title</title>
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 <script type="text/javascript" src="meta/view.js"></script>
+<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" integrity="sha384-VI5+XuguQ/l3kUhh4knz7Hxptx47wpQbVRDnp8v7Vvuhzwn1PEYb/uvtH6KLxv6d" crossorigin="anonymous"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Ej0hUpn6wbrOTJtRExp8jvboBagaz+Or6E9zzWT+gHCQuuZQQVZUcbmhXQzSG17s" crossorigin="anonymous">
+</head>
+<body id="main_body">
+$navText
+EOM;
+    return $retVal;
+}
+
+function headerTextRTE($title)
+{
+    $navText = navText();
+    $retVal = <<<EOM
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$title</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+<script type="text/javascript" src="meta/view.js"></script>
+<script src="/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+      tinymce.init({
+        selector: '#mytextarea'
+      });
+</script>
 <link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
