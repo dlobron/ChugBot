@@ -20,19 +20,58 @@
     fillId2Name(null, $edahId2Name, $dbErr, "edah_id", "edot");
     fillId2Name(null, $bunkId2Name, $dbErr, "bunk_id", "bunks");
 
-    echo headerTextRTE("Staff Home");
+    echo headerText("Design Schedules");
 ?>
+
+
+<script src="/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+      tinymce.init({
+        selector: '#schedule-textarea'
+      });
+</script>
 
 <div class="well well-white container">
     <h1>Schedule Builder</h1>
-    <div class="page-header"><h2>Generate Printable Schedules</h2></div>
-    <!--<p>To view the leveling page, choose a time <?php echo block_term_singular ?> and <b>1-8</b> edot, and click "Go."</p>
-    <p>If there is an existing saved assignment for the selected edah/edot and <?php echo block_term_singular ?>, it will be displayed.  Nothing will be
-    changed until you click the Save or Reassign buttons on the leveling page.  If there is no existing assignment, one
-    will be created and then displayed.</p>
-    <p>If you choose two edot, make sure they share at least some <?php echo chug_term_plural ?>.</p>
-    <p>To generate a printable <?php echo chug_term_singular ?> assigment report, click "Report".-->
-    <form id="leveling_choice_form" class="well" method="GET" action="printSchedules.php"><ul>
+    <div class="page-header"><h2>Generate Printable Schedules</h2>
+    <p>In the form below, select an edah and time <?php echo block_term_singular?> to begin designing printable schedules for each camper.
+    Completing all of the below steps will allow each camper to have a custom printout with all of their <?php echo chug_term_singular ?>
+    assignments for a certain time <?php echo block_term_singular?>. Tzevet only need to design one schedule for an edah, and adding placeholders
+    will automatically populate a camper's assignments for every perek.</p>
+    <h4>Instructions</h4>
+    <ol>
+        <li>
+            <strong>Select</strong> an edah, time <?php echo block_term_singular?>, and (optionally) a pre-saved schedule template from the below form.
+        </li>
+        <li>
+            <strong>Customization!</strong> Using the provided editor, design what you want the camper schedule to look like. However the 
+            schedule looks in the editor is it will appear in the printouts (with camper assignments replacing designated placeholders).
+            <br>Tips for designing schedules:
+                <ul>
+                    <li>Use a large font! Size 18 or larger will make it more readable.</li>
+                    <li>Once an edah is selected in the dropdown menu, buttons will appear to the right of the editor. Click the button to add
+                        a placeholder for the desired field. You can stylize the placeholders, too, just be sure the entire placeholder is stylized
+                        the same (the placeholders are structured with 2 curly brackets around the word, like this: <code>{{Name}}</code>).
+                    </li>
+                    <li>
+                        Designing a template in Microsoft Word and copy/pasting it into the textbox seems to generally preserve formatting
+                        (text size, tables, colors, etc); it is not always reliable from Google Docs. If creating a design in Word first, it is 
+                        recommended to keep it to less than 3/4th of a page in Word, as sizing is adjusted slightly when printing the schedule.
+                    </li>
+                </ul>
+        </li>
+        <li>
+            <strong>Advanced:</strong> In some situations, campers may have a <?php echo chug_term_singular ?>/perek assignment which lasts multiple time
+            <?php echo block_term_plural?>. In that case, you can override the block for a specific <?php echo chug_term_singular ?> assignment
+            using the dropdowns beneath the editor. Any campers missing an assignment for a perek with a placeholder tag will have an empty
+            spot on their schedule.
+        </li>
+        <li>
+            <strong>Click</strong> the blue "Generate Schedules!" button to see all camper schedules (it automatically opens in a new tab) and print them!
+        </li>
+    </ol>
+    </div>
+    <form id="schedule_designer_form" class="well" method="POST" action="printSchedules.php" target="_blank"><ul>
         <li>
             <label class="description" for="edah"><span style="color:red;">*</span>Edah</label>
             <div id="edah_checkbox">
@@ -41,12 +80,13 @@
                 </select>
             </div>
         </li>
-        <li> <!-- Group Selector: update to be saved schedules -->
+        <li> <!-- Group Selector: update to be saved schedules 
+        Temporarily commented out
             <label class="description" for="group" id="group_desc">Group</label>
             <div id="group_picklist">
                 <?php echo genConstrainedPickListScript($groupId2Name, "group_ids", "group_picklist", "edah", "group_desc", "group"); ?>
             </div>
-        </li>
+        </li> -->
         <li>
             <label class="description" for="block"><span style="color:red;">*</span><?php echo ucfirst(block_term_singular) ?></label>
             <div>
@@ -55,18 +95,19 @@
                 </select>
             </div>
         </li>
-        <li style="max-width: 90%;">
+        <li style="max-width: 100%;">
             <label class="description" for="schedule_build"><span style="color:red;">*</span>Schedule</label>
-            <div id="schedule_build" style="max-width:80%; width:80%; display: inline-block;">
-                <textarea id="mytextarea" name="schedule-template">Hello, World!</textarea>
+            <div id="schedule_build" style="width:80%; display: inline-block; float:left;">
+                <textarea id="schedule-textarea" name="schedule-template" style="">Design the general camper schedule here!</textarea>
             </div>
-            <div style="max-width:20%; display: inline-block;"></div> <!-- Insert shortcut buttons here -->
+            <div id="shortcut-buttons" style="display: inline-block; max-width:15%; float:right;">
+                    <!-- Originally empty, added with JS when edah is set -->
+            </div> 
         </li>
         <li>
             <button class="btn btn-primary" type="submit">Generate Schedules!</button>
-            <button class="btn btn-info" type="submit">Generate Schedules!</button>
-<!--<input type="submit" name="Submit" id="Submit" value="Submit"
-       class="SubmitPrefsButton btn btn-success btn-lg" />-->
+            <!-- This button is intentionally commented out. It will later be used to save schedules to be reused
+            <button class="btn btn-info" type="submit">Generate Schedules!</button>-->
         </li>
         <br><br>
         <li>
@@ -86,21 +127,24 @@
 
 
 <script>
-    // Set the optional dropdowns to override default perek assignments
+    // Updates chug-group related options as edah is changed - does 3 things:
+    // 1. SQL query for which groups and blocks are allowed for the edah
+    // 2. Set the optional dropdowns to override default perek assignments
+    // 3. Create shortcut buttons to include parameters in schedule
     function setAdvanced() {
+        // 1: SQL queries -- get blocks, chug group
         var values = {};
         values["get_legal_id_to_name"] = 1;
         var parentField = document.getElementById("edah_list");
-        console.log(parentField);
         var curSelectedEdahIds = [];
         curSelectedEdahIds.push(parentField.value);
         if (curSelectedEdahIds[0] == '') {
             document.getElementById("advanced").style.display = 'none';
+            document.getElementById("shortcut-buttons").style.display = 'none';
             return;
         }
         document.getElementById("advanced").style.display = '';
-        console.log(curSelectedEdahIds);
-        // 2 SQL queries - one to get chug group names, one to get blocks
+        // Two SQL queries - one to get chug group names, one to get blocks
         // first, get a list of all applicable chug groups and ids:
         var sql = "SELECT e.group_id group_id, g.name group_name FROM edot_for_group e, chug_groups g WHERE e.edah_id IN (";
         var ct = 0;
@@ -130,8 +174,6 @@
             console.log("Details: " + desc + " Error:" + err);
             }
         });
-        console.log(groupNames);
-        console.log(groupIds);
         // second, get list of all block names and ids
         sql = "SELECT e.block_id block_id, g.name block_name FROM edot_for_block e, blocks g WHERE e.edah_id IN (";
         var ct = 0;
@@ -164,13 +206,10 @@
 
         // Wait for both Ajax calls to finish
         $.when(ajax1, ajax2).done(function() {
-            console.log(groupNames);
-            console.log(groupIds);
-            console.log(blockNames);
-            console.log(blockIds);
+            // 2: Block override buttons
+
             // finally, build a picklist for each group with the blocks as options
             // step 1: create generic block options
-            console.log(blockIds[0]);
             var blockBase = "<option value=\"\">-- Override Block Assignments --</option>";
             for (let i = 0; i < blockIds.length; i++) {
                 blockBase += "<option value=\""+blockIds[i]+"\">"+blockNames[i]+"</option>";
@@ -184,10 +223,33 @@
                 html += "</select></li>";
             }
             html += "</ul>"
-            console.log(html);
             var ourPickList = $("#advanced");
             $(ourPickList).html(html);
+
+
+            // 3: Shortcut buttons
+            html = "<div class=\"btn-group-vertical\" role=\"group\">";
+            // make array with all options:
+            var shortcutsRequired = ["Name", "Bunk", "Edah", "Rosh", "Rosh Phone Number"];
+            shortcutsRequired = shortcutsRequired.concat(groupNames);
+            // write html for each button:
+            for (let i = 0; i < shortcutsRequired.length; i++) {
+                html += "<button type=\"button\" class=\"btn btn-default\" style=\"white-space: normal;\" "
+                html += "onClick='insertTextOnClick(\""+ shortcutsRequired[i] + "\")'>" + shortcutsRequired[i] + "</button>"
+            }
+            html += "</div>";
+            console.log("h");
+            var shortcutButtons = $("#shortcut-buttons");
+            $(shortcutButtons).html(html);
         });
+    }
+
+    function insertTextOnClick(toInsert) {
+        var editor = tinymce.get('schedule-textarea');
+        if (editor) {
+            // Insert text at the current cursor position
+            editor.insertContent('{{' + toInsert + '}}');
+        }
     }
 
 </script>

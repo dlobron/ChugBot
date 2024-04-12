@@ -4,14 +4,16 @@
     include_once 'functions.php';
     bounceToLogin();
     setup_camp_specific_terminology_constants();
+    echo headerText("Print Schedules");
 
-    $edahId = test_get_input('edah');
-    $blockId = test_get_input('block');
-    $scheduleTemplate = html_entity_decode(test_get_input('schedule-template'));
+    // Get info from the form
+    $edahId = test_post_input('edah');
+    $blockId = test_post_input('block');
+    $scheduleTemplate = html_entity_decode(test_post_input('schedule-template'));
 
     $blockIdsOverride = [];
-    for ($i = 0; $i < count($_GET)-4; $i ++) {
-        $temp = $_GET[/*'group' . */$i];
+    for ($i = 0; $i < count($_POST)-4; $i ++) {
+        $temp = $_POST[$i];
         if (is_numeric($temp)) {
             array_push($blockIdsOverride, $temp);
         }
@@ -19,7 +21,6 @@
             array_push($blockIdsOverride, $blockId);
         }
     }
-    echo $scheduleTemplate;
 
 
     // ***************************************************************************
@@ -93,10 +94,60 @@
     }
     $sql .= "GROUP BY p.name, p.bunk, p.edah, p.rosh, p.roshphone";
 
-    echo $sql;
     $result = $dbc->doQuery($sql, $localErr);
     if ($result == false) {
         echo dbErrorString($sql, $localErr);
         exit();
     }
 ?>
+
+<div class="well well-white container instructions">
+    <div class="well">
+        <div class="page-header"><h2>Print Custom Schedules</h2></div>
+        <p>Below, find the custom schedules generated for each camper. To save them or print them, just print this 
+        page directly</p>
+        <p><strong>TIP: </strong>Consider printing multiple camper schedules on one page of paper. Likely under the 
+        "Advanced" or "More settings" for the print menu, change the number of pages per sheet. Then select how many 
+        individual schedules you want per piece of paper.</p>
+        <p><strong>TIP: </strong>Most browsers include a "Save to PDF" option from the print menu which will allow 
+        you to save the set of schedules for later instead of printing them immediately.</p>
+        <p><strong>TIP: </strong>Be sure to look at the "Print Preview" before printing - you may need to make 
+        modifications to the template if a camper's schedule takes multiple pages.</p>
+        <p><strong>TIP: </strong>Ensure double-sided printing is <u>OFF</u> when printing!</p>
+        <div><button onClick="window.print()" class="btn btn-success">Print camper schedules!</button></div>
+    </div>
+</div>
+
+<?php
+    // ***************************************************************************
+    // ************************* Output Camper Schedules *************************
+    // ***************************************************************************
+
+    // Call the function to automatically generate a schedule for each camper based on the results of the SQL query
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $schedule  = "<div class=\"container schedule\">";
+        $schedule .= $scheduleTemplate; // set basic template
+
+        // Now, replace all keywords with the info from the camper's row
+
+        // 1. Manual ones we know to always expect (name, bunk, edah, rosh, roshphone)
+        $schedule = str_replace("{{Name}}", $row[0], $schedule); // name
+        $schedule = str_replace("{{Bunk}}", $row[1], $schedule); // bunk
+        $schedule = str_replace("{{Edah}}", $row[2], $schedule); // edah
+        $schedule = str_replace("{{Rosh}}", $row[3], $schedule); // rosh
+        $schedule = str_replace("{{Rosh Phone Number}}", $row[4], $schedule); // roshphone
+
+        // 2. Replace Chug/Perek Assignments
+        for($i = 0; $i < count($chugGroups); $i++) {
+            // $chugGroups has chug group names corresponding to the order the chugim are ordered in the 
+            // SQL response, so can iterate through those lists simultaneously (and 5 fields are always expected)
+            $schedule = str_replace("{{" . $chugGroups[$i] . "}}", $row[$i+5], $schedule);
+        }
+
+        $schedule .= "</div>"; // close the div (or else we end up with them all nested!)
+        echo $schedule; // and output the result!
+    }
+
+    echo footerText();
+?>
+</body>

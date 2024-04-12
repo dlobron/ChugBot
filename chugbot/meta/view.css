@@ -614,3 +614,25 @@ select.options_toggle {
     color: #46a;
     font-weight: bold;
 }
+
+/*** Camper Schedules **/
+.schedule {
+    margin-top: 20px;
+    margin-left: 10px;
+    background: #fff;
+    padding-bottom: 1px;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+
+}
+
+@media print {
+    .schedule {
+        page-break-after: always;
+    }
+    .instructions {
+        display: none;
+    }
+}
+
