@@ -108,6 +108,8 @@
             <button class="btn btn-primary" type="submit">Generate Schedules!</button>
             <!-- This button is intentionally commented out. It will later be used to save schedules to be reused
             <button class="btn btn-info" type="submit">Generate Schedules!</button>-->
+            <br><br>
+            <button class="btn btn-info" onClick="previewSchedule()">Preview</button>
         </li>
         <br><br>
         <li>
@@ -127,6 +129,11 @@
 
 
 <script>
+    /* ************************************************************************************
+     * **************************** JavaScript Functions **********************************
+     * ************************************************************************************/
+
+
     // Updates chug-group related options as edah is changed - does 3 things:
     // 1. SQL query for which groups and blocks are allowed for the edah
     // 2. Set the optional dropdowns to override default perek assignments
@@ -250,6 +257,19 @@
             // Insert text at the current cursor position
             editor.insertContent('{{' + toInsert + '}}');
         }
+    }
+
+    function previewSchedule() {
+        console.log("hi");
+        var html = "<head>" + document.getElementsByTagName('head')[0].innerHTML + "</head>";
+        html += "<body onload=\"PrintAndClose()\"><div class=\"container schedule\">";
+        html += tinymce.get('schedule-textarea').getContent();
+        html += "</div></body>";
+        html += "<script> function PrintAndClose() { console.log(\"hi\"); window.focus(); window.print(); window.onfocus=function(){ window.close();} }<\/script>";
+        console.log(html);
+        var newWindow = window.open("", "_blank", "popup=yes");
+        newWindow.document.write(html);
+        newWindow.document.close();
     }
 
 </script>
