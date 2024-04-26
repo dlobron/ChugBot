@@ -259,14 +259,16 @@
         }
     }
 
+    // Opens a new tab with the contents of the schedule builder, then automatically prepares the print dialog so a
+    // user can see a print preview of the schedule. Once closing that print dialog, the tab automatically closes, too
     function previewSchedule() {
-        console.log("hi");
         var html = "<head>" + document.getElementsByTagName('head')[0].innerHTML + "</head>";
         html += "<body onload=\"PrintAndClose()\"><div class=\"container schedule\">";
         html += tinymce.get('schedule-textarea').getContent();
         html += "</div></body>";
+        // Script so it prints on load:
         html += "<script> function PrintAndClose() { console.log(\"hi\"); window.focus(); window.print(); window.onfocus=function(){ window.close();} }<\/script>";
-        console.log(html);
+        // Open new tab:
         var newWindow = window.open("", "_blank", "popup=yes");
         newWindow.document.write(html);
         newWindow.document.close();
@@ -275,13 +277,3 @@
 </script>
 </body>
 </html>
-
-
-<?php
-// Functions for Above Methods
-
-function blockForChugim() {
-    
-
-}
-?>
