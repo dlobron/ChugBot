@@ -442,9 +442,7 @@ JS;
 // to be applicable to more types
 // NOTE: fillConstraintsPickList() must be called as an `onchange` method
 //     from the element which it relies upon
-function genConstrainedPickListScript($id2Name, $arrayName,
-    $ourId, $parentId, $descId, $type) {
-    asort($id2Name);
+function genConstrainedPickListScript($ourId, $parentId, $descId, $type) {
     $javascript = <<<JS
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
@@ -459,7 +457,7 @@ function fillConstraintsPickList() {
     var parentField = document.getElementsByName("${parentId}")[0];
     var curSelectedEdahIds = [];
     curSelectedEdahIds.push(parentField.value)
-    if("${type}" == "group" || "${type}" == "block") {
+    if("${type}" == "group" || "${type}" == "block" || "${type}" == "schedule") {
         var sql = "SELECT e.${type}_id ${type}_id, g.name ${type}_name FROM edot_for_${type} e, "
         // Determine right table to search from
         if ("${type}" == "group") {
@@ -467,6 +465,9 @@ function fillConstraintsPickList() {
         }
         else if ("${type}" == "block") {
             sql += "blocks g WHERE e.edah_id IN (";
+        }
+        else if ("${type}" == "schedule") {
+            sql += "schedules g WHERE e.edah_id IN (";
         }
         var ct = 0;
         for (var i = 0; i < curSelectedEdahIds.length; i++) {
@@ -496,7 +497,14 @@ function fillConstraintsPickList() {
             $(ourDesc).hide();
             return;
         }
-        html = "<select class=\"form-control\" id=\"${ourId}\" name=\"${type}\">";
+        html = "<select class=\"form-control\" id=\"${ourId}\" name=\"${type}\"";
+        if ("${type}" == "schedule") {
+            html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
+        }
+        else {
+            html += ">";
+        }
+        // add individual options
         $.each(data, function(itemId, itemName) {
                 html += "<option value=\""+itemId+"\">"+itemName+"</option>";
             });

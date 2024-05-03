@@ -80,13 +80,12 @@
                 </select>
             </div>
         </li>
-        <li> <!-- Group Selector: update to be saved schedules 
-        Temporarily commented out
-            <label class="description" for="group" id="group_desc">Group</label>
-            <div id="group_picklist">
-                <?php echo genConstrainedPickListScript($groupId2Name, "group_ids", "group_picklist", "edah", "group_desc", "group"); ?>
+        <li> 
+            <label class="description" for="schedule" id="schedule_desc">Schedule Template</label>
+            <div id="schedule_picklist">
+                <?php echo genConstrainedPickListScript("schedule_picklist", "edah", "schedule_desc", "schedule"); ?>
             </div>
-        </li> -->
+        </li>
         <li>
             <label class="description" for="block"><span style="color:red;">*</span><?php echo ucfirst(block_term_singular) ?></label>
             <div>
@@ -245,7 +244,6 @@
                 html += "onClick='insertTextOnClick(\""+ shortcutsRequired[i] + "\")'>" + shortcutsRequired[i] + "</button>"
             }
             html += "</div>";
-            console.log("h");
             var shortcutButtons = $("#shortcut-buttons");
             $(shortcutButtons).html(html);
         });
@@ -267,11 +265,48 @@
         html += tinymce.get('schedule-textarea').getContent();
         html += "</div></body>";
         // Script so it prints on load:
-        html += "<script> function PrintAndClose() { console.log(\"hi\"); window.focus(); window.print(); window.onfocus=function(){ window.close();} }<\/script>";
+        html += "<script> function PrintAndClose() { window.focus(); window.print(); window.onfocus=function(){ window.close();} }<\/script>";
         // Open new tab:
         var newWindow = window.open("", "_blank", "popup=yes");
         newWindow.document.write(html);
         newWindow.document.close();
+    }
+
+
+    function loadSchedule() {
+        // the picklist and surrounding div have the same id so that they can be hidden together when
+        // no edah is scheduled, below line gets both of them and just returns the object of the picklist
+        var schedule_picker = document.querySelectorAll("[id='schedule_picklist']")[1];
+        // ensure it's an actual option
+        var sched_id = schedule_picker.value;
+        if (sched_id == "") { return; }
+        // create schedule query
+        var sql = "SELECT schedule_id, schedule FROM schedules WHERE schedule_id IN (?)";
+
+        var values = {};
+        values["get_legal_id_to_name"] = 1;
+        values["sql"] = sql;
+        values["instance_ids"] = [sched_id]
+        var result = "";
+
+        var ajax = $.ajax({
+            url: 'ajax.php',
+            type: 'post',
+            data: values,
+            success: function(data) {
+                result = data[sched_id];
+            },
+            error: function(xhr, desc, err) {
+            console.log(xhr);
+            console.log("Details: " + desc + " Error:" + err);
+            }
+        });
+
+        // Wait for Ajax call to finish
+        $.when(ajax).done(function() {
+            var editor = tinymce.get('schedule-textarea');
+            editor.setContent(result);
+        });
     }
 
 </script>
