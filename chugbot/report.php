@@ -346,7 +346,7 @@ class ZebraReport
                         }
                     }
                 }
-                $html .= "<div class=zebra><table>";
+                $html .= "<div ><table class=\"table table-bordered table-striped table-hover\">";
                 $pdfHeader = array();
                 $pdfData = array();
                 $pdfColWidths = array();
@@ -385,9 +385,9 @@ class ZebraReport
                         $captionText = str_replace($key, $replaceText, $captionText);
                         $pdfCaptionText = str_replace($key, $replaceText, $pdfCaptionText);
                     }
-                    $html .= "<caption>$captionText</caption>";
+                    $html .= "<hr><h4 style=\"text-align:center;\" class=\"mt-3\">$captionText</h4>";
                 }
-                $html .= "<tr>";
+                $html .= "<thead><tr>";
 
                 // Use the column keys as table headers.
                 $colKeys = array_keys($row);
@@ -404,13 +404,14 @@ class ZebraReport
                     if ($this->shouldSkipColumn($tableHeader)) {
                         continue;
                     }
-                    $html .= "<th style=\"width: " . 100/$numberOfColumns . "%;\">$tableHeader</th>";
+                    // I changed this to automatically size columns in display; we can just uncomment the other part to make all equal
+                    $html .= "<th scope=\"col\">"/* style=\"width: " . 100/$numberOfColumns . "%;\">*/ . "$tableHeader</th>";
                     array_push($pdfHeader, $tableHeader);
                     // Initialize the width for the column corresponding to this
                     // header.
                     array_push($pdfColWidths, (strlen($tableHeader) * $this->mult) + $this->add);
                 }
-                $html .= "</tr>";
+                $html .= "</tr></thead>";
 
                 // Update new table column values.
                 foreach ($this->newTableColumns as $ntc => $val) {
@@ -776,7 +777,7 @@ $pageStart = <<<EOM
     });
 </script>
 
-<div class="well well-white container">
+<div class="card card-body mt-3 mb-3 container">
 
 <h1><a>$chug_term_singular Assignment Report</a></h1>
 <form id="main_form" method="GET" action="$actionTarget">
@@ -841,7 +842,7 @@ if ($reportMethod &&
         $blockChooser = new FormItemDropDown("Time " . ucfirst(block_term_plural) . " Missing Preferences", true, "block_id", $liNumCounter++);
         $blockChooser->setGuideText("<b>Step 2:</b> Select one time " . block_term_singular . ". The report will show campers who are missing preferences for this " . block_term_singular . ".");
         $blockChooser->setPlaceHolder("Choose a Time " . ucfirst(block_term_singular));
-        $blockChooser->setInputClass("element select medium");
+        $blockChooser->setInputClass("element medium");
         $blockChooser->setId2Name($blockId2Name);
         $blockChooser->setColVal($blockId);
         $blockChooser->setInputSingular("block");
@@ -870,7 +871,7 @@ if ($reportMethod == ReportTypes::ByEdah) {
     // Same as edah, but with a bunk filter.
     $bunkChooser = new FormItemDropDown("Bunk", false, "bunk_id", $liNumCounter++);
     $bunkChooser->setGuideText("<b>Step 3:</b> Choose a bunk/tzrif, or leave empty to see all bunks");
-    $bunkChooser->setInputClass("element select medium");
+    $bunkChooser->setInputClass("element medium");
     $bunkChooser->setInputSingular("bunk");
     $bunkChooser->setColVal($bunkId);
     $bunkChooser->setId2Name($bunkId2Name);
@@ -968,14 +969,14 @@ if ($outputType == OutputTypes::Html) {
 
     echo "<a class=\"btn btn-link\" href=\"$cancelUrl\">Home</a>";
     if ($doReport) {
-        echo "<br><br><input class=\"btn btn-default\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print...\" />";
-        echo "<input class=\"btn btn-default\" type=\"submit\" name=\"export\" title=\"Export to a file\" value=\"Export\" />";
+        echo "<br><br><input class=\"btn btn-light btn-outline-secondary me-3\" type=\"submit\" name=\"print\" title=\"Print this table\" value=\"Print...\" />";
+        echo "<input class=\"btn btn-light btn-outline-secondary\" type=\"submit\" name=\"export\" title=\"Export to a file\" value=\"Export\" />";
     }
     echo "</li></ul></form>";
 
     echo "<form id=\"reset_form\" method=\"GET\" action=\"$actionTarget\">";
     echo "<ul><li class=\"buttons\">";
-    echo "<input id=\"resetFormButton\" class=\"btn btn-default\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
+    echo "<input id=\"resetFormButton\" class=\"btn btn-light btn-outline-secondary\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
     echo "</li></ul></form>";
 }
 

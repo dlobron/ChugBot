@@ -267,7 +267,7 @@ function getAndDisplayCurrentMatches() {
 				var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
 				// Add a holder for each group (aleph, bet, gimel).
 				var groupName = groupId2Name[groupId];
-				html += "<div class=\"groupholder well\" name=\"" + groupId + "\" >\n";
+				html += "<div class=\"groupholder card card-body bg-light mb-4\" name=\"" + groupId + "\" >\n";
 				if (showEdahForCamper) {
 					html += "<h3>" + groupName + " assignments</h3>\n";
 				} else {
@@ -306,7 +306,7 @@ function getAndDisplayCurrentMatches() {
 						chugId2FreeSpace[chugId] = chugMax - curCount;
 					}
 					var colorClass = getColorForCount(curCount, chugMin, chugMax);
-					html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder well well-sm well-white\">\n";
+					html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder card card-body mb-3 ui-droppable\">\n";
 					if (chugName == "Not Assigned Yet") {
 						html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
 					} else {
@@ -376,7 +376,7 @@ function getAndDisplayCurrentMatches() {
 			$.each(groupId2Name, function (groupId, groupName) {
 				groupQueryString += "&group_ids%5B%5D=" + groupId;
 			});
-			var reportLink = "<a class=\"btn btn-primary btn-with-padding\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
+			var reportLink = "<a class=\"btn btn-dark text-light mt-2\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
 			var freeHtml = "<h4>" + capitalize(json['chugimTerm']) + " with Free Space:</h4>";
 			var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2Beta);
 			for (var i = 0; i < sortedChugIds.length; i++) {

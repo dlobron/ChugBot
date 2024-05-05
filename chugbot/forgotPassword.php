@@ -126,11 +126,14 @@ if ($uuid) {
     $mailBody = <<<EOM
 <html>
 <body>
+<div class="card card-body mt-3 p-3">
 To reset the administrator password for $campName, please click on the following link:
 
 <a href="$resetUrl">$resetUrl</a>
 
 If the link does not work, simply paste it directly into your browser window.
+
+</div>
 
 </body>
 </html>
@@ -151,17 +154,17 @@ if ($emailError) {
 echo headerText("Admin Password Reset Page");
 
 if ($emailSent) {
-    echo "<div class=\"container well well-white\">";
+    echo "<div class=\"card card-body mt-3 p-3 container\">";
     echo "<h2>Mail Sent</h2>";
     echo "<p>An email has been sent to $adminEmail.  Please check your Inbox and follow the instructions in the message to reset the administrative password.</p>";
     echo "</div>";
 } else if ($_SESSION['reset_password_ok']) {
-    echo "<div class=\"container well well-white\">";
+    echo "<div class=\"card card-body mt-3 p-3 container\">";
     echo "<h2>Enter New Password</h2>";
     echo "<p>Please enter a new administrative password.  Passwords must be at least 5 characters.</p>";
     echo "</div>";
     $selfTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
-    echo "<div class=\"container well well-white\">";
+    echo "<div class=\"card card-body mt-3 p-3 container\">";
     echo "<form method=\"post\" action=\"$selfTarget\">";
     echo "<div class=\"page-header\">";
     echo "<h2>Enter New Admin Password</h2>";

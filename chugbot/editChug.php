@@ -102,7 +102,7 @@ $dedupDropDown = new FormItemDropDown("De-duplication list", false, "dedup", 9);
 $dedupDropDown->setGuideText("Select ". chug_term_plural . " that should not be assigned to the same camper together with this one. As you select, each de-duplicated " . chug_term_singular . " will appear in a list above the drop-down. Click the red X next to a " . chug_term_singular . " in the list to remove it.");
 $dedupDropDown->setInputSingular("chug");
 $dedupDropDown->setDefaultMsg("Choose " . ucfirst(chug_term_plural));
-$dedupDropDown->setInputClass("element select medium");
+$dedupDropDown->setInputClass("element medium");
 $db = new DbConn();
 $err = "";
 $result = $db->runQueryDirectly("SELECT c.name, c.chug_id, g.name FROM chugim c, chug_groups g WHERE c.group_id = g.group_id", $err);

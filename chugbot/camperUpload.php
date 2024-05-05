@@ -123,17 +123,21 @@ EOM;
 }
 ?>
 
-<div class="well well-white container">
+<div class="card card-body mt-3 p-3 container">
 <h2>Upload Campers</h2>
 <p><b>Upload a CSV file with the following columns</b>: edah, session, first_name, last_name, bunk, email, email2, needs_first_choice</p>
 <p>Valid values for <b>edah</b>: <?php echo implode(", ", array_keys($edah_name_to_id)); ?></p>
 <p>Valid values for <b>session</b>: <?php echo implode(", ", array_keys($session_name_to_id)); ?></p>
 <p>Valid values for <b>bunk</b>: <?php echo implode(", ", array_keys($bunk_name_to_id)); ?></p>
 
+<div class="row">
 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data">
-  <input type="file" name="csv" id="csv">
+    <div class="col-4 mb-3">
+        <input class="form-control col-sm" type="file" name="csv" id="csv">
+    </div>
   <input type="submit" class="btn btn-primary" value="Upload" name="submit">
 </form>
+</div>
 </div>
 
 <?php

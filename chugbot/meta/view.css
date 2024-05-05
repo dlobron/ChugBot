@@ -267,6 +267,13 @@ form li div label
     padding-top:3px;
 }
 
+form li div label.form-check-label
+{
+    font-size:16px;
+    line-height:24px;
+    padding-top:3px;
+}
+
 form li span label
 {
     clear:both;
@@ -628,11 +635,21 @@ select.options_toggle {
 }
 
 @media print {
-    .schedule {
+    .container.schedule {
         page-break-after: always;
+        min-width: 7.5in;
+        min-height: 10in;
+        margin: 10px;
     }
-    .instructions {
+    .container.instructions {
+        display: none;
+    }
+    .navbar.navbar-expand-lg {
         display: none;
     }
 }
 
+
+.accordion-button.collapsed {
+    background: rgb(245, 245, 245)
+  }
