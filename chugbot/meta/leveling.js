@@ -306,7 +306,7 @@ function getAndDisplayCurrentMatches() {
 						chugId2FreeSpace[chugId] = chugMax - curCount;
 					}
 					var colorClass = getColorForCount(curCount, chugMin, chugMax);
-					html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder card card-body mb-3 ui-droppable\">\n";
+					html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder card-body bg-white border rounded mb-3 pb-0 ui-droppable\">\n";
 					if (chugName == "Not Assigned Yet") {
 						html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
 					} else {
@@ -314,6 +314,7 @@ function getAndDisplayCurrentMatches() {
 							+ " (min = " + chugMin + ", max = " + chugMax + ", <span name=\"curCountHolder\" class=\"" + colorClass + "\" value=\"" + curCount + "\">cur = " + curCount + "</span>)</h4>";
 					}
 					html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
+					html += "<div class=\"row row-cols-1 row-cols-md-2 justify-content-center mt-2\">"
 					$.each(matchedCampers,
 						function (index, camperId) {
 							var camperName = camperId2Name[camperId];
@@ -321,7 +322,7 @@ function getAndDisplayCurrentMatches() {
 							var camperEdah = edahId2Name[edahId];
 							var camperEdahText = "";
 							if (Object.keys(edahId2Name).length > 1) {
-								camperEdahText = " <small>(" + camperEdah + ")</small>";
+								camperEdahText = "<div class=\"card-body ps-1 pe-1 mb-0 d-flex align-items-center\" style=\"font-size:70%\"><p class=\"m-0\">(" + camperEdah + ")</p></div>";
 							}
 							var prefListText = "";
 							var prefClass = prefClasses[prefClasses.length - 1];
@@ -358,10 +359,10 @@ function getAndDisplayCurrentMatches() {
 								// If we have a pref list, write it as a tool tip.
 								titleText = "title=\"" + prefListText + "\"";
 							}
-							html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" " + titleText;
-							html += "><h5 class=\"ui-widget-header\">" + camperName + camperEdahText + " </h5><div class=\"dup-warning\"></div></li>\n";
+							html += "<li value=\"" + camperId + "\" class=\" " + prefClass + " card p-0\" " + titleText;
+							html += "><h5 class=\"card-header p-1 mb-0\">" + camperName + "</h5>"+ camperEdahText + "<div class=\"dup-warning\"></div></li>\n";
 						});
-					html += "</ul><br style=\"clear: both\"></div>\n";
+					html += "</div></ul><br style=\"clear: both\"></div>\n";
 				}
 				html += "</div>\n";
 			};

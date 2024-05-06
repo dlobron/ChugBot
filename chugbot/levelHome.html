@@ -41,12 +41,13 @@
 
     .gallery li {
       float: left;
-      width: 96px;
+      width: 125px;
       padding: 0.2em;
       margin: 0 0.4em 0.4em 0;
       text-align: center;
       font-size: 1.2em;
       border-radius: 5px;
+      border-width: 3px;
       -moz-border-radius: 5px;
       -webkit-border-radius: 5px;
     }
@@ -57,23 +58,23 @@
     }
 
     .li_first_choice {
-      background: #1aff1a;
+      border-color: #1aff1a;
     }
 
     .li_second_choice {
-      background: #ffff80;
+      border-color: #f0f000;
     }
 
     .li_third_choice {
-      background: #ffa500;
+      border-color: #ffa500;
     }
 
     .li_fourth_choice {
-      background: #ff3333;
+      border-color: #ff3333;
     }
 
     .li_no_pref {
-      background: #ef60ff;
+      border-color: #ef60ff;
     }
   </style>
 
@@ -89,9 +90,9 @@
     <h2><span class="blocktermfill">Time BLOCK_TERM:</span><span class="blockfill"> BLOCK</span></h2>
     <p>This page displays suggested <span class="chugfill">CHUG</span> assignments for one edah in a time
       <span class="blocktermfill">BLOCK_TERM</span>. Assignments are highlighted according to the camper's preference:
-      <span class="li_first_choice">first</span>, <span class="li_second_choice">second</span>,
-      <span class="li_third_choice">third</span>, <span class="li_fourth_choice">fourth or worse</span>.
-      Campers with no preferences for a <span class="chugfill">CHUG</span> group are highlighted in <span class="li_no_pref">purple</span>.
+      <span style="background:#1aff1a;">first</span>, <span style="background:#f0f000;">second</span>,
+      <span style="background:#ffa500;">third</span>, <span style="background:#ff3333">fourth or worse</span>.
+      Campers with no preferences for a <span class="chugfill">CHUG</span> group are highlighted in <span style="background:#ef60ff">purple</span>.
     </p>
     <ul>
       <li>To change a camper's assignment, drag the camper's bubble from one
