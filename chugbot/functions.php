@@ -244,7 +244,6 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     $deleteAllowed = true;
     $db = new DbConn();
     $db->addSelectColumn('delete_ok');
-    echo($tableName);
     $db->addWhereColumn('name', $tableName, 's');
     $result = $db->simpleSelectFromTable('category_tables', $err);
     if ($result) {
