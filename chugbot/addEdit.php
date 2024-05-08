@@ -183,14 +183,14 @@ abstract class AddEditBase extends FormPage
         $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
         $html = "";
         if ($this->resultStr) {
-            $html .= "<div class=\"container well\">$this->resultStr</div>";
+            $html .= "<div class=\"card card-body\">$this->resultStr</div>";
         }
         $secondParagraphHtml = "";
         if ($this->secondParagraph) {
             $secondParagraphHtml = "<p>$this->secondParagraph</p>";
         }
         $html .= <<<EOM
-<div class="well well-white container">
+<div class="card card-body mt-3 mb-3 container">
 <h1><a>$this->title</a></h1>
 <form id="$formId" method="post" action="$actionTarget">
 <div class="page-header">

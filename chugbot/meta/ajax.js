@@ -132,9 +132,10 @@ $(function() {
 		    return;
 		}
 		if (errorCount > 0) {
-		    $( "#error:visible" ).removeAttr( "style" ).fadeOut();
-		    $( "#error" ).html("<div class=\"error_box\">" + chugCountError + "</div>");
-		    $( "#error" ).show("slide", 250 );
+		    $( "#error:visible" ).removeAttr( "style" )
+			$( "#error" ).show();
+			$( "#error" ).html("<div class=\"alert alert-danger alert-dismissible fade show\"><button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>" + chugCountError + "</div>");
+		    
                     return;
                 }
 		$( "#error" ).hide(); // At this point, we have no validation errors.
@@ -218,15 +219,20 @@ function getNameAndFillChoices() {
 		    // the same ID, but a different name, so we can capture the
 		    // contents of each and send it back to ajax.php to be put in
 		    // the DB.
-		    var html = "";
+			var html = "";
 		    var baseName = "sortedSource";
 		    $.each(json,
 			   function(blockname, block2groupmap) {
 			       $.each(block2groupmap, function(groupname, chugNameAndId2DescList) {
 				       var destName = blockname + "||" + groupname;
-				       html += "<div class=\"chug_choice_container\" name=\"chug_choice_container\" >\n";
-				       html += "<h3>" + blockname + " " + groupname + "</h3>\n";
-				       html += "<ul name=\"dragSrc\" id=\"sortable1\" class=\"connectedSortable\" >\n";
+					   html += "<div class=\"row\">";
+				       html += "<div class=\"card mt-3 mb-3 p-0\" style=\"overflow: auto;\" name=\"chug_choice_container\">\n";
+				       html += "<div class=\"card-header text-center\"><h3>" + blockname + " " + groupname + "</h3>";
+					   html += "<div class=\"progress\" style=\"height: 2rem !important;\"><div class=\"progress-bar progress-bar-striped\" role=\"progressbar\" aria-valuenow=\"25\" aria-valuemin=\"0\" aria-valuemax=\"100\">";
+					   html += "<span class=\"progress-bar-title\"></span></div></div>";
+					   html += "</div>";
+				       html += "<div class=\"card-body\"><div class=\"row align-items-center\"><div class=\"col-5\"><div class=\"d-flex justify-content-center\">";
+					   html += "<ul name=\"dragSrc\" id=\"sortable1\" class=\"connectedSortable\" >\n";
 				       var existingChoicesForThisDiv = {};
 				       if (destName in existingChoicesMap) {
 					   existingChoicesForThisDiv = existingChoicesMap[destName];
@@ -251,13 +257,15 @@ function getNameAndFillChoices() {
 						       if (key in blockGroupChugInUse) {
 							   return true; // This is like "continue"
 						       }
-						       html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " +
+						       html += "<li value=\"" + chugId + "\" class=\"card card-body bg-light\" " +
 							   titleText + " >" + chugName + "</li>";
 						   });
 					   });
-				       html += "</ul>";
-				       html += "<div class=\"sortableLabelTop\">Higher pref</div>";
-				       html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">\n";
+				       html += "</ul></div></div>";
+					   html += "<div class=\"col-2\"><img src=\"images/RightArrow.png\" width=\"100%\"></div>";
+					   html += "<div class=\"col-5\" id=\"sort2div\"><h3 class=\"text-center p-1 m-0\"><span class=\"badge bg-success text-wrap\">Higher pref</span></h3>";
+					   html += "<div class=\"d-flex justify-content-center\">";
+					   html += "<ul name=\"" + destName + "\" id=\"sortable2\" class=\"connectedSortable\">\n";
 				       $.each(existingChoicesForThisDiv, function(index, chugNameAndId) {
 					       var p = chugNameAndId.split("||");
 					       var chugName = p[0];
@@ -268,14 +276,12 @@ function getNameAndFillChoices() {
 					       // If we have a chug description, write it as a tool tip.
 					       //    titleText = "title=\"" + chugName + ": " + chugDesc + "\"";
 					       //}
-					       html += "<li value=\"" + chugId + "\" class=\"ui-state-default\" " +
+					       html += "<li value=\"" + chugId + "\" class=\"card card-body bg-light\" " +
 						   titleText + " >" + chugName + "</li>";
 					   });
-				       html += "</ul>";
-				       html += "<div class=\"sortableLabelBot\">Lower pref</div>";
-				       html += "<div class=\"centered_invisible\"><img src=\"images/RightArrow.png\" height=\"35\" width=\"35\"></div>";
-				       html += "<div class=\"ui-progressbar\"><div class=\"progress-label\"></div></div>";
-				       html += "</div>";
+				       html += "</ul></div>";
+				       html += "<h3 class=\"text-center p-1 m-0 \"><span class=\"badge text-wrap bg-danger\">Lower pref</span></h3></div>";
+					   html += "</div></div></div></div></div>";
 				   });
 			   });
 		    if (html.length == 0) {
@@ -294,65 +300,44 @@ function getNameAndFillChoices() {
 	    }).then(function() {
 		    if (success) {
 			// Display default progress bars on each chug holder.
-			$('*[class*=chug_choice_container]').each(function() {
+			$('*[name*=chug_choice_container]').each(function() {
 				var rd = $(this).find("#sortable2 li");
 				var ct = rd.length;
-				var label = $(this).find(".progress-label");
-				var bar = $(this).find(".ui-progressbar");
-				var barValue = $(bar).find( ".ui-progressbar-value" );
-				var text = "<small>" + ct + "/" + expectedChugCount + "</small>";
-				var color = 'Yellow';
+				var color = "var(--bs-yellow)";
 				if (ct == expectedChugCount) {
-				    color = "#00ff00";
+					color = "var(--bs-green)";
 				} else if (ct > expectedChugCount) {
-				    color = "Red";
+					color = 'var(--bs-red)';
 				}
-				$(bar).height(35);
-				$(bar).width(120);
-				$(bar).progressbar({
-					max: expectedChugCount,
-					    value: ct,
-					    create: function() {
-					    label.html(text);
-					    $(this).find(".ui-progressbar-value").css({ 'background': color });
-					}
-				    });
-			    });
+				var progress = $($(this).find('.progress').find('.progress-bar'));
+				var progressLabel = $(progress).find('.progress-bar-title');
+				let num = (Math.floor(100*ct/expectedChugCount))
+				if(num > 100) { num = 100; }
+				$(progress).css({'width': num+"%", 'background': color});
+				$(progressLabel).text(ct + "/" + expectedChugCount);
+			});
 			$( "#sortable1, #sortable2" ).sortable({
 				connectWith: ".connectedSortable",
 				    receive: function(event, ui) {
 				    // Count the number of dropped items, and display
 				    // a message indicating how many to go.
-				    var rd = $(event.target.parentElement).find("#sortable2 li");
+				    var rd = $(event.target.parentElement.parentElement.parentElement.querySelector('#sort2div')).find("div #sortable2 li");
 				    var ct = rd.length;
-				    var text = "<small>" + ct + "/" + expectedChugCount + "</small>";
-				    var color = "Yellow";
+				    
+					var color = "var(--bs-yellow)";
 				    if (ct == expectedChugCount) {
-					color = "#00ff00";
+						color = "var(--bs-green)";
 				    } else if (ct > expectedChugCount) {
-					color = "Red";
+						color = 'var(--bs-red)';
 				    }
-				    var label = $(event.target.parentElement).find(".progress-label");
-				    var bar = $(event.target.parentElement).find(".ui-progressbar");
-				    var barValue = $(bar).find( ".ui-progressbar-value" );
-				    $(bar).height(35);
-				    $(bar).width(120);
-				    $(bar).progressbar({
-					    max: expectedChugCount,
-						value: ct,
-						create: function() {
-						label.html(text);
-						$(this).find( ".ui-progressbar-value" ).css({ 'background': color });
-					    },
-						change: function() {
-						label.html(text);
-						$(this).find( ".ui-progressbar-value" ).css({ 'background': color });
-					    },
-						complete: function() {
-                                                label.html(text);
-                                                $(this).find( ".ui-progressbar-value" ).css({ 'background': color });
-                                            }
-					});
+				    
+					var progress = $(event.target.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.card-header').querySelector('.progress').querySelector('.progress-bar'));
+					var progressLabel = $(progress).find('.progress-bar-title');
+					let num = (Math.floor(100*ct/expectedChugCount))
+					if(num > 100) { num = 100; }
+
+					$(progress).css({'width': num+"%", 'background': color});
+					$(progressLabel).text(ct + "/" + expectedChugCount);
 				}
 			    }).disableSelection();
 		    }});

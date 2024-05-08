@@ -70,7 +70,8 @@ function updateCount(chugId2Beta, curChugHolder) {
 	var chugHolders = $(groupHolder).children(".chugholder");
 	$(chugHolders).each(function (index) {
 		var chugId = $(this).attr('name');
-		var newCount = $(this).find("ul").children().length;
+		var newCount = $(this).find("ul div").children().length;
+		console.log($(this));
 		var min = parseInt(chugId2Beta[chugId]["min_size"]);
 		var max = parseInt(chugId2Beta[chugId]["max_size"]);
 		var colorClass = getColorForCount(newCount, min, max);
@@ -267,7 +268,7 @@ function getAndDisplayCurrentMatches() {
 				var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
 				// Add a holder for each group (aleph, bet, gimel).
 				var groupName = groupId2Name[groupId];
-				html += "<div class=\"groupholder well\" name=\"" + groupId + "\" >\n";
+				html += "<div class=\"groupholder card card-body bg-light mb-4\" name=\"" + groupId + "\" >\n";
 				if (showEdahForCamper) {
 					html += "<h3>" + groupName + " assignments</h3>\n";
 				} else {
@@ -306,7 +307,7 @@ function getAndDisplayCurrentMatches() {
 						chugId2FreeSpace[chugId] = chugMax - curCount;
 					}
 					var colorClass = getColorForCount(curCount, chugMin, chugMax);
-					html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder well well-sm well-white\">\n";
+					html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder card-body bg-white border rounded mb-3 pb-0 ui-droppable\">\n";
 					if (chugName == "Not Assigned Yet") {
 						html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
 					} else {
@@ -314,6 +315,7 @@ function getAndDisplayCurrentMatches() {
 							+ " (min = " + chugMin + ", max = " + chugMax + ", <span name=\"curCountHolder\" class=\"" + colorClass + "\" value=\"" + curCount + "\">cur = " + curCount + "</span>)</h4>";
 					}
 					html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
+					html += "<div class=\"row row-cols-1 row-cols-md-2 justify-content-center mt-2\">"
 					$.each(matchedCampers,
 						function (index, camperId) {
 							var camperName = camperId2Name[camperId];
@@ -321,7 +323,7 @@ function getAndDisplayCurrentMatches() {
 							var camperEdah = edahId2Name[edahId];
 							var camperEdahText = "";
 							if (Object.keys(edahId2Name).length > 1) {
-								camperEdahText = " <small>(" + camperEdah + ")</small>";
+								camperEdahText = "<div class=\"card-body ps-1 pe-1 mb-0 d-flex align-items-center\" style=\"font-size:70%\"><p class=\"m-0\">(" + camperEdah + ")</p></div>";
 							}
 							var prefListText = "";
 							var prefClass = prefClasses[prefClasses.length - 1];
@@ -358,10 +360,10 @@ function getAndDisplayCurrentMatches() {
 								// If we have a pref list, write it as a tool tip.
 								titleText = "title=\"" + prefListText + "\"";
 							}
-							html += "<li value=\"" + camperId + "\" class=\"ui-widget-content " + prefClass + " \" " + titleText;
-							html += "><h5 class=\"ui-widget-header\">" + camperName + camperEdahText + " </h5><div class=\"dup-warning\"></div></li>\n";
+							html += "<li value=\"" + camperId + "\" class=\" " + prefClass + " card p-0\" " + titleText;
+							html += "><h5 class=\"card-header text-break p-1 mb-0 d-flex align-items-center justify-content-center h-100\">" + camperName + "</h5>"+ camperEdahText + "<div class=\"dup-warning\"></div></li>\n";
 						});
-					html += "</ul><br style=\"clear: both\"></div>\n";
+					html += "</div></ul><br style=\"clear: both\"></div>\n";
 				}
 				html += "</div>\n";
 			};
@@ -376,7 +378,7 @@ function getAndDisplayCurrentMatches() {
 			$.each(groupId2Name, function (groupId, groupName) {
 				groupQueryString += "&group_ids%5B%5D=" + groupId;
 			});
-			var reportLink = "<a class=\"btn btn-primary btn-with-padding\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
+			var reportLink = "<a class=\"btn btn-dark text-light mt-2\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
 			var freeHtml = "<h4>" + capitalize(json['chugimTerm']) + " with Free Space:</h4>";
 			var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2Beta);
 			for (var i = 0; i < sortedChugIds.length; i++) {
@@ -462,8 +464,8 @@ function getAndDisplayCurrentMatches() {
 					activeClass: "ui-state-active",
 					hoverClass: "ui-state-hover",
 					drop: function (event, ui) {
-						var droppedOn = $(this).find(".gallery").addBack(".gallery");
-						var droppedChugId = $(droppedOn).parent().attr("name");
+						var droppedOn = $(this).find(".row").addBack(".row");
+						var droppedChugId = $(droppedOn).parent().parent().attr("name");
 						var allowedEdotForChug = chugId2Beta[droppedChugId]["allowed_edot"]; // array
 						var dropped = ui.draggable;
 						// Change the color of the dropped item according to the camper's

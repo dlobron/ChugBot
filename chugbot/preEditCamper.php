@@ -134,7 +134,7 @@ if (count($camperId2Name) == 0) {
     exit();
 }
 
-echo "<div class=\"well well-white container\">";
+echo "<div class=\"card card-body mt-3 container\">";
 echo "<h1><a>Choose Edit</a></h1>";
 echo "<form method=\"get\" action=\"$thisPageUrl\"/>";
 // If we found more than one camper for the search items, display a drop-down
@@ -145,7 +145,7 @@ if (count($camperId2Name) > 1) {
     echo "</div>";
     echo "<ul>";
     echo "<li>";
-    echo "<select class=\"element select medium\" id=\"camper_id\" name=\"camper_id\">";
+    echo "<select class=\"form-select element medium\" id=\"camper_id\" name=\"camper_id\">";
     asort($camperId2Name);
     foreach ($camperId2Name as $camperId => $camperName) {
         $edah = "-";
@@ -162,20 +162,21 @@ if (count($camperId2Name) > 1) {
 // Let the user choose either to update their info or proceed directly to
 // the chugim ranking.
 echo "<li>";
-echo "<h3>Welcome, $camperNameToEdit!</h3>";
+if (!$camperNameToEdit) { echo "<h3>Wecome!</h3>";}
+else { echo "<h3>Welcome, $camperNameToEdit!</h3>"; }
 echo "<p>You can update your personal data, or go directly to the " . chug_term_singular . " ranking page - please choose one.</p>";
 if ($nextPage === null ||
     $nextPage == 1) {
-    echo "<input type=\"radio\" name=\"next_page\" value=1 checked>Update Personal Data<br>";
+    echo "<label class=\"form-check-label\"><input class=\"form-check-input me-2\" type=\"radio\" name=\"next_page\" value=1 checked>Update Personal Data</label><br>";
 } else {
-    echo "<input type=\"radio\" name=\"next_page\" value=1>Update Personal Data<br>";
+    echo "<label class=\"form-check-label\"><input class=\"form-check-input me-2\" type=\"radio\" name=\"next_page\" value=1>Update Personal Data</label><br>";
 }
 
 if ($enableSelectionProcess) {
     if ($nextPage == 2) {
-        echo "<input type=\"radio\" name=\"next_page\" value=2 checked>Update " . ucfirst(chug_term_plural) . "<br>";
+        echo "<label class=\"form-check-label\"><input class=\"form-check-input me-2\" type=\"radio\" name=\"next_page\" value=2 checked>Update " . ucfirst(chug_term_plural) . "</label><br>";
     } else {
-        echo "<input type=\"radio\" name=\"next_page\" value=2>Update " . ucfirst(chug_term_plural) . "<br>";
+        echo "<label class=\"form-check-label\"><input class=\"form-check-input me-2\" type=\"radio\" name=\"next_page\" value=2>Update " . ucfirst(chug_term_plural) . "</label><br>";
     }
 }
 echo "<p class=\"guidelines\"><small>Choose Update Personal Data to edit personal info, or Update " . ucfirst(chug_term_plural) . " to proceed directly to " .
@@ -186,7 +187,7 @@ echo "<input type=\"hidden\" id=\"fromHome\" name=\"fromHome\" value=\"1\" />";
 if ($camperIdToEdit) {
     echo "<input type=\"hidden\" name=\"camper_id\" value=\"$camperIdToEdit\" />";
 }
-echo "<input class=\"btn btn-success\" id=\"saveForm\" type=\"submit\" name=\"submit\" value=\"Go\" />";
+echo "<input class=\"btn btn-success mt-3\" id=\"saveForm\" type=\"submit\" name=\"submit\" value=\"Go\" />";
 
 echo "</form>";
 

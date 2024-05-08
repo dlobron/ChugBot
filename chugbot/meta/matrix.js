@@ -68,7 +68,7 @@ $(function () {
 	}).then(function () {
 		var target = $('#checkboxes');
 		var i, x, y, checkbox, html;
-		html = "<div class=\"well container\"><table id=\"matrix\" class=\"display hover compact\"><thead><tr><th></th>";
+		html = "<div class=\"card card-body p-3 container\"><table id=\"matrix\" class=\"display hover compact\"><thead><tr><th></th>";
 		// Table column headers
 		for (i = 0; i < chugNames.length; i++) {
 			html += "<th>" + chugNames[i] + "</th>";
@@ -84,10 +84,10 @@ $(function () {
 					chugIds[y] in chugChecked[chugIds[x]]) {
 					checkedText = " checked=1 ";
 				}
-				checkbox = '<input type=checkbox' + checkedText;
+				checkbox = '<input class=\'form-check-input\' type=checkbox' + checkedText;
 				checkbox += 'data-x="' + chugIds[x] + '"';
 				checkbox += ' data-y="' + chugIds[y] + '"';
-				checkbox += '/>';
+				checkbox += ' style="outline: 1px solid #1e5180;"/>';
 				html += checkbox;
 				html += "</td>";
 			}

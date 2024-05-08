@@ -101,8 +101,8 @@
     }
 ?>
 
-<div class="well well-white container instructions">
-    <div class="well">
+<div class="card card-body mt-3 container instructions">
+    <div class="card card-body bg-light">
         <div class="page-header"><h2>Print Custom Schedules</h2></div>
         <p>Below, find the custom schedules generated for each camper. To save them or print them, just print this 
         page directly</p>

@@ -96,12 +96,18 @@ class FormItemCheckBox extends FormItem
         if (!$this->staffOnlyOk()) {
             return;
         }
-        $this->html .= "<div>\n";
-        $this->html .= "<input id=\"$this->inputName\" name=\"$this->inputName\" type=\"checkbox\"";
+        $this->html = "<div>\n";
+        $this->html .= "<li id=\"li_$this->liNum\">\n";
+        $this->html .= "<label class=\"description\" for=\"$this->inputName\">";
+        if ($this->required) {
+            $this->html .= "<font color=\"red\">*</font>";
+        }
+        //$this->html .= " $this->description";
+        $this->html .= "<input class=\"form-check-input me-2\" id=\"$this->inputName\" name=\"$this->inputName\" type=\"checkbox\"";
         if ($this->inputValue) {
             $this->html .= " checked=\"checked\"";
         }
-        $this->html .= ">";
+        $this->html .= ">$this->description</label>";
         if ($this->error) {
             $this->html .= "<span class=\"error\">$this->error</span>\n";
         }
@@ -123,7 +129,7 @@ class FormItemRadio extends FormItem
         if (!$this->staffOnlyOk()) {
             return;
         }
-        $this->html .= "<input name=\"$this->inputName\" value=\"$this->inputValue\" type=\"radio\"";
+        $this->html .= "<input class=\"form-check-input\" name=\"$this->inputName\" value=\"$this->inputValue\" type=\"radio\"";
         if ($this->checked) {
             $this->html .= " checked";
         }
@@ -220,8 +226,8 @@ class FormItemInstanceChooser extends FormItem
             </script>
 JSEND;
         $this->html .= "$javascript \n";
-        $this->html .= "<input type=\"checkbox\" onClick=\"toggle${num}(this)\" />Toggle All<br>";
-        $this->html .= "<div class=\"form_item_instance_chooser well well-sm\" id=\"$idString\" >\n";
+        $this->html .= "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" onClick=\"toggle${num}(this)\">Toggle All</label><br>";
+        $this->html .= "<div class=\"form_item_instance_chooser card card-body bg-light\" id=\"$idString\" >\n";
         $this->html .= genCheckBox($this->id2Name, $this->activeIdHash, $this->inputName);
         $this->html .= "</div>";
         if ($this->guideText) {
@@ -277,7 +283,7 @@ class FormItemDropDown extends FormItem
         } else {
             $selectedMap[$this->colVal] = 1;
         }
-        $this->html .= "<select class=\"form-control $this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\" $ocStr>";
+        $this->html .= "<select class=\"form-select $this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\" $ocStr>";
         $this->html .= genPickList($this->id2Name, $selectedMap,
             $this->inputSingular, $this->defaultMsg); // $inputSingular = e.g., "group"
         $this->html .= "</select>";
@@ -469,7 +475,7 @@ $(function() {
 JS;
         $ph = ($this->placeHolder) ? $this->placeHolder : $this->inputName;
         $this->html .= "<div>\n";
-        $this->html .= "<select class=\"$this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\">\n";
+        $this->html .= "<select class=\"form-select $this->inputClass\" id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\">\n";
         $this->html .= "</select>\n";
         if ($this->error) {
             $this->html .= "<span class=\"error\">$this->error</span>\n";

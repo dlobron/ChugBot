@@ -18,11 +18,10 @@
     integrity="sha256-AAhU14J4Gv8bFupUUcHaPQfvrdNauRHMt+S4UVcaJb0=" crossorigin="anonymous"></script>
   <script src="meta/leveling.js"></script>
   <link rel="stylesheet" href="meta/view.css" />
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"
-    integrity="sha384-VI5+XuguQ/l3kUhh4knz7Hxptx47wpQbVRDnp8v7Vvuhzwn1PEYb/uvtH6KLxv6d"
-    crossorigin="anonymous"></script>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-Ej0hUpn6wbrOTJtRExp8jvboBagaz+Or6E9zzWT+gHCQuuZQQVZUcbmhXQzSG17s" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" 
+    integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></head>
   <style>
     .control_buttons {
       position: relative;
@@ -42,12 +41,13 @@
 
     .gallery li {
       float: left;
-      width: 96px;
+      width: 125px;
       padding: 0.2em;
       margin: 0 0.4em 0.4em 0;
       text-align: center;
       font-size: 1.2em;
       border-radius: 5px;
+      border-width: 3px;
       -moz-border-radius: 5px;
       -webkit-border-radius: 5px;
     }
@@ -58,23 +58,23 @@
     }
 
     .li_first_choice {
-      background: #1aff1a;
+      border-color: #1aff1a;
     }
 
     .li_second_choice {
-      background: #ffff80;
+      border-color: #f0f000;
     }
 
     .li_third_choice {
-      background: #ffa500;
+      border-color: #ffa500;
     }
 
     .li_fourth_choice {
-      background: #ff3333;
+      border-color: #ff3333;
     }
 
     .li_no_pref {
-      background: #ef60ff;
+      border-color: #ef60ff;
     }
   </style>
 
@@ -84,15 +84,15 @@
 
   <div id="nav"></div>
 
-  <div class="container well well-white">
+  <div class="card card-body mt-3 p-3 container">
     <h2>Welcome to the Leveling Page!</h2>
     <h2 class="edahfill">Edah: EDAH</h2>
     <h2><span class="blocktermfill">Time BLOCK_TERM:</span><span class="blockfill"> BLOCK</span></h2>
     <p>This page displays suggested <span class="chugfill">CHUG</span> assignments for one edah in a time
       <span class="blocktermfill">BLOCK_TERM</span>. Assignments are highlighted according to the camper's preference:
-      <span class="li_first_choice">first</span>, <span class="li_second_choice">second</span>,
-      <span class="li_third_choice">third</span>, <span class="li_fourth_choice">fourth or worse</span>.
-      Campers with no preferences for a <span class="chugfill">CHUG</span> group are highlighted in <span class="li_no_pref">purple</span>.
+      <span style="background:#1aff1a;">first</span>, <span style="background:#f0f000;">second</span>,
+      <span style="background:#ffa500;">third</span>, <span style="background:#ff3333">fourth or worse</span>.
+      Campers with no preferences for a <span class="chugfill">CHUG</span> group are highlighted in <span style="background:#ef60ff">purple</span>.
     </p>
     <ul>
       <li>To change a camper's assignment, drag the camper's bubble from one
@@ -111,16 +111,16 @@
       <li>To exit this page and return to the staff home page, click <b>Done</b>.
     </ul>
   </div>
-  <div class="toggler">
-    <div id="results" class="ui-widget-content ui-corner-all" style="display:none">
+  <div class="toggler p-3">
+    <div id="results" style="display:none">
     </div>
   </div>
 
-  <div class="control_buttons">
-    <input class="btn btn-primary" title="Re-run the assignment algorithm" type="submit" name="Reassign" id="Reassign"
+  <div class="control_buttons mb-3">
+    <input class="btn btn-primary me-2" title="Re-run the assignment algorithm" type="submit" name="Reassign" id="Reassign"
       value="Reassign" />
-    <input class="btn btn-primary" title="Save current changes" type="submit" name="Save" id="Save" value="Save" />
-    <input class="btn btn-primary" title="Create a printable report" type="submit" name="Report" id="Report"
+    <input class="btn btn-primary me-2" title="Save current changes" type="submit" name="Save" id="Save" value="Save" />
+    <input class="btn btn-primary me-2" title="Create a printable report" type="submit" name="Report" id="Report"
       value="Report" />
     <input class="btn btn-primary" title="Return to previous page" type="submit" name="Cancel" id="Cancel"
       value="Done" />
@@ -128,7 +128,7 @@
 
   <div id="filltarget"></div>
 
-  <div class="container well well-white">
+  <div class="card card-body mt-3 mb-3 pb-0 container">
     <div id="fillmatches"></div>
   </div>
 

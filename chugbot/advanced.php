@@ -257,7 +257,7 @@ if ($numDeleted == 1) {
     $pl = "";
 }
 if ($didDeleteOk || $didMergeOk) {
-    echo "<div class=\"container well\">";
+    echo "<div class=\"container card mt-3\">";
     echo "<h3>Deletion Successful!</h3>";
     if ($didDeleteOk) {
         echo "<p>Successfully deleted $numDeleted obsolete assignment" . $pl . ".  ";
@@ -275,7 +275,7 @@ if ($didDeleteOk || $didMergeOk) {
 }
 ?>
 
-<div class="well well-white container">
+<div class="card card-body mt-3 container">
 <h1><a>Advanced Edit</a></h1>
 <form id="editForm" method="GET" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
 <div class="page-header">
@@ -346,13 +346,13 @@ if (count($wouldBeDeleted) > 0) {
 echo "<li class=\"buttons\">";
 $cancelUrl = homeUrl();
 if (count($wouldBeDeleted) > 0) {
-    echo "<input class=\"btn btn-default\" type=\"submit\" name=\"submit\" value=\"Confirm Delete\" />";
+    echo "<input class=\"btn btn-danger\" type=\"submit\" name=\"submit\" value=\"Confirm Delete\" />";
     echo "<input type=\"hidden\" name=\"confirm_delete\" value=\"1\" />";
 } else if (count($potentialCamperDups) > 0) {
-    echo "<input class=\"btn btn-default\" type=\"submit\" name=\"submit\" value=\"Merge and Prune\" />";
+    echo "<input class=\"btn btn-success\" type=\"submit\" name=\"submit\" value=\"Merge and Prune\" />";
     echo "<input type=\"hidden\" name=\"confirm_delete\" value=\"1\" />";
 } else {
-    echo "<input class=\"btn btn-default\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
+    echo "<input class=\"btn btn-primary\" type=\"submit\" name=\"submit\" value=\"Submit\" />";
     echo "<input type=\"hidden\" name=\"confirm_delete\" value=\"0\" />";
 }
 echo "<a class=\"btn btn-link\" href=\"$cancelUrl\">Cancel</a>";

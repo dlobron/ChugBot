@@ -53,7 +53,7 @@ foreach ($parts as $part) {
 echo headerText("Welcome");
 ?>
 
-<div class="well well-white container">
+<div class="card card-body mt-3 container">
 <h1><a>Welcome</a></h1>
 <form id="camperForm" class="form-group" method="GET">
 <div class="page-header">
@@ -76,11 +76,11 @@ if (!$loggedIn) {
 
 </ul>
 
-<button class="btn btn-default" type="submit" form="camperForm" formaction="camperHome.php">Go</button>
+<button class="btn btn-success mt-3" type="submit" form="camperForm" formaction="camperHome.php">Go</button>
 </form>
 
 <form id="staffForm" class="form-group" method="post">
-<button class = "btn btn-default" type="submit" name="staffInit" form="staffForm" formaction="staffLogin.php" value="1">Admin</button>
+<button class = "btn btn-light btn-outline-secondary mt-3" type="submit" name="staffInit" form="staffForm" formaction="staffLogin.php" value="1">Admin</button>
 </form>
 </div>
 

@@ -31,13 +31,14 @@
       });
 </script>
 
-<div class="well well-white container">
+<div class="card card-body mt-3 p-3 container">
     <h1>Schedule Builder</h1>
     <div class="page-header"><h2>Generate Printable Schedules</h2>
     <p>In the form below, select an edah and time <?php echo block_term_singular?> to begin designing printable schedules for each camper.
     Completing all of the below steps will allow each camper to have a custom printout with all of their <?php echo chug_term_singular ?>
     assignments for a certain time <?php echo block_term_singular?>. Tzevet only need to design one schedule for an edah, and adding placeholders
     will automatically populate a camper's assignments for every perek.</p>
+    <div class="card card-body mb-3 bg-light">
     <h4>Instructions</h4>
     <ol>
         <li>
@@ -71,11 +72,12 @@
         </li>
     </ol>
     </div>
+    </div>
     <form id="schedule_designer_form" class="well" method="POST" action="printSchedules.php" target="_blank"><ul>
         <li>
             <label class="description" for="edah"><span style="color:red;">*</span>Edah</label>
             <div id="edah_checkbox">
-                <select class="form-control" id="edah_list" name="edah" required onchange="setAdvanced(); fillConstraintsPickList()">
+                <select class="form-select" id="edah_list" name="edah" required onchange="setAdvanced(); fillConstraintsPickList()">
                     <?php echo genPickList($edahId2Name, array(), "edah"); ?>
                 </select>
             </div>
@@ -89,7 +91,7 @@
         <li>
             <label class="description" for="block"><span style="color:red;">*</span><?php echo ucfirst(block_term_singular) ?></label>
             <div>
-                <select class="form-control" id="block" name="block" required>
+                <select class="form-select" id="block" name="block" required>
                     <?php echo genPickList($blockId2Name, array(), "block"); ?>
                 </select>
             </div>
@@ -112,7 +114,7 @@
         </li>
         <br><br>
         <li>
-            <div id="optional">
+            <div id="optional" style="display:none;">
                 <fieldset><legend>OPTIONAL: Advanced Block Override (by <?php echo chug_term_singular; ?>)</legend>
                 <div id="advanced"></div>
             </div>
@@ -146,10 +148,12 @@
         curSelectedEdahIds.push(parentField.value);
         if (curSelectedEdahIds[0] == '') {
             document.getElementById("advanced").style.display = 'none';
+            document.getElementById("optional").style.display = 'none';
             document.getElementById("shortcut-buttons").style.display = 'none';
             return;
         }
         document.getElementById("advanced").style.display = '';
+        document.getElementById("optional").style.display = '';
         // Two SQL queries - one to get chug group names, one to get blocks
         // first, get a list of all applicable chug groups and ids:
         var sql = "SELECT e.group_id group_id, g.name group_name FROM edot_for_group e, chug_groups g WHERE e.edah_id IN (";
@@ -224,7 +228,7 @@
             var html = "<ul>";
             for (let i = 0; i < groupIds.length; i++) {  
                 html += "<li><label class=\"description\" for=\"group"+groupIds[i]+"\" id=\"group"+groupIds[i]+"_desc\">"+groupNames[i]+"</label>";
-                html += "<select class=\"form-control\" id=\"group"+groupIds[i]+"\" name="+i+">";
+                html += "<select class=\"form-select\" id=\"group"+groupIds[i]+"\" name="+i+">";
                 html += blockBase;
                 html += "</select></li>";
             }
@@ -240,7 +244,7 @@
             shortcutsRequired = shortcutsRequired.concat(groupNames);
             // write html for each button:
             for (let i = 0; i < shortcutsRequired.length; i++) {
-                html += "<button type=\"button\" class=\"btn btn-default\" style=\"white-space: normal;\" "
+                html += "<button type=\"button\" class=\"btn btn-outline-secondary\" style=\"white-space: normal;\" "
                 html += "onClick='insertTextOnClick(\""+ shortcutsRequired[i] + "\")'>" + shortcutsRequired[i] + "</button>"
             }
             html += "</div>";

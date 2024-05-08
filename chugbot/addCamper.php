@@ -58,7 +58,7 @@ $sessionIdVal = $addCamperPage->columnValue("session_id"); // May be NULL.
 $sessionDropDown = new FormItemDropDown("Session", true, "session_id", 4);
 $sessionDropDown->setGuideText("Choose your camp session.");
 $sessionDropDown->setError($addCamperPage->errForColName("session_id"));
-$sessionDropDown->setInputClass("element select medium");
+$sessionDropDown->setInputClass("element medium");
 $sessionDropDown->setInputSingular("session");
 $sessionDropDown->setColVal($sessionIdVal);
 $sessionDropDown->fillDropDownId2Name($addCamperPage->dbErr,
@@ -70,7 +70,7 @@ $edahDropDown = new FormItemDropDown("Edah", true, "edah_id", 5);
 $edahDropDown->setGuideText("Choose your Edah!");
 $edahDropDown->setError($addCamperPage->errForColName("edah_id"));
 $edahDropDown->setInputSingular("edah");
-$edahDropDown->setInputClass("element select medium");
+$edahDropDown->setInputClass("element medium");
 $edahDropDown->setColVal($edahIdVal);
 $edahDropDown->fillDropDownId2Name($addCamperPage->dbErr,
     "edah_id", "edot");
@@ -81,7 +81,7 @@ $bunkDropDown = new FormItemConstrainedDropDown("Bunk/Tzrif", false, "bunk_id", 
     "SELECT b.bunk_id id_val, b.name name_val FROM bunks b, " .
     "bunk_instances i WHERE b.bunk_id = i.bunk_id AND i.edah_id = ?");
 $bunkDropDown->setGuideText("Choose your bunk (you can leave this blank if you do not know it yet!).  You must choose your Edah first.");
-$bunkDropDown->setInputClass("element select medium");
+$bunkDropDown->setInputClass("element medium");
 $bunkDropDown->setParentIdAndName("edah_id", "Edah");
 $bunkDropDown->setColVal($bunkIdVal);
 $addCamperPage->addFormItem($bunkDropDown);

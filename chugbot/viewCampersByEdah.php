@@ -52,7 +52,7 @@ if (!is_null($errText)) {
 }
 ?>
 
-<div class="container well">
+<div class="container card card-body mt-3">
 <h2>Campers for <?php echo $forEdahText; ?></h2>
 <p>This page lists campers in <?php echo $forEdahText; ?> who have entered <?php echo chug_term_singular ?> preferences.  To update
 information or settings for a camper, click the Edit button next to that camper's name.  To return to the staff admin
@@ -60,7 +60,7 @@ page, click <?php echo staffHomeAnchor(); ?>.</p>
 </div>
 
 <br>
-<div class="well well-white container">
+<div class="container card card-body mt-3 mb-3">
 <?php
 if (count($camperId2Name) == 0) {
     if ($edah_id) {
@@ -77,13 +77,14 @@ if (count($camperId2Name) == 0) {
         $edahName = $camperId2Edah[$camperId];
         $deleteUrl = $deleteUrlBase . "?idCol=camper_id&tableName=campers&tryAgainPage=staffHome.php";
         echo "<form method=\"POST\" action=\"$editUrl\">";
-        echo "<input type=hidden name=\"camper_id\" id=\"camper_id\" value=$camperId />";
-        echo "<input type=hidden name=\"fromHome\" id=\"fromHome\" value=1 />";
-        echo "<p>$camperName ($edahName) &nbsp; &nbsp; <input class=\"btn btn-primary\" type=\"submit\" name=\"submit\" value=\"Edit\" /> ";
+        echo "<input type=hidden name=\"camper_id\" id=\"camper_id\" value=$camperId>";
+        echo "<input type=hidden name=\"fromHome\" id=\"fromHome\" value=1>";
+        echo "<p><input class=\"btn btn-outline-primary me-2\" type=\"submit\" name=\"submit\" value=\"Edit\">";
         if ($deleteOk) {
-            echo "<input class=\"btn btn-danger\" type=\"submit\" name=\"delete\" value=\"Delete\" onclick=\"return confirm('Are you sure you want to remove this camper?')\" " .
-                "formaction=\"$deleteUrl\"/> </p>";
-        }
+            echo "<input class=\"btn btn-outline-danger me-2\" type=\"submit\" name=\"delete\" value=\"Delete\" onclick=\"return confirm('Are you sure you want to remove this camper?')\" " .
+                "formaction=\"$deleteUrl\"/>";
+        }echo "$camperName ($edahName) &nbsp; &nbsp;</p>";
+        
         echo "</form>";
     }
 }
