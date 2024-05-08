@@ -976,7 +976,7 @@ if ($outputType == OutputTypes::Html) {
 
     echo "<form id=\"reset_form\" method=\"GET\" action=\"$actionTarget\">";
     echo "<ul><li class=\"buttons\">";
-    echo "<input id=\"resetFormButton\" class=\"btn btn-light btn-outline-secondary\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
+    echo "<input id=\"resetFormButton\" class=\"btn btn-light btn-outline-secondary mb-3\" type=\"submit\" name=\"reset\" value=\"Reset\" />";
     echo "</li></ul></form>";
 }
 

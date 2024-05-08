@@ -70,7 +70,8 @@ function updateCount(chugId2Beta, curChugHolder) {
 	var chugHolders = $(groupHolder).children(".chugholder");
 	$(chugHolders).each(function (index) {
 		var chugId = $(this).attr('name');
-		var newCount = $(this).find("ul").children().length;
+		var newCount = $(this).find("ul div").children().length;
+		console.log($(this));
 		var min = parseInt(chugId2Beta[chugId]["min_size"]);
 		var max = parseInt(chugId2Beta[chugId]["max_size"]);
 		var colorClass = getColorForCount(newCount, min, max);
@@ -360,7 +361,7 @@ function getAndDisplayCurrentMatches() {
 								titleText = "title=\"" + prefListText + "\"";
 							}
 							html += "<li value=\"" + camperId + "\" class=\" " + prefClass + " card p-0\" " + titleText;
-							html += "><h5 class=\"card-header p-1 mb-0\">" + camperName + "</h5>"+ camperEdahText + "<div class=\"dup-warning\"></div></li>\n";
+							html += "><h5 class=\"card-header text-break p-1 mb-0 d-flex align-items-center justify-content-center h-100\">" + camperName + "</h5>"+ camperEdahText + "<div class=\"dup-warning\"></div></li>\n";
 						});
 					html += "</div></ul><br style=\"clear: both\"></div>\n";
 				}
@@ -463,8 +464,8 @@ function getAndDisplayCurrentMatches() {
 					activeClass: "ui-state-active",
 					hoverClass: "ui-state-hover",
 					drop: function (event, ui) {
-						var droppedOn = $(this).find(".gallery").addBack(".gallery");
-						var droppedChugId = $(droppedOn).parent().attr("name");
+						var droppedOn = $(this).find(".row").addBack(".row");
+						var droppedChugId = $(droppedOn).parent().parent().attr("name");
 						var allowedEdotForChug = chugId2Beta[droppedChugId]["allowed_edot"]; // array
 						var dropped = ui.draggable;
 						// Change the color of the dropped item according to the camper's

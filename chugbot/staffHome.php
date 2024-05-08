@@ -86,8 +86,9 @@ if (!is_null($errText)) {
 <?php
 if ($message) {
     $messageText = <<<EOM
-<div class="container well">
-<h2>$message</h2>
+<div class="col-md-8 offset-md-2 mt-3 alert alert-success alert-dismissible fade show mt-3">
+<button type="button" class="btn-close" data-bs-dismiss="alert\" aria-label="Close"></button>
+<h3>$message</h3>
 </div>
 EOM;
     echo $messageText;
@@ -103,11 +104,11 @@ EOM;
 
 
 <div class="container text-center">
-    <a href="<?php echo $resetUrl; ?>"  class="btn btn-primary me-2" role="button" title="Click here to update the administrative settings, including staff password and camper code">Edit Admin Settings</a>
-    <a href="<?php echo $matrixUrl; ?>" class="btn btn-primary me-2" role="button" title="Click here to update the de-duplication settings">De-Duplication Matrix</a>
-    <a href="<?php echo $advancedUrl; ?>" class="btn btn-primary me-2" role="button" title="Click here to prune illegal or obsolete assignments">Fix Illegal And Duplicate</a>
+    <a href="<?php echo $resetUrl; ?>"  class="btn btn-primary me-2 mb-2" role="button" title="Click here to update the administrative settings, including staff password and camper code">Edit Admin Settings</a>
+    <a href="<?php echo $matrixUrl; ?>" class="btn btn-primary me-2 mb-2" role="button" title="Click here to update the de-duplication settings">De-Duplication Matrix</a>
+    <a href="<?php echo $advancedUrl; ?>" class="btn btn-primary me-2 mb-2" role="button" title="Click here to prune illegal or obsolete assignments">Fix Illegal And Duplicate</a>
     <?php if ($enableCamperImporter) : ?>
-        <a href="<?php echo $camperUploadUrl; ?>" class="btn btn-primary" role="button" title="Click here to upload campers">Upload Campers</a>
+        <a href="<?php echo $camperUploadUrl; ?>" class="btn btn-primary mb-2" role="button" title="Click here to upload campers">Upload Campers</a>
     <?php endif; ?>
 </div>
 

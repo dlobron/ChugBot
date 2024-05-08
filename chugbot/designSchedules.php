@@ -77,7 +77,7 @@
         <li>
             <label class="description" for="edah"><span style="color:red;">*</span>Edah</label>
             <div id="edah_checkbox">
-                <select class="form-control" id="edah_list" name="edah" required onchange="setAdvanced(); fillConstraintsPickList()">
+                <select class="form-select" id="edah_list" name="edah" required onchange="setAdvanced(); fillConstraintsPickList()">
                     <?php echo genPickList($edahId2Name, array(), "edah"); ?>
                 </select>
             </div>
@@ -91,7 +91,7 @@
         <li>
             <label class="description" for="block"><span style="color:red;">*</span><?php echo ucfirst(block_term_singular) ?></label>
             <div>
-                <select class="form-control" id="block" name="block" required>
+                <select class="form-select" id="block" name="block" required>
                     <?php echo genPickList($blockId2Name, array(), "block"); ?>
                 </select>
             </div>
@@ -228,7 +228,7 @@
             var html = "<ul>";
             for (let i = 0; i < groupIds.length; i++) {  
                 html += "<li><label class=\"description\" for=\"group"+groupIds[i]+"\" id=\"group"+groupIds[i]+"_desc\">"+groupNames[i]+"</label>";
-                html += "<select class=\"form-control\" id=\"group"+groupIds[i]+"\" name="+i+">";
+                html += "<select class=\"form-select\" id=\"group"+groupIds[i]+"\" name="+i+">";
                 html += blockBase;
                 html += "</select></li>";
             }

@@ -244,6 +244,7 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     $deleteAllowed = true;
     $db = new DbConn();
     $db->addSelectColumn('delete_ok');
+    echo($tableName);
     $db->addWhereColumn('name', $tableName, 's');
     $result = $db->simpleSelectFromTable('category_tables', $err);
     if ($result) {
@@ -258,7 +259,7 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     } else if ($tableName == 'blocks') {
         $ucPlural = ucfirst(block_term_plural);
     } else if ($tableName == 'chug_groups') {
-        $ucPlural = ucfirst(chug_term_singular) . '_groups';
+        $ucPlural = ucfirst(chug_term_singular) . ' Groups';
     }
 
     $formName = "form_" . $name;
@@ -295,7 +296,7 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     <h3>$ucPlural</h3></div>
     <ul><li>
     <div>
-    <select class="form-control mb-3" id="$idCol" name="$idCol">
+    <select class="form-select mb-3" id="$idCol" name="$idCol">
     <option value="" disabled=disabled selected>---</option>
 EOM;
        foreach ($id2Name as $itemId => $itemName) {
@@ -503,7 +504,7 @@ function fillConstraintsPickList() {
             $(ourDesc).hide();
             return;
         }
-        html = "<select class=\"form-control\" id=\"${ourId}\" name=\"${type}\"";
+        html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type}\"";
         if ("${type}" == "schedule") {
             html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
         }
