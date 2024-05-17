@@ -446,6 +446,23 @@ INSERT INTO `edot_for_group` VALUES (1,1);
 UNLOCK TABLES;
 
 --
+-- Table structure for table `edot_for_schedules`
+--
+
+DROP TABLE IF EXISTS `edot_for_schedule`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `edot_for_schedule` (
+  `schedule_id` int NOT NULL,
+  `edah_id` int NOT NULL,
+  PRIMARY KEY (`schedule_id`,`edah_id`),
+  KEY `fk_edah_id` (`edah_id`),
+  CONSTRAINT `edot_for_schedule_ibfk_1` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`schedule_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `edot_for_schedule_ibfk_2` FOREIGN KEY (`edah_id`) REFERENCES `edot` (`edah_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `matches`
 --
 
@@ -547,6 +564,22 @@ LOCK TABLES `preferences` WRITE;
 INSERT INTO `preferences` VALUES (1,1,1,1,7,5,6,3,2,1),(2,1,1,3,1,2,4,7,5,2);
 /*!40000 ALTER TABLE `preferences` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `schedules`
+--
+
+DROP TABLE IF EXISTS `schedules`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `schedules` (
+  `schedule_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `schedule` TEXT CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  PRIMARY KEY (`schedule_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Table structure for table `sessions`
