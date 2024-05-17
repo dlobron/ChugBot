@@ -539,9 +539,11 @@ function test_input($data)
     if (empty($data)) {
         return null;
     }
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
+    if(!is_array($data)) {
+        $data = trim($data);
+        $data = stripslashes($data);
+        $data = htmlspecialchars($data);
+    }
     return $data;
 }
 

@@ -174,7 +174,7 @@ shown here are the ones common to all selected edot.</small></p>
 <li>
 <label class="description" for="block"><?php echo ucfirst(block_term_singular) ?></label>
 <div>
-<select class="form-control" id="block" name="block">
+<select class="form-select" id="block" name="block">
 <?php
 echo genPickList($blockId2Name, array(), "block");
 ?>
@@ -187,13 +187,26 @@ echo genPickList($blockId2Name, array(), "block");
 </ul>
 </form>
 
-<form action="<?php echo $reportUrl; ?>" method="GET">
-<div class="page-header">
-<small>Click "Report" to go to the camper assigment report page.</small>
+<div class="row">
+    <div class="col">
+        <form action="<?php echo $reportUrl; ?>" method="GET">
+        <div class="page-header mt-3">
+        Click "Report" to go to the camper assigment report page.
+        </div>
+        <button title="Go to the Report page" class="btn btn-primary mt-1" type="submit">Report</button>
+        <input type="hidden" name="reset" id="reset" value="1" />
+        </form>
+    </div>
+
+    <div class="col">
+        <div class="page-header mt-3">
+        Select below to design custom schedules with each camper's <?php echo (chug_term_singular) ?> assignments.
+        </div>
+        <a href="designSchedules.php"><button title="Design camper schedules" class="btn btn-primary mt-1" type="submit">Design Schedules</button></a>
+    </div>
 </div>
-<button title="Go to the Report page" class="btn btn-primary" type="submit">Report</button>
-<input type="hidden" name="reset" id="reset" value="1" />
-</form>
+
+
 </div>
 
 <?php

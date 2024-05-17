@@ -21,17 +21,104 @@
     fillId2Name(null, $bunkId2Name, $dbErr, "bunk_id", "bunks");
 
     echo headerText("Design Schedules");
+    $inserted = false;
+    $deleted = false;
+    
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // determine if deleting or saving
+        $delete = test_post_input("delete");
+        if(!is_null($delete)) { // delete
+            $deleted = true;
+            $sched_id = test_post_input("schedule-id");
+            $db = new dbConn();
+            $db->addWhereColumn("schedule_id", $sched_id, "i");
+            $queryOk = $db->deleteFromTable("schedules", $dbErr,);
+            if (!$queryOk) {
+                $deleted = false;
+                error_log("Insert failed: $dbErr");
+                return;
+            }
+        }
+        else { // save
+            $inserted = true;
+            // get values from request
+            $edah_ids = test_post_input("edah_ids");
+            $sched_name = test_post_input("save-schedule-name");
+            $schedule = html_entity_decode(test_post_input("schedule-save"));
+            $sched_id = test_post_input("schedule-id");
+            $save_new_int = test_post_input("save-new");
+            $replace = false;
+            if($save_new_int == 0) {$replace = true;}
+
+            // insert schedule into table
+            $db = new dbConn();
+            if($replace){ 
+                // add current schedule id, if applicable
+                $db->addColumn("schedule_id", $sched_id, "i");
+            }
+            $db->addColumn("name", $sched_name, "s");
+            $db->addColumn("schedule", $schedule, "s");
+            $queryOk = $db->insertIntoTable("schedules", $dbErr, $replace);
+            if (!$queryOk) {
+                $inserted = false;
+                error_log("Insert failed: $dbErr");
+                return;
+            }
+            $sched_id = $db->insertId();
+
+
+            // set available for designated edot
+            foreach($edah_ids as $edah) {
+                $db = new dbConn();
+                $db->addColumn("schedule_id", $sched_id, "s");
+                $db->addColumn("edah_id", intval(test_input($edah)), "s");
+                $queryOk = $db->insertIntoTable("edot_for_schedule", $dbErr);
+                if (!$queryOk) {
+                    $inserted = false;
+                    error_log("Insert failed: $dbErr");
+                    return;
+                }
+            }
+            unset($edah);
+        }
+    }
 ?>
 
 
 <script src="/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+
 <script>
       tinymce.init({
-        selector: '#schedule-textarea'
+        selector: '#schedule-textarea',
+        plugins: 'preview importcss searchreplace directionality visualblocks visualchars fullscreen link table charmap advlist lists help emoticons wordcount',
+        menubar: 'file edit view insert format tools table help',
+        toolbar: 'undo redo | blocks fontsizeinput | bold italic underline forecolor backcolor | table align | numlist bullist ltr rtl | removeformat | wordcount',
+        paste_merge_formats: true,
       });
 </script>
 
-<div class="card card-body mt-3 p-3 container">
+<?php if($inserted):?> 
+<div class="row justify-content-center">
+    <div class="col-6 mt-4">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <h5>Schedule successfully saved!</h5>
+            You can now access it after choosing the edah/edot you saved it for.
+        </div>
+    </div>
+</div>
+<?php elseif ($deleted):?> 
+<div class="row justify-content-center">
+    <div class="col-6 mt-4">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <h5>Schedule successfully deleted!</h5>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<div class="card card-body mt-3 p-3 mb-3 container">
     <h1>Schedule Builder</h1>
     <div class="page-header"><h2>Generate Printable Schedules</h2>
     <p>In the form below, select an edah and time <?php echo block_term_singular?> to begin designing printable schedules for each camper.
@@ -105,12 +192,13 @@
                     <!-- Originally empty, added with JS when edah is set -->
             </div> 
         </li>
-        <li>
-            <button class="btn btn-primary" type="submit">Generate Schedules!</button>
-            <!-- This button is intentionally commented out. It will later be used to save schedules to be reused
-            <button class="btn btn-info" type="submit">Generate Schedules!</button>-->
-            <br><br>
-            <button class="btn btn-info" onClick="previewSchedule()">Preview</button>
+        <li style="max-width:79.5%;">
+            <div class="position-relative" style="height:100px">
+                <div class="position-absolute top-0 start-0"><button class="btn btn-primary" type="submit">Generate Schedules!</button></div>
+                <div class="position-absolute top-0 end-0"><button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#saveModal" onClick="saveSchedulePopup()">Save Template</button></div>
+                <div class="position-absolute bottom-0 start-0"><button class="btn btn-info" onClick="previewSchedule()">Preview</button></div>
+                <div class="position-absolute bottom-0 end-0"><button type="button" id="delete-sched-btn" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" onClick="deleteSchedulePopup()" hidden>Delete Template</button></div>
+            </div>
         </li>
         <br><br>
         <li>
@@ -124,195 +212,70 @@
 
 </div>
 
+<!-- Save template popup/modal: -->
+<div class="modal fade" id="saveModal" tabindex="-1" aria-labelledby="saveModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title" id="saveModalLabel">Save Schedule Template</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <form id="saveForm" action="" method="POST">
+        <div class="modal-body">
+            Select the edah/edot this schedule should be saved for, enter a name for the schedule, and save this template to reuse it again!
+            <div id="save-form-items" class="card card-body mt-2">
+                <label class="description" for="edah"><span style="color:red;">*</span> Edah/Edot</label>
+                <?php echo genCheckBox($edahId2Name, array(), "edah_ids"); ?>
+                <label class="description mt-3" for="save-schedule-name"><span style="color:red;">*</span> Schedule Name</label>
+                <input class="form-control" id="save-schedule-name" type="text" name="save-schedule-name" required>
+                <label class="description mt-3" for="schedule-preview">Schedule Preview:</label>
+                <div id="schedule-preview" class="card card-body bg-light border-secondary"></div>
+                <textarea id="save-schedule-value" name="schedule-save" form="saveForm" hidden></textarea>
+                <input type="number" name="schedule-id" id="sched-id-save" hidden></input>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button title="Save updated template" id="hidable-save-schedule" class="btn btn-primary" name="save-new" value="0" type="submit">Update Saved Schedule</button>
+            <button title="Save new template" id="new-save-btn" class="btn btn-primary" name="save-new" value="1" type="submit">Save New Schedule</button>
+        </div>
+    </form>
+</div>
+</div>
+</div>
+
+<!-- Delete template popup/modal: -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Delete Schedule Template</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <strong>Caution:</strong> once you delete a template, it cannot be recovered (consider temporarily renaming a template to indicate it is inactive instead of deleting if there is a chance you may need it again)
+        <div class="card card-body bg-light mt-3 mb-3">
+            <label class="description" for="delete-schedule-name">Schedule Name</label>
+            <input class="form-control" id="delete-schedule-name" type="text" name="save-schedule-name" disabled>
+            <label class="description mt-3" for="delete-schedule-preview">Schedule Preview:</label>
+            <div id="delete-schedule-preview" class="card card-body bg-light border-secondary"></div>
+        </div>
+        Are you sure you want to delete this template? Pressing the red button will immediately permanently delete the template.
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="saveForm" action="" method="POST">
+            <input type="number" name="schedule-id" id="sched-id-del" hidden></input>
+            <button title="Delete schedule" class="btn btn-danger" name="delete" value="1" type="submit">Yes, delete this schedule</button>
+        </form>
+    </div>
+</div>
+</div>
+</div>
+
 <?php
     echo footerText();
 ?>
-
-
-<script>
-    /* ************************************************************************************
-     * **************************** JavaScript Functions **********************************
-     * ************************************************************************************/
-
-
-    // Updates chug-group related options as edah is changed - does 3 things:
-    // 1. SQL query for which groups and blocks are allowed for the edah
-    // 2. Set the optional dropdowns to override default perek assignments
-    // 3. Create shortcut buttons to include parameters in schedule
-    function setAdvanced() {
-        // 1: SQL queries -- get blocks, chug group
-        var values = {};
-        values["get_legal_id_to_name"] = 1;
-        var parentField = document.getElementById("edah_list");
-        var curSelectedEdahIds = [];
-        curSelectedEdahIds.push(parentField.value);
-        if (curSelectedEdahIds[0] == '') {
-            document.getElementById("advanced").style.display = 'none';
-            document.getElementById("optional").style.display = 'none';
-            document.getElementById("shortcut-buttons").style.display = 'none';
-            return;
-        }
-        document.getElementById("advanced").style.display = '';
-        document.getElementById("optional").style.display = '';
-        // Two SQL queries - one to get chug group names, one to get blocks
-        // first, get a list of all applicable chug groups and ids:
-        var sql = "SELECT e.group_id group_id, g.name group_name FROM edot_for_group e, chug_groups g WHERE e.edah_id IN (";
-        var ct = 0;
-        for (var i = 0; i < curSelectedEdahIds.length; i++) {
-            if (ct++ > 0) {
-                sql += ",";
-            }
-            sql += "?";
-        }
-        sql += ") AND e.group_id = g.group_id GROUP BY e.group_id HAVING COUNT(e.edah_id) = " + ct;
-        values["sql"] = sql;
-        values["instance_ids"] = curSelectedEdahIds;
-        var groupNames = [];
-        var groupIds = [];
-        var ajax1 = $.ajax({
-            url: 'ajax.php',
-            type: 'post',
-            data: values,
-            success: function(data) {
-                $.each(data, function(itemId, itemName) {
-                    groupNames.push(itemName);
-                    groupIds.push(itemId)
-                });
-            },
-            error: function(xhr, desc, err) {
-            console.log(xhr);
-            console.log("Details: " + desc + " Error:" + err);
-            }
-        });
-        // second, get list of all block names and ids
-        sql = "SELECT e.block_id block_id, g.name block_name FROM edot_for_block e, blocks g WHERE e.edah_id IN (";
-        var ct = 0;
-        for (var i = 0; i < curSelectedEdahIds.length; i++) {
-            if (ct++ > 0) {
-                sql += ",";
-            }
-            sql += "?";
-        }
-        sql += ") AND e.block_id = g.block_id GROUP BY e.block_id HAVING COUNT(e.edah_id) = " + ct;
-        values["sql"] = sql;
-        values["instance_ids"] = curSelectedEdahIds;
-        const blockNames = [];
-        const blockIds = [];
-        var ajax2 = $.ajax({
-            url: 'ajax.php',
-            type: 'post',
-            data: values,
-            success: function(data) {
-                $.each(data, function(itemId, itemName) {
-                    blockNames.push(itemName);
-                    blockIds.push(itemId)
-                });
-            },
-            error: function(xhr, desc, err) {
-            console.log(xhr);
-            console.log("Details: " + desc + " Error:" + err);
-            }
-        });
-
-        // Wait for both Ajax calls to finish
-        $.when(ajax1, ajax2).done(function() {
-            // 2: Block override buttons
-
-            // finally, build a picklist for each group with the blocks as options
-            // step 1: create generic block options
-            var blockBase = "<option value=\"\">-- Override Block Assignments --</option>";
-            for (let i = 0; i < blockIds.length; i++) {
-                blockBase += "<option value=\""+blockIds[i]+"\">"+blockNames[i]+"</option>";
-            }
-            // step 2: create each individual entry in the list
-            var html = "<ul>";
-            for (let i = 0; i < groupIds.length; i++) {  
-                html += "<li><label class=\"description\" for=\"group"+groupIds[i]+"\" id=\"group"+groupIds[i]+"_desc\">"+groupNames[i]+"</label>";
-                html += "<select class=\"form-select\" id=\"group"+groupIds[i]+"\" name="+i+">";
-                html += blockBase;
-                html += "</select></li>";
-            }
-            html += "</ul>"
-            var ourPickList = $("#advanced");
-            $(ourPickList).html(html);
-
-
-            // 3: Shortcut buttons
-            html = "<div class=\"btn-group-vertical\" role=\"group\">";
-            // make array with all options:
-            var shortcutsRequired = ["Name", "Bunk", "Edah", "Rosh", "Rosh Phone Number"];
-            shortcutsRequired = shortcutsRequired.concat(groupNames);
-            // write html for each button:
-            for (let i = 0; i < shortcutsRequired.length; i++) {
-                html += "<button type=\"button\" class=\"btn btn-outline-secondary\" style=\"white-space: normal;\" "
-                html += "onClick='insertTextOnClick(\""+ shortcutsRequired[i] + "\")'>" + shortcutsRequired[i] + "</button>"
-            }
-            html += "</div>";
-            var shortcutButtons = $("#shortcut-buttons");
-            $(shortcutButtons).html(html);
-        });
-    }
-
-    function insertTextOnClick(toInsert) {
-        var editor = tinymce.get('schedule-textarea');
-        if (editor) {
-            // Insert text at the current cursor position
-            editor.insertContent('{{' + toInsert + '}}');
-        }
-    }
-
-    // Opens a new tab with the contents of the schedule builder, then automatically prepares the print dialog so a
-    // user can see a print preview of the schedule. Once closing that print dialog, the tab automatically closes, too
-    function previewSchedule() {
-        var html = "<head>" + document.getElementsByTagName('head')[0].innerHTML + "</head>";
-        html += "<body onload=\"PrintAndClose()\"><div class=\"container schedule\">";
-        html += tinymce.get('schedule-textarea').getContent();
-        html += "</div></body>";
-        // Script so it prints on load:
-        html += "<script> function PrintAndClose() { window.focus(); window.print(); window.onfocus=function(){ window.close();} }<\/script>";
-        // Open new tab:
-        var newWindow = window.open("", "_blank", "popup=yes");
-        newWindow.document.write(html);
-        newWindow.document.close();
-    }
-
-
-    function loadSchedule() {
-        // the picklist and surrounding div have the same id so that they can be hidden together when
-        // no edah is scheduled, below line gets both of them and just returns the object of the picklist
-        var schedule_picker = document.querySelectorAll("[id='schedule_picklist']")[1];
-        // ensure it's an actual option
-        var sched_id = schedule_picker.value;
-        if (sched_id == "") { return; }
-        // create schedule query
-        var sql = "SELECT schedule_id, schedule FROM schedules WHERE schedule_id IN (?)";
-
-        var values = {};
-        values["get_legal_id_to_name"] = 1;
-        values["sql"] = sql;
-        values["instance_ids"] = [sched_id]
-        var result = "";
-
-        var ajax = $.ajax({
-            url: 'ajax.php',
-            type: 'post',
-            data: values,
-            success: function(data) {
-                result = data[sched_id];
-            },
-            error: function(xhr, desc, err) {
-            console.log(xhr);
-            console.log("Details: " + desc + " Error:" + err);
-            }
-        });
-
-        // Wait for Ajax call to finish
-        $.when(ajax).done(function() {
-            var editor = tinymce.get('schedule-textarea');
-            editor.setContent(result);
-        });
-    }
-
-</script>
+<script src="/meta/design.js"></script>
 </body>
 </html>
