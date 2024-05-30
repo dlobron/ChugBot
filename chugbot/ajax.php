@@ -238,6 +238,7 @@ if (isset($_POST["submit_prefs"])) {
     $homeUrl = urlIfy("index.php");
     $homeAnchor = "<a href=\"$homeUrl\">here</a>";
     $chug_term_singular = chug_term_singular;
+    $chug_term_plural = chug_term_plural;
     $email_text = <<<END
 <html><body>
 <h3>Preferences Recorded!</h3>
@@ -246,7 +247,7 @@ If anything is incorrect or missing, you can edit your choices by following thes
 <ol>
         <li>Click $homeAnchor, or paste this link into your browser: $homeUrl.</li>
         <li>If prompted, enter the camper access code $camperCodeText and click Go.</li>
-        <li>Enter the email address to which this message was sent, and choose your camper name from the drop-down.</li>
+        <li>Type your child's first and last name and select their edah (division) from the drop-down menu. Then Click "Update $chug_term_plural" and the green "Go" button.</li>
 </ol>
 END;
     // Insert or update new selections.
