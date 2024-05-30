@@ -7,14 +7,14 @@ session_start();
 setup_camp_specific_terminology_constants();
 
 $db = new DbConn();
-$sql = "SELECT enable_camper_importer FROM admin_data";
+$sql = "SELECT enable_camper_creation FROM admin_data";
 $err = "";
 $result = $db->runQueryDirectly($sql, $err);
-$enableCamperImporter = false;
+$enableCamperCreation = true;
 if ($result) {
     $row = $result->fetch_assoc();
     if ($row) {
-        $enableCamperImporter = (bool)$row["enable_camper_importer"];
+        $enableCamperCreation = (bool)$row["enable_camper_creation"];
     }
 }
 
@@ -66,11 +66,11 @@ if (!camperLoggedIn()) {
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
-<?php if (!$enableCamperImporter) : ?>
+<?php if ($enableCamperCreation) : ?>
 <p>If this is your first time picking <?php echo chug_term_plural ?> for this summer, click First Time for <?php echo yearOfCurrentSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
 <?php endif; ?>
 
-<?php if (!$enableCamperImporter) : ?>
+<?php if ($enableCamperCreation) : ?>
 <div class="panel panel-default">
 <div class="panel-heading">
 <h4 class="panel-title">
@@ -90,7 +90,7 @@ if (!camperLoggedIn()) {
 </h4>
 </div>
 <?php endif; ?>
-<div id="choiceForm2" <?php if (!$enableCamperImporter) : ?>class="panel-collapse collapse panel-body"<?php endif; ?>>
+<div id="choiceForm2" <?php if ($enableCamperCreation) : ?>class="panel-collapse collapse panel-body"<?php endif; ?>>
   <form method="GET" />
      <p>Please enter data below to retrieve your record. You may fill in any combination of boxes.</p>
   <ul>
@@ -138,7 +138,7 @@ echo $edahField->renderHtml();
   </ul>
   <input type="hidden" id="fromHome" name="fromHome" value="1" />
   </form>
-<?php if (!$enableCamperImporter) : ?>
+<?php if ($enableCamperCreation) : ?>
 </div>
 <?php endif; ?>
 
