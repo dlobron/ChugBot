@@ -12,6 +12,7 @@
     $scheduleTemplate = html_entity_decode(test_post_input('schedule-template'));
 
     $blockIdsOverride = [];
+    // Loop through all blocks, which is the number of values in the POST request minus 4 (excludes edah, block, schedule, and starts at 0)
     for ($i = 0; $i < count($_POST)-4; $i ++) {
         $temp = $_POST[$i];
         if (is_numeric($temp)) {

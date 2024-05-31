@@ -45,7 +45,7 @@ $groupIdVal = $editChugPage->columnValue("group_id"); // May be NULL.
 $groupDropDown = new FormItemDropDown("Group", true, "group_id", 2);
 $groupDropDown->setGuideText("Please assign this " . chug_term_singular . " to a group");
 $groupDropDown->setError($editChugPage->errForColName("group_id"));
-$groupDropDown->setInputClass("element select medium");
+$groupDropDown->setInputClass("element form-select medium");
 $groupDropDown->setInputSingular("group");
 $groupDropDown->setColVal($groupIdVal);
 $groupDropDown->fillDropDownId2Name($editChugPage->dbErr,

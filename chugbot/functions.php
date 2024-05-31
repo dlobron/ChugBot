@@ -421,8 +421,8 @@ function fillConstraintsCheckBox() {
                return;
            }
            $.each(data, function(itemId, itemName) {
-                html = "<input type=\"checkbox\" name=\"" + "${arrayName}" +
-                  "[]\" value=\"" + itemId + "\" checked=checked/>" + itemName + "<br>";
+                html = "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" name=\"" + "${arrayName}" +
+                  "[]\" value=\"" + itemId + "\" checked=checked/>" + itemName + "</label>";
                 $(ourCheckBox).append(html);
             });
            $(ourCheckBox).show();
@@ -725,7 +725,7 @@ function navText()
            }
 	}
     }
-    $retVal .= "</ul></div></div></nav>";
+    $retVal .= "</div></ul></div></nav>";
 
     return $retVal;
 }

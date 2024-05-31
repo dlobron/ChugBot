@@ -51,7 +51,8 @@ CREATE TABLE `admin_data` (
   `block_term_singular` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'block',
   `block_term_plural` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'blocks',
   `enable_camper_importer` tinyint(1) NOT NULL DEFAULT '0',
-  `enable_selection_process` tinyint(1) NOT NULL DEFAULT '1'
+  `enable_selection_process` tinyint(1) NOT NULL DEFAULT '1',
+  `enable_camper_creation` tinyint(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -61,7 +62,7 @@ CREATE TABLE `admin_data` (
 
 LOCK TABLES `admin_data` WRITE;
 /*!40000 ALTER TABLE `admin_data` DISABLE KEYS */;
-INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,NULL,'Kayitz','the Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose three Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Ramah Day Camp DC','www.campramahne.org/day-camp-washington-dc/',3,0,'chug','chugim','block','blocks',1,1);
+INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,NULL,'Kayitz','the Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose three Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Ramah Day Camp DC','www.campramahne.org/day-camp-washington-dc/',3,0,'chug','chugim','block','blocks',1,1, 1);
 /*!40000 ALTER TABLE `admin_data` ENABLE KEYS */;
 UNLOCK TABLES;
 
