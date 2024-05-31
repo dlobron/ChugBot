@@ -195,7 +195,7 @@ function genFatalErrorReport($errorList, $fixOnSamePage = false,
             continue;
         }
         if ($ec > 0) {
-            $errorHtml .= ", " . $errorText;
+            $errorHtml .= $errorText;
         } else {
             $errorHtml = $errorText;
         }
@@ -208,8 +208,11 @@ function genFatalErrorReport($errorList, $fixOnSamePage = false,
         $desc = "An error";
     }
     $retVal = <<<EOM
-<div class="row">
-<div class="panel panel-danger col-lg-6 col-lg-offset-3">
+    
+<div class="row justify-content-center">
+<div class="col-6 mt-4">
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 <div class="panel-heading">
 <h3>Oops! $desc occurred:</h3>
 </div>
@@ -221,11 +224,12 @@ EOM;
     }
     $retVal = $retVal . $errorHtml;
     if ($fixOnSamePage) {
-        $retVal = $retVal . "<p>Please fix the errors and try again.</p></div></div></div>";
+        $retVal = $retVal . "<p>Please fix the errors and try again.</p></div></div></div></div>";
     } else {
-        $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div></div>";
+        $retVal = $retVal . "<p>Please click $backText to try again, or report the error to an administrator if it persists.</p></div></div></div></div>";
     }
     if ($closePage) {
+        $retVal .= "</div>";
         $retVal = $retVal . footerText();
         $retVal = $retVal . "</body></html>";
     }
@@ -254,7 +258,7 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     } else if ($tableName == 'blocks') {
         $ucPlural = ucfirst(block_term_plural);
     } else if ($tableName == 'chug_groups') {
-        $ucPlural = ucfirst(chug_term_singular) . '_groups';
+        $ucPlural = ucfirst(chug_term_singular) . ' Groups';
     }
 
     $formName = "form_" . $name;
@@ -278,51 +282,53 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
             "is currently disallowed: to allow deletion, click \"Edit Admin Settings\" at the top of this page and adjust the check boxes. $edahExtraText";
     }
     $retVal = <<<EOM
-<div class="panel panel-default">
- <div class="panel-heading">
-  <h4 class="panel-title">
-   <a data-toggle="collapse" data-parent="#accordion" href="#$formName">Manage $ucPlural</a>
-  </h4>
- </div>
-<div id="$formName" class="panel-collapse collapse panel-body">
- <form method="$method">
- <div class="page-header">
- <h3>$ucPlural</h3></div>
- <ul><li>
- <div>
- <select class="form-control" id="$idCol" name="$idCol">
- <option value="" disabled=disabled selected>---</option>
-EOM;
-    foreach ($id2Name as $itemId => $itemName) {
-        $retVal = $retVal . "<option value=\"$itemId\">$itemName</option>";
-    }
-    $formEnd = <<<EOM
- </select>
- <p class="guidelines"><small>$guideText</small></p>
- <input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
- <input class="btn btn-default btn-sm" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
+<h2 class="accordion-header" id="heading-$name">
+    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-$name" aria-expanded="false" aria-controls="collapse-$name">
+    Manage $ucPlural
+    </button>
+</h2>
+<div id="collapse-$name" class="accordion-collapse collapse" aria-labelledby="heading-$name" data-bs-parent="#accordionExample">
+    <div class="accordion-body">
 
+    <form method="$method">
+    <div class="page-header">
+    <h3>$ucPlural</h3></div>
+    <ul><li>
+    <div>
+    <select class="form-select mb-3" id="$idCol" name="$idCol">
+    <option value="" disabled=disabled selected>---</option>
 EOM;
-    $retVal = $retVal . $formEnd;
-    if ($deleteAllowed) {
-        $delText = "<input class=\"btn btn-default btn-sm\" type=\"submit\" name=\"submit\" value=\"Delete\" " .
-            "onclick=\"return confirm('Are you sure you want to delete this $ucName?')\" formaction=\"$deleteUrl\" />";
-        $retVal = $retVal . $delText;
-    }
-    if ($name == "edah") {
-        $camperUrl = urlIfy("viewCampersByEdah.php");
-        $retVal =
-            $retVal . "<input class=\"btn btn-danger btn-sm\" type=\"submit\" name=\"submit\" value=\"Show Campers\" formaction=\"$camperUrl\"/>";
-    }
-    $formEnd = <<<EOM
- </li>
- <li>
- </form>
- <form>
- <input type=button class='btn btn-primary' onClick="location.href='$addUrl'" value='Add New $ucName'>
- </form>
- </li></ul>
- </div>
+       foreach ($id2Name as $itemId => $itemName) {
+           $retVal = $retVal . "<option value=\"$itemId\">$itemName</option>";
+       }
+       $formEnd = <<<EOM
+    </select>
+    <p class="guidelines"><small>$guideText</small></p>
+    <input type="hidden" name="fromStaffHomePage" id="fromStaffHomePage" value="1" />
+    <input class="btn btn-secondary btn-sm" type="submit" name="submit" value="Edit" formaction="$editUrl"/>
+   
+EOM;
+       $retVal = $retVal . $formEnd;
+       if ($deleteAllowed) {
+           $delText = "<input class=\"btn btn-secondary btn-sm\" type=\"submit\" name=\"submit\" value=\"Delete\" " .
+               "onclick=\"return confirm('Are you sure you want to delete this $ucName?')\" formaction=\"$deleteUrl\" />";
+           $retVal = $retVal . $delText;
+       }
+       if ($name == "edah") {
+           $camperUrl = urlIfy("viewCampersByEdah.php");
+           $retVal =
+               $retVal . "<input class=\"btn btn-success ms-1 btn-sm\" type=\"submit\" name=\"submit\" value=\"Show Campers\" formaction=\"$camperUrl\"/>";
+       }
+       $formEnd = <<<EOM
+    </li>
+    <li>
+    </form>
+    <form>
+    <input type=button class='btn btn-primary' onClick="location.href='$addUrl'" value='Add New $ucName'>
+    </li></ul>
+    </form>
+    
+    </div>
 </div>
 EOM;
     $retVal = $retVal . $formEnd;
@@ -361,7 +367,7 @@ function genCheckBox($id2Name, $activeIds, $arrayName)
             array_key_exists($idStr, $activeIds)) {
             $selStr = "checked=checked";
         }
-        $retVal = $retVal . "<input type=\"checkbox\" name=\"${arrayName}[]\" value=\"$idStr\" $selStr />$name<br>";
+        $retVal .= "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" name=\"${arrayName}[]\" value=\"$idStr\" id=\"${arrayName}_$idStr\" $selStr>$name</label>";
     }
     return $retVal;
 }
@@ -415,8 +421,8 @@ function fillConstraintsCheckBox() {
                return;
            }
            $.each(data, function(itemId, itemName) {
-                html = "<input type=\"checkbox\" name=\"" + "${arrayName}" +
-                  "[]\" value=\"" + itemId + "\" checked=checked/>" + itemName + "<br>";
+                html = "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" name=\"" + "${arrayName}" +
+                  "[]\" value=\"" + itemId + "\" checked=checked/>" + itemName + "</label>";
                 $(ourCheckBox).append(html);
             });
            $(ourCheckBox).show();
@@ -438,14 +444,106 @@ JS;
     return $javascript;
 }
 
+// Modified from genConstrainedCheckbox to work for drop down menus, and
+// to be applicable to more types
+// NOTE: fillConstraintsPickList() must be called as an `onchange` method
+//     from the element which it relies upon
+function genConstrainedPickListScript($ourId, $parentId, $descId, $type) {
+    $javascript = <<<JS
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
+<script>
+function fillConstraintsPickList() {
+    var parent = $("#${parentId}");
+    var ourPickList = $("#${ourId}");
+    var ourDesc = $("#${descId}");
+    var values = {};
+    values["get_legal_id_to_name"] = 1;
+    $(ourDesc).hide();
+    var parentField = document.getElementsByName("${parentId}")[0];
+    var curSelectedEdahIds = [];
+    curSelectedEdahIds.push(parentField.value)
+    if("${type}" == "group" || "${type}" == "block" || "${type}" == "schedule") {
+        var sql = "SELECT e.${type}_id ${type}_id, g.name ${type}_name FROM edot_for_${type} e, "
+        // Determine right table to search from
+        if ("${type}" == "group") {
+            sql += "chug_groups g WHERE e.edah_id IN (";
+        }
+        else if ("${type}" == "block") {
+            sql += "blocks g WHERE e.edah_id IN (";
+        }
+        else if ("${type}" == "schedule") {
+            sql += "schedules g WHERE e.edah_id IN (";
+        }
+        var ct = 0;
+        for (var i = 0; i < curSelectedEdahIds.length; i++) {
+            if (ct++ > 0) {
+                sql += ",";
+            }
+            sql += "?";
+        }
+        sql += ") AND e.${type}_id = g.${type}_id GROUP BY e.${type}_id HAVING COUNT(e.edah_id) = " + ct;
+    }
+    values["sql"] = sql;
+    values["instance_ids"] = curSelectedEdahIds;
+    $.ajax({
+        url: 'ajax.php',
+        type: 'post',
+        data: values,
+        success: function(data) {
+        ourPickList.empty();
+        var html = "";
+        if (data == "none") {
+            $(ourPickList).hide();
+            $(ourDesc).hide();
+            return;
+        } else if (data == "no-intersection") {
+            $(ourPickList).html(html);
+            $(ourPickList).show();
+            $(ourDesc).hide();
+            return;
+        }
+        html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type}\"";
+        if ("${type}" == "schedule") {
+            html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
+        }
+        else {
+            html += ">";
+        }
+        // add individual options
+        $.each(data, function(itemId, itemName) {
+                html += "<option value=\""+itemId+"\">"+itemName+"</option>";
+            });
+        $(ourPickList).append(html);
+        $(ourPickList).show();
+        $(ourDesc).show();
+        },
+        error: function(xhr, desc, err) {
+        console.log(xhr);
+        console.log("Details: " + desc + " Error:" + err);
+        }
+    });
+}
+$(function() {
+  $("#${parentId}").load(fillConstraintsPickList());
+  $("#${parentId}").bind('change',fillConstraintsPickList);
+});
+</script>
+JS;
+
+    return $javascript;
+}
+
 function test_input($data)
 {
     if (empty($data)) {
         return null;
     }
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
+    if(!is_array($data)) {
+        $data = trim($data);
+        $data = stripslashes($data);
+        $data = htmlspecialchars($data);
+    }
     return $data;
 }
 
@@ -596,22 +694,21 @@ function staffBounceBackUrl()
 function navText()
 {
     $homeUrl = homeUrl();
-    $retVal = "<nav class=\"navbar navbar-default\">";
+    $retVal = "<nav class=\"navbar navbar-expand-lg navbar-light bg-light\">";
     $baseUrl = baseUrl();
     $retVal .= "<div class=\"container-fluid\">";
-    $retVal .= "<div class=\"navbar-header\">";
-    $retVal .= "<button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\"#myNavbar\">";
-    $retVal .= "<span class=\"icon-bar\"></span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span></button>";
+    $retVal .= "<a class=\"navbar-brand\" href=\"$baseUrl\">Chugbot</a>";
+    $retVal .= "<button class=\"navbar-toggler\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">";
+    $retVal .= "<span class=\"navbar-toggler-icon\"></span></button>";
+    $retVal .= "<div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">";
+    $retVal .= "<ul class=\"navbar-nav me-auto mb-2 mb-lg-0\">";
     if (adminLoggedIn()) {
-        $retVal .= "<a class=\"navbar-brand\" href=\"$homeUrl\">Staff Home</a></div>";
-        $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
+        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Staff Home</a></li>";
         $camperUrl = urlIfy("camperHome.php");
-        $retVal .= "<li><a href=\"$camperUrl\">Camper Home</a></li>";
+        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$camperUrl\">Camper Home</a></li>";
     } else {
-        $retVal .= "<a class=\"navbar-brand\" href=\"$homeUrl\">Camper Home</a></div>";
-        $retVal .= "<div class=\"collapse navbar-collapse\" id=\"myNavbar\"><ul class=\"nav navbar-nav\">";
+        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Camper Home</a></li>";
     }
-    $retVal .= "<li><a href=\"$baseUrl\">Site Home</a></li>";
 
     $db = new DbConn();
     $db->addSelectColumn('camp_name');
@@ -624,11 +721,11 @@ function navText()
            $campName = $row["camp_name"];
            if ((!empty($campUrl)) &&
               (!empty($campName))) {
-              $retVal .= "<li><a href=\"http://$campUrl/\">$campName Home</a></li>";
+              $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"http://$campUrl/\">$campName Home</a></li>";
            }
 	}
     }
-    $retVal .= "</ul></div></div></nav>";
+    $retVal .= "</div></ul></div></nav>";
 
     return $retVal;
 }
@@ -653,14 +750,16 @@ function headerText($title)
 <link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" integrity="sha384-VI5+XuguQ/l3kUhh4knz7Hxptx47wpQbVRDnp8v7Vvuhzwn1PEYb/uvtH6KLxv6d" crossorigin="anonymous"></script>
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Ej0hUpn6wbrOTJtRExp8jvboBagaz+Or6E9zzWT+gHCQuuZQQVZUcbmhXQzSG17s" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/flatly/bootstrap.min.css" integrity="sha384-qF/QmIAj5ZaYFAeQcrQ6bfVMAh4zZlrGwTPY7T/M+iTTLJqJBJjwwnsE5Y0mV7QK" crossorigin="anonymous">-->
 </head>
 <body id="main_body">
 $navText
 EOM;
     return $retVal;
 }
+
 
 function genErrorPage($err)
 {

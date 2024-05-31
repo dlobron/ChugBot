@@ -57,7 +57,7 @@ if (!is_null($errText)) {
 <?php
 if ($deletedOk) {
     $homeUrl = urlIfy("staffHome.php");
-    echo "<div class=\"container well\">";
+    echo "<div class=\"container card card-body mt-3 p-3\">";
     echo "<h3>Deletion Successful!</h3>";
     echo "<p>Deletion successful.  Please click <a href=\"$homeUrl\">here</a> to go back, or wait to be redirected.<p>";
     echo "</div>";

@@ -86,70 +86,63 @@ if (!is_null($errText)) {
 <?php
 if ($message) {
     $messageText = <<<EOM
-<div class="container well">
-<h2>$message</h2>
+<div class="col-md-8 offset-md-2 mt-3 alert alert-success alert-dismissible fade show mt-3">
+<button type="button" class="btn-close" data-bs-dismiss="alert\" aria-label="Close"></button>
+<h3>$message</h3>
 </div>
 EOM;
     echo $messageText;
 }
 ?>
 
-<div class="well well-white container">
+<div class="card card-body mt-3 mb-3 container">
 <h2>Camp Staff Control Panel</h2>
 <p>To add and edit Edot, Sessions, <?php echo ucfirst(block_term_plural) ?>, Groups, and <?php echo ucfirst(chug_term_plural) ?>, expand the relevant group below.  You may also view and edit campers according to edah.</p>
 <p>Use the Leveling section to run the leveling algorithm.</p>
-<p>For help, hover your mouse over an item, or press on mobile.<p>
+<p>For help, hover your mouse over an item, or press on mobile.</p>
 <p>To archive your data at the end of a summer, and prepare the database for the next summer, click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
 
-<div class="btn-group" role="group">
-<form action="<?php echo $resetUrl; ?>">
-<button title="Click here to update the administrative settings, including staff password and camper code" class="btn btn-primary" type="submit" value="1">Edit Admin Settings</button>
-</form>
 
-<form action="<?php echo $matrixUrl; ?>" method="get">
-<button title="Click here to update the de-duplication settings" class="btn btn-primary" type="submit" value="1">De-Duplication Matrix</button>
-</form>
-
-<form action="<?php echo $advancedUrl; ?>" method="post">
-<button title="Click here to prune illegal or obsolete assignments" class="btn btn-primary" type="submit" value="1">Fix Illegal And Duplicate</button>
-</form>
-
-<?php if ($enableCamperImporter) : ?>
-<form action="<?php echo $camperUploadUrl; ?>" method="post">
-<button title="Click here to upload campers" class="btn btn-primary" type="submit" value="1">Upload Campers</button>
-</form>
-<?php endif; ?>
+<div class="container text-center">
+    <a href="<?php echo $resetUrl; ?>"  class="btn btn-primary me-2 mb-2" role="button" title="Click here to update the administrative settings, including staff password and camper code">Edit Admin Settings</a>
+    <a href="<?php echo $matrixUrl; ?>" class="btn btn-primary me-2 mb-2" role="button" title="Click here to update the de-duplication settings">De-Duplication Matrix</a>
+    <a href="<?php echo $advancedUrl; ?>" class="btn btn-primary me-2 mb-2" role="button" title="Click here to prune illegal or obsolete assignments">Fix Illegal And Duplicate</a>
+    <?php if ($enableCamperImporter) : ?>
+        <a href="<?php echo $camperUploadUrl; ?>" class="btn btn-primary mb-2" role="button" title="Click here to upload campers">Upload Campers</a>
+    <?php endif; ?>
 </div>
 
 </div>
 
-<div class="panel-group well well-white container" id="accordion">
-<div>
-<?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
+<div class="panel-group card card-body container" id="accordion">
+    <div class="accordion" id="accordion">
+        <div class="accordion-item">
+        <?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
+        </div>
+
+        <div class="accordion-item">
+        <?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
+        </div>
+
+        <div class="accordion-item">
+        <?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
+        </div>
+
+        <div class="accordion-item">
+        <?php echo genPickListForm($groupId2Name, "group", "chug_groups"); ?>
+        </div>
+
+        <div class="accordion-item">
+        <?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
+        </div>
+
+        <div class="accordion-item">
+        <?php echo genPickListForm($bunkId2Name, "bunk", "bunks"); ?>
+        </div>
+    </div>
 </div>
 
-<div>
-<?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
-</div>
-
-<div>
-<?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
-</div>
-
-<div>
-<?php echo genPickListForm($groupId2Name, "group", "chug_groups"); ?>
-</div>
-
-<div>
-<?php echo genPickListForm($chugId2Name, "chug", "chugim"); ?>
-</div>
-
-<div>
-<?php echo genPickListForm($bunkId2Name, "bunk", "bunks"); ?>
-</div>
-</div>
-
-<div class="well well-white container">
+<div class="card card-body mt-3 mb-3 container">
 <h3>Leveling</h3>
 <p>To view the leveling page, choose a time <?php echo block_term_singular ?> and <b>1-8</b> edot, and click "Go."</p>
 <p>If there is an existing saved assignment for the selected edah/edot and <?php echo block_term_singular ?>, it will be displayed.  Nothing will be
@@ -157,7 +150,7 @@ changed until you click the Save or Reassign buttons on the leveling page.  If t
 will be created and then displayed.</p>
 <p>If you choose two edot, make sure they share at least some <?php echo chug_term_plural ?>.</p>
 <p>To generate a printable <?php echo chug_term_singular ?> assigment report, click "Report".
-<form id="leveling_choice_form" class="well" method="get" action="<?php echo $levelingUrl; ?>">
+<form id="leveling_choice_form" class="card card-body mb-3 bg-light" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
 <label class="description" for="edah">Edah (choose 1-8)</label>
@@ -181,7 +174,7 @@ shown here are the ones common to all selected edot.</small></p>
 <li>
 <label class="description" for="block"><?php echo ucfirst(block_term_singular) ?></label>
 <div>
-<select class="form-control" id="block" name="block">
+<select class="form-select" id="block" name="block">
 <?php
 echo genPickList($blockId2Name, array(), "block");
 ?>
@@ -194,13 +187,26 @@ echo genPickList($blockId2Name, array(), "block");
 </ul>
 </form>
 
-<form action="<?php echo $reportUrl; ?>" method="GET">
-<div class="page-header">
-<small>Click "Report" to go to the camper assigment report page.</small>
+<div class="row">
+    <div class="col">
+        <form action="<?php echo $reportUrl; ?>" method="GET">
+        <div class="page-header mt-3">
+        Click "Report" to go to the camper assigment report page.
+        </div>
+        <button title="Go to the Report page" class="btn btn-primary mt-1" type="submit">Report</button>
+        <input type="hidden" name="reset" id="reset" value="1" />
+        </form>
+    </div>
+
+    <div class="col">
+        <div class="page-header mt-3">
+        Select below to design custom schedules with each camper's <?php echo (chug_term_singular) ?> assignments.
+        </div>
+        <a href="designSchedules.php"><button title="Design camper schedules" class="btn btn-primary mt-1" type="submit">Design Schedules</button></a>
+    </div>
 </div>
-<button title="Go to the Report page" class="btn btn-primary" type="submit">Report</button>
-<input type="hidden" name="reset" id="reset" value="1" />
-</form>
+
+
 </div>
 
 <?php

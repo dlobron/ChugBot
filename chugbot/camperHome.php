@@ -62,7 +62,7 @@ if (!camperLoggedIn()) {
 
 ?>
 
-<div class="well well-white container" id="accordion">
+<div class="card card-body mt-3 container" id="accordion">
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
@@ -71,74 +71,85 @@ if (!camperLoggedIn()) {
 <?php endif; ?>
 
 <?php if ($enableCamperCreation) : ?>
-<div class="panel panel-default">
-<div class="panel-heading">
-<h4 class="panel-title">
-    <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm1">First Time for <?php echo yearOfCurrentSummer(); ?></a>
-</h4>
-</div>
-<div id="choiceForm1" class="panel-collapse collapse panel-body">
-<form method="POST" />
-    <button title="Add a camper" class="btn btn-primary" type="submit" name="add" formaction="addCamper.php" >Start</button>
-    <input type="hidden" id="fromHome" name="fromHome" value="1" />
-</form>
-</div>
+<div class="container mb-3" id="accordion">
+    <div class="accordion bg-light mb" id="accordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading-first">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-first" aria-expanded="false" aria-controls="collapse-first">
+                    First Time for <?php echo yearOfCurrentSummer(); ?>
+                </button>
+            </h2>
+            <div id="collapse-first" class="accordion-collapse collapse" aria-labelledby="heading-first" data-bs-parent="#accordion">
+                <div class="accordion-body">
+                    <form method="POST" />
+                        <button title="Add a camper" class="btn btn-primary" type="submit" name="add" formaction="addCamper.php" >Start</button>
+                        <input type="hidden" id="fromHome" name="fromHome" value="1" />
+                    </form>
+                </div>
+            </div>
+        </div>
 
-<div class="panel-heading">
-<h4 class="panel-title">
-    <a data-toggle="collapse" data-parent="#accordion" href="#choiceForm2">Update Existing</a>
-</h4>
-</div>
-<?php endif; ?>
-<div id="choiceForm2" <?php if ($enableCamperCreation) : ?>class="panel-collapse collapse panel-body"<?php endif; ?>>
-  <form method="GET" />
-     <p>Please enter data below to retrieve your record. You may fill in any combination of boxes.</p>
-  <ul>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading-return">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-return" aria-expanded="false" aria-controls="collapse-return">
+                    Update Existing
+                </button>
+            </h2>
+            <div id="collapse-return" class="accordion-collapse collapse" aria-labelledby="heading-return" data-bs-parent="#accordion">
+                <div class="accordion-body">
+                <?php endif; ?>
+                <form method="GET" />
+                    <p>Please enter data below to retrieve your record. You may fill in any combination of boxes.</p>
+                    <ul>
 
-<?php
-$counter = 0;
-// David O. requested that we remove email search for now.
-/*
-$camperEmailField = new FormItemSingleTextField("Email address associated with camper", FALSE, "email", $counter++);
-$camperEmailField->setInputType("email");
-$camperEmailField->setInputClass("element text medium");
-$camperEmailField->setInputMaxLength(50);
-$camperEmailField->setPlaceHolder("Email address");
-$camperEmailField->setGuideText("Enter the email associated with the camper you would like to edit.");
-echo $camperEmailField->renderHtml();
- */
+                    <?php
+                    $counter = 0;
+                    // David O. requested that we remove email search for now.
+                    /*
+                    $camperEmailField = new FormItemSingleTextField("Email address associated with camper", FALSE, "email", $counter++);
+                    $camperEmailField->setInputType("email");
+                    $camperEmailField->setInputClass("element text medium");
+                    $camperEmailField->setInputMaxLength(50);
+                    $camperEmailField->setPlaceHolder("Email address");
+                    $camperEmailField->setGuideText("Enter the email associated with the camper you would like to edit.");
+                    echo $camperEmailField->renderHtml();
+                    */
 
-$firstNameField = new FormItemSingleTextField("Camper First Name", false, "first", $counter++);
-$firstNameField->setInputType("text");
-$firstNameField->setInputClass("element text medium");
-$firstNameField->setInputMaxLength(255);
-$firstNameField->setPlaceHolder("First Name");
-echo $firstNameField->renderHtml();
+                    $firstNameField = new FormItemSingleTextField("Camper First Name", false, "first", $counter++);
+                    $firstNameField->setInputType("text");
+                    $firstNameField->setInputClass("element text medium");
+                    $firstNameField->setInputMaxLength(255);
+                    $firstNameField->setPlaceHolder("First Name");
+                    echo $firstNameField->renderHtml();
 
-$lastNameField = new FormItemSingleTextField("Camper Last Name", false, "last", $counter++);
-$lastNameField->setInputType("text");
-$lastNameField->setInputClass("element text medium");
-$lastNameField->setInputMaxLength(255);
-$lastNameField->setPlaceHolder("Last Name");
-echo $lastNameField->renderHtml();
+                    $lastNameField = new FormItemSingleTextField("Camper Last Name", false, "last", $counter++);
+                    $lastNameField->setInputType("text");
+                    $lastNameField->setInputClass("element text medium");
+                    $lastNameField->setInputMaxLength(255);
+                    $lastNameField->setPlaceHolder("Last Name");
+                    echo $lastNameField->renderHtml();
 
-$err = "";
-$edahField = new FormItemDropDown("Edah", false, "edah_id", $counter++);
-$edahField->setGuideText("Choose this camper's current edah");
-$edahField->setInputClass("element select medium");
-$edahField->setInputSingular("edah");
-$edahField->fillDropDownId2Name($err,
-    "edah_id", "edot");
-echo $edahField->renderHtml();
-?>
+                    $err = "";
+                    $edahField = new FormItemDropDown("Edah", false, "edah_id", $counter++);
+                    $edahField->setGuideText("Choose this camper's current edah");
+                    $edahField->setInputClass("element medium");
+                    $edahField->setInputSingular("edah");
+                    $edahField->fillDropDownId2Name($err,
+                        "edah_id", "edot");
+                    echo $edahField->renderHtml();
+                    ?>
 
-  <li class="buttons">
-  <button title="Edit existing camper info" class="btn btn-primary" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
-  </li>
-  </ul>
-  <input type="hidden" id="fromHome" name="fromHome" value="1" />
-  </form>
-<?php if ($enableCamperCreation) : ?>
+                    <li class="buttons">
+                        <button title="Edit existing camper info" class="btn btn-primary" type="submit" name="edit" formaction="preEditCamper.php" >Edit Camper</button>
+                    </li>
+                    </ul>
+                    <input type="hidden" id="fromHome" name="fromHome" value="1" />
+                    </form>
+                <?php if ($enableCamperCreation) : ?>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <?php endif; ?>
 

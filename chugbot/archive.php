@@ -218,12 +218,12 @@ if (!$haveDb) {
 $binaryNotFoundError = "";
 $mysqldump = MYSQL_PATH . "/mysqldump";
 $mysql = MYSQL_PATH . "/mysql";
-if (!file_exists($mysqldump)) {
-    $binaryNotFoundError = "DB backup utility not found at $mysqldump: check with administrator";
+/*if (!file_exists($mysqldump)) {
+    $binaryNotFoundError = "DB backup utility not found at $mysqldump: check with administrator<br>";
 }
 if (!file_exists($mysql)) {
-    $binaryNotFoundError = "DB utility not found at $mysql: check with administrator";
-}
+    $binaryNotFoundError .= "DB utility not found at $mysql: check with administrator<br>";
+}*/
 
 // Check the GET data to find out what action to take.
 if ($_SERVER["REQUEST_METHOD"] == "GET" &&
@@ -263,7 +263,7 @@ if (!is_null($errText)) {
 }
 ?>
 
-<div class="well well-white container">
+<div class="card card-body mt-3 container">
 
 <h1><a>Archive Page</a></h1>
 

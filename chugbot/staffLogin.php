@@ -122,7 +122,7 @@ if (!is_null($errText)) {
 }
 ?>
 
-<div class="well well-white container">
+<div class="card card body mt-3 p-3 container">
 <h1><a>Staff Login</a></h1>
 <form id="loginForm" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
 <div class="page-header">
