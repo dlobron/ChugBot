@@ -6,6 +6,18 @@ session_start();
 
 setup_camp_specific_terminology_constants();
 
+$db = new DbConn();
+$sql = "SELECT enable_camper_creation FROM admin_data";
+$err = "";
+$result = $db->runQueryDirectly($sql, $err);
+$enableCamperCreation = true;
+if ($result) {
+    $row = $result->fetch_assoc();
+    if ($row) {
+        $enableCamperCreation = (bool)$row["enable_camper_creation"];
+    }
+}
+
 echo headerText("Camper/Family Home");
 
 // If the user is not logged in as a camper, validate the incoming access
@@ -54,8 +66,11 @@ if (!camperLoggedIn()) {
 <h1><a>Camper Home</a></h1>
 <?php echo $loginMessage; ?>
 <h3>Welcome, Campers and Families!</h3>
+<?php if ($enableCamperCreation) : ?>
 <p>If this is your first time picking <?php echo chug_term_plural ?> for this summer, click First Time for <?php echo yearOfCurrentSummer(); ?>. If you have used the system this year to enter earlier preferences, click Update Existing.</p>
+<?php endif; ?>
 
+<?php if ($enableCamperCreation) : ?>
 <div class="container mb-3" id="accordion">
     <div class="accordion bg-light mb" id="accordion">
         <div class="accordion-item">
@@ -82,6 +97,7 @@ if (!camperLoggedIn()) {
             </h2>
             <div id="collapse-return" class="accordion-collapse collapse" aria-labelledby="heading-return" data-bs-parent="#accordion">
                 <div class="accordion-body">
+                <?php endif; ?>
                 <form method="GET" />
                     <p>Please enter data below to retrieve your record. You may fill in any combination of boxes.</p>
                     <ul>
@@ -129,11 +145,13 @@ if (!camperLoggedIn()) {
                     </ul>
                     <input type="hidden" id="fromHome" name="fromHome" value="1" />
                     </form>
+                <?php if ($enableCamperCreation) : ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <?php
 echo footerText();
