@@ -85,7 +85,7 @@
 ?>
 
 
-<script src="/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.tiny.cloud/1/g316dhvb237wjcayfur1r50hqmq372q55mj3iotxh4vcwwzf/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 
 <script>
       tinymce.init({
