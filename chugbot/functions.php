@@ -344,7 +344,9 @@ function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
         $ddMsg = $defaultMessage;
     }
     $retVal = "<option value=\"\" >-- $ddMsg --</option>";
-    asort($id2Name);
+    if($name != "edah" && !strstr($name, "edot_for")) {
+        asort($id2Name);
+    }
     foreach ($id2Name as $id => $name) {
         $selStr = "";
         if (array_key_exists($id, $selectedMap)) {
@@ -358,7 +360,9 @@ function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
 function genCheckBox($id2Name, $activeIds, $arrayName)
 {
     $retVal = "";
-    asort($id2Name);
+    if($arrayName != "edah_ids" && !strstr($arrayName, "edot_for")) {
+        asort($id2Name);
+    }
     foreach ($id2Name as $id => $name) {
         $selStr = "";
         $idStr = strval($id); // Use strings in forms, for consistency.
@@ -400,6 +404,9 @@ function fillConstraintsCheckBox() {
         sql += "?";
     }
     sql += ") AND e.group_id = g.group_id GROUP BY e.group_id HAVING COUNT(e.edah_id) = " + ct;
+    if(ourCheckBox === "edah") {
+        sql += " SORT BY e.sort_order";
+    }
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
     $.ajax({
@@ -483,6 +490,9 @@ function fillConstraintsPickList() {
             sql += "?";
         }
         sql += ") AND e.${type}_id = g.${type}_id GROUP BY e.${type}_id HAVING COUNT(e.edah_id) = " + ct;
+    }
+    if(ourPickList === "edah") {
+        sql += " SORT BY e.sort_order";
     }
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
@@ -745,9 +755,9 @@ function headerText($title)
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>$title</title>
-<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-<script type="text/javascript" src="meta/view.js"></script>
-<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
+<link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
+<script type="text/javascript" src="../meta/view.js"></script>
+<link rel="stylesheet" type="text/css" href="../meta/view.css" media="all">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
