@@ -214,9 +214,9 @@ form li:after
 
 form li div
 {
-    color:#444;
+    /*color:#444;
     margin:0 4px 0 0;
-    padding:0 0 8px;
+    padding:0 0 8px;*/
 }
 
 form li span

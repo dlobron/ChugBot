@@ -455,7 +455,7 @@ JS;
 // to be applicable to more types
 // NOTE: fillConstraintsPickList() must be called as an `onchange` method
 //     from the element which it relies upon
-function genConstrainedPickListScript($ourId, $parentId, $descId, $type) {
+function genConstrainedPickListScript($ourId, $parentId, $descId, $type, $choicesJS = false) {
     $javascript = <<<JS
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
@@ -469,7 +469,9 @@ function fillConstraintsPickList() {
     $(ourDesc).hide();
     var parentField = document.getElementsByName("${parentId}")[0];
     var curSelectedEdahIds = [];
-    curSelectedEdahIds.push(parentField.value)
+    for (var option of parentField.selectedOptions) {
+        curSelectedEdahIds.push(option.value);
+    }
     if("${type}" == "group" || "${type}" == "block" || "${type}" == "schedule") {
         var sql = "SELECT e.${type}_id ${type}_id, g.name ${type}_name FROM edot_for_${type} e, "
         // Determine right table to search from
@@ -497,7 +499,7 @@ function fillConstraintsPickList() {
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
     $.ajax({
-        url: 'ajax.php',
+        url: '../ajax.php',
         type: 'post',
         data: values,
         success: function(data) {
@@ -513,9 +515,18 @@ function fillConstraintsPickList() {
             $(ourDesc).hide();
             return;
         }
-        html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type}\"";
+        if(!$("#${choicesJS}")) {
+            html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type} required\"";
+        }
+        else {
+            html = "<select class=\"form-select choices-js\" id=\"${ourId}\" name=\"${type}\"";
+        }
+
         if ("${type}" == "schedule") {
             html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
+        }
+        else if ("${type}" == "group") {
+            html += " onchange=\"fillChugimConstraintsPickList()\"> <option value=\"\"> -- Choose Perek -- </option>";
         }
         else {
             html += ">";
@@ -527,6 +538,9 @@ function fillConstraintsPickList() {
         $(ourPickList).append(html);
         $(ourPickList).show();
         $(ourDesc).show();
+        if($("#${choicesJS}")) {
+            const choices = new Choices($(ourPickList).find('select')[0], {shouldSort: false, allowHTML: true, searchEnabled: false});
+        }
         },
         error: function(xhr, desc, err) {
         console.log(xhr);
@@ -537,6 +551,113 @@ function fillConstraintsPickList() {
 $(function() {
   $("#${parentId}").load(fillConstraintsPickList());
   $("#${parentId}").bind('change',fillConstraintsPickList);
+});
+</script>
+JS;
+
+    return $javascript;
+}
+
+// Based off of genConstrainedPickListScript (above) to find chugim based on edah, b
+function genChugimPickListScript($ourId, $parent1, $parent2, $descId, $type, $choicesJS = false) {
+    $javascript = <<<JS
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
+<script>
+function fillChugimConstraintsPickList() {
+    var parent1 = $("#${parent1}");
+    var parent2 = $("#${parent2}");
+    var ourPickList = $("#${ourId}");
+    var ourDesc = $("#${descId}");
+    var values = {};
+    values["get_legal_id_to_name"] = 1;
+    $(ourDesc).hide();
+
+    // perform basic sanity checks to ensure the two parent fields (edah, group) have valid values
+    var parent1Field = document.getElementsByName("${parent1}")[0];
+    var parent2Field = document.getElementsByName("${parent2}");
+    if(parent2Field.length < 1) { return; } // value present for group
+    parent2Field = parent2Field[0];
+    var instanceIds = [];
+    instanceIds.push(parent2Field.selectedOptions[0].value); // the group_id is used twice in the SQL statement, so added twice to instance id array
+    instanceIds.push(parent2Field.selectedOptions[0].value);
+    for (var option of parent1Field.selectedOptions) { // adds selected edot to instance id array
+        instanceIds.push(option.value);
+    }
+    if(parent1Field.selectedOptions.length < 1) { return; } // ensures 1+ edot are selected before continuing
+
+    if("${type}" == "chug") {
+        // sql statement looks for all chugim which apply to any number of the selected edot for given chug group and active block
+        var sql = "SELECT e.chug_id, c.name FROM edot_for_chug e JOIN (SELECT c.chug_id, c.name FROM chug_instances i ";
+        sql += "JOIN chugim c ON i.chug_id = c.chug_id WHERE i.block_id = (SELECT active_block_id FROM chug_groups WHERE group_id = ?) AND c.group_id = ?) c "
+        sql += "ON e.chug_id = c.chug_id WHERE e.edah_id IN(";
+        
+        var ct = 0;
+        for (var i = 2; i < instanceIds.length; i++) {
+            if (ct++ > 0) {
+                sql += ",";
+            }
+            sql += "?";
+        }
+        sql += ") GROUP BY e.chug_id";
+    }
+    values["sql"] = sql;
+    values["instance_ids"] = instanceIds;
+    $.ajax({
+        url: '../ajax.php',
+        type: 'post',
+        data: values,
+        success: function(data) {
+        ourPickList.empty();
+        var html = "";
+        if (data == "none") {
+            $(ourPickList).hide();
+            $(ourDesc).hide();
+            return;
+        } else if (data == "no-intersection") {
+            $(ourPickList).html(html);
+            $(ourPickList).show();
+            $(ourDesc).hide();
+            return;
+        }
+        if(!$("#${choicesJS}")) {
+            html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type} required\"";
+        }
+        else {
+            html = "<select class=\"form-select choices-js\" id=\"${ourId}\" name=\"${type}\"";
+        }
+
+        if ("${type}" == "schedule") {
+            html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
+        }
+        else if ("${type}" == "chug") {
+            html += " onchange=\"\"> <option value=\"\"> -- Choose Chug -- </option>";
+        }
+        else {
+            html += ">";
+        }
+        // add individual options
+        $.each(data, function(itemId, itemName) {
+                html += "<option value=\""+itemId+"\">"+itemName+"</option>";
+            });
+        $(ourPickList).append(html);
+        $(ourPickList).show();
+        $(ourDesc).show();
+        if($("#${choicesJS}")) {
+            const choices = new Choices($(ourPickList).find('select')[0], {shouldSort: true, allowHTML: true});
+        }
+        },
+        error: function(xhr, desc, err) {
+        console.log(xhr);
+        console.log("Details: " + desc + " Error:" + err);
+        }
+    });
+}
+$(function() {
+  $("#${parent1}").load(fillChugimConstraintsPickList());
+  $("#${parent1}").bind('change',fillChugimConstraintsPickList);
+  $("#${parent2}").load(fillChugimConstraintsPickList());
+  $("#${parent2}").bind('change',fillChugimConstraintsPickList);
 });
 </script>
 JS;
@@ -606,15 +727,15 @@ function camperLoggedIn()
 
 function baseUrl()
 {
-    return urlIfy("index.php");
+    return urlIfy("../index.php");
 }
 
 function homeUrl()
 {
     if (isset($_SESSION['admin_logged_in'])) {
-        return urlIfy("staffHome.php");
+        return urlIfy("../staffHome.php");
     } else {
-        return urlIfy("camperHome.php");
+        return urlIfy("../camperHome.php");
     }
 }
 
@@ -644,7 +765,7 @@ function bounceToLogin()
 {
     if (!isset($_SESSION['admin_logged_in'])) {
         $fromUrl = $_SERVER["PHP_SELF"];
-        $redirUrl = urlIfy("staffLogin.php?from=$fromUrl");
+        $redirUrl = urlIfy("../staffLogin.php?from=$fromUrl");
         header("Location: $redirUrl");
         exit();
     }
@@ -714,7 +835,7 @@ function navText()
     $retVal .= "<ul class=\"navbar-nav me-auto mb-2 mb-lg-0\">";
     if (adminLoggedIn()) {
         $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Staff Home</a></li>";
-        $camperUrl = urlIfy("camperHome.php");
+        $camperUrl = urlIfy("../camperHome.php");
         $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$camperUrl\">Camper Home</a></li>";
     } else {
         $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Camper Home</a></li>";
