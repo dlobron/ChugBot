@@ -20,13 +20,16 @@
     fillId2Name(null, $edahId2Name, $dbErr, "edah_id", "edot");
     fillId2Name(null, $bunkId2Name, $dbErr, "bunk_id", "bunks");
 
-    echo headerText(ucfirst(chug_term_singular) . " Leader Home");
+    echo headerText("Take Attendance");
 
     // Get info from the form
     $date = test_get_input('date');
     $groupId = test_get_input('group');
     $chugId = test_get_input('chug');
-    $rawEdahIds = test_input($_GET['edah']);
+    $rawEdahIds = [];
+    if(test_get_input('edah') != "") {
+        $rawEdahIds = test_input($_GET['edah']);
+    }
     $edahIds = [];
 
     // additional function (at bottom of code) to ensure everything was properly formatted and valid values
@@ -59,21 +62,23 @@
         }
 
         // 3: build sql statement adding each camper id to be inserted
-        $localErr = "";
-        $dbc = new DbConn();
-        $sql = "INSERT INTO attendance_present (camper_id, date, chug_instance_id) VALUES ";
-        $ct = 1;
-        foreach($_POST['attendance'] as $camper) {
-            $sql .= "($camper, '$date', $chugInstanceId)";
-            // add a comma between every value
-            if($ct++ < count($_POST['attendance'])) {
-                $sql .= ",";
+        if(test_post_input('attendance') != "") {
+            $localErr = "";
+            $dbc = new DbConn();
+            $sql = "INSERT INTO attendance_present (camper_id, date, chug_instance_id) VALUES ";
+            $ct = 1;            
+            foreach($_POST['attendance'] as $camper) {
+                $sql .= "($camper, '$date', $chugInstanceId)";
+                // add a comma between every value
+                if($ct++ < count($_POST['attendance'])) {
+                    $sql .= ",";
+                }
             }
-        }
-        $result = $dbc->doQuery($sql, $localErr);
-        if ($result == false) {
-            echo dbErrorString($sql, $localErr);
-            exit();
+            $result = $dbc->doQuery($sql, $localErr);
+            if ($result == false) {
+                echo dbErrorString($sql, $localErr);
+                exit();
+            }
         }
 
         $successMessage = "<div class=\"col-md-6 offset-md-3\"><div class=\"alert alert-success alert-dismissible fade show m-2\" role=\"alert\">" . 
@@ -104,8 +109,8 @@
             "JOIN chug_groups g on ch.group_id = g.group_id ";
         // include attendance record
         $sql .= "LEFT OUTER JOIN (SELECT * FROM attendance_present WHERE date = '" . $date . "') a ON c.camper_id = a.camper_id AND i.chug_instance_id = a.chug_instance_id ";
-        // narrow it down by edah, chug, block
-        $sql .= "WHERE c.edah_id = " . $edahId . " AND ch.chug_id = " . $chugId . " AND i.block_id = g.active_block_id ";
+        // narrow it down by edah, chug, block, and only show "active" campers
+        $sql .= "WHERE c.edah_id = " . $edahId . " AND c.inactive = 0 AND ch.chug_id = " . $chugId . " AND i.block_id = g.active_block_id ";
         // sort by bunk, then last name
         $sql .= " ORDER BY bunk, name ";
         $result = $dbc->doQuery($sql, $localErr);

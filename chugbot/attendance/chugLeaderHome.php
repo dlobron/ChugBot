@@ -98,10 +98,11 @@ function validateForm() {
     let valid = true;
 
     // ensure each required field is filled out - first check field exists, then that it has a value
-    fields = ["date", "edah", "group", "chug"];
+    fields = ["date", "edah[]", "group", "chug"];
     fields.forEach((field) => {
         let x = document.forms["attendance_chug_select_form"][field];
         if(field === "group") { field = "perek"; } // small override to keep backend and UI consistent with each other
+        if(field === "edah[]") { field = "edah"; } // add'l change so user just sees "Edah," not "Edah[]"
         // check field exists
         if(x === undefined) {
             error += "<li><strong>"+field[0].toUpperCase() + field.slice(1)+"</strong> missing</li>";
