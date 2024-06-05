@@ -34,7 +34,8 @@
                 const choices = new Choices(element, {
                     shouldSort: false,
                     allowHTML: true,
-                    searchChoices: false
+                    searchChoices: false,
+                    removeItemButton: true,
                 });
             });
         });
@@ -56,9 +57,9 @@
             </div>
         </li>
         <li style="margin:auto;" class="ps-0">
-            <label class="description" for="edah"><span style="color:red;">*</span>Edah/Edot</label>
+            <label class="description" for="edah[]"><span style="color:red;">*</span>Edah/Edot</label>
             <div id="edah_select" class="pb-2">
-                <select class="form-select bg-info choices-js" id="edah_list" name="edah" onchange="fillConstraintsPickList(); fillChugimConstraintsPickList();" multiple>
+                <select class="form-select bg-info choices-js" id="edah_list" name="edah[]" onchange="fillConstraintsPickList(); fillChugimConstraintsPickList();" multiple>
                     <?php echo genPickList($edahId2Name, array(), "edah"); ?>
                 </select>
             </div>

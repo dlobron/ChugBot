@@ -467,7 +467,12 @@ function fillConstraintsPickList() {
     var values = {};
     values["get_legal_id_to_name"] = 1;
     $(ourDesc).hide();
-    var parentField = document.getElementsByName("${parentId}")[0];
+    if(!$("#${choicesJS}")) {
+        var parentField = document.getElementsByName("${parentId}")[0];
+    }
+    else {
+        var parentField = document.getElementsByName("${parentId}[]")[0];
+    }
     var curSelectedEdahIds = [];
     for (var option of parentField.selectedOptions) {
         curSelectedEdahIds.push(option.value);
@@ -491,7 +496,11 @@ function fillConstraintsPickList() {
             }
             sql += "?";
         }
-        sql += ") AND e.${type}_id = g.${type}_id GROUP BY e.${type}_id HAVING COUNT(e.edah_id) = " + ct;
+        sql += ") AND e.${type}_id = g.${type}_id ";
+        if("${type}" == "group" && $("#${choicesJS}")) {
+            sql += "AND active_block_id IS NOT NULL ";
+        }
+        sql += "GROUP BY e.${type}_id HAVING COUNT(e.edah_id) = " + ct;
     }
     if(ourPickList === "edah") {
         sql += " SORT BY e.sort_order";
@@ -516,7 +525,7 @@ function fillConstraintsPickList() {
             return;
         }
         if(!$("#${choicesJS}")) {
-            html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type} required\"";
+            html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type}\" required";
         }
         else {
             html = "<select class=\"form-select choices-js\" id=\"${ourId}\" name=\"${type}\"";
@@ -526,7 +535,12 @@ function fillConstraintsPickList() {
             html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
         }
         else if ("${type}" == "group") {
-            html += " onchange=\"fillChugimConstraintsPickList()\"> <option value=\"\"> -- Choose Perek -- </option>";
+            if(typeof fillChugimConstraintsPickList === "function") {
+                html += " onchange=\"fillChugimConstraintsPickList()\"> <option value=\"\"> -- Choose Perek -- </option>";
+            }
+            else {
+                html += " onchange=\"\"> <option value=\"\"> -- Choose Perek -- </option>";
+            }
         }
         else {
             html += ">";
@@ -572,11 +586,12 @@ function fillChugimConstraintsPickList() {
     var values = {};
     values["get_legal_id_to_name"] = 1;
     $(ourDesc).hide();
+    $(ourPickList).hide();
 
     // perform basic sanity checks to ensure the two parent fields (edah, group) have valid values
-    var parent1Field = document.getElementsByName("${parent1}")[0];
+    var parent1Field = document.getElementsByName("${parent1}[]")[0];
     var parent2Field = document.getElementsByName("${parent2}");
-    if(parent2Field.length < 1) { return; } // value present for group
+    if(parent2Field.length < 1) { return; } // verifies there is a value present for group; if not, end
     parent2Field = parent2Field[0];
     var instanceIds = [];
     instanceIds.push(parent2Field.selectedOptions[0].value); // the group_id is used twice in the SQL statement, so added twice to instance id array
