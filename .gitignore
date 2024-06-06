@@ -2,3 +2,5 @@
 .DS_Store
 .key
 .crt
+*.crt
+*.key
