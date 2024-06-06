@@ -272,33 +272,6 @@ INSERT INTO `category_tables` VALUES ('blocks',1,0),('bunks',2,1),('campers',3,1
 UNLOCK TABLES;
 
 --
--- Table structure for table `chug_dedup_instances`
---
-
-DROP TABLE IF EXISTS `chug_dedup_instances`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `chug_dedup_instances` (
-  `left_chug_name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `right_chug_name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  UNIQUE KEY `uk_chug_dedup_instances` (`left_chug_name`,`right_chug_name`),
-  KEY `fk_right_chug_name` (`right_chug_name`),
-  CONSTRAINT `chug_dedup_instances_ibfk_1` FOREIGN KEY (`left_chug_name`) REFERENCES `chugim` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `chug_dedup_instances_ibfk_2` FOREIGN KEY (`right_chug_name`) REFERENCES `chugim` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `chug_dedup_instances`
---
-
-LOCK TABLES `chug_dedup_instances` WRITE;
-/*!40000 ALTER TABLE `chug_dedup_instances` DISABLE KEYS */;
-INSERT INTO `chug_dedup_instances` VALUES ('Cooking','Cooking'),('Dance','Dance'),('Flag Football','Flag Football'),('Glass Painting','Glass Painting'),('Jewelry-Making','Jewelry-Making'),('Martial Arts','Martial Arts'),('Melty Beads','Melty Beads'),('Pickleball','Pickleball'),('Sand Art','Sand Art'),('Soccer','Soccer'),('Softball','Softball'),('Teva','Teva'),('Ultimate Frisbee','Ultimate Frisbee'),('Weaving, Sewing &amp; Needle-Point','Weaving, Sewing &amp; Needle-Point');
-/*!40000 ALTER TABLE `chug_dedup_instances` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `chug_dedup_instances_v2`
 --
 
