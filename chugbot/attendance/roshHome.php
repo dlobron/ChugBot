@@ -2,7 +2,7 @@
     session_start();
     include_once '../dbConn.php';
     include_once '../functions.php';
-    bounceToLogin("chug leader");
+    bounceToLogin("rosh");
     checkLogout();
     setup_camp_specific_terminology_constants();
 
@@ -21,8 +21,7 @@
     fillId2Name(null, $edahId2Name, $dbErr, "edah_id", "edot");
     fillId2Name(null, $bunkId2Name, $dbErr, "bunk_id", "bunks");
 
-    echo headerText(ucfirst(chug_term_singular) . " Leader Home");
-
+    echo headerText("Rosh Home");
 ?>
     <!-- Uses choices-js, more info at https://github.com/Choices-js/Choices -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
@@ -36,7 +35,7 @@
                     shouldSort: false,
                     allowHTML: true,
                     searchChoices: false,
-                    removeItemButton: true,
+                    removeItemButton: true
                 });
             });
         });
@@ -45,12 +44,12 @@
 <div class="container row justify-content-center" style="margin:auto;"><div id="errors" class="mt-2"></div></div>
 
 <div class="card card-body mt-2 p-3 mb-3 container">
-    <h1><?php echo ucfirst(chug_term_singular)?> Leader Home</h1>
-    <div class="page-header"><h2><?php echo ucfirst(chug_term_singular)?> Leader Home</h2>
-    <p>In the form below, select the date, edah/edot, perek, and <?php echo chug_term_singular?> you are taking attendance for.
-    After clicking "Take Attendance" below the form, check the box for each camper who is <strong>present</strong>. Then press "Submit attendance" to complete the attendance.</p>
+    <h1>Rosh Edah/Yoetzet Home</h1>
+    <div class="page-header"><h2>Rosh Edah/Yoetzet Home</h2>
+    <p>In the form below, select the date, edah, and perek you wish to review attendance records for.
+    Just click "View Attendance" below the form to see the latest record.</p>
     
-    <form id="attendance_chug_select_form" class="justify-content-center" method="GET" action="takeAttendance.php" onsubmit="return validateForm()"><ul>
+    <form id="attendance_chug_select_form" class="justify-content-center" method="GET" action="viewAttendance.php" onsubmit="return validateForm()"><ul>
         <li style="margin:auto;" class="ps-0">
             <label class="description" for="date"><span style="color:red;">*</span>Date</label>
             <div id="date_pick" class="pb-2">
@@ -58,9 +57,9 @@
             </div>
         </li>
         <li style="margin:auto;" class="ps-0">
-            <label class="description" for="edah[]"><span style="color:red;">*</span>Edah/Edot</label>
+            <label class="description" for="edah"><span style="color:red;">*</span>Edah/Edot</label>
             <div id="edah_select" class="pb-2">
-                <select class="form-select bg-info choices-js" id="edah_list" name="edah[]" onchange="fillConstraintsPickList(); fillChugimConstraintsPickList();" multiple>
+                <select class="form-select bg-info choices-js" id="edah_list" name="edah[]" onchange="fillConstraintsPickList();" multiple>
                     <?php echo genPickList($edahId2Name, array(), "edah"); ?>
                 </select>
             </div>
@@ -71,15 +70,9 @@
                 <?php echo genConstrainedPickListScript("group_select", "edah", "group_desc", "group", true); ?>
             </div>
         </li>
-        <li style="margin:auto;" class="ps-0">
-            <label class="description" for="chug" id="chug_desc"><span style="color:red;">*</span><?php echo ucfirst(chug_term_singular) ?></label>
-            <div id="chug_select" class="pb-2">
-                <?php echo genChugimPickListScript("chug_select", "edah", "group", "chug_desc", "chug", true); ?>
-            </div>
-        </li>
         <li style="margin:auto;">
             <div class="row justify-content-center">
-                <div class="col-6" style="text-align:center;"><button class="btn btn-primary" type="submit" id="submit_btn">Take Attendance</button></div>
+                <div class="col-6" style="text-align:center;"><button class="btn btn-primary" type="submit" id="submit_btn">View Attendance</button></div>
             </div>
         </li>
     </ul></form>
@@ -88,14 +81,7 @@
 
 <script>
 // automatically set date to "today"
-const today = new Date();
-const yyyy = today.getFullYear();
-const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months start at 0!
-const dd = String(today.getDate()).padStart(2, '0');
-
-const formattedToday = `${yyyy}-${mm}-${dd}`;
-document.getElementById('date').value = formattedToday;
-//console.log(date.getYear()+"-"+(date.getMonth()+1)+"-"+date.getDate());
+document.getElementById('date').valueAsDate = new Date();
 
 
 function validateForm() {
@@ -106,7 +92,7 @@ function validateForm() {
     let valid = true;
 
     // ensure each required field is filled out - first check field exists, then that it has a value
-    fields = ["date", "edah[]", "group", "chug"];
+    fields = ["date", "edah[]", "group"];
     fields.forEach((field) => {
         let x = document.forms["attendance_chug_select_form"][field];
         if(field === "group") { field = "perek"; } // small override to keep backend and UI consistent with each other

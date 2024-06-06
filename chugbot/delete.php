@@ -3,6 +3,7 @@ session_start();
 include_once 'functions.php';
 include_once 'dbConn.php';
 bounceToLogin();
+checkLogout();
 
 $dbErr = $itemIdErr = $qsErr = "";
 $comma_sep = $table_name = $item_id = $id_col = "";

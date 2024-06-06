@@ -3,6 +3,7 @@ session_start();
 include_once 'addEdit.php';
 include_once 'formItem.php';
 camperBounceToLogin();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 $db = new DbConn();

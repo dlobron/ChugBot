@@ -4,6 +4,7 @@ include_once 'functions.php';
 include_once 'dbConn.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 $edahId2Name = array();

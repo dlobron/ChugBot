@@ -3,6 +3,7 @@ session_start();
 include_once 'assignment.php';
 include_once 'dbConn.php';
 bounceToLogin();
+checkLogout();
 $err = $dbErr = "";
 
 if ($_SERVER["REQUEST_METHOD"] != "GET") {

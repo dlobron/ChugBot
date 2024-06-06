@@ -5,6 +5,7 @@ include_once 'functions.php';
 include_once 'constants.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 
 // Create an ID to name mapping for tables that we might clear.  We clear
 // these tables from the current DB unless the user instructs us not to.

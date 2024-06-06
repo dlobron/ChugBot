@@ -3,6 +3,7 @@ session_start();
 include_once 'addEdit.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 $editChugPage = new EditPage("Edit " . ucfirst(chug_term_singular),

@@ -3,6 +3,7 @@ session_start();
 include_once 'addEdit.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 
 $editEdahPage = new EditPage("Edit Edah",
     "Please update edah information as needed",

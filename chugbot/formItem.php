@@ -165,7 +165,11 @@ class FormItemSingleTextField extends FormItem
         $this->html .= "<div>\n";
         $this->html .= "<input id=\"$this->inputName\" name=\"$this->inputName\" placeholder=\"$ph\" " .
             "class=\"form-control $this->inputClass\" type=\"$this->inputType\" $this->inputMaxLengthHtml " .
-            "value=\"$this->inputValue\"/>\n";
+            "value=\"$this->inputValue\"";
+        if($this->required) {
+            $this->html .= " required";
+        }
+        $this->html .= "/>\n";
         if ($this->error) {
             $this->html .= "<span class=\"error\">$this->error</span>\n";
         }

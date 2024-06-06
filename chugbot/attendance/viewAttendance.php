@@ -2,7 +2,8 @@
     session_start();
     include_once '../dbConn.php';
     include_once '../functions.php';
-    bounceToLogin();
+    bounceToLogin("rosh");
+    checkLogout();
     setup_camp_specific_terminology_constants();
 
     $dbErr = "";
@@ -36,8 +37,7 @@
     validate_form_inputs();
 
 ?>
-<script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.5"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <div class="card card-body mt-2 p-3 mb-3 container">
     <h1>View Attendance</h1>
@@ -45,7 +45,7 @@
     <h4> Date: <?php echo $date; ?> </h4>
     </div>
 
-    <p>By default, all campers are shown, and those who do not have attendance recorded for the designated day are highlighted in red.
+    <p>By default, all campers are shown. Campers marked as absent are highlighted in <span style="background:#f8d7da;">red</span>. Campers for whom attendance has not been taken are highlighted in <span style="background:#fff3cd;">yellow</span>.
     If a <?php echo chug_term_singular; ?> name is underlined, hover over it (or click if on a mobile device) to see more information.
     Beneath the report for an edah is a button which copies a plaintext report of missing campers to your clipboard (which can then be easily sent to madrichim).</p>
     
@@ -63,14 +63,16 @@
         $localErr = "";
         $dbc = new DbConn();
         // this sql statement gets all campers in the edah with their chug assignments
-        $sql = "SELECT c.camper_id, CONCAT(c.last, ', ', c.first) AS name, b.name AS bunk, ch.name AS chug, ch.department_name, ch.rosh_name, a.attendance_id IS NOT NULL AS is_present " .
+        $sql = "SELECT c.camper_id, CONCAT(c.last, ', ', c.first) AS name, b.name AS bunk, ch.name AS chug, ch.department_name, ch.rosh_name, a.attendance_id IS NOT NULL AS is_present, at.chug_attendance_id IS NOT NULL AS attendance_taken " .
             "FROM campers c JOIN matches m ON c.camper_id = m.camper_id " .
             "JOIN bunks b ON c.bunk_id = b.bunk_id " . 
             "JOIN chug_instances i ON m.chug_instance_id = i.chug_instance_id " . 
             "JOIN chugim ch on ch.chug_id = i.chug_id " . 
             "JOIN chug_groups g on ch.group_id = g.group_id ";
-        // include attendance record
+        // include present/absent
         $sql .= "LEFT OUTER JOIN (SELECT * FROM attendance_present WHERE date = \"$date\") a ON c.camper_id = a.camper_id AND i.chug_instance_id = a.chug_instance_id ";
+        // include which chugim have had attendance taken
+        $sql .= "LEFT OUTER JOIN (SELECT * FROM chug_attendance_taken WHERE date = \"$date\") at ON c.edah_id = at.edah_id AND i.chug_instance_id = at.chug_instance_id ";
         // filter by block, edah, group, and only show "active" campers
         $sql .= "WHERE i.block_id = g.active_block_id AND c.inactive = 0 AND c.edah_id = $edahId and ch.group_id = $groupId ";
         // order result by bunk and then last name
@@ -92,18 +94,27 @@
                 // [0] - camper id          [1] - name 
                 // [2] - bunk               [3] - chug assignment
                 // [4] - department         [5] - chug rosh/leader
-                // [6] - present (1/0)
+                // [6] - present (1/0)      [7] - attendance taken for perek (1/0)
 
             // each time through the loop, we will create an html table row to include in the larger table
             // it will signal if campers are present/absent by row color
             $tr = "<tr class=\"";
-            if(!$row[6]) { // if absent
+            if(!$row[6] && $row[7]) { // missing, attendance taken
                 $tr .= "table-danger absent";
+                $icon = "<i class=\"bi bi-x-circle-fill\"></i>";
             }
-            else {
+            else if ($row[6]) { // present, attendance taken
                 $tr .= "present";
+                $icon = "<i class=\"bi bi-check-circle\"></i>";
+            }
+            else { // missing, but attendance not taken
+                $tr .= "table-warning absent";
+                $icon = "<i class=\"bi bi-exclamation-triangle\"></i>";
             }
             $tr .= "\">";
+
+            // status icon
+            $tr .= "<td class=\"text-center align-middle\">$icon</td>";
 
             // bunk
             $tr .= "<td>$row[2]</td>";
@@ -150,11 +161,12 @@
         // final section which will be returned showing the attendance for the edah
         $attendanceSection = "<div class=\"card card-body bg-light mb-3 edah-attendance\">";
         $attendanceSection .= "<h5 class=\"text-center\" id=\"edah$edahId\">Edah: " . $edahId2Name[$edahId] . "</h5>";
-        $attendanceSection .= "<table class=\"table table-striped table-hover\" id=\"attendance$edahId\"><thead class=\"table-dark\"><tr>";
+        $attendanceSection .= "<table class=\"table table-hover\" id=\"attendance$edahId\"><thead class=\"table-dark\"><tr>";
+        $attendanceSection .= "<th scope=\"col\"></th>";
         if($multipleBunks) {
             $attendanceSection .= "<th scope=\"col\">Bunk</th>";
         }
-        $attendanceSection .= "<th scope=\"col\">Name</th><th scope=\"col\">Chug Assignment</th></tr></thead>";
+        $attendanceSection .= "<th scope=\"col\">Name</th><th scope=\"col\">Chug</th></tr></thead>";
         $attendanceSection .= "<tbody>" . $attTable . "</tbody>";
         $attendanceSection .= "</table>";
         $attendanceSection .= "<button type=\"button\" class=\"btn btn-info mx-auto\" onclick=\"copyReport($edahId)\">Copy Missing Camper Report</button>";
@@ -271,17 +283,17 @@ function validate_form_inputs()
         var output = "";
         var table = document.getElementById("attendance"+edahId);
         var absent = table.querySelectorAll(".absent");
-        output += document.getElementById("edah"+edahId).innerHTML + " Missing Campers\n";
+        output += document.getElementById("edah"+edahId).innerText.substr(5) + " Missing Campers\n";
         output += "<?php echo $groupId2Name[$groupId]; ?> -- <?php echo $date; ?>";
 
         // bunk not included
-        if (table.rows[0].cells.length === 2) {
+        if (table.rows[0].cells.length === 3) {
             absent.forEach((row) => {
-                var camperName = row.cells[0].innerHTML;
-                var camperChug = row.cells[1].innerHTML;
-                if(row.cells[1].hasChildNodes()) {
+                var camperName = row.cells[1].innerText;
+                var camperChug = row.cells[2].innerText;
+                if(row.cells[2].hasChildNodes()) {
                     // handle case where there is a tooltip -- unneeded info
-                    camperChug = row.cells[1].firstChild.innerHTML;
+                    camperChug = row.cells[2].firstChild.innerText;
                 }
                 // add camper info
                 output += "\n * " + camperName + " (" + camperChug + ")";
@@ -291,12 +303,12 @@ function validate_form_inputs()
         else {
             var bunk = "";
             absent.forEach((row) => {
-                var camperBunk = row.cells[0].innerHTML;
-                var camperName = row.cells[1].innerHTML;
-                var camperChug = row.cells[2].innerHTML;
-                if(row.cells[2].hasChildNodes()) {
+                var camperBunk = row.cells[1].innerText;
+                var camperName = row.cells[2].innerText;
+                var camperChug = row.cells[3].innerText;
+                if(row.cells[3].hasChildNodes()) {
                     // handle case where there is a tooltip -- unneeded info
-                    camperChug = row.cells[2].firstChild.innerHTML;
+                    camperChug = row.cells[3].firstChild.innerText;
                 }
                 // check if this camper's bunk is same as previous; if not, start new section in report
                 if(bunk != camperBunk) {
@@ -307,14 +319,7 @@ function validate_form_inputs()
                 output += "\n * " + camperName + " (" + camperChug + ")";
             });
         }
-        navigator.clipboard.writeText(output);
-
-        /*var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-        var toastList = toastElList.map(function(toastEl) {
-            return new bootstrap.Toast(toastEl)
-        })
-        console.log(toastList)
-        toastList.forEach(toast => toast.show()) */
+        setClipboard(output.trim());
 
         $('.toast').toast({
                     animation: false,
@@ -322,4 +327,9 @@ function validate_form_inputs()
                 });
                 $('.toast').toast('show');
     }
+
+    async function setClipboard(text) {
+        await navigator.clipboard.writeText(text);
+    }
+
 </script>

@@ -4,6 +4,7 @@ include_once 'functions.php';
 include_once 'formItem.php';
 include_once 'dbConn.php';
 bounceToLogin();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = $existingPrefCount = $existingSendConfirmEmail = $existingChugTermSingular = $existingChugTermPlural = $existingBlockTermSingular = $existingBlockTermPlural = "";

@@ -410,7 +410,7 @@ function fillConstraintsCheckBox() {
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
     $.ajax({
-        url: 'ajax.php',
+        url: '../ajax.php',
         type: 'post',
         data: values,
         success: function(data) {
@@ -735,6 +735,16 @@ function adminLoggedIn()
     return isset($_SESSION['admin_logged_in']);
 }
 
+function roshLoggedIn()
+{
+    return isset($_SESSION['rosh_logged_in']);
+}
+
+function chugLeaderLoggedIn()
+{
+    return isset($_SESSION['chug_leader_logged_in']);
+}
+
 function camperLoggedIn()
 {
     return isset($_SESSION['camper_logged_in']);
@@ -762,7 +772,7 @@ function homeAnchor($text = "home")
 
 function staffHomeAnchor($text = "home")
 {
-    $homeUrl = urlIfy("staffHome.php");
+    $homeUrl = urlIfy("../staffHome.php");
     return "<a href=\"$homeUrl\">$text</a>";
 }
 
@@ -771,18 +781,36 @@ function loginRequiredMessage()
     $retVal = "";
     if (!isset($_SESSION['admin_logged_in'])) {
         $retVal = "<font color=\"red\"><b>Login required!</b></font><br>The page you are " .
-            "accessing requires that you log in with the admin password.<br>";
+            "accessing requires that you log in with a staff password.<br>";
     }
     return $retVal;
 }
 
-function bounceToLogin()
+function bounceToLogin($role = "admin")
 {
-    if (!isset($_SESSION['admin_logged_in'])) {
-        $fromUrl = $_SERVER["PHP_SELF"];
-        $redirUrl = urlIfy("../staffLogin.php?from=$fromUrl");
-        header("Location: $redirUrl");
-        exit();
+    if($role == "admin") {
+        if (!isset($_SESSION['admin_logged_in'])) {
+            $fromUrl = $_SERVER["PHP_SELF"];
+            $redirUrl = urlIfy("../staffLogin.php?from=$fromUrl");
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    else if ($role == "chugLeader") {
+        if (!isset($_SESSION['chug_leader_logged_in'])) {
+            $fromUrl = $_SERVER["PHP_SELF"];
+            $redirUrl = urlIfy("../staffLogin.php?from=$fromUrl");
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    else if ($role == "rosh") {
+        if (!isset($_SESSION['rosh_logged_in'])) {
+            $fromUrl = $_SERVER["PHP_SELF"];
+            $redirUrl = urlIfy("../staffLogin.php?from=$fromUrl");
+            header("Location: $redirUrl");
+            exit();
+        }
     }
 }
 
@@ -791,7 +819,7 @@ function camperBounceToLogin()
     if ((!isset($_SESSION['camper_logged_in'])) &&
         (!isset($_SESSION['admin_logged_in']))) {
         $fromUrl = $_SERVER["PHP_SELF"];
-        $redirUrl = urlIfy("index.php?retry=1");
+        $redirUrl = urlIfy("../index.php?retry=1");
         header("Location: $redirUrl");
         exit();
     }
@@ -808,12 +836,28 @@ function fromBounce()
     return false;
 }
 
-function bouncePastIfLoggedIn($localLink)
+function bouncePastIfLoggedIn($localLink, $role)
 {
-    if (isset($_SESSION['admin_logged_in'])) {
-        $redirUrl = urlIfy($localLink);
-        header("Location: $redirUrl");
-        exit();
+    if($role == "admin") {
+        if (isset($_SESSION['admin_logged_in'])) {
+            $redirUrl = urlIfy($localLink);
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    else if($role == "chugLeader") {
+        if (isset($_SESSION['chug_leader_logged_in'])) {
+            $redirUrl = urlIfy($localLink);
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    else if($role == "rosh") {
+        if (isset($_SESSION['rosh_logged_in'])) {
+            $redirUrl = urlIfy($localLink);
+            header("Location: $redirUrl");
+            exit();
+        }
     }
 }
 
@@ -831,10 +875,28 @@ function staffBounceBackUrl()
     }
     if (count($parts) > 0) {
         $len = count($parts);
-        $url = urlBaseText() . $parts[$len - 1];
+        $from = array_search("from=",$parts);
+        $str = "";
+        for($i = $from + 1; $i < $len - 1; $i++) {
+            $str .= $parts[$i] . "/";
+        }
+        $url = urlBaseText() . $str . $parts[$len - 1];
     }
 
     return $url;
+}
+
+function checkLogout() 
+{
+    // sign out if logout button was pressed
+    $logout = test_get_input('logout');
+    if (!empty($logout)) {
+        unset($_SESSION['rosh_logged_in']);
+        unset($_SESSION['chug_leader_logged_in']);
+        unset($_SESSION['admin_logged_in']);
+        unset($_SESSION['camper_logged_in']);
+        bounceToLogin();
+    }
 }
 
 function navText()
@@ -849,7 +911,17 @@ function navText()
     $retVal .= "<div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">";
     $retVal .= "<ul class=\"navbar-nav me-auto mb-2 mb-lg-0\">";
     if (adminLoggedIn()) {
-        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Staff Home</a></li>";
+        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Admin Home</a></li>";
+    }
+    if (roshLoggedIn()) {
+        $roshUrl = urlIfy("../attendance/roshHome.php");
+        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$roshUrl\">Rosh/Yoetzet Home</a></li>";
+    }
+    if (chugLeaderLoggedIn()) {
+        $chugLeaderUrl = urlIfy("../attendance/chugLeaderHome.php");
+        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$chugLeaderUrl\">Chug Leader Home</a></li>";
+    }
+    if (camperLoggedIn()) {
         $camperUrl = urlIfy("../camperHome.php");
         $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$camperUrl\">Camper Home</a></li>";
     } else {
@@ -871,7 +943,15 @@ function navText()
            }
 	}
     }
-    $retVal .= "</div></ul></div></nav>";
+    $retVal .= "</ul>";
+    
+    if (camperLoggedIn()) {
+        $retVal .= "<form class=\"d-flex ms-auto\" method=\"GET\">" . 
+        "<button class=\"nav-link btn btn-link\" name=\"logout\" value=\"1\" type=\"submit\">Logout</button>" . 
+      "</form>";
+    }
+    
+    $retVal .= "</div></div></nav>";
 
     return $retVal;
 }

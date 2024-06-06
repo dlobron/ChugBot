@@ -2,7 +2,8 @@
     session_start();
     include_once '../dbConn.php';
     include_once '../functions.php';
-    bounceToLogin();
+    bounceToLogin("chugLeader");
+    checkLogout();
     setup_camp_specific_terminology_constants();
 
     $dbErr = "";
@@ -71,6 +72,26 @@
                 $sql .= "($camper, '$date', $chugInstanceId)";
                 // add a comma between every value
                 if($ct++ < count($_POST['attendance'])) {
+                    $sql .= ",";
+                }
+            }
+            $result = $dbc->doQuery($sql, $localErr);
+            if ($result == false) {
+                echo dbErrorString($sql, $localErr);
+                exit();
+            }
+        }
+
+        // 4: note that attendance has been taken for this perek on this day
+        if(test_post_input('attendance') != "") {
+            $localErr = "";
+            $dbc = new DbConn();
+            $sql = "INSERT IGNORE INTO chug_attendance_taken (edah_id, date, chug_instance_id) VALUES ";
+            $ct = 1; 
+            foreach($edahIds as $id) {
+                $sql .= "($id, '$date', $chugInstanceId)";
+                // add a comma between every value
+                if($ct++ < count($edahIds)) {
                     $sql .= ",";
                 }
             }

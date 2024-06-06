@@ -4,6 +4,7 @@ include_once 'addEdit.php';
 include_once 'formItem.php';
 include_once 'dbConn.php';
 bounceToLogin();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 $addChugPage = new AddPage("Add " . ucfirst(chug_term_singular),

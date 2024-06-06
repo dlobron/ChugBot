@@ -3,6 +3,7 @@ session_start();
 include_once 'dbConn.php';
 include_once 'functions.php';
 bounceToLogin();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 // Check for a query string that signals a message.
