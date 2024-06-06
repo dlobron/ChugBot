@@ -53,7 +53,9 @@ CREATE TABLE `admin_data` (
   `block_term_plural` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'blocks',
   `enable_camper_importer` tinyint(1) NOT NULL DEFAULT '0',
   `enable_selection_process` tinyint(1) NOT NULL DEFAULT '1',
-  `enable_camper_creation` tinyint(1) NOT NULL DEFAULT '1'
+  `enable_camper_creation` tinyint(1) NOT NULL DEFAULT '1',
+  `chug_leader_password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `rosh_yoetzet_password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -63,7 +65,7 @@ CREATE TABLE `admin_data` (
 
 LOCK TABLES `admin_data` WRITE;
 /*!40000 ALTER TABLE `admin_data` DISABLE KEYS */;
-INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,NULL,'Kayitz','the Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose three Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Ramah Day Camp DC','www.campramahne.org/day-camp-washington-dc/',3,0,'chug','chugim','block','blocks',1,1, 1);
+INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,NULL,'Kayitz','the Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose three Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Ramah Day Camp DC','www.campramahne.org/day-camp-washington-dc/',3,0,'chug','chugim','block','blocks',1,1,1,'$2y$10$WYxSNvD2Obed2E8/8/9iFuJIOvw6cIkWzjPBZP4ZFUakv6pvURtoG','$2y$10$iLwZV5ZVjW5v7I9zw9ZdxeLyq0/I5RAX8iVSquSm2NdxSIYx6cAI6');
 /*!40000 ALTER TABLE `admin_data` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -233,6 +235,25 @@ INSERT INTO `category_tables` VALUES ('blocks',1,0),('bunks',2,0),('campers',3,1
 UNLOCK TABLES;
 
 --
+-- Table structure for table `chug_attendance_taken`
+--
+
+DROP TABLE IF EXISTS `chug_attendance_taken`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `chug_attendance_taken` (
+  `edah_id` int NOT NULL,
+  `date` date NOT NULL,
+  `chug_instance_id` int NOT NULL,
+  `chug_attendance_id` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`chug_attendance_id`),
+  UNIQUE KEY `uk_chug_attendance_taken` (`edah_id`, `date`,`chug_instance_id`),
+  CONSTRAINT `chug_attendance_taken_ibfk_1` FOREIGN KEY (`edah_id`) REFERENCES `edot` (`edah_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chug_attendance_taken_ibfk_2` FOREIGN KEY (`chug_instance_id`) REFERENCES `chug_instances` (`chug_instance_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `chug_dedup_instances_v2`
 --
 
@@ -269,6 +290,7 @@ DROP TABLE IF EXISTS `chug_groups`;
 CREATE TABLE `chug_groups` (
   `group_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `active_block_id` int,
   PRIMARY KEY (`group_id`),
   UNIQUE KEY `uk_groups` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;

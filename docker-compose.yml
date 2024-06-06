@@ -9,8 +9,10 @@ services:
             - db
         volumes:
             - ./chugbot:/var/www/html/
+            - ./Docker/certs:/etc/apache2/ssl
         ports:
             - 8000:80
+            - 443:443
         environment:
             MYSQL_HOST: db
             MYSQL_DB: camprama_chugbot_db
