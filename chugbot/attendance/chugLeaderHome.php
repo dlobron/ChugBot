@@ -23,6 +23,15 @@
 
     echo headerText(ucfirst(chug_term_singular) . " Leader Home");
 
+    if(!attendanceActive()) {
+        $fullErrorMsg = "<div class=\"col-md-6 offset-md-3\"><div class=\"alert alert-danger alert-dismissible fade show m-2\" role=\"alert\">" . 
+        "<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button><h5><strong>Error:</strong> " . 
+        "Attendance Disabled</h5>Nothing is available to take attendance for; attendance has been disabled. " .
+        "Contact an administrator if you believe to be receiving this message in error.</div></div>";
+        echo $fullErrorMsg;
+        exit();
+    }
+
 ?>
     <!-- Uses choices-js, more info at https://github.com/Choices-js/Choices -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
@@ -54,7 +63,7 @@
         <li style="margin:auto;" class="ps-0">
             <label class="description" for="date"><span style="color:red;">*</span>Date</label>
             <div id="date_pick" class="pb-2">
-                <input type="date" id="date" name="date" class="form-control medium">
+                <input type="date" id="date" name="date" class="form-control medium" required>
             </div>
         </li>
         <li style="margin:auto;" class="ps-0">
@@ -145,3 +154,17 @@ function validateForm() {
 </script>
 
 </body>
+
+<?php
+function attendanceActive() {
+    $db = new dbConn();
+    $dbErr = "";
+    $db->addSelectColumn("count(active_block_id)");
+    $result = $db->simpleSelectFromTable("chug_groups", $dbErr);
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        // just gets the count of active blocks
+        return $row[0] > 0;
+    }
+    return false;
+}
+?>

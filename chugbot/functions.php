@@ -901,6 +901,7 @@ function checkLogout()
 
 function navText()
 {
+    setup_camp_specific_terminology_constants();
     $homeUrl = homeUrl();
     $retVal = "<nav class=\"navbar navbar-expand-lg navbar-light bg-light\">";
     $baseUrl = baseUrl();
@@ -911,7 +912,12 @@ function navText()
     $retVal .= "<div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">";
     $retVal .= "<ul class=\"navbar-nav me-auto mb-2 mb-lg-0\">";
     if (adminLoggedIn()) {
-        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Admin Home</a></li>";
+        $adminAttendanceUrl = urlIfy("../attendance/");
+        $retVal .= "<li class=\"nav-item dropdown\"><a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"adminNavbarDropdown\" role=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">" . 
+            "Admin</a><ul class=\"dropdown-menu\" aria-labelledby=\"adminNavbarDropdown\">" .
+            "<li><a class=\"dropdown-item\" href=\"$homeUrl\">Main Admin Home</a></li>" . 
+            "<li><a class=\"dropdown-item\" href=\"$adminAttendanceUrl\">Admin Attendance Settings</a></li>" . 
+            "</ul></li>";
     }
     if (roshLoggedIn()) {
         $roshUrl = urlIfy("../attendance/roshHome.php");
@@ -919,7 +925,7 @@ function navText()
     }
     if (chugLeaderLoggedIn()) {
         $chugLeaderUrl = urlIfy("../attendance/chugLeaderHome.php");
-        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$chugLeaderUrl\">Chug Leader Home</a></li>";
+        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$chugLeaderUrl\">" . ucfirst(chug_term_singular) . " Leader Home</a></li>";
     }
     if (camperLoggedIn()) {
         $camperUrl = urlIfy("../camperHome.php");

@@ -102,19 +102,23 @@
             if(!$row[6] && $row[7]) { // missing, attendance taken
                 $tr .= "table-danger absent";
                 $icon = "<i class=\"bi bi-x-circle-fill\"></i>";
+                $status = "Absent";
             }
             else if ($row[6]) { // present, attendance taken
                 $tr .= "present";
                 $icon = "<i class=\"bi bi-check-circle\"></i>";
+                $status = "Present";
             }
             else { // missing, but attendance not taken
                 $tr .= "table-warning absent";
                 $icon = "<i class=\"bi bi-exclamation-triangle\"></i>";
+                $status = "Attendance not yet taken";
             }
             $tr .= "\">";
 
             // status icon
-            $tr .= "<td class=\"text-center align-middle\">$icon</td>";
+            $tr .= "<td class=\"text-center align-middle\"><span data-bs-toggle=\"tooltip\" data-bs-html=\"true\" title=\"$status\" " . 
+                    "style=\"border-bottom: 1px dashed #999;text-decoration: none; \">$icon</td>";
 
             // bunk
             $tr .= "<td>$row[2]</td>";
