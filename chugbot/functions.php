@@ -456,6 +456,8 @@ JS;
 // NOTE: fillConstraintsPickList() must be called as an `onchange` method
 //     from the element which it relies upon
 function genConstrainedPickListScript($ourId, $parentId, $descId, $type, $choicesJS = false) {
+    // Ensure $choicesJS is converted to a JavaScript boolean value
+    $choicesJS = $choicesJS ? 'true' : 'false';
     $javascript = <<<JS
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
@@ -467,7 +469,7 @@ function fillConstraintsPickList() {
     var values = {};
     values["get_legal_id_to_name"] = 1;
     $(ourDesc).hide();
-    if(!$("#${choicesJS}")) {
+    if(!${choicesJS}) {
         var parentField = document.getElementsByName("${parentId}")[0];
     }
     else {
@@ -552,7 +554,7 @@ function fillConstraintsPickList() {
         $(ourPickList).append(html);
         $(ourPickList).show();
         $(ourDesc).show();
-        if($("#${choicesJS}")) {
+        if(${choicesJS}) {
             const choices = new Choices($(ourPickList).find('select')[0], {shouldSort: false, allowHTML: true, searchEnabled: false});
         }
         },
@@ -921,7 +923,12 @@ function navText()
     }
     if (roshLoggedIn()) {
         $roshUrl = urlIfy("../attendance/roshHome.php");
-        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$roshUrl\">Rosh/Yoetzet Home</a></li>";
+        //$retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$roshUrl\">Rosh/Yoetzet Home</a></li>";
+        $retVal .= "<li class=\"nav-item dropdown\"><a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"roshNavbarDropdown\" role=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">" . 
+            "Rosh/Yoetzet</a><ul class=\"dropdown-menu\" aria-labelledby=\"roshNavbarDropdown\">" .
+            "<li><a class=\"dropdown-item\" href=\"$roshUrl\">Rosh/Yoetzet Home (Attendance Module)</a></li>" . 
+            "<li><a class=\"dropdown-item\" href=\"../designSchedules.php\">Schedule Builder</a></li>" . 
+            "</ul></li>";
     }
     if (chugLeaderLoggedIn()) {
         $chugLeaderUrl = urlIfy("../attendance/chugLeaderHome.php");

@@ -2,7 +2,7 @@
     session_start();
     include_once 'dbConn.php';
     include_once 'functions.php';
-    bounceToLogin();
+    bounceToLogin("rosh");
     checkLogout();
     setup_camp_specific_terminology_constants();
     echo headerText("Print Schedules");
