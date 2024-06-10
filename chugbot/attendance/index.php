@@ -108,14 +108,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // 2: do deletions
             $localErr = "";
             $dbc = new DbConn();
-            // delete attendance record
-            $sql = "DELETE FROM attendance_present WHERE date < '$date'";
+            // 2a: delete attendance records
+            $sql = "DELETE FROM attendance WHERE date < '$date'";
             $result = $dbc->doQuery($sql, $localErr);
             if ($result == false) {
                 echo dbErrorString($sql, $localErr);
                 exit();
             }
-            // delete that attendance was taken for that perek
+            // 2b: delete that attendance was taken for that perek
             $sql = "DELETE FROM chug_attendance_taken WHERE date < '$date'";
             $result = $dbc->doQuery($sql, $localErr);
             if ($result == false) {

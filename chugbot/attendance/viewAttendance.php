@@ -36,6 +36,26 @@
     // were passed in
     validate_form_inputs();
 
+    // get active block id for particular date/chug group
+    $localErr = "";
+    $dbc = new DbConn();
+    $sql = "SELECT block_id FROM attendance_block_by_date WHERE group_id = $groupId and date = '$date'";
+    $result = $dbc->doQuery($sql, $localErr);
+    if ($result == false) {
+        echo dbErrorString($sql, $localErr);
+        exit();
+    }
+    $activeBlockId = NULL;
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $activeBlockId = $row[0]; // only thing being returned
+    }
+    if(is_null($activeBlockId)) {
+        echo "<div class=\"col-md-6 offset-md-3\"><div class=\"alert alert-danger alert-dismissible fade show m-2\" role=\"alert\">" . 
+        "<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button><h5><strong>Error:</strong> " . 
+        "No Attendance Records Exist</h5>No attendance has been taken yet for the provided day. Try again once someone has taken attendance.</div></div>";
+        exit();
+    }
+
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -63,18 +83,16 @@
         $localErr = "";
         $dbc = new DbConn();
         // this sql statement gets all campers in the edah with their chug assignments
-        $sql = "SELECT c.camper_id, CONCAT(c.last, ', ', c.first) AS name, b.name AS bunk, ch.name AS chug, ch.department_name, ch.rosh_name, a.attendance_id IS NOT NULL AS is_present, at.chug_attendance_id IS NOT NULL AS attendance_taken " .
+        $sql = "SELECT c.camper_id, CONCAT(c.last, ', ', c.first) AS name, b.name AS bunk, ch.name AS chug, ch.department_name, ch.rosh_name, a.present is_present " .
             "FROM campers c JOIN matches m ON c.camper_id = m.camper_id " .
             "JOIN bunks b ON c.bunk_id = b.bunk_id " . 
             "JOIN chug_instances i ON m.chug_instance_id = i.chug_instance_id " . 
             "JOIN chugim ch on ch.chug_id = i.chug_id " . 
             "JOIN chug_groups g on ch.group_id = g.group_id ";
         // include present/absent
-        $sql .= "LEFT OUTER JOIN (SELECT * FROM attendance_present WHERE date = \"$date\") a ON c.camper_id = a.camper_id AND i.chug_instance_id = a.chug_instance_id ";
-        // include which chugim have had attendance taken
-        $sql .= "LEFT OUTER JOIN (SELECT * FROM chug_attendance_taken WHERE date = \"$date\") at ON c.edah_id = at.edah_id AND i.chug_instance_id = at.chug_instance_id ";
+        $sql .= "LEFT OUTER JOIN (SELECT * FROM attendance WHERE date = \"$date\") a ON c.camper_id = a.camper_id AND i.chug_instance_id = a.chug_instance_id ";
         // filter by block, edah, group, and only show "active" campers
-        $sql .= "WHERE i.block_id = g.active_block_id AND c.inactive = 0 AND c.edah_id = $edahId and ch.group_id = $groupId ";
+        $sql .= "WHERE i.block_id = $activeBlockId AND c.inactive = 0 AND c.edah_id = $edahId and ch.group_id = $groupId ";
         // order result by bunk and then last name
         $sql .= "ORDER BY bunk, name";
         
@@ -89,6 +107,7 @@
         $attTable = "";
         $bunkText = "";
         $multipleBunks = False;
+        $campersMissingAttendance = 0;
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
             // breakdown of $row:
                 // [0] - camper id          [1] - name 
@@ -99,20 +118,22 @@
             // each time through the loop, we will create an html table row to include in the larger table
             // it will signal if campers are present/absent by row color
             $tr = "<tr class=\"";
-            if(!$row[6] && $row[7]) { // missing, attendance taken
+
+            if(is_null($row[6])) { // missing, but attendance not taken
+                $tr .= "table-warning absent";
+                $icon = "<i class=\"bi bi-exclamation-triangle\"></i>";
+                $status = "Attendance not yet taken";
+                $campersMissingAttendance++;
+            }
+            else if($row[6] == 0){//// missing, attendance taken
                 $tr .= "table-danger absent";
                 $icon = "<i class=\"bi bi-x-circle-fill\"></i>";
                 $status = "Absent";
             }
-            else if ($row[6]) { // present, attendance taken
+            else if ($row[6] == 1) { // present, attendance taken
                 $tr .= "present";
                 $icon = "<i class=\"bi bi-check-circle\"></i>";
                 $status = "Present";
-            }
-            else { // missing, but attendance not taken
-                $tr .= "table-warning absent";
-                $icon = "<i class=\"bi bi-exclamation-triangle\"></i>";
-                $status = "Attendance not yet taken";
             }
             $tr .= "\">";
 
@@ -155,6 +176,13 @@
             if($row[2] != $bunkText) {
                 $multipleBunks = True;
             } 
+        }
+
+        // if no campers had their attendance taken, show message saying that instead
+        if($campersMissingAttendance == mysqli_num_rows($result)) {
+            echo "<div class=\"card card-body bg-light mb-3 edah-attendance\"><h5 class=\"text-center\" id=\"edah$edahId\">Edah: " . $edahId2Name[$edahId] . "</h5>" . 
+                "<h6>No $groupId2Name[$groupId] attendance has been taken yet for $edahId2Name[$edahId] on " . date("D F j, Y", strtotime($date)) . "; ask an administrator if you believe you are seeing this message in error.</h6>";
+            break;
         }
 
         // if there is only one bunk for the edah, no need to include bunk info in table
@@ -201,7 +229,7 @@ function validate_form_inputs()
 {
     $fullErrorMsg = "<div class=\"col-md-6 offset-md-3\"><div class=\"alert alert-danger alert-dismissible fade show m-2\" role=\"alert\">" . 
         "<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button><h5><strong>Error:</strong> " . 
-        "Invalid Selections</h5>Return to <a href=\"chugLeaderHome.php\" class=\"alert-link\">previous page</a> to fix following issue(s):<ul class=\"mb-0\">";
+        "Invalid Selections</h5>Return to <a href=\"roshHome.php\" class=\"alert-link\">previous page</a> to fix following issue(s):<ul class=\"mb-0\">";
     $errors = "";
 
     // declare scope of variables

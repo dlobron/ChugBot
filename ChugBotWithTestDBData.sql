@@ -106,21 +106,41 @@ INSERT INTO `assignments` VALUES (1,1,1,32,7,1,0,'Softball (-2)','','2016-06-30 
 UNLOCK TABLES;
 
 --
--- Table structure for table `attendance_present`
+-- Table structure for table `attendance`
 --
 
-DROP TABLE IF EXISTS `attendance_present`;
+DROP TABLE IF EXISTS `attendance`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `attendance_present` (
+CREATE TABLE `attendance` (
   `camper_id` int NOT NULL,
   `date` date NOT NULL,
   `chug_instance_id` int NOT NULL,
+  `present` tinyint NOT NULL,
   `attendance_id` int NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`attendance_id`),
-  UNIQUE KEY `uk_attendance_present` (`camper_id`,`date`,`chug_instance_id`),
-  CONSTRAINT `attendance_present_ibfk_1` FOREIGN KEY (`camper_id`) REFERENCES `campers` (`camper_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `attendance_present_ibfk_2` FOREIGN KEY (`chug_instance_id`) REFERENCES `chug_instances` (`chug_instance_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE KEY `uk_attendance` (`camper_id`,`date`,`chug_instance_id`),
+  CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`camper_id`) REFERENCES `campers` (`camper_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `attendance_ibfk_2` FOREIGN KEY (`chug_instance_id`) REFERENCES `chug_instances` (`chug_instance_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `attendance_block_by_date`
+--
+
+DROP TABLE IF EXISTS `attendance_block_by_date`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `attendance_block_by_date` (
+  `date` date NOT NULL,
+  `group_id` int NOT NULL,
+  `block_id` int NOT NULL,
+  `attendance_block_by_date_id` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`attendance_block_by_date_id`),
+  UNIQUE KEY `uk_attendance_block_by_date` (`date`,`group_id`),
+  CONSTRAINT `attendance_block_by_date_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `chug_groups` (`group_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `attendance_block_by_date_ibfk_2` FOREIGN KEY (`block_id`) REFERENCES `blocks` (`block_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
