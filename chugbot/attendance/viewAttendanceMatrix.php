@@ -97,7 +97,7 @@
         $initialSql = "SELECT c.camper_id, b.name as bunk, CONCAT(c.last, ', ', c.first) AS name, ";
         foreach($date2BlockId as $dateBlockArr) {
             // attendance status for date
-            $initialSql .= "MAX(CASE WHEN a.date = '$dateBlockArr[0]' THEN a.present ELSE NULL END) AS \"$dateBlockArr[0]\",";
+            $initialSql .= "MAX(CASE WHEN a.date = '$dateBlockArr[0]' AND a.camper_id = c.camper_id THEN a.present ELSE NULL END) AS \"$dateBlockArr[0]\",";
             // chug assignment for date
             $initialSql .= "COALESCE(MAX(CASE WHEN m.camper_id = c.camper_id AND ci.block_id = $dateBlockArr[1] THEN ch.name END),'No assignment') " .
                 "AS \"$dateBlockArr[0]-chug\",";
@@ -107,9 +107,9 @@
         // add FROM/JOINS to SQL
         $initialSql .= "FROM campers c " .
             "JOIN block_instances bi ON c.session_id = bi.session_id " . 
-            "JOIN attendance a ON a.camper_id = c.camper_id " . 
             "JOIN matches m ON m.camper_id = c.camper_id " . 
             "JOIN chug_instances ci ON ci.chug_instance_id = m.chug_instance_id " . 
+            "JOIN attendance a ON a.camper_id = c.camper_id AND a.chug_instance_id = ci.chug_instance_id " . 
             "JOIN chugim ch ON ch.chug_id = ci.chug_id " . 
             "JOIN bunks b on b.bunk_id = c.bunk_id ";
         // only this edah and group_id
@@ -149,8 +149,6 @@
         $dateColHeadings = "";
         $rowsMade = 0;
         while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-            //print_r($row);
-            //echo "<br>";
             // breakdown of $row:
                 // [0] - camper id                  [1] - bunk 
                 // [2] - name                       [3, 6, 9, ...] - attendance status

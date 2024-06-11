@@ -338,7 +338,7 @@ function validate_form_inputs()
                 var camperBunk = row.cells[1].innerText;
                 var camperName = row.cells[2].innerText;
                 var camperChug = row.cells[3].innerText;
-                if(row.cells[3].hasChildNodes()) {
+                if(row.cells[3].firstChild.hasChildNodes()) {
                     // handle case where there is a tooltip -- unneeded info
                     camperChug = row.cells[3].firstChild.innerText;
                 }

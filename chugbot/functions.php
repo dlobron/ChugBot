@@ -923,7 +923,6 @@ function navText()
     }
     if (roshLoggedIn()) {
         $roshUrl = urlIfy("../attendance/roshHome.php");
-        //$retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$roshUrl\">Rosh/Yoetzet Home</a></li>";
         $retVal .= "<li class=\"nav-item dropdown\"><a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"roshNavbarDropdown\" role=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">" . 
             "Rosh/Yoetzet</a><ul class=\"dropdown-menu\" aria-labelledby=\"roshNavbarDropdown\">" .
             "<li><a class=\"dropdown-item\" href=\"$roshUrl\">Rosh/Yoetzet Home (Attendance Module)</a></li>" . 

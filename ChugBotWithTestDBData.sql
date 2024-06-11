@@ -64,7 +64,7 @@ CREATE TABLE `admin_data` (
 
 LOCK TABLES `admin_data` WRITE;
 /*!40000 ALTER TABLE `admin_data` DISABLE KEYS */;
-INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,NULL,'Kayitz','the Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose three Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Ramah Day Camp DC','www.campramahne.org/day-camp-washington-dc/',3,0,'chug','chugim','block','blocks',1,1,1,'$2y$10$WYxSNvD2Obed2E8/8/9iFuJIOvw6cIkWzjPBZP4ZFUakv6pvURtoG','$2y$10$iLwZV5ZVjW5v7I9zw9ZdxeLyq0/I5RAX8iVSquSm2NdxSIYx6cAI6');
+INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,NULL,'Kayitz','the Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose three Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Ramah Day Camp DC','www.campramahne.org/day-camp-washington-dc/',3,0,'chug','chugim','block','blocks',1,1,1,'$2y$10$V9nDRWUrmMP8ZSpsGdv4UeTqYliiRSR2s922TOZ9apuA0fVaREp8S','$2y$10$uHwb1zE4wOT3eSstTI3PgO1BA8vhN8EoDToonlr0qyHmLRvGhMyNG');
 /*!40000 ALTER TABLE `admin_data` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -311,25 +311,6 @@ LOCK TABLES `category_tables` WRITE;
 INSERT INTO `category_tables` VALUES ('blocks',1,0),('bunks',2,1),('campers',3,1),('chugim',4,1),('edot',5,1),('chug_groups',6,0),('sessions',7,1);
 /*!40000 ALTER TABLE `category_tables` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `chug_attendance_taken`
---
-
-DROP TABLE IF EXISTS `chug_attendance_taken`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `chug_attendance_taken` (
-  `edah_id` int NOT NULL,
-  `date` date NOT NULL,
-  `chug_instance_id` int NOT NULL,
-  `chug_attendance_id` int NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`chug_attendance_id`),
-  UNIQUE KEY `uk_chug_attendance_taken` (`edah_id`, `date`,`chug_instance_id`),
-  CONSTRAINT `chug_attendance_taken_ibfk_1` FOREIGN KEY (`edah_id`) REFERENCES `edot` (`edah_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `chug_attendance_taken_ibfk_2` FOREIGN KEY (`chug_instance_id`) REFERENCES `chug_instances` (`chug_instance_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `chug_dedup_instances_v2`

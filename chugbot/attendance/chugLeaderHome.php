@@ -104,7 +104,6 @@ const dd = String(today.getDate()).padStart(2, '0');
 
 const formattedToday = `${yyyy}-${mm}-${dd}`;
 document.getElementById('date').value = formattedToday;
-//console.log(date.getYear()+"-"+(date.getMonth()+1)+"-"+date.getDate());
 
 
 function validateForm() {
