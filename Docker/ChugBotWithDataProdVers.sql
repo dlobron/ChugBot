@@ -278,6 +278,25 @@ INSERT INTO `category_tables` VALUES ('blocks',1,0),('bunks',2,0),('campers',3,1
 UNLOCK TABLES;
 
 --
+-- Table structure for table `chug_attendance_taken`
+--
+
+DROP TABLE IF EXISTS `chug_attendance_taken`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `chug_attendance_taken` (
+  `edah_id` int NOT NULL,
+  `date` date NOT NULL,
+  `chug_instance_id` int NOT NULL,
+  `chug_attendance_id` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`chug_attendance_id`),
+  UNIQUE KEY `uk_chug_attendance_taken` (`edah_id`, `date`,`chug_instance_id`),
+  CONSTRAINT `chug_attendance_taken_ibfk_1` FOREIGN KEY (`edah_id`) REFERENCES `edot` (`edah_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chug_attendance_taken_ibfk_2` FOREIGN KEY (`chug_instance_id`) REFERENCES `chug_instances` (`chug_instance_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `chug_dedup_instances_v2`
 --
 

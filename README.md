@@ -32,7 +32,7 @@ That's it!  You should now be able to use the admin staff pages to add groups, b
 
 2. Run the ./start.sh script to bring up the containers (note that the script's database load may take up to 10 tries: this is expected).
 
-The application should now be reachable on http://127.0.0.1:8000. The admin password is "developer". To see webserver and PHP logs in real time, run:
+The application should now be reachable on https://localhost. The admin password is "developer". To see webserver and PHP logs in real time, run:
 
     docker logs -f --details <container name>
 
