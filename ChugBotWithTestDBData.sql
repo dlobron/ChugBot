@@ -52,7 +52,9 @@ CREATE TABLE `admin_data` (
   `block_term_plural` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'blocks',
   `enable_camper_importer` tinyint(1) NOT NULL DEFAULT '0',
   `enable_selection_process` tinyint(1) NOT NULL DEFAULT '1',
-  `enable_camper_creation` tinyint(1) NOT NULL DEFAULT '1'
+  `enable_camper_creation` tinyint(1) NOT NULL DEFAULT '1',
+  `chug_leader_password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `rosh_yoetzet_password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -62,7 +64,7 @@ CREATE TABLE `admin_data` (
 
 LOCK TABLES `admin_data` WRITE;
 /*!40000 ALTER TABLE `admin_data` DISABLE KEYS */;
-INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,NULL,'Kayitz','the Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose three Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Ramah Day Camp DC','www.campramahne.org/day-camp-washington-dc/',3,0,'chug','chugim','block','blocks',1,1, 1);
+INSERT INTO `admin_data` VALUES ('dlobron@gmail.com','$2y$10$fqKUo0pkKj3kNTz8B/XsKuORY08cd7td5U3O2A2D.1Dl/Kfl2aGqu',NULL,NULL,'Kayitz','the Hebrew word for summer','&lt;h3&gt;How to Make Your Choices:&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;For each time period, choose three Chugim, and drag them from the left column to the right column.  Hover over a Chug name in the left box to see a brief description.  If you have existing preferences, they will be pre-loaded in the right box: you can reorder or remove them as needed.&lt;/li&gt;&lt;li&gt;Use your mouse to drag the right column into order of preference, from top (first choice) to bottom (last choice).&lt;/li&gt;&lt;li&gt;When you have arranged preferences for all your time periods, click &lt;font color=&quot;green&quot;&gt;Submit&lt;/font&gt;.&lt;/li&gt;&lt;/ol&gt;','Ramah Day Camp DC','www.campramahne.org/day-camp-washington-dc/',3,0,'chug','chugim','block','blocks',1,1,1,'$2y$10$V9nDRWUrmMP8ZSpsGdv4UeTqYliiRSR2s922TOZ9apuA0fVaREp8S','$2y$10$uHwb1zE4wOT3eSstTI3PgO1BA8vhN8EoDToonlr0qyHmLRvGhMyNG');
 /*!40000 ALTER TABLE `admin_data` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -102,6 +104,45 @@ LOCK TABLES `assignments` WRITE;
 INSERT INTO `assignments` VALUES (1,1,1,32,7,1,0,'Softball (-2)','','2016-06-30 03:29:46'),(1,1,2,35,5,0,0,'Ultimate Frisbee (-1)','Dance (+2)','2016-06-30 03:29:46'),(1,1,3,33,7,0,0,'','','2016-06-30 03:29:46'),(1,2,1,40,15,0,0,'Softball (-7)','','2016-07-11 11:36:07'),(1,2,2,44,11,0,0,'Exploring Art with Crayons (-3)','Basketball (+8), Ultimate Frisbee (+3), Dance (+1), Sand Art (+2)','2016-07-11 11:36:07'),(1,2,3,40,15,0,0,'Martial Arts (-3), Jewelry-Making (-3)','Flag Football (+2), Drama (+5), Melty Beads (+2)','2016-07-11 11:36:07'),(1,3,1,26,13,0,0,'Soccer (-1), Softball (-7)','','2016-07-25 11:52:07'),(1,3,2,32,7,0,0,'Exploring Art with Crayons (-3), Sand Art (-3)','Dance (+1)','2016-07-25 11:52:07'),(1,3,3,30,9,0,0,'Martial Arts (-3), Aerobics &amp; Fitness (-3), Jewelry-Making (-3), Melty Beads (-3)','Drama (+2), Candle making (+2)','2016-07-25 11:52:07'),(2,1,1,39,5,0,0,'','','2016-06-27 01:38:31'),(2,1,2,36,8,0,0,'','','2016-06-27 01:38:31'),(2,1,3,34,10,0,0,'','Martial Arts (+2), Drama (+1)','2016-06-27 01:38:32'),(2,2,1,39,11,1,0,'Softball (-7)','Weaving, Sewing &amp; Needle-Point (+1)','2016-07-11 03:31:02'),(2,2,2,38,12,1,0,'Exploring Art with Crayons (-3)','Basketball (+6), Ultimate Frisbee (+1), Dance (+1), Sand Art (+1)','2016-07-11 03:31:03'),(2,2,3,37,10,4,0,'Martial Arts (-3), Jewelry-Making (-3)','Flag Football (+1)','2016-07-11 03:31:03'),(2,3,1,22,9,3,0,'Softball (-7), Tennis Racquet Baseball (-1)','','2016-07-25 11:56:54'),(2,3,2,25,9,0,0,'Exploring Art with Crayons (-3), Sand Art (-3)','','2016-07-25 11:56:54'),(2,3,3,30,4,0,0,'Martial Arts (-3), Aerobics &amp; Fitness (-3), Jewelry-Making (-3), Melty Beads (-3)','Drama (+1)','2016-07-25 11:56:54'),(3,1,1,11,1,0,0,'Soccer (-6), Weaving, Sewing &amp; Needle-Point (-3), Softball (-7)','','2016-06-27 01:43:00'),(3,1,2,12,0,0,0,'Ultimate Frisbee (-4), Dance (-1), Exploring Art with Crayons (-3), Pickleball (-1)','','2016-06-27 01:43:00'),(3,1,3,11,1,0,0,'Flag Football (-2), Aerobics &amp; Fitness (-3), Jewelry-Making (-1)','','2016-06-27 01:43:00'),(3,2,1,13,3,0,0,'Teva (-1), Softball (-7)','','2016-07-11 03:33:29'),(3,2,2,16,0,0,0,'Dance (-2), Exploring Art with Crayons (-3)','','2016-07-11 03:33:29'),(3,2,3,16,0,0,0,'Martial Arts (-3), Jewelry-Making (-3), Melty Beads (-1)','','2016-07-11 03:33:29'),(3,3,1,14,1,0,0,'Soccer (-5), Softball (-7)','','2016-07-25 13:04:07'),(3,3,2,15,0,0,0,'Dance (-2), Exploring Art with Crayons (-3), Sand Art (-3)','','2016-07-25 13:04:07'),(3,3,3,15,0,0,0,'Martial Arts (-3), Jewelry-Making (-3), Melty Beads (-3)','','2016-07-25 13:04:07');
 /*!40000 ALTER TABLE `assignments` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `attendance`
+--
+
+DROP TABLE IF EXISTS `attendance`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `attendance` (
+  `camper_id` int NOT NULL,
+  `date` date NOT NULL,
+  `chug_instance_id` int NOT NULL,
+  `present` tinyint NOT NULL,
+  `attendance_id` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`attendance_id`),
+  UNIQUE KEY `uk_attendance` (`camper_id`,`date`,`chug_instance_id`),
+  CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`camper_id`) REFERENCES `campers` (`camper_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `attendance_ibfk_2` FOREIGN KEY (`chug_instance_id`) REFERENCES `chug_instances` (`chug_instance_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `attendance_block_by_date`
+--
+
+DROP TABLE IF EXISTS `attendance_block_by_date`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `attendance_block_by_date` (
+  `date` date NOT NULL,
+  `group_id` int NOT NULL,
+  `block_id` int NOT NULL,
+  `attendance_block_by_date_id` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`attendance_block_by_date_id`),
+  UNIQUE KEY `uk_attendance_block_by_date` (`date`,`group_id`),
+  CONSTRAINT `attendance_block_by_date_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `chug_groups` (`group_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `attendance_block_by_date_ibfk_2` FOREIGN KEY (`block_id`) REFERENCES `blocks` (`block_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `block_instances`
@@ -308,6 +349,7 @@ DROP TABLE IF EXISTS `chug_groups`;
 CREATE TABLE `chug_groups` (
   `group_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `active_block_id` int,
   PRIMARY KEY (`group_id`),
   UNIQUE KEY `uk_groups` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
@@ -319,7 +361,7 @@ CREATE TABLE `chug_groups` (
 
 LOCK TABLES `chug_groups` WRITE;
 /*!40000 ALTER TABLE `chug_groups` DISABLE KEYS */;
-INSERT INTO `chug_groups` VALUES (1,'Chug Aleph'),(2,'Chug Bet'),(4,'Chug Dalet'),(3,'Chug Gimel');
+INSERT INTO `chug_groups` VALUES (1,'Chug Aleph',1),(2,'Chug Bet',1),(4,'Chug Dalet',1),(3,'Chug Gimel',1);
 /*!40000 ALTER TABLE `chug_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 

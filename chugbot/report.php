@@ -5,6 +5,7 @@ include_once 'functions.php';
 include_once 'formItem.php';
 require_once 'fpdf/fpdf.php';
 bounceToLogin();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 abstract class OutputTypes

@@ -2,7 +2,8 @@
     session_start();
     include_once 'dbConn.php';
     include_once 'functions.php';
-    bounceToLogin();
+    bounceToLogin("rosh");
+    checkLogout();
     setup_camp_specific_terminology_constants();
 
     $dbErr = "";
@@ -248,7 +249,7 @@
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
 <div class="modal-dialog modal-lg">
 <div class="modal-content">
-    <div class="modal-header">
+    <div class="modal-header bg-warning">
         <h5 class="modal-title" id="deleteModalLabel">Delete Schedule Template</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>

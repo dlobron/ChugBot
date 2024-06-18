@@ -3,6 +3,7 @@ include_once 'dbConn.php';
 include_once 'functions.php';
 include_once 'formItem.php';
 session_start();
+checkLogout();
 
 setup_camp_specific_terminology_constants();
 

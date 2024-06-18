@@ -253,6 +253,10 @@ function fillId2Name($archiveYear,
         $db->addSelectColumn($secondIdColumn);
     }
     $db->addSelectColumn("name");
+    if ($table == "edot") {
+        $db->addSelectColumn("sort_order");
+        $db->addOrderByClause(" ORDER BY sort_order");
+    }
     $result = $db->simpleSelectFromTable($table, $dbErr);
     if ($result == false) {
         error_log($dbErr);

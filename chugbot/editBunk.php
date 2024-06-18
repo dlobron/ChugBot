@@ -3,6 +3,7 @@ session_start();
 include_once 'addEdit.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 
 $editBunkPage = new EditPage("Edit Bunk",
     "Please edit information for this bunk",

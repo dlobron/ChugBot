@@ -3,6 +3,7 @@ session_start();
 include_once 'dbConn.php';
 include_once 'functions.php';
 bounceToLogin();
+checkLogout();
 
 // Check for a query string that signals a message.
 $parts = explode("&", $_SERVER['QUERY_STRING']);

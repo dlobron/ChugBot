@@ -4,12 +4,13 @@ include_once 'functions.php';
 include_once 'formItem.php';
 include_once 'dbConn.php';
 bounceToLogin();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 $existingAdminEmail = $admin_email = $existingRegularUserToken = $existingRegularUserTokenHint = $existingCampName = $existingPrefInstructions = $existingCampWeb = $existingAdminEmailCc = $existingAdminEmailFromName = $existingPrefCount = $existingSendConfirmEmail = $existingChugTermSingular = $existingChugTermPlural = $existingBlockTermSingular = $existingBlockTermPlural = "";
 $deletableTableId2Name = array();
 $deletableTableActiveIdHash = array();
-$dbError = $staffPasswordErr = $staffPasswordErr2 = $adminEmailCcErr = $campNameErr = $prefCountError = $campTerminologyErr = "";
+$dbError = $adminPasswordErr = $adminPasswordErr2 = $roshPasswordErr = $roshPasswordErr2 = $chug_leaderPasswordErr = $chug_leaderPasswordErr2 = $adminEmailCcErr = $campNameErr = $prefCountError = $campTerminologyErr = "";
 
 $db = new DbConn();
 $err = "";
@@ -77,7 +78,7 @@ if ($result == false) {
     }
 }
 
-$staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = $existingEmailErr = "";
+$staffEmailErr = $adminPasswordErr = $adminPasswordErr2 = $roshPasswordErr = $roshPasswordErr2 = $chug_leaderPasswordErr = $chug_leaderPasswordErr2 = $existingEmailErr = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $admin_email = test_post_input("admin_email");
     $admin_email_from_name = test_post_input("admin_email_from_name");
@@ -85,8 +86,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $enable_camper_importer = boolval(test_post_input("enable_camper_importer"));
     $enable_camper_creation = boolval(test_post_input("enable_camper_creation"));
     $enable_selection_process = boolval(test_post_input("enable_selection_process"));
-    $staff_password = test_post_input("staff_password");
-    $staff_password2 = test_post_input("staff_password2");
+    $admin_password = test_post_input("admin_password");
+    $admin_password2 = test_post_input("admin_password2");
+    $rosh_password = test_post_input("rosh_password");
+    $rosh_password2 = test_post_input("rosh_password2");
+    $chug_leader_password = test_post_input("chug_leader_password");
+    $chug_leader_password2 = test_post_input("chug_leader_password2");
     $admin_email_cc = test_post_input("admin_email_cc");
     $regular_user_token = test_post_input("regular_user_token");
     $regular_user_token_hint = test_post_input("regular_user_token_hint");
@@ -164,18 +169,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     }
-    // Only reset the password if it's explicitly supplied.
-    if ($staff_password) {
-        if (strlen($staff_password) < 5 ||
-            strlen($staff_password) > 255) {
-            $staffPasswordErr = errorString("Password must be between 5 and 255 characters");
+    // Only reset the admin password if it's explicitly supplied.
+    if ($admin_password) {
+        if (strlen($admin_password) < 5 ||
+            strlen($admin_password) > 255) {
+            $adminPasswordErr = errorString("Admin password must be between 5 and 255 characters");
         }
-        if ($staff_password2 != $staff_password) {
+        if ($admin_password2 != $admin_password) {
             // The repeated password must match the first.
-            $staffPasswordErr2 = errorString("Passwords do not match");
+            $adminPasswordErr2 = errorString("Admin passwords do not match");
         }
-        $staffPasswordHashed = password_hash($staff_password, PASSWORD_DEFAULT);
-        $db->addColumn("admin_password", $staffPasswordHashed, 's');
+        $adminPasswordHashed = password_hash($admin_password, PASSWORD_DEFAULT);
+        $db->addColumn("admin_password", $adminPasswordHashed, 's');
+    }
+    // Only reset the rosh password if it's explicitly supplied.
+    if ($rosh_password) {
+        if (strlen($rosh_password) < 5 ||
+            strlen($rosh_password) > 255) {
+            $roshPasswordErr = errorString("Rosh/Yoetzet password must be between 5 and 255 characters");
+        }
+        if ($rosh_password2 != $rosh_password) {
+            // The repeated password must match the first.
+            $roshPasswordErr2 = errorString("Rosh/Yoetzet passwords do not match");
+        }
+        $roshPasswordHashed = password_hash($rosh_password, PASSWORD_DEFAULT);
+        $db->addColumn("rosh_yoetzet_password", $roshPasswordHashed, 's');
+    }
+    // Only reset the chug leader password if it's explicitly supplied.
+    if ($chug_leader_password) {
+        if (strlen($chug_leader_password) < 5 ||
+            strlen($chug_leader_password) > 255) {
+            $chug_leaderPasswordErr = errorString("Chug Leader password must be between 5 and 255 characters");
+        }
+        if ($chug_leader_password2 != $chug_leader_password) {
+            // The repeated password must match the first.
+            $chug_leaderPasswordErr2 = errorString("Chug Leader passwords do not match");
+        }
+        $chug_leaderPasswordHashed = password_hash($chug_leader_password, PASSWORD_DEFAULT);
+        $db->addColumn("chug_leader_password", $chug_leaderPasswordHashed, 's');
     }
     // Same, for pref count.
     if ($pref_count) {
@@ -192,8 +223,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $campTerminologyErr = errorString("Camp terminologies are required");
     }
     if (empty($staffEmailErr) &&
-        empty($staffPasswordErr) &&
-        empty($staffPasswordErr2) &&
+        empty($adminPasswordErr) &&
+        empty($adminPasswordErr2) &&
+        empty($roshPasswordErr) &&
+        empty($roshPasswordErr2) &&
+        empty($chug_leaderPasswordErr) &&
+        empty($chug_leaderPasswordErr2) &&
         empty($adminEmailCcErr) &&
         empty($dbError) &&
         empty($campNameErr) &&
@@ -205,7 +240,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($updateOk) {
             // New data entered OK: go to the home page.  If a password was
             // validated, log the user in.
-            if ($staff_password) {
+            if ($admin_password) {
                 $_SESSION['admin_logged_in'] = true;
             }
             $redirUrl = urlBaseText() . "staffHome.php?update=as"; // Redir for successful email/pw change.
@@ -220,7 +255,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php
 echo headerText("Edit Admin Data");
 
-$errText = genFatalErrorReport(array($dbError, $staffPasswordErr, $staffPasswordErr2, $staffEmailErr, $adminEmailCcErr, $campNameErr, $prefCountError, $campTerminologyErr));
+$errText = genFatalErrorReport(array($dbError, $adminPasswordErr, $adminPasswordErr2, $roshPasswordErr, $roshPasswordErr2, $chug_leaderPasswordErr, $chug_leaderPasswordErr2, $staffEmailErr, $adminEmailCcErr, $campNameErr, $prefCountError, $campTerminologyErr));
 if (!is_null($errText)) {
     echo $errText;
     exit();
@@ -351,23 +386,143 @@ $campWebField->setInputMaxLength(50);
 $campWebField->setGuideText("Enter your camp website, if you have one, e.g., \"www.campramahne.org\"");
 $campWebField->setPlaceHolder(" ");
 echo $campWebField->renderHtml();
+?>
 
-$staffPasswordField = new FormItemSingleTextField("New Staff Password (leave this field blank to keep staff password the same.)",
-    false, "staff_password", $counter++);
-$staffPasswordField->setInputType("password");
-$staffPasswordField->setInputClass("element text medium");
-$staffPasswordField->setInputMaxLength(50);
-$staffPasswordField->setPlaceHolder(" ");
-$staffPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
-echo $staffPasswordField->renderHtml();
+<li>
+<label class="description mt-2" for="passwordChangeAccordion">
+    Update Password(s)
+</label>
+Update any number of passwords in the applicable sections of the accordion below. Passwords must be between 5-255 characters.
+<div class="accordion" id="passwordChangeAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingAdmin">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdmin" aria-expanded="true" aria-controls="collapseAdmin">
+                Admin Password
+            </button>
+        </h2>
+        <div id="collapseAdmin" class="accordion-collapse collapse show" aria-labelledby="headingAdmin" data-bs-parent="#accordionExample">
+            <div class="accordion-body">
+                <?php
+                $adminPasswordField = new FormItemSingleTextField("New Admin Password (leave this field blank to keep admin password the same.)",
+                    false, "admin_password", $counter++);
+                $adminPasswordField->setInputType("password");
+                $adminPasswordField->setInputClass("element text medium");
+                $adminPasswordField->setInputMaxLength(50);
+                $adminPasswordField->setPlaceHolder(" ");
+                $adminPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
+                
+                $adminPasswordStr = $adminPasswordField->renderHtml();
 
-$staffPasswordField2 = new FormItemSingleTextField("Retype New Staff Password", false, "staff_password2", $counter++);
-$staffPasswordField2->setInputType("password");
-$staffPasswordField2->setInputClass("element text medium");
-$staffPasswordField2->setInputMaxLength(50);
-$staffPasswordField2->setPlaceHolder(" ");
-echo $staffPasswordField2->renderHtml();
+                // change from list element to just regular div with same id
+                $adminPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $adminPasswordStr);
+                $adminPasswordStr = str_replace("/li>", "/div>", $adminPasswordStr);
 
+                echo $adminPasswordStr;
+
+                $adminPasswordField2 = new FormItemSingleTextField("Retype New Admin Password", false, "admin_password2", $counter++);
+                $adminPasswordField2->setInputType("password");
+                $adminPasswordField2->setInputClass("element text medium");
+                $adminPasswordField2->setInputMaxLength(50);
+                $adminPasswordField2->setPlaceHolder(" ");
+
+                $adminPassword2Str = $adminPasswordField2->renderHtml();
+
+                // change from list element to just regular div with same id
+                $adminPassword2Str = str_replace("<li", "<div", $adminPassword2Str);
+                $adminPassword2Str = str_replace("/li>", "/div>", $adminPassword2Str);
+
+                echo $adminPassword2Str;
+                ?>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingRosh">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRosh" aria-expanded="false" aria-controls="collapseRosh">
+                Rosh Edah/Yoetzet Password
+            </button>
+        </h2>
+        <div id="collapseRosh" class="accordion-collapse collapse" aria-labelledby="headingRosh" data-bs-parent="#passwordChangeAccordion">
+            <div class="accordion-body">
+            <?php
+                $roshPasswordField = new FormItemSingleTextField("New Rosh/Yoetzet Password (leave this field blank to keep rosh/yoetzet password the same.)",
+                    false, "rosh_password", $counter++);
+                $roshPasswordField->setInputType("password");
+                $roshPasswordField->setInputClass("element text medium");
+                $roshPasswordField->setInputMaxLength(50);
+                $roshPasswordField->setPlaceHolder(" ");
+                $roshPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the rosh/yoetzet password.");
+                
+                $roshPasswordStr = $roshPasswordField->renderHtml();
+
+                // change from list element to just regular div with same id
+                $roshPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $roshPasswordStr);
+                $roshPasswordStr = str_replace("/li>", "/div>", $roshPasswordStr);
+
+                echo $roshPasswordStr;
+
+                $roshPasswordField2 = new FormItemSingleTextField("Retype New Rosh/Yoetzet Password", false, "rosh_password2", $counter++);
+                $roshPasswordField2->setInputType("password");
+                $roshPasswordField2->setInputClass("element text medium");
+                $roshPasswordField2->setInputMaxLength(50);
+                $roshPasswordField2->setPlaceHolder(" ");
+
+                $roshPassword2Str = $roshPasswordField2->renderHtml();
+
+                // change from list element to just regular div with same id
+                $roshPassword2Str = str_replace("<li", "<div", $roshPassword2Str);
+                $roshPassword2Str = str_replace("/li>", "/div>", $roshPassword2Str);
+
+                echo $roshPassword2Str;
+                ?>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingChugLeader">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChugLeader" aria-expanded="false" aria-controls="collapseChugLeader">
+                Chug Leader Password
+            </button>
+        </h2>
+        <div id="collapseChugLeader" class="accordion-collapse collapse" aria-labelledby="headingChugLeader" data-bs-parent="#passwordChangeAccordion">
+            <div class="accordion-body">
+            <?php
+                $chugLeaderPasswordField = new FormItemSingleTextField("New " . ucfirst($chug_term_singular) . " Leader Password (leave this field blank to keep $chug_term_singular leader password the same.)",
+                    false, "chug_leader_password", $counter++);
+                $chugLeaderPasswordField->setInputType("password");
+                $chugLeaderPasswordField->setInputClass("element text medium");
+                $chugLeaderPasswordField->setInputMaxLength(50);
+                $chugLeaderPasswordField->setPlaceHolder(" ");
+                $chugLeaderPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the $chug_term_singular leader password.");
+                
+                $chugLeaderPasswordStr = $chugLeaderPasswordField->renderHtml();
+
+                // change from list element to just regular div with same id
+                $chugLeaderPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $chugLeaderPasswordStr);
+                $chugLeaderPasswordStr = str_replace("/li>", "/div>", $chugLeaderPasswordStr);
+
+                echo $chugLeaderPasswordStr;
+
+                $chugLeaderPasswordField2 = new FormItemSingleTextField("Retype New " . ucfirst($chug_term_singular) . " Leader Password", false, "chug_leader_password2", $counter++);
+                $chugLeaderPasswordField2->setInputType("password");
+                $chugLeaderPasswordField2->setInputClass("element text medium");
+                $chugLeaderPasswordField2->setInputMaxLength(50);
+                $chugLeaderPasswordField2->setPlaceHolder(" ");
+
+                $chugLeaderPassword2Str = $chugLeaderPasswordField2->renderHtml();
+
+                // change from list element to just regular div with same id
+                $chugLeaderPassword2Str = str_replace("<li", "<div", $chugLeaderPassword2Str);
+                $chugLeaderPassword2Str = str_replace("/li>", "/div>", $chugLeaderPassword2Str);
+
+                echo $chugLeaderPassword2Str;
+                ?>
+            </div>
+        </div>
+    </div>
+</div></li>
+
+<?php
 $chugTermSingularField = new FormItemSingleTextField("Chug Term (singular)", false, "chug_term_singular", $counter++);
 $chugTermSingularField->setInputType("text");
 $chugTermSingularField->setInputClass("element text medium");

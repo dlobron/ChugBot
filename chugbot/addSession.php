@@ -3,6 +3,7 @@ session_start();
 include_once 'addEdit.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 
 $addSessionPage = new AddPage("Add Session",
     "Please enter session information",

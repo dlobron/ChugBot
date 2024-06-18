@@ -3,6 +3,7 @@ session_start();
 include_once 'addEdit.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 
 $editGroupPage = new EditPage("Edit Group", "Please update group information as needed",
     "chug_groups", "group_id");

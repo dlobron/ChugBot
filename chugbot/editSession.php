@@ -3,6 +3,7 @@ session_start();
 include_once 'addEdit.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 
 $editSessionPage = new EditPage("Edit Session", "Please update session information as needed",
     "sessions", "session_id");

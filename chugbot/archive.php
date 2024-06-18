@@ -5,6 +5,7 @@ include_once 'functions.php';
 include_once 'constants.php';
 include_once 'formItem.php';
 bounceToLogin();
+checkLogout();
 
 // Create an ID to name mapping for tables that we might clear.  We clear
 // these tables from the current DB unless the user instructs us not to.
@@ -218,12 +219,12 @@ if (!$haveDb) {
 $binaryNotFoundError = "";
 $mysqldump = MYSQL_PATH . "/mysqldump";
 $mysql = MYSQL_PATH . "/mysql";
-/*if (!file_exists($mysqldump)) {
+if (!file_exists($mysqldump)) {
     $binaryNotFoundError = "DB backup utility not found at $mysqldump: check with administrator<br>";
 }
 if (!file_exists($mysql)) {
     $binaryNotFoundError .= "DB utility not found at $mysql: check with administrator<br>";
-}*/
+}
 
 // Check the GET data to find out what action to take.
 if ($_SERVER["REQUEST_METHOD"] == "GET" &&

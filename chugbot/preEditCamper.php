@@ -3,6 +3,7 @@ session_start();
 include_once 'dbConn.php';
 include_once 'functions.php';
 setup_camp_specific_terminology_constants();
+checkLogout();
 
 $db = new DbConn();
 $sql = "SELECT enable_selection_process FROM admin_data";

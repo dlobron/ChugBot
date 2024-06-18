@@ -3,6 +3,7 @@ include_once 'dbConn.php';
 include_once 'functions.php';
 include_once 'formItem.php';
 session_start();
+checkLogout();
 setup_camp_specific_terminology_constants();
 
 $loggedIn = (adminLoggedIn() || camperLoggedIn());
@@ -80,7 +81,7 @@ if (!$loggedIn) {
 </form>
 
 <form id="staffForm" class="form-group" method="post">
-<button class = "btn btn-light btn-outline-secondary mt-3" type="submit" name="staffInit" form="staffForm" formaction="staffLogin.php" value="1">Admin</button>
+<button class = "btn btn-light btn-outline-secondary mt-3" type="submit" name="staffInit" form="staffForm" formaction="staffLogin.php" value="1">Staff</button>
 </form>
 </div>
 

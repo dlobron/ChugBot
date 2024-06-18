@@ -344,7 +344,9 @@ function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
         $ddMsg = $defaultMessage;
     }
     $retVal = "<option value=\"\" >-- $ddMsg --</option>";
-    asort($id2Name);
+    if($name != "edah" && !strstr($name, "edot_for")) {
+        asort($id2Name);
+    }
     foreach ($id2Name as $id => $name) {
         $selStr = "";
         if (array_key_exists($id, $selectedMap)) {
@@ -358,7 +360,9 @@ function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
 function genCheckBox($id2Name, $activeIds, $arrayName)
 {
     $retVal = "";
-    asort($id2Name);
+    if($arrayName != "edah_ids" && !strstr($arrayName, "edot_for")) {
+        asort($id2Name);
+    }
     foreach ($id2Name as $id => $name) {
         $selStr = "";
         $idStr = strval($id); // Use strings in forms, for consistency.
@@ -400,10 +404,13 @@ function fillConstraintsCheckBox() {
         sql += "?";
     }
     sql += ") AND e.group_id = g.group_id GROUP BY e.group_id HAVING COUNT(e.edah_id) = " + ct;
+    if(ourCheckBox === "edah") {
+        sql += " SORT BY e.sort_order";
+    }
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
     $.ajax({
-        url: 'ajax.php',
+        url: '../ajax.php',
         type: 'post',
         data: values,
         success: function(data) {
@@ -448,7 +455,9 @@ JS;
 // to be applicable to more types
 // NOTE: fillConstraintsPickList() must be called as an `onchange` method
 //     from the element which it relies upon
-function genConstrainedPickListScript($ourId, $parentId, $descId, $type) {
+function genConstrainedPickListScript($ourId, $parentId, $descId, $type, $choicesJS = false) {
+    // Ensure $choicesJS is converted to a JavaScript boolean value
+    $choicesJS = $choicesJS ? 'true' : 'false';
     $javascript = <<<JS
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
@@ -460,9 +469,16 @@ function fillConstraintsPickList() {
     var values = {};
     values["get_legal_id_to_name"] = 1;
     $(ourDesc).hide();
-    var parentField = document.getElementsByName("${parentId}")[0];
+    if(!${choicesJS}) {
+        var parentField = document.getElementsByName("${parentId}")[0];
+    }
+    else {
+        var parentField = document.getElementsByName("${parentId}[]")[0];
+    }
     var curSelectedEdahIds = [];
-    curSelectedEdahIds.push(parentField.value)
+    for (var option of parentField.selectedOptions) {
+        curSelectedEdahIds.push(option.value);
+    }
     if("${type}" == "group" || "${type}" == "block" || "${type}" == "schedule") {
         var sql = "SELECT e.${type}_id ${type}_id, g.name ${type}_name FROM edot_for_${type} e, "
         // Determine right table to search from
@@ -482,12 +498,19 @@ function fillConstraintsPickList() {
             }
             sql += "?";
         }
-        sql += ") AND e.${type}_id = g.${type}_id GROUP BY e.${type}_id HAVING COUNT(e.edah_id) = " + ct;
+        sql += ") AND e.${type}_id = g.${type}_id ";
+        if("${type}" == "group" && $("#${choicesJS}")) {
+            sql += "AND active_block_id IS NOT NULL ";
+        }
+        sql += "GROUP BY e.${type}_id HAVING COUNT(e.edah_id) = " + ct;
+    }
+    if(ourPickList === "edah") {
+        sql += " SORT BY e.sort_order";
     }
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
     $.ajax({
-        url: 'ajax.php',
+        url: '../ajax.php',
         type: 'post',
         data: values,
         success: function(data) {
@@ -503,9 +526,23 @@ function fillConstraintsPickList() {
             $(ourDesc).hide();
             return;
         }
-        html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type}\"";
+        if(!$("#${choicesJS}")) {
+            html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type}\" required";
+        }
+        else {
+            html = "<select class=\"form-select choices-js\" id=\"${ourId}\" name=\"${type}\"";
+        }
+
         if ("${type}" == "schedule") {
             html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
+        }
+        else if ("${type}" == "group") {
+            if(typeof fillChugimConstraintsPickList === "function") {
+                html += " onchange=\"fillChugimConstraintsPickList()\"> <option value=\"\"> -- Choose Perek -- </option>";
+            }
+            else {
+                html += " onchange=\"\"> <option value=\"\"> -- Choose Perek -- </option>";
+            }
         }
         else {
             html += ">";
@@ -517,6 +554,9 @@ function fillConstraintsPickList() {
         $(ourPickList).append(html);
         $(ourPickList).show();
         $(ourDesc).show();
+        if(${choicesJS}) {
+            const choices = new Choices($(ourPickList).find('select')[0], {shouldSort: false, allowHTML: true, searchEnabled: false});
+        }
         },
         error: function(xhr, desc, err) {
         console.log(xhr);
@@ -527,6 +567,114 @@ function fillConstraintsPickList() {
 $(function() {
   $("#${parentId}").load(fillConstraintsPickList());
   $("#${parentId}").bind('change',fillConstraintsPickList);
+});
+</script>
+JS;
+
+    return $javascript;
+}
+
+// Based off of genConstrainedPickListScript (above) to find chugim based on edah, b
+function genChugimPickListScript($ourId, $parent1, $parent2, $descId, $type, $choicesJS = false) {
+    $javascript = <<<JS
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
+<script>
+function fillChugimConstraintsPickList() {
+    var parent1 = $("#${parent1}");
+    var parent2 = $("#${parent2}");
+    var ourPickList = $("#${ourId}");
+    var ourDesc = $("#${descId}");
+    var values = {};
+    values["get_legal_id_to_name"] = 1;
+    $(ourDesc).hide();
+    $(ourPickList).hide();
+
+    // perform basic sanity checks to ensure the two parent fields (edah, group) have valid values
+    var parent1Field = document.getElementsByName("${parent1}[]")[0];
+    var parent2Field = document.getElementsByName("${parent2}");
+    if(parent2Field.length < 1) { return; } // verifies there is a value present for group; if not, end
+    parent2Field = parent2Field[0];
+    var instanceIds = [];
+    instanceIds.push(parent2Field.selectedOptions[0].value); // the group_id is used twice in the SQL statement, so added twice to instance id array
+    instanceIds.push(parent2Field.selectedOptions[0].value);
+    for (var option of parent1Field.selectedOptions) { // adds selected edot to instance id array
+        instanceIds.push(option.value);
+    }
+    if(parent1Field.selectedOptions.length < 1) { return; } // ensures 1+ edot are selected before continuing
+
+    if("${type}" == "chug") {
+        // sql statement looks for all chugim which apply to any number of the selected edot for given chug group and active block
+        var sql = "SELECT e.chug_id, c.name FROM edot_for_chug e JOIN (SELECT c.chug_id, c.name FROM chug_instances i ";
+        sql += "JOIN chugim c ON i.chug_id = c.chug_id WHERE i.block_id = (SELECT active_block_id FROM chug_groups WHERE group_id = ?) AND c.group_id = ?) c "
+        sql += "ON e.chug_id = c.chug_id WHERE e.edah_id IN(";
+        
+        var ct = 0;
+        for (var i = 2; i < instanceIds.length; i++) {
+            if (ct++ > 0) {
+                sql += ",";
+            }
+            sql += "?";
+        }
+        sql += ") GROUP BY e.chug_id";
+    }
+    values["sql"] = sql;
+    values["instance_ids"] = instanceIds;
+    $.ajax({
+        url: '../ajax.php',
+        type: 'post',
+        data: values,
+        success: function(data) {
+        ourPickList.empty();
+        var html = "";
+        if (data == "none") {
+            $(ourPickList).hide();
+            $(ourDesc).hide();
+            return;
+        } else if (data == "no-intersection") {
+            $(ourPickList).html(html);
+            $(ourPickList).show();
+            $(ourDesc).hide();
+            return;
+        }
+        if(!$("#${choicesJS}")) {
+            html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type} required\"";
+        }
+        else {
+            html = "<select class=\"form-select choices-js\" id=\"${ourId}\" name=\"${type}\"";
+        }
+
+        if ("${type}" == "schedule") {
+            html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
+        }
+        else if ("${type}" == "chug") {
+            html += " onchange=\"\"> <option value=\"\"> -- Choose Chug -- </option>";
+        }
+        else {
+            html += ">";
+        }
+        // add individual options
+        $.each(data, function(itemId, itemName) {
+                html += "<option value=\""+itemId+"\">"+itemName+"</option>";
+            });
+        $(ourPickList).append(html);
+        $(ourPickList).show();
+        $(ourDesc).show();
+        if($("#${choicesJS}")) {
+            const choices = new Choices($(ourPickList).find('select')[0], {shouldSort: true, allowHTML: true});
+        }
+        },
+        error: function(xhr, desc, err) {
+        console.log(xhr);
+        console.log("Details: " + desc + " Error:" + err);
+        }
+    });
+}
+$(function() {
+  $("#${parent1}").load(fillChugimConstraintsPickList());
+  $("#${parent1}").bind('change',fillChugimConstraintsPickList);
+  $("#${parent2}").load(fillChugimConstraintsPickList());
+  $("#${parent2}").bind('change',fillChugimConstraintsPickList);
 });
 </script>
 JS;
@@ -589,6 +737,16 @@ function adminLoggedIn()
     return isset($_SESSION['admin_logged_in']);
 }
 
+function roshLoggedIn()
+{
+    return isset($_SESSION['rosh_logged_in']);
+}
+
+function chugLeaderLoggedIn()
+{
+    return isset($_SESSION['chug_leader_logged_in']);
+}
+
 function camperLoggedIn()
 {
     return isset($_SESSION['camper_logged_in']);
@@ -596,15 +754,15 @@ function camperLoggedIn()
 
 function baseUrl()
 {
-    return urlIfy("index.php");
+    return urlIfy("../index.php");
 }
 
 function homeUrl()
 {
     if (isset($_SESSION['admin_logged_in'])) {
-        return urlIfy("staffHome.php");
+        return urlIfy("../staffHome.php");
     } else {
-        return urlIfy("camperHome.php");
+        return urlIfy("../camperHome.php");
     }
 }
 
@@ -616,7 +774,7 @@ function homeAnchor($text = "home")
 
 function staffHomeAnchor($text = "home")
 {
-    $homeUrl = urlIfy("staffHome.php");
+    $homeUrl = urlIfy("../staffHome.php");
     return "<a href=\"$homeUrl\">$text</a>";
 }
 
@@ -625,18 +783,36 @@ function loginRequiredMessage()
     $retVal = "";
     if (!isset($_SESSION['admin_logged_in'])) {
         $retVal = "<font color=\"red\"><b>Login required!</b></font><br>The page you are " .
-            "accessing requires that you log in with the admin password.<br>";
+            "accessing requires that you log in with a staff password.<br>";
     }
     return $retVal;
 }
 
-function bounceToLogin()
+function bounceToLogin($role = "admin")
 {
-    if (!isset($_SESSION['admin_logged_in'])) {
-        $fromUrl = $_SERVER["PHP_SELF"];
-        $redirUrl = urlIfy("staffLogin.php?from=$fromUrl");
-        header("Location: $redirUrl");
-        exit();
+    if($role == "admin") {
+        if (!isset($_SESSION['admin_logged_in'])) {
+            $fromUrl = $_SERVER["PHP_SELF"];
+            $redirUrl = urlIfy("../staffLogin.php?from=$fromUrl");
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    else if ($role == "chugLeader") {
+        if (!isset($_SESSION['chug_leader_logged_in'])) {
+            $fromUrl = $_SERVER["PHP_SELF"];
+            $redirUrl = urlIfy("../staffLogin.php?from=$fromUrl");
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    else if ($role == "rosh") {
+        if (!isset($_SESSION['rosh_logged_in'])) {
+            $fromUrl = $_SERVER["PHP_SELF"];
+            $redirUrl = urlIfy("../staffLogin.php?from=$fromUrl");
+            header("Location: $redirUrl");
+            exit();
+        }
     }
 }
 
@@ -645,7 +821,7 @@ function camperBounceToLogin()
     if ((!isset($_SESSION['camper_logged_in'])) &&
         (!isset($_SESSION['admin_logged_in']))) {
         $fromUrl = $_SERVER["PHP_SELF"];
-        $redirUrl = urlIfy("index.php?retry=1");
+        $redirUrl = urlIfy("../index.php?retry=1");
         header("Location: $redirUrl");
         exit();
     }
@@ -662,12 +838,28 @@ function fromBounce()
     return false;
 }
 
-function bouncePastIfLoggedIn($localLink)
+function bouncePastIfLoggedIn($localLink, $role)
 {
-    if (isset($_SESSION['admin_logged_in'])) {
-        $redirUrl = urlIfy($localLink);
-        header("Location: $redirUrl");
-        exit();
+    if($role == "admin") {
+        if (isset($_SESSION['admin_logged_in'])) {
+            $redirUrl = urlIfy($localLink);
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    else if($role == "chugLeader") {
+        if (isset($_SESSION['chug_leader_logged_in'])) {
+            $redirUrl = urlIfy($localLink);
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
+    else if($role == "rosh") {
+        if (isset($_SESSION['rosh_logged_in'])) {
+            $redirUrl = urlIfy($localLink);
+            header("Location: $redirUrl");
+            exit();
+        }
     }
 }
 
@@ -685,14 +877,33 @@ function staffBounceBackUrl()
     }
     if (count($parts) > 0) {
         $len = count($parts);
-        $url = urlBaseText() . $parts[$len - 1];
+        $from = array_search("from=",$parts);
+        $str = "";
+        for($i = $from + 1; $i < $len - 1; $i++) {
+            $str .= $parts[$i] . "/";
+        }
+        $url = urlBaseText() . $str . $parts[$len - 1];
     }
 
     return $url;
 }
 
+function checkLogout() 
+{
+    // sign out if logout button was pressed
+    $logout = test_get_input('logout');
+    if (!empty($logout)) {
+        unset($_SESSION['rosh_logged_in']);
+        unset($_SESSION['chug_leader_logged_in']);
+        unset($_SESSION['admin_logged_in']);
+        unset($_SESSION['camper_logged_in']);
+        bounceToLogin();
+    }
+}
+
 function navText()
 {
+    setup_camp_specific_terminology_constants();
     $homeUrl = homeUrl();
     $retVal = "<nav class=\"navbar navbar-expand-lg navbar-light bg-light\">";
     $baseUrl = baseUrl();
@@ -703,8 +914,27 @@ function navText()
     $retVal .= "<div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">";
     $retVal .= "<ul class=\"navbar-nav me-auto mb-2 mb-lg-0\">";
     if (adminLoggedIn()) {
-        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Staff Home</a></li>";
-        $camperUrl = urlIfy("camperHome.php");
+        $adminAttendanceUrl = urlIfy("../attendance/");
+        $retVal .= "<li class=\"nav-item dropdown\"><a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"adminNavbarDropdown\" role=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">" . 
+            "Admin</a><ul class=\"dropdown-menu\" aria-labelledby=\"adminNavbarDropdown\">" .
+            "<li><a class=\"dropdown-item\" href=\"$homeUrl\">Main Admin Home</a></li>" . 
+            "<li><a class=\"dropdown-item\" href=\"$adminAttendanceUrl\">Admin Attendance Settings</a></li>" . 
+            "</ul></li>";
+    }
+    if (roshLoggedIn()) {
+        $roshUrl = urlIfy("../attendance/roshHome.php");
+        $retVal .= "<li class=\"nav-item dropdown\"><a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"roshNavbarDropdown\" role=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">" . 
+            "Rosh/Yoetzet</a><ul class=\"dropdown-menu\" aria-labelledby=\"roshNavbarDropdown\">" .
+            "<li><a class=\"dropdown-item\" href=\"$roshUrl\">Rosh/Yoetzet Home (Attendance Module)</a></li>" . 
+            "<li><a class=\"dropdown-item\" href=\"../designSchedules.php\">Schedule Builder</a></li>" . 
+            "</ul></li>";
+    }
+    if (chugLeaderLoggedIn()) {
+        $chugLeaderUrl = urlIfy("../attendance/chugLeaderHome.php");
+        $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$chugLeaderUrl\">" . ucfirst(chug_term_singular) . " Leader Home</a></li>";
+    }
+    if (camperLoggedIn()) {
+        $camperUrl = urlIfy("../camperHome.php");
         $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$camperUrl\">Camper Home</a></li>";
     } else {
         $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$homeUrl\">Camper Home</a></li>";
@@ -725,7 +955,15 @@ function navText()
            }
 	}
     }
-    $retVal .= "</div></ul></div></nav>";
+    $retVal .= "</ul>";
+    
+    if (camperLoggedIn()) {
+        $retVal .= "<form class=\"d-flex ms-auto\" method=\"GET\">" . 
+        "<button class=\"nav-link btn btn-link\" name=\"logout\" value=\"1\" type=\"submit\">Logout</button>" . 
+      "</form>";
+    }
+    
+    $retVal .= "</div></div></nav>";
 
     return $retVal;
 }
@@ -745,12 +983,12 @@ function headerText($title)
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>$title</title>
-<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-<script type="text/javascript" src="meta/view.js"></script>
-<link rel="stylesheet" type="text/css" href="meta/view.css" media="all">
+<link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
+<script type="text/javascript" src="../meta/view.js"></script>
+<link rel="stylesheet" type="text/css" href="../meta/view.css" media="all">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/flatly/bootstrap.min.css" integrity="sha384-qF/QmIAj5ZaYFAeQcrQ6bfVMAh4zZlrGwTPY7T/M+iTTLJqJBJjwwnsE5Y0mV7QK" crossorigin="anonymous">-->
 </head>

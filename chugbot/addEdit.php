@@ -183,7 +183,8 @@ abstract class AddEditBase extends FormPage
         $actionTarget = htmlspecialchars($_SERVER["PHP_SELF"]);
         $html = "";
         if ($this->resultStr) {
-            $html .= "<div class=\"card card-body\">$this->resultStr</div>";
+            $html .= "<div class=\"row justify-content-center\"><div class=\"col-8 mt-4 p-0\"><div class=\"alert alert-success alert-dismissible fade show\" role=\"alert\">" . 
+            "<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>$this->resultStr</div></div></div>";
         }
         $secondParagraphHtml = "";
         if ($this->secondParagraph) {
