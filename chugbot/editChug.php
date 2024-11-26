@@ -100,7 +100,7 @@ $commentsField->setGuideText("Enter an optional description of this activity.");
 $editChugPage->addFormItem($commentsField);
 
 $dedupDropDown = new FormItemDropDown("De-duplication list", false, "dedup", 9);
-$dedupDropDown->setGuideText("Select ". chug_term_plural . " that should not be assigned to the same camper together with this one. As you select, each de-duplicated " . chug_term_singular . " will appear in a list above the drop-down. Click the red X next to a " . chug_term_singular . " in the list to remove it.");
+$dedupDropDown->setGuideText("Select ". chug_term_plural . " that should not be assigned to the same camper together with this one. As you select, each de-duplicated " . chug_term_singular . " will appear in a list above the drop-down. Click the X next to a " . chug_term_singular . " in the list to remove it.");
 $dedupDropDown->setInputSingular("chug");
 $dedupDropDown->setDefaultMsg("Choose " . ucfirst(chug_term_plural));
 $dedupDropDown->setInputClass("element medium");

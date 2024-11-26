@@ -61,34 +61,48 @@ if (isset($_POST["get_chug_map"])) {
 // Update the exclusion table.  If a chug combination is checked, we want
 // to add it (unless it exists).  If it's unchecked, we want to delete it if
 // it's there.
+// We do one giant query for insertions, and one giant query for deletions.
 if (isset($_POST["update_table"])) {
     $err = "";
     $checkMap = $_POST["checkMap"];
+    $dbInsert = new DbConn();
+    $dbDelete = new DbConn();
+    $dbInsert->addColName("left_chug_id");
+    $dbInsert->addColName("right_chug_id");
+    $dbInsert->addIgnore();
     foreach ($checkMap as $leftChug => $rightChug2Checked) {
         foreach ($rightChug2Checked as $rightChug => $checked) {
-            $db = new DbConn();
             if ($checked) {
                 // Add the tuple, unless it exists.
-                $db->addIgnore();
-                $db->addColumn("left_chug_id", $leftChug, 'i');
-                $db->addColumn("right_chug_id", $rightChug, 'i');
-                $insertOk = $db->insertIntoTable("chug_dedup_instances_v2", $err);
-                if (!$insertOk) {
-                    header('HTTP/1.1 500 Internal Server Error');
-                    die(json_encode(array("error" => $err)));
-                }
+                $dbInsert->addColVal($leftChug, 'i');
+                $dbInsert->addColVal($rightChug, 'i');
             } else {
                 // Delete the tuple, if it exists.
-                $db->addWhereColumn("left_chug_id", $leftChug, 'i');
-                $db->addWhereColumn("right_chug_id", $rightChug, 'i');
-                $delOk = $db->deleteFromTable("chug_dedup_instances_v2", $err);
-                if (!$delOk) {
-                    header('HTTP/1.1 500 Internal Server Error');
-                    die(json_encode(array("error" => $err)));
+                $dbDelete->addWhereBreak();
+                $dbDelete->addWhereColumn("left_chug_id", $leftChug, 'i');
+                $dbDelete->addWhereColumn("right_chug_id", $rightChug, 'i');
+                // Delete the complement, if it exists
+                if ($rightChug != $leftChug) {
+                    $dbDelete->addWhereBreak();
+                    $dbDelete->addWhereColumn("left_chug_id", $rightChug, 'i');
+                    $dbDelete->addWhereColumn("right_chug_id", $leftChug, 'i');
                 }
             }
         }
     }
+    // Insert new values
+    $insertOk = $dbInsert->insertIntoTable("chug_dedup_instances_v2", $err);
+    if (!$insertOk) {
+        header('HTTP/1.1 500 Internal Server Error');
+        die(json_encode(array("error" => $err)));
+    }
+    // Delete new values
+    $deleteOk = $dbDelete->deleteFromTable("chug_dedup_instances_v2", $err);
+    if (!$deleteOk) {
+        header('HTTP/1.1 500 Internal Server Error');
+        die(json_encode(array("error" => $err)));
+    }
+
 
     $ok = 1;
     echo json_encode($ok);
