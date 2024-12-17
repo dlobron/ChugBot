@@ -255,16 +255,19 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
 
     if ($tableName == 'chugim') {
         $ucPlural = ucfirst(chug_term_plural);
+        $ucName = ucfirst(chug_term_singular);
     } else if ($tableName == 'blocks') {
         $ucPlural = ucfirst(block_term_plural);
+        $ucName = ucfirst(block_term_singular);
     } else if ($tableName == 'chug_groups') {
         $ucPlural = ucfirst(chug_term_singular) . ' Groups';
+        $ucName = ucfirst(chug_term_singular);
     }
 
     $formName = "form_" . $name;
     $idCol = $name . "_id";
-    $editUrl = urlIfy("edit" . $ucName . ".php");
-    $addUrl = urlIfy("add" . $ucName . ".php");
+    $editUrl = urlIfy("edit" . ucfirst($name) . ".php");
+    $addUrl = urlIfy("add" . ucfirst($name) . ".php");
     $deleteUrl = urlIfy("delete.php?tableName=$tableName&idCol=$idCol");
     $article = "a";
     if (preg_match('/^[aeiou]/i', $name)) {
@@ -278,8 +281,8 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     if ($deleteAllowed) {
         $guideText = "To add, edit or delete $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName, Edit or Delete. $edahExtraText";
     } else {
-        $guideText = "To add or edit $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName or Edit. Deletion of $tableName " .
-            "is currently disallowed: to allow deletion, click \"Edit Admin Settings\" at the top of this page and adjust the check boxes. $edahExtraText";
+        $guideText = "To add or edit $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName or Edit. Deletion of " . lcfirst($ucPlural) .
+            " is currently disallowed: to allow deletion, click \"Edit Admin Settings\" at the top of this page and adjust the check boxes. $edahExtraText";
     }
     $retVal = <<<EOM
 <h2 class="accordion-header" id="heading-$name">
@@ -338,7 +341,15 @@ EOM;
 
 function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
 {
+
     $ucName = ucfirst($name);
+
+    if ($name == 'chug') {
+        $ucName = ucfirst(chug_term_singular);
+    } else if ($name == 'block') {
+        $ucName = ucfirst(block_term_singular);
+    } 
+
     $ddMsg = "Choose $ucName";
     if ($defaultMessage !== null) {
         $ddMsg = $defaultMessage;

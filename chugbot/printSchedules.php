@@ -101,7 +101,7 @@
             $sql .= ") ";
         }
     }
-    $sql .= "GROUP BY p.name, p.bunk, p.edah, p.rosh, p.roshphone ORDER BY p.bunk, p.last";
+    $sql .= "GROUP BY p.name, p.bunk, p.edah, p.rosh, p.roshphone, p.last ORDER BY p.bunk+0>0 DESC, p.bunk+0,LENGTH(p.bunk), name, p.last";
 
 
     $result = $dbc->doQuery($sql, $localErr);

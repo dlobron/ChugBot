@@ -45,7 +45,7 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 }
 
 $dbConn->isSelect = true;
-$sql = "SELECT * FROM bunks";
+$sql = "SELECT * FROM bunks ORDER BY name+0>0 DESC, name+0, LENGTH(name), name";
 $result = $dbConn->doQuery($sql, $dbErr);
 if ($result == false) {
     error_log($dbErr);

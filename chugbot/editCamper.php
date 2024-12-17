@@ -101,7 +101,7 @@ $editCamperPage->addFormItem($edahDropDown);
 $bunkIdVal = $editCamperPage->columnValue("bunk_id"); // May be NULL.
 $bunkDropDown = new FormItemConstrainedDropDown("Bunk/Tzrif", false, "bunk_id", 6,
     "SELECT b.bunk_id id_val, b.name name_val FROM bunks b, " .
-    "bunk_instances i WHERE b.bunk_id = i.bunk_id AND i.edah_id = ?");
+    "bunk_instances i WHERE b.bunk_id = i.bunk_id AND i.edah_id = ? ORDER BY name+0>0 DESC, name+0,LENGTH(name), name");
 $bunkDropDown->setGuideText("Choose your bunk (you can leave this blank if you do not know it yet!).  You must choose your Edah first.");
 $bunkDropDown->setInputClass("element medium");
 $bunkDropDown->setParentIdAndName("edah_id", "Edah");

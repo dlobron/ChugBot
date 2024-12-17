@@ -151,7 +151,7 @@
         </li>
         <li>
             <strong>Advanced:</strong> In some situations, campers may have a <?php echo chug_term_singular ?>/perek assignment which lasts multiple time
-            <?php echo block_term_plural?>. In that case, you can override the block for a specific <?php echo chug_term_singular ?> assignment
+            <?php echo block_term_plural?>. In that case, you can override the <?php echo block_term_singular ?> for a specific <?php echo chug_term_singular ?> assignment
             using the dropdowns beneath the editor. Any campers missing an assignment for a perek with a placeholder tag will have an empty
             spot on their schedule.
         </li>
@@ -165,7 +165,7 @@
         <li>
             <label class="description" for="edah"><span style="color:red;">*</span>Edah</label>
             <div id="edah_checkbox">
-                <select class="form-select" id="edah_list" name="edah" required onchange="setAdvanced(); fillConstraintsPickList()">
+                <select class="form-select" id="edah_list" name="edah" required onchange="setAdvanced('<?php echo ucfirst(block_term_singular) ?>'); fillConstraintsPickList()">
                     <?php echo genPickList($edahId2Name, array(), "edah"); ?>
                 </select>
             </div>
@@ -204,7 +204,7 @@
         <br><br>
         <li>
             <div id="optional" style="display:none;">
-                <fieldset><legend>OPTIONAL: Advanced Block Override (by <?php echo chug_term_singular; ?>)</legend>
+                <fieldset><legend>OPTIONAL: Advanced <?php echo ucfirst(block_term_singular) ?> Override (by <?php echo chug_term_singular; ?>)</legend>
                 <div id="advanced"></div>
             </div>
             </fieldset>
@@ -277,6 +277,9 @@
 <?php
     echo footerText();
 ?>
+<script type="text/javascript">
+    var block_term_singular = <?php echo block_term_singular ?>;
+</script>
 <script src="/meta/design.js"></script>
 </body>
 </html>

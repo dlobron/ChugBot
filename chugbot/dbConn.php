@@ -302,6 +302,9 @@ function fillId2Name($archiveYear,
         $db->addSelectColumn("sort_order");
         $db->addOrderByClause(" ORDER BY sort_order");
     }
+    if ($table == "bunks") {
+        $db->addOrderByClause(" ORDER BY name+0>0 DESC, name+0, LENGTH( name ), name");
+    }
     $result = $db->simpleSelectFromTable($table, $dbErr);
     if ($result == false) {
         error_log($dbErr);

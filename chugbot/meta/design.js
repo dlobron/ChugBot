@@ -8,7 +8,7 @@
 // 1. SQL query for which groups and blocks are allowed for the edah
 // 2. Set the optional dropdowns to override default perek assignments
 // 3. Create shortcut buttons to include parameters in schedule
-function setAdvanced() {
+function setAdvanced(block_term_singular) {
     // 1: SQL queries -- get blocks, chug group
     var values = {};
     values["get_legal_id_to_name"] = 1;
@@ -89,7 +89,8 @@ function setAdvanced() {
 
         // finally, build a picklist for each group with the blocks as options
         // step 1: create generic block options
-        var blockBase = "<option value=\"\">-- Override Block Assignments --</option>";
+        console.log(block_term_singular);
+        var blockBase = "<option value=\"\">-- Override " + block_term_singular + " Assignments --</option>";
         for (let i = 0; i < blockIds.length; i++) {
             blockBase += "<option value=\""+blockIds[i]+"\">"+blockNames[i]+"</option>";
         }
