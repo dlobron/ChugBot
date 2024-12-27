@@ -180,7 +180,7 @@
         }
 
         $attendanceSection = "<div class=\"card card-body bg-light mt-3 mb-3 edah-attendance\">";
-        $attendanceSection .= "<h5>Edah: " . $edahId2Name[$edahId] . "</h5>";
+        $attendanceSection .= "<h5>" . ucfirst(edah_term_singular) . ": " . $edahId2Name[$edahId] . "</h5>";
         $attendanceSection .= "<label><input class=\"form-check-input me-1 mb-2\" type=\"checkbox\" id=\"toggle-all\" onclick=\"toggleCheckboxes(this)\">Toggle All</label>";
         $attendanceSection .= $att;
         $attendanceSection .= "</div>";

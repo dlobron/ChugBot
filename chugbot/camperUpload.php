@@ -4,6 +4,7 @@ include_once 'dbConn.php';
 include_once 'functions.php';
 bounceToLogin();
 checkLogout();
+setup_camp_specific_terminology_constants();
 
 // Check for a query string that signals a message.
 $parts = explode("&", $_SERVER['QUERY_STRING']);
@@ -74,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
     $dbConn->mysqliClient()->begin_transaction();
     $campersWithErrors = array();
     foreach($csv as $camper) {
-        $edahId = $edah_name_to_id[$camper["edah"]];
+        $edahId = $edah_name_to_id[$camper[edah_term_singular]];
         $sessionId = $session_name_to_id[$camper["session"]];
         $bunkId = $bunk_name_to_id[$camper["bunk"]];
         $needsFirstChoice = !empty($camper["needs_first_choice"]);
@@ -126,8 +127,8 @@ EOM;
 
 <div class="card card-body mt-3 p-3 container">
 <h2>Upload Campers</h2>
-<p><b>Upload a CSV file with the following columns</b>: edah, session, first_name, last_name, bunk, email, email2, needs_first_choice</p>
-<p>Valid values for <b>edah</b>: <?php echo implode(", ", array_keys($edah_name_to_id)); ?></p>
+<p><b>Upload a CSV file with the following columns</b>: <?php echo edah_term_singular;?>, session, first_name, last_name, bunk, email, email2, needs_first_choice</p>
+<p>Valid values for <b><?php echo (edah_term_singular); ?></b>: <?php echo implode(", ", array_keys($edah_name_to_id)); ?></p>
 <p>Valid values for <b>session</b>: <?php echo implode(", ", array_keys($session_name_to_id)); ?></p>
 <p>Valid values for <b>bunk</b>: <?php echo implode(", ", array_keys($bunk_name_to_id)); ?></p>
 

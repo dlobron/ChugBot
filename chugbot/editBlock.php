@@ -41,10 +41,10 @@ $sessionChooserField->setActiveIdHash($editBlockPage->instanceActiveIdHash);
 $sessionChooserField->setGuideText("Choose each session that contains this time " . block_term_singular . " (you can do this later if you are not sure now).");
 $editBlockPage->addFormItem($sessionChooserField);
 
-$edahChooser = new FormItemInstanceChooser("Edot", false, "edot_for_block", 3);
+$edahChooser = new FormItemInstanceChooser(ucfirst(edah_term_plural), false, "edot_for_block", 3);
 $edahChooser->setId2Name($editBlockPage->activeEdotFilterId2Name);
 $edahChooser->setActiveIdHash($editBlockPage->activeEdotHash);
-$edahChooser->setGuideText("Choose the edot who will participate in this time " . block_term_singular . " (you can do this later if you are not sure now)");
+$edahChooser->setGuideText("Choose the " . edah_term_plural . " who will participate in this time " . block_term_singular . " (you can do this later if you are not sure now)");
 $editBlockPage->addFormItem($edahChooser);
 
 $editBlockPage->renderForm();

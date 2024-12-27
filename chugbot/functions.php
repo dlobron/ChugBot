@@ -262,6 +262,9 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     } else if ($tableName == 'chug_groups') {
         $ucPlural = ucfirst(chug_term_singular) . ' Groups';
         $ucName = ucfirst(chug_term_singular);
+    } else if ($tableName == 'edot') {
+        $ucPlural = ucfirst(edah_term_plural);
+        $ucName = ucfirst(edah_term_singular);
     }
 
     $formName = "form_" . $name;
@@ -275,7 +278,7 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     }
     $edahExtraText = "";
     if ($name == "edah") {
-        $edahExtraText = " To view the campers in an edah, select an edah and click <font color=\"red\">\"Show Campers\"</font>.";
+        $edahExtraText = " To view the campers in an " . edah_term_singular . ", select an " . edah_term_singular . " and click <font color=\"red\">\"Show Campers\"</font>.";
     }
     $guideText = "";
     if ($deleteAllowed) {
@@ -348,7 +351,9 @@ function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
         $ucName = ucfirst(chug_term_singular);
     } else if ($name == 'block') {
         $ucName = ucfirst(block_term_singular);
-    } 
+    } else if ($name == 'edah') {
+        $ucName = ucfirst(edah_term_singular);
+    }
 
     $ddMsg = "Choose $ucName";
     if ($defaultMessage !== null) {
@@ -1084,7 +1089,7 @@ function genPassToEditPageForm($action, $paramHash)
 
 function setup_camp_specific_terminology_constants() {
     $db = new DbConn();
-    $sql = "SELECT chug_term_singular, chug_term_plural, block_term_singular, block_term_plural FROM admin_data";
+    $sql = "SELECT chug_term_singular, chug_term_plural, block_term_singular, block_term_plural, edah_term_singular, edah_term_plural FROM admin_data";
     $result = $db->runQueryDirectly($sql, $dbErr);
     if ($dbErr) {
         fatalError($dbErr);

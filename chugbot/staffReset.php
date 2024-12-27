@@ -103,6 +103,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $chug_term_plural = test_post_input("chug_term_plural");
     $block_term_singular = test_post_input("block_term_singular");
     $block_term_plural = test_post_input("block_term_plural");
+    $edah_term_singular = test_post_input("edah_term_singular");
+    $edah_term_plural = test_post_input("edah_term_plural");
 
     // Update the deletable tables.  We start by setting all tables to not
     // be editable, and then we enable ones that are active.
@@ -143,6 +145,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $db->addColumn("chug_term_plural", strtolower($chug_term_plural), 's');
     $db->addColumn("block_term_singular", strtolower($block_term_singular), 's');
     $db->addColumn("block_term_plural", strtolower($block_term_plural), 's');
+    $db->addColumn("edah_term_singular", strtolower($edah_term_singular), 's');
+    $db->addColumn("edah_term_plural", strtolower($edah_term_plural), 's');
 
     // Assume the email is never empty.  Only update it if a valid address was
     // given.
@@ -219,7 +223,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
     // Camp terminologies cannot be empty
-    if (!$chug_term_singular || !$chug_term_plural || !$block_term_singular || !$block_term_plural) {
+    if (!$chug_term_singular || !$chug_term_plural || !$block_term_singular || !$block_term_plural || !$edah_term_singular || !$edah_term_plural) {
         $campTerminologyErr = errorString("Camp terminologies are required");
     }
     if (empty($staffEmailErr) &&
@@ -522,39 +526,131 @@ Update any number of passwords in the applicable sections of the accordion below
     </div>
 </div></li>
 
-<?php
-$chugTermSingularField = new FormItemSingleTextField("Chug Term (singular)", false, "chug_term_singular", $counter++);
-$chugTermSingularField->setInputType("text");
-$chugTermSingularField->setInputClass("element text medium");
-$chugTermSingularField->setInputMaxLength(50);
-$chugTermSingularField->setPlaceHolder(" ");
-$chugTermSingularField->setInputValue(chug_term_singular);
-echo $chugTermSingularField->renderHtml();
+<br>
+<li>
+<label class="description mt-2" for="termEditAccordion">
+    Update Camp-Specific Terms
+</label>
+Modify the terms used for certain things in your camp. Please provide both a singular and plural version for each term.
+<div class="accordion" id="termEditAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingChug">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChug" aria-expanded="true" aria-controls="collapseChug">
+                <?php echo ucfirst(chug_term_singular) ?> Term
+            </button>
+        </h2>
+        <div id="collapseChug" class="accordion-collapse collapse show" aria-labelledby="headingChug" data-bs-parent="#termEditAccordion">
+            <div class="accordion-body">
+            A "<?php echo (chug_term_singular) ?>" is a certain activity or elective. Campers rank their preferences for these activities and are assigned to certain ones. For example, a camper may have “soccer” or “painting” as a chug - this refers to the specific activity.
+                <?php
+                    $chugTermSingularField = new FormItemSingleTextField("Chug Term (singular)", false, "chug_term_singular", $counter++);
+                    $chugTermSingularField->setInputType("text");
+                    $chugTermSingularField->setInputClass("element text medium");
+                    $chugTermSingularField->setInputMaxLength(50);
+                    $chugTermSingularField->setPlaceHolder(" ");
+                    $chugTermSingularField->setInputValue(chug_term_singular);
 
-$chugTermPluralField = new FormItemSingleTextField("Chug Term (plural)", false, "chug_term_plural", $counter++);
-$chugTermPluralField->setInputType("text");
-$chugTermPluralField->setInputClass("element text medium");
-$chugTermPluralField->setInputMaxLength(50);
-$chugTermPluralField->setPlaceHolder(" ");
-$chugTermPluralField->setInputValue(chug_term_plural);
-echo $chugTermPluralField->renderHtml();
+                    $chugTermSingularField2Str = $chugTermSingularField->renderHtml();
 
-$blockTermSingularField = new FormItemSingleTextField("Block Term (singular)", false, "block_term_singular", $counter++);
-$blockTermSingularField->setInputType("text");
-$blockTermSingularField->setInputClass("element text medium");
-$blockTermSingularField->setInputMaxLength(50);
-$blockTermSingularField->setPlaceHolder(" ");
-$blockTermSingularField->setInputValue(block_term_singular);
-echo $blockTermSingularField->renderHtml();
+                    $chugTermSingularField2Str = str_replace("<li", "<div", $chugTermSingularField2Str);
+                    $chugTermSingularField2Str = str_replace("/li>", "/div>", $chugTermSingularField2Str);
+                    echo $chugTermSingularField2Str;
 
-$blockTermPluralField = new FormItemSingleTextField("Block Term (plural)", false, "block_term_plural", $counter++);
-$blockTermPluralField->setInputType("text");
-$blockTermPluralField->setInputClass("element text medium");
-$blockTermPluralField->setInputMaxLength(50);
-$blockTermPluralField->setPlaceHolder(" ");
-$blockTermPluralField->setInputValue(block_term_plural);
-echo $blockTermPluralField->renderHtml();
-?>
+                    $chugTermPluralField = new FormItemSingleTextField("Chug Term (plural)", false, "chug_term_plural", $counter++);
+                    $chugTermPluralField->setInputType("text");
+                    $chugTermPluralField->setInputClass("element text medium");
+                    $chugTermPluralField->setInputMaxLength(50);
+                    $chugTermPluralField->setPlaceHolder(" ");
+                    $chugTermPluralField->setInputValue(chug_term_plural);
+                    
+                    $chugTermPluralField2Str = $chugTermPluralField->renderHtml();
+
+                    $chugTermPluralField2Str = str_replace("<li", "<div", $chugTermPluralField2Str);
+                    $chugTermPluralField2Str = str_replace("/li>", "/div>", $chugTermPluralField2Str);
+                    echo $chugTermPluralField2Str;
+                ?>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingBlock">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlock" aria-expanded="false" aria-controls="collapseBlock">
+                <?php echo ucfirst(block_term_singular) ?> Term
+            </button>
+        </h2>
+        <div id="collapseBlock" class="accordion-collapse collapse" aria-labelledby="headingBlock" data-bs-parent="#termEditAccordion">
+            <div class="accordion-body">
+            A "<?php echo ucfirst(block_term_singular) ?>" is a time period. For example, camp may be made up of multiple sessions (e.g. 2 sessions, each lasting 4 weeks) where campers have multiple elective cycles. If the sessions are “1st session” and “2nd session,” the blocks may be “Weeks 1+2,” “Weeks 3+4,” “Weeks 5+6,” and “Weeks 7+8.” It is unlikely you will need to change this term, mostly just including it in case you have a different preference.
+                <?php
+                    $blockTermSingularField = new FormItemSingleTextField("Block Term (singular)", false, "block_term_singular", $counter++);
+                    $blockTermSingularField->setInputType("text");
+                    $blockTermSingularField->setInputClass("element text medium");
+                    $blockTermSingularField->setInputMaxLength(50);
+                    $blockTermSingularField->setPlaceHolder(" ");
+                    $blockTermSingularField->setInputValue(block_term_singular);
+                    
+                    $blockTermSingularField2Str = $blockTermSingularField->renderHtml();
+
+                    $blockTermSingularField2Str = str_replace("<li", "<div", $blockTermSingularField2Str);
+                    $blockTermSingularField2Str = str_replace("/li>", "/div>", $blockTermSingularField2Str);
+                    echo $blockTermSingularField2Str;
+                    
+                    $blockTermPluralField = new FormItemSingleTextField("Block Term (plural)", false, "block_term_plural", $counter++);
+                    $blockTermPluralField->setInputType("text");
+                    $blockTermPluralField->setInputClass("element text medium");
+                    $blockTermPluralField->setInputMaxLength(50);
+                    $blockTermPluralField->setPlaceHolder(" ");
+                    $blockTermPluralField->setInputValue(block_term_plural);
+
+                    $blockTermPluralField2Str = $blockTermPluralField->renderHtml();
+
+                    $blockTermPluralField2Str = str_replace("<li", "<div", $blockTermPluralField2Str);
+                    $blockTermPluralField2Str = str_replace("/li>", "/div>", $blockTermPluralField2Str);
+                    echo $blockTermPluralField2Str;
+                ?>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingEdah">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdah" aria-expanded="false" aria-controls="collapseEdah">
+                <?php echo ucfirst(edah_term_singular) ?> Term
+            </button>
+        </h2>
+        <div id="collapseEdah" class="accordion-collapse collapse" aria-labelledby="headingEdah" data-bs-parent="#termEditAccordion">
+            <div class="accordion-body">
+                An "<?php echo (edah_term_singular) ?>" is an age group at camp. Different camps utilize different spellings of the term; specify your version here.
+                <?php
+                    $edahTermSingularField = new FormItemSingleTextField("Edah Term (singular)", false, "edah_term_singular", $counter++);
+                    $edahTermSingularField->setInputType("text");
+                    $edahTermSingularField->setInputClass("element text medium");
+                    $edahTermSingularField->setInputMaxLength(50);
+                    $edahTermSingularField->setPlaceHolder(" ");
+                    $edahTermSingularField->setInputValue(edah_term_singular);
+                    
+                    $edahTermSingularField2Str = $edahTermSingularField->renderHtml();
+
+                    $edahTermSingularField2Str = str_replace("<li", "<div", $edahTermSingularField2Str);
+                    $edahTermSingularField2Str = str_replace("/li>", "/div>", $edahTermSingularField2Str);
+                    echo $edahTermSingularField2Str;
+                    
+                    $edahTermPluralField = new FormItemSingleTextField("Edah Term (plural)", false, "edah_term_plural", $counter++);
+                    $edahTermPluralField->setInputType("text");
+                    $edahTermPluralField->setInputClass("element text medium");
+                    $edahTermPluralField->setInputMaxLength(50);
+                    $edahTermPluralField->setPlaceHolder(" ");
+                    $edahTermPluralField->setInputValue(edah_term_plural);
+
+                    $edahTermPluralField2Str = $edahTermPluralField->renderHtml();
+
+                    $edahTermPluralField2Str = str_replace("<li", "<div", $edahTermPluralField2Str);
+                    $edahTermPluralField2Str = str_replace("/li>", "/div>", $edahTermPluralField2Str);
+                    echo $edahTermPluralField2Str;
+                ?>
+            </div>
+        </div>
+    </div>
+</div></li>
 
 <li class="buttons">
 <input id="saveForm" class="btn btn-primary" type="submit" name="submit" value="Submit" />

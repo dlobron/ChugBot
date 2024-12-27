@@ -143,7 +143,7 @@
         // 1. Manual ones we know to always expect (name, bunk, edah, rosh, roshphone)
         $schedule = str_replace("{{Name}}", $row[0], $schedule); // name
         $schedule = str_replace("{{Bunk}}", $row[1], $schedule); // bunk
-        $schedule = str_replace("{{Edah}}", $row[2], $schedule); // edah
+        $schedule = str_replace("{{" . ucfirst(edah_term_singular) . "}}", $row[2], $schedule); // edah
         $schedule = str_replace("{{Rosh}}", $row[3], $schedule); // rosh
         $schedule = str_replace("{{Rosh Phone Number}}", $row[4], $schedule); // roshphone
 

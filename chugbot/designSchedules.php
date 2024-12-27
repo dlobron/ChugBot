@@ -104,7 +104,7 @@
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             <h5>Schedule successfully saved!</h5>
-            You can now access it after choosing the edah/edot you saved it for.
+            You can now access it after choosing the <?php echo edah_term_singular . "/" . edah_term_plural;?> you saved it for.
         </div>
     </div>
 </div>
@@ -122,15 +122,15 @@
 <div class="card card-body mt-3 p-3 mb-3 container">
     <h1>Schedule Builder</h1>
     <div class="page-header"><h2>Generate Printable Schedules</h2>
-    <p>In the form below, select an edah and time <?php echo block_term_singular?> to begin designing printable schedules for each camper.
+    <p>In the form below, select an <?php echo edah_term_singular?> and time <?php echo block_term_singular?> to begin designing printable schedules for each camper.
     Completing all of the below steps will allow each camper to have a custom printout with all of their <?php echo chug_term_singular ?>
-    assignments for a certain time <?php echo block_term_singular?>. Tzevet only need to design one schedule for an edah, and adding placeholders
+    assignments for a certain time <?php echo block_term_singular?>. Tzevet only need to design one schedule for an <?php echo edah_term_singular?>, and adding placeholders
     will automatically populate a camper's assignments for every perek.</p>
     <div class="card card-body mb-3 bg-light">
     <h4>Instructions</h4>
     <ol>
         <li>
-            <strong>Select</strong> an edah, time <?php echo block_term_singular?>, and (optionally) a pre-saved schedule template from the below form.
+            <strong>Select</strong> an <?php echo edah_term_singular?>, time <?php echo block_term_singular?>, and (optionally) a pre-saved schedule template from the below form.
         </li>
         <li>
             <strong>Customization!</strong> Using the provided editor, design what you want the camper schedule to look like. However the 
@@ -138,7 +138,7 @@
             <br>Tips for designing schedules:
                 <ul>
                     <li>Use a large font! Size 18 or larger will make it more readable.</li>
-                    <li>Once an edah is selected in the dropdown menu, buttons will appear to the right of the editor. Click the button to add
+                    <li>Once an <?php echo edah_term_singular?> is selected in the dropdown menu, buttons will appear to the right of the editor. Click the button to add
                         a placeholder for the desired field. You can stylize the placeholders, too, just be sure the entire placeholder is stylized
                         the same (the placeholders are structured with 2 curly brackets around the word, like this: <code>{{Name}}</code>).
                     </li>
@@ -163,9 +163,9 @@
     </div>
     <form id="schedule_designer_form" class="well" method="POST" action="printSchedules.php" target="_blank"><ul>
         <li>
-            <label class="description" for="edah"><span style="color:red;">*</span>Edah</label>
+            <label class="description" for="edah"><span style="color:red;">*</span><?php echo ucfirst(edah_term_singular)?></label>
             <div id="edah_checkbox">
-                <select class="form-select" id="edah_list" name="edah" required onchange="setAdvanced('<?php echo ucfirst(block_term_singular) ?>'); fillConstraintsPickList()">
+                <select class="form-select" id="edah_list" name="edah" required onchange="setAdvanced('<?php echo ucfirst(block_term_singular) . "','" . ucfirst(edah_term_singular) ?>'); fillConstraintsPickList()">
                     <?php echo genPickList($edahId2Name, array(), "edah"); ?>
                 </select>
             </div>
@@ -223,9 +223,9 @@
     </div>
     <form id="saveForm" action="" method="POST">
         <div class="modal-body">
-            Select the edah/edot this schedule should be saved for, enter a name for the schedule, and save this template to reuse it again!
+            Select the <?php echo edah_term_singular . "/" . edah_term_plural?> this schedule should be saved for, enter a name for the schedule, and save this template to reuse it again!
             <div id="save-form-items" class="card card-body mt-2">
-                <label class="description" for="edah"><span style="color:red;">*</span> Edah/Edot</label>
+                <label class="description" for="edah"><span style="color:red;">*</span> <?php echo ucfirst(edah_term_singular) . "/" . ucfirst(edah_term_plural)?></label>
                 <?php echo genCheckBox($edahId2Name, array(), "edah_ids"); ?>
                 <label class="description mt-3" for="save-schedule-name"><span style="color:red;">*</span> Schedule Name</label>
                 <input class="form-control" id="save-schedule-name" type="text" name="save-schedule-name" required>

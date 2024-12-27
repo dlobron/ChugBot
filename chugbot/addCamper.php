@@ -67,10 +67,10 @@ $sessionDropDown->fillDropDownId2Name($addCamperPage->dbErr,
 $addCamperPage->addFormItem($sessionDropDown);
 
 $edahIdVal = $addCamperPage->columnValue("edah_id"); // May be NULL.
-$edahDropDown = new FormItemDropDown("Edah", true, "edah_id", 5);
-$edahDropDown->setGuideText("Choose your Edah!");
+$edahDropDown = new FormItemDropDown(ucfirst(edah_term_singular), true, "edah_id", 5);
+$edahDropDown->setGuideText("Choose your " . ucfirst(edah_term_singular) . "!");
 $edahDropDown->setError($addCamperPage->errForColName("edah_id"));
-$edahDropDown->setInputSingular("edah");
+$edahDropDown->setInputSingular(edah_term_singular);
 $edahDropDown->setInputClass("element medium");
 $edahDropDown->setColVal($edahIdVal);
 $edahDropDown->fillDropDownId2Name($addCamperPage->dbErr,

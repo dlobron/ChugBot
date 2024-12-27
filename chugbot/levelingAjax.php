@@ -570,6 +570,8 @@ if (isset($_POST["names_for_id"])) {
         'chugimTerm' => chug_term_plural,
         'chugTerm' => chug_term_singular,
         'blockTerm' => block_term_singular,
+        'edahBothTerm' => ucfirst(edah_term_singular) . "/" . ucfirst(edah_term_plural),
+        'edahTerm' => edah_term_singular,
     );
     echo json_encode($retVal);
     exit();
