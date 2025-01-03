@@ -6,25 +6,85 @@ bounceToLogin();
 checkLogout();
 setup_camp_specific_terminology_constants();
 
+$fields = array(edah_term_singular, "session", "first_name", "last_name", "bunk", "email", "email2", "needs_first_choice");
+
+// ensure camper importer is enabled
+$db = new DbConn();
+$sql = "SELECT enable_camper_importer FROM admin_data";
+$err = "";
+$result = $db->runQueryDirectly($sql, $err);
+$enableCamperImporter = false;
+if ($result) {
+    $row = $result->fetch_assoc();
+    if ($row) {
+        $enableCamperImporter = (bool)$row["enable_camper_importer"];
+    }
+}
+if (!$enableCamperImporter) {
+    $redirUrl = urlIfy("../staffHome.php?from=camperUpload.php");
+    header("Location: $redirUrl");
+    exit();
+}
+
 // Check for a query string that signals a message.
 $parts = explode("&", $_SERVER['QUERY_STRING']);
 $message = null;
 foreach ($parts as $part) {
     $cparts = explode("=", $part);
     if ($cparts[0] == "success") {
-        $message = "<font color=\"green\">Campers successfully imported!</font>";
+        $message = "<div class=\"alert alert-success\" role=\"alert\"><h4 class=\"alert-heading\">Campers successfully imported!</h4></div>";
         break;
-    } else if ($cparts[0] == "campersWithErrors") {
-        $message = "<font color=\"red\">Error importing campers from CSV.</font> Please try again, or escalate to an administrator.";
-        $message .= "<br><br>The following campers had issues with importing: " . urldecode($cparts[1]);
+    } else if ($cparts[0] == "campersWithErrors" && isset($_SESSION['campersWithErrors'])) {
+        $message = "<div class=\"alert alert-danger\" role=\"alert\">";
+        $message .= "<h4 class=\"alert-heading\">Error importing campers from CSV.</h4><p>Please try again, or escalate to an administrator.</p>";
+        $message .= "<hr><p class=\"mb-0\">The following camper(s) had issues with importing:</p>";
+        $camperString = implode("</li><li>", $_SESSION['campersWithErrors']);
+        $message .= "<ul class=\"mb-0\"><li>" . $camperString . "</li></ul></div>";
+        unset($_SESSION['campersWithErrors']);
         break;
+    } else if ($cparts[0] == "missingHeader") {
+        $message = "<div class=\"alert alert-danger\" role=\"alert\">";
+        $message .= "<h4 class=\"alert-heading\">Error importing campers from CSV.</h4>";
+        if (isset($cparts[1])) {
+            $message .= "<hr><p class=\"mb-0\">The following column header is missing from the uploaded CSV:</p>";
+            $message .= "<ul class=\"mb-1\"><li><b>" . urldecode($cparts[1]) . "</b></li></ul>";
+            $message .= "<p class=\"mb-0\">Please make sure it is included and try again, or escalate to an administrator for more assistance";
+        }
+        $message .= "</div>";
+        break;
+    } else if ($cparts[0] == "downloadSample") {
+        // orig adapted from https://stackoverflow.com/a/16251849
+        header('Content-Type: application/csv');
+        header('Content-Disposition: attachment; filename="camperSample.csv";');
+        $f = fopen('php://output', 'w');
+        // add header rows
+        fputcsv($f, $fields, ","); 
+        // create some fake sample data
+        $dbConn = new DbConn();
+        $dbErr = "";
+        $dbConn->isSelect = true;
+        $sql = "SELECT e.name AS 'edah', s.name AS 'session', b.name AS 'bunk' FROM edot e, sessions s, bunks b, bunk_instances bi " . 
+            "WHERE b.bunk_id = bi.bunk_id AND e.edah_id = bi.edah_id GROUP BY edah, session, bunk " . 
+            "ORDER BY e.sort_order, s.name, bunk+0>0 DESC, bunk+0, LENGTH(bunk), bunk;";
+        $result = $dbConn->doQuery($sql, $dbErr);
+        if ($result == false) {
+            error_log($dbErr);
+        }
+        $count = 1;
+        while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+            $firstPref = null;
+            if ($count % 4 == 0) {$firstPref = true;}
+            fputcsv($f, array($row['edah'], $row['session'], "First $count", "Last $count", $row['bunk'], "example@example.com", null, $firstPref), ",");
+            $count++;
+        }
+        exit();
     }
 }
 
 $dbConn = new DbConn();
 $dbErr = "";
 $dbConn->isSelect = true;
-$sql = "SELECT * FROM edot";
+$sql = "SELECT * FROM edot ORDER BY sort_order";
 $result = $dbConn->doQuery($sql, $dbErr);
 if ($result == false) {
     error_log($dbErr);
@@ -70,19 +130,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
     array_walk($csv, function(&$a) use ($csv) {
         $a = array_combine(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $csv[0]), $a);
       });
+    $header = $csv[0];
     array_shift($csv); # remove header row
+
+    // ensure all headers are present and correct
+    foreach($fields as $field) {
+        if (!array_key_exists($field, $header)) {
+            $redirUrl = urlBaseText() . "camperUpload.php?missingHeader=$field";
+            header("Location: $redirUrl");
+            exit();
+        }
+    }
 
     $dbConn->mysqliClient()->begin_transaction();
     $campersWithErrors = array();
     foreach($csv as $camper) {
-        $edahId = $edah_name_to_id[$camper[edah_term_singular]];
-        $sessionId = $session_name_to_id[$camper["session"]];
-        $bunkId = $bunk_name_to_id[$camper["bunk"]];
+        $edahId = null;
+        $sessionId = null;
+        $bunkId = null;
+        if (array_key_exists($camper[edah_term_singular], $edah_name_to_id)) {
+            $edahId = $edah_name_to_id[$camper[edah_term_singular]];
+        } else {
+            $error = "invalid " . edah_term_singular . ": '" . $camper[edah_term_singular] . "'";
+        }
+        if (array_key_exists($camper["session"], $session_name_to_id)) {
+            $sessionId = $session_name_to_id[$camper["session"]];
+        } else {
+            $error = "invalid session: '" . $camper["session"] . "'";
+        }
+        if (array_key_exists($camper["bunk"], $bunk_name_to_id)) {
+            $bunkId = $bunk_name_to_id[$camper["bunk"]];
+        } else {
+            $error = "invalid bunk: '" . $camper["bunk"] . "'";
+        }
         $needsFirstChoice = !empty($camper["needs_first_choice"]);
 
         if (!$edahId || !$sessionId || !$bunkId) {
-            array_push($campersWithErrors, $camper["first_name"] . " " . $camper["last_name"]);
-            break;
+            array_push($campersWithErrors, $camper["first_name"] . " " . $camper["last_name"] . " ($error)");
+            continue;
         }
 
         $stmt = $dbConn->mysqliClient()->prepare("INSERT INTO campers(edah_id, session_id, first, last, bunk_id, email, email2, needs_first_choice) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
@@ -90,9 +175,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
         $stmt->execute();
     }
 
+    /*
+    $dbConn2 = new DbConn();
+    $dbErr2 = "";
+    $sql2 = "SET information_schema_stats_expiry = 0";
+    $result2 = $dbConn2->doQuery($sql2, $dbErr2);
+    $sql2 = "SELECT `auto_increment` FROM INFORMATION_SCHEMA.TABLES WHERE table_name = 'campers'";
+    $result2 = $dbConn2->doQuery($sql2, $dbErr2);
+    if ($result2 == false) {
+        echo "nope";
+        error_log($dbErr);
+    }
+    echo "Hiiiii";
+    while ($row2 = mysqli_fetch_array($result2, MYSQLI_ASSOC)) {
+        echo "yep";
+        print_r($row2);
+    }
+    echo "Done";
+    */
+
     if (count($campersWithErrors) > 0) {
         $dbConn->mysqliClient()->rollback();
-        $redirUrl = urlBaseText() . "camperUpload.php?campersWithErrors=" . implode(',', $campersWithErrors);
+        $redirUrl = urlBaseText() . "camperUpload.php?campersWithErrors";
+        $_SESSION['campersWithErrors'] = $campersWithErrors;
         header("Location: $redirUrl");
         exit();
     }
@@ -106,7 +211,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
 ?>
 
 <?php
-echo headerText("Upload Campers");
+echo headerText("Bulk Upload Campers");
 
 $errText = genFatalErrorReport(array($dbErr), true);
 if (!is_null($errText)) {
@@ -116,26 +221,78 @@ if (!is_null($errText)) {
 
 <?php
 if ($message) {
-    $messageText = <<<EOM
-<div class="container well">
-<h2>$message</h2>
-</div>
-EOM;
+    $messageText = "<div class=\"container well mt-3\">$message</div>";
     echo $messageText;
 }
 ?>
 
 <div class="card card-body mt-3 p-3 container">
-<h2>Upload Campers</h2>
-<p><b>Upload a CSV file with the following columns</b>: <?php echo edah_term_singular;?>, session, first_name, last_name, bunk, email, email2, needs_first_choice</p>
-<p>Valid values for <b><?php echo (edah_term_singular); ?></b>: <?php echo implode(", ", array_keys($edah_name_to_id)); ?></p>
-<p>Valid values for <b>session</b>: <?php echo implode(", ", array_keys($session_name_to_id)); ?></p>
-<p>Valid values for <b>bunk</b>: <?php echo implode(", ", array_keys($bunk_name_to_id)); ?></p>
+<h2>Bulk Upload Campers</h2>
+<p><b>Upload a CSV file with the following columns</b>: <?php echo implode(", ", $fields)?></p>
+<p>To download a template CSV file, click <a href="camperUpload.php?downloadSample">HERE</a></p>
 
+<p class="mb-1">Expand any of the below fields to view allowed values for each column</p>
+
+<div class="accordion mb-4" id="detailAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingEdah">
+            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdah" aria-expanded="false" aria-controls="collapseOne">
+                Valid values for&nbsp<strong><?php echo (edah_term_singular); ?></strong>
+            </button>
+        </h2>
+        <div id="collapseEdah" class="accordion-collapse collapse" aria-labelledby="headingEdah">
+            <div class="accordion-body p-3">
+                <ul style="column-count: 3; column-gap:20px;" class="mb-0"><li><?php echo implode("</li><li>", array_keys($edah_name_to_id)); ?></li></ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingSession">
+            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSession" aria-expanded="false" aria-controls="collapseTwo">
+                Valid values for&nbsp<b>session</b>
+            </button>
+        </h2>
+        <div id="collapseSession" class="accordion-collapse collapse" aria-labelledby="headingSession">
+            <div class="accordion-body p-3">
+                <ul style="column-count: 3; column-gap:20px;" class="mb-0"><li> <?php echo implode("</li><li>", array_keys($session_name_to_id)); ?></li></ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingBunk">
+            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBunk" aria-expanded="false" aria-controls="collapseThree">
+                Valid values for&nbsp<b>bunk</b>
+            </button>
+        </h2>
+        <div id="collapseBunk" class="accordion-collapse collapse" aria-labelledby="headingBunk">
+            <div class="accordion-body p-3">
+                <ul style="column-count: 6; column-gap:20px;" class="mb-0"><li> <?php echo implode("</li><li>", array_keys($bunk_name_to_id)); ?></li></ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingFirstChoice">
+            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFirstChoice" aria-expanded="false" aria-controls="collapseFour">
+                Other details
+            </button>
+        </h2>
+        <div id="collapseFirstChoice" class="accordion-collapse collapse" aria-labelledby="headingFirstChoice">
+        <div class="accordion-body p-3">
+            <ul class="mb-0">
+                <li>If <b>needs_first_choice</b> is NOT blank, the camper will always receive their first choice preference</li>
+                <li><b>email</b> should have an email; <b>email2</b> can be blank</li>
+                <li>Campers will search for their information using <b>edah</b>, <b>first_name</b>, and <b>last_name</b> to enter preferences. It is recommended to use preferred names for <b>first_name</b></li>
+            </ul>
+        </div>
+    </div>
+    </div>
+</div>
+
+<h4>Select File to Upload</h4>
 <div class="row">
 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data">
     <div class="col-4 mb-3">
-        <input class="form-control col-sm" type="file" name="csv" id="csv">
+        <input class="form-control col-sm" type="file" name="csv" id="csv" accept=".csv" required>
     </div>
   <input type="submit" class="btn btn-primary" value="Upload" name="submit">
 </form>

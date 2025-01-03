@@ -34,14 +34,16 @@ foreach ($parts as $part) {
 }
 
 $db = new DbConn();
-$sql = "SELECT enable_camper_importer FROM admin_data";
+$sql = "SELECT enable_camper_importer, enable_chugim_importer FROM admin_data";
 $err = "";
 $result = $db->runQueryDirectly($sql, $err);
 $enableCamperImporter = false;
+$enableChugimImporter = false;
 if ($result) {
     $row = $result->fetch_assoc();
     if ($row) {
         $enableCamperImporter = (bool)$row["enable_camper_importer"];
+        $enableChugimImporter = (bool)$row["enable_chugim_importer"];
     }
 }
 
@@ -52,6 +54,7 @@ $resetUrl = urlIfy("staffReset.php");
 $levelingUrl = urlIfy("levelHomeLaunch.php");
 $reportUrl = urlIfy("report.php");
 $camperUploadUrl = urlIfy("camperUpload.php");
+$chugimUploadUrl = urlIfy("chugUpload.php");
 $dbErr = "";
 $sessionId2Name = array();
 $blockId2Name = array();
@@ -108,9 +111,21 @@ EOM;
     <a href="<?php echo $resetUrl; ?>"  class="btn btn-primary me-2 mb-2" role="button" title="Click here to update the administrative settings, including staff password and camper code">Edit Admin Settings</a>
     <a href="<?php echo $matrixUrl; ?>" class="btn btn-primary me-2 mb-2" role="button" title="Click here to update the de-duplication settings">De-Duplication Matrix</a>
     <a href="<?php echo $advancedUrl; ?>" class="btn btn-primary me-2 mb-2" role="button" title="Click here to prune illegal or obsolete assignments">Fix Illegal And Duplicate</a>
-    <?php if ($enableCamperImporter) : ?>
+    <?php if ($enableCamperImporter & !$enableChugimImporter) : ?>
         <a href="<?php echo $camperUploadUrl; ?>" class="btn btn-primary mb-2" role="button" title="Click here to upload campers">Upload Campers</a>
-    <?php endif; ?>
+    <?php elseif ($enableChugimImporter & !$enableCamperImporter) : ?>
+        <a href="<?php echo $chugimUploadUrl; ?>" class="btn btn-primary mb-2" role="button" title="Click here to upload <?php echo chug_term_plural ?>">Upload <?php echo ucfirst(chug_term_plural) ?></a>
+    <?php elseif ($enableChugimImporter & $enableCamperImporter) : ?>
+        <!--<div class="dropdown">-->
+            <a class="btn btn-secondary dropdown-toggle me-2 mb-2" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                Upload Campers/<?php echo ucfirst(chug_term_plural) ?>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <li><a class="dropdown-item" href="<?php echo $camperUploadUrl; ?>">Campers</a></li>
+                <li><a class="dropdown-item" href="<?php echo $chugimUploadUrl; ?>"><?php echo ucfirst(chug_term_plural) ?></a></li>
+            </ul>
+       <!--</div>-->
+    <? endif; ?>
 </div>
 
 </div>

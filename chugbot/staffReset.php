@@ -25,6 +25,7 @@ if ($result == false) {
     $existingAdminEmail = $row["admin_email"];
     $existingAdminEmailCc = $row["admin_email_cc"];
     $existingAdminEmailFromName = $row["admin_email_from_name"];
+    $existingEnableChugimImporter = $row["enable_chugim_importer"];
     $existingEnableCamperImporter = $row["enable_camper_importer"];
     $existingEnableCamperCreation = $row["enable_camper_creation"];
     $existingEnableSelectionProcess = $row["enable_selection_process"];
@@ -46,6 +47,7 @@ if ($result == false) {
     $admin_email = $existingAdminEmail;
     $admin_email_cc = $existingAdminEmailCc;
     $admin_email_from_name = $existingAdminEmailFromName;
+    $enable_chugim_importer = $existingEnableChugimImporter;
     $enable_camper_importer = $existingEnableCamperImporter;
     $enable_camper_creation = $existingEnableCamperCreation;
     $enable_selection_process = $existingEnableSelectionProcess;
@@ -83,6 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $admin_email = test_post_input("admin_email");
     $admin_email_from_name = test_post_input("admin_email_from_name");
     $send_confirm_email = boolval(test_post_input("send_confirm_email"));
+    $enable_chugim_importer = boolval(test_post_input("enable_chugim_importer"));
     $enable_camper_importer = boolval(test_post_input("enable_camper_importer"));
     $enable_camper_creation = boolval(test_post_input("enable_camper_creation"));
     $enable_selection_process = boolval(test_post_input("enable_selection_process"));
@@ -138,6 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $db->addColumn("regular_user_token", $regular_user_token, 's');
     $db->addColumn("regular_user_token_hint", $regular_user_token_hint, 's');
     $db->addColumn("send_confirm_email", $send_confirm_email, 'i');
+    $db->addColumn("enable_chugim_importer", $enable_chugim_importer, 'i');
     $db->addColumn("enable_camper_importer", $enable_camper_importer, 'i');
     $db->addColumn("enable_camper_creation", $enable_camper_creation, 'i');
     $db->addColumn("enable_selection_process", $enable_selection_process, 'i');
@@ -310,6 +314,11 @@ $adminEmailFromNameField->setInputMaxLength(255);
 $adminEmailFromNameField->setPlaceHolder(ucfirst(chug_term_singular). " Organizer's Name");
 $adminEmailFromNameField->setGuideText("If set, this name will appear as the \"From\" name when email is sent.  If not set, the camp name will be used.");
 echo $adminEmailFromNameField->renderHtml();
+
+$enableChugimImporterField = new FormItemCheckBox("Enable " . ucfirst(chug_term_plural) . " Importer", false, "enable_chugim_importer", $counter++);
+$enableChugimImporterField->setInputValue($enable_chugim_importer);
+$enableChugimImporterField->setGuideText("If this box is checked, an administrator can upload a CSV of chugim information.");
+echo $enableChugimImporterField->renderHtml();
 
 $enableCamperImporterField = new FormItemCheckBox("Enable Camper Importer", false, "enable_camper_importer", $counter++);
 $enableCamperImporterField->setInputValue($enable_camper_importer);
