@@ -23,10 +23,10 @@ $nameField->setError($addBunkPage->errForColName("name"));
 $nameField->setGuideText("Choose a name or number for this bunk (\"1\", \"Tikvah Village\", etc.)");
 $addBunkPage->addFormItem($nameField);
 
-$edahChooserField = new FormItemInstanceChooser("Edot", false, "edah_ids", 1);
+$edahChooserField = new FormItemInstanceChooser(ucfirst(edah_term_plural), false, "edah_ids", 1);
 $edahChooserField->setId2Name($addBunkPage->instanceId2Name);
 $edahChooserField->setActiveIdHash($addBunkPage->instanceActiveIdHash);
-$edahChooserField->setGuideText("Associate this bunk with one or more Edot (optional).");
+$edahChooserField->setGuideText("Associate this bunk with one or more " . ucfirst(edah_term_plural) . " (optional).");
 $addBunkPage->addFormItem($edahChooserField);
 
 $addBunkPage->renderForm();

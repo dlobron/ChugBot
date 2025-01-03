@@ -68,17 +68,19 @@ $(function () {
 	}).then(function () {
 		var target = $('#checkboxes');
 		var i, x, y, checkbox, html;
-		html = "<div class=\"card card-body p-3 container\"><table id=\"matrix\" class=\"display hover compact\"><thead><tr><th></th>";
+		html = "<div class=\"card card-body p-3 container\"><table id=\"matrix\" class=\"table table-striped\"><thead><tr><th scope=\"col\" class=\"topLeft\"></th>";
 		// Table column headers
 		for (i = 0; i < chugNames.length; i++) {
-			html += "<th>" + chugNames[i] + "</th>";
+			html += "<th scope=\"col\" class=\"topRow p-2\">" + chugNames[i] + "</th>";
 		}
 		html += "</tr></thead><tbody>";
 		for (x = 0; x < chugNames.length; x++) {
 			// Add a row for each chug.
-			html += "<tr><td>" + chugNames[x] + "</td>";
-			for (y = 0; y < chugNames.length; y++) {
-				html += "<td>";
+			html += "<tr><td class=\"chugCol p-1\">" + chugNames[x] + "</td>";
+			// Add blank cells at beginning of row
+			html += "<td></td>".repeat(x);
+			for (y = x; y < chugNames.length; y++) {
+				html += "<td class=\"align-middle\" style=\"text-align: center;\">";
 				var checkedText = " ";
 				if ((chugIds[x] in chugChecked) &&
 					chugIds[y] in chugChecked[chugIds[x]]) {
@@ -107,15 +109,19 @@ $(function () {
 		//});
 	}).then(function () {
 		$('#matrix').DataTable({
+			autoWidth: false,
+			columnDefs: [{ className: "chugBox p-1", targets: "_all" }],
 			fixedHeader: true,
 			fixedColumns: true,
 			ordering: false,
-			scrollY: 300,
-			scrollX: true,
-			scrollCollapse: true
+			scrollCollapse: true,
+			initComplete: function (settings, json) {  
+				// from https://stackoverflow.com/a/51667956
+				$("#matrix").wrap("<div style='overflow:auto; width:100%;position:relative;' class='wrapper'></div>");            				
+			},
 		});
 		$("#SaveChanges").toggle();
-	})
+	});
 });
 
 $(function () {

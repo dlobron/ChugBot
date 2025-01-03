@@ -378,8 +378,14 @@ function getAndDisplayCurrentMatches() {
 			$.each(groupId2Name, function (groupId, groupName) {
 				groupQueryString += "&group_ids%5B%5D=" + groupId;
 			});
+			var freeHtml = "<div class=\"accordion\" id=\"chugimFreeSpaceAccordion\"><div class=\"accordion-item\"><h2 class=\"accordion-header\" id=\"chugimSpaceHeader\">"
+				+ "<button class=\"accordion-button collapsed\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapseSpace\" aria-expanded=\"false\" aria-controls=\"collapseSpace\">"
+				+ capitalize(json['chugimTerm']) + " with Free Space</h4></button></h2><div id=\"collapseSpace\" class=\"accordion-collapse collapse\" aria-labelledby=\"chugimSpaceHeader\" data-bs-parent=\"#chugimFreeSpaceAccordion\">"
+				+ "<div class=\"accordion-body\">";
+						
+				//+ "</div></div></div></div>";
 			var reportLink = "<a class=\"btn btn-dark text-light mt-2\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
-			var freeHtml = "<h4>" + capitalize(json['chugimTerm']) + " with Free Space:</h4>";
+			freeHtml += "<h4>" + capitalize(json['chugimTerm']) + " with Free Space:</h4>";
 			var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2Beta);
 			for (var i = 0; i < sortedChugIds.length; i++) {
 				var betaHash = chugId2Beta[sortedChugIds[i]];
@@ -402,7 +408,7 @@ function getAndDisplayCurrentMatches() {
 					freeHtml += name + " (" + groupName + "): " + freeSpace + " " + sp + endTag;
 				}
 			}
-			freeHtml += reportLink;
+			freeHtml += reportLink + "</div></div></div></div>";
 			$("#results").html(freeHtml);
 			$("#results:visible").removeAttr("style").fadeOut();
 			$("#results").show("slide", 500);
@@ -581,6 +587,19 @@ $(function () {
 					json.blockTerm.length > 0) {
 					console.log("DBG: replacing block term");
 					return $(this).text().replace("BLOCK_TERM", json.blockTerm);
+				}
+			});
+			$(".edahtermbothfill").text(function () {
+				console.log(json)
+				if (json.edahBothTerm &&
+					json.edahBothTerm.length > 0) {
+					return $(this).text().replace("EDAH_TERM_COMBO", json.edahBothTerm);
+				}
+			});
+			$(".edahtermfill").text(function () {
+				if (json.edahTerm &&
+					json.edahTerm.length > 0) {
+					return $(this).text().replace("EDAH_TERM", json.edahTerm);
 				}
 			});
 		},

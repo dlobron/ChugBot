@@ -405,6 +405,14 @@ class ZebraReport
                     if ($this->shouldSkipColumn($tableHeader)) {
                         continue;
                     }
+                    // Replace table headers with camp-specific terms
+                    if ($tableHeader == "edah") {
+                        $tableHeader = edah_term_singular;
+                    } elseif ($tableHeader == "chug") {
+                        $tableHeader = chug_term_singular;
+                    } elseif ($tableHeader == "block") {
+                        $tableHeader = block_term_singular;
+                    }
                     // I changed this to automatically size columns in display; we can just uncomment the other part to make all equal
                     $html .= "<th scope=\"col\">"/* style=\"width: " . 100/$numberOfColumns . "%;\">*/ . "$tableHeader</th>";
                     array_push($pdfHeader, $tableHeader);
@@ -416,7 +424,9 @@ class ZebraReport
 
                 // Update new table column values.
                 foreach ($this->newTableColumns as $ntc => $val) {
-                    $newTableColumnValues[$ntc] = $row[$ntc];
+                    if(array_key_exists($ntc, $row)) {
+                        $newTableColumnValues[$ntc] = $row[$ntc];
+                    }
                 }
                 $rowIndex = 0; // Reset row index, so each table gets its own zebra striping.
             }
@@ -613,7 +623,7 @@ $edahId2Name = array();
 $chugId2Name = array();
 $bunkId2Name = array();
 $reportMethodId2Name = array(
-    ReportTypes::ByEdah => "Yoetzet/Rosh Edah (by edah)",
+    ReportTypes::ByEdah => "Yoetzet/Rosh " . ucfirst(edah_term_singular) . " (by " . edah_term_singular . ")",
     ReportTypes::ByBunk => "Madrich (by bunk)",
     ReportTypes::ByChug => ucfirst(chug_term_singular) . " Leader (by " . chug_term_singular . ")",
     ReportTypes::ByChugRoshAndDepartment => ucfirst(chug_term_singular) . " Leader (by department and rosh)",
@@ -796,7 +806,7 @@ if ($outputType == OutputTypes::Html) {
 
 // Always show the report method drop-down and archive year menu (if any).
 $reportMethodDropDown = new FormItemDropDown("Report Type", true, "report_method", 0);
-$reportMethodDropDown->setGuideText("<b>Step 1:</b> Choose your report type.  <br><u>Yoetzet/Rosh Edah</u> report is by edah.<br><u>Madrich</u> report is by bunk.<br><u>" . ucfirst(chug_term_singular) . " leader</u> report is by " . chug_term_singular . ".<br><u>Director</u> report shows assignments for the whole camp.<br><u>Camper Prefs</u> report shows camper preferences and assignment, if any.<br><u>" . $reportMethodId2Name[ReportTypes::ChugimWithSpace] . "</u> report shows " . chug_term_plural . " with space remaining.<br><u>Campers missing preferences</u> report shows campers who are in the system, but who have not entered preferences for a particular time " . block_term_singular . ".<br><u>Campers not Assigned to " . ucfirst(chug_term_singular) . "</u> report shows which campers do not yet have " . chug_term_singular . " assignments.");
+$reportMethodDropDown->setGuideText("<b>Step 1:</b> Choose your report type.  <br><u>Yoetzet/Rosh " . ucfirst(edah_term_singular) . "</u> report is by " . edah_term_plural . ".<br><u>Madrich</u> report is by bunk.<br><u>" . ucfirst(chug_term_singular) . " leader</u> report is by " . chug_term_singular . ".<br><u>Director</u> report shows assignments for the whole camp.<br><u>Camper Prefs</u> report shows camper preferences and assignment, if any.<br><u>" . $reportMethodId2Name[ReportTypes::ChugimWithSpace] . "</u> report shows " . chug_term_plural . " with space remaining.<br><u>Campers missing preferences</u> report shows campers who are in the system, but who have not entered preferences for a particular time " . block_term_singular . ".<br><u>Campers not Assigned to " . ucfirst(chug_term_singular) . "</u> report shows which campers do not yet have " . chug_term_singular . " assignments.");
 $reportMethodDropDown->setPlaceHolder("Choose Type");
 $reportMethodDropDown->setId2Name($reportMethodId2Name);
 $reportMethodDropDown->setColVal($reportMethod);
@@ -861,10 +871,10 @@ if ($reportMethod &&
 // If we have a report method specified, display the appropriate filter fields.
 if ($reportMethod == ReportTypes::ByEdah) {
     // Display an optional Edah drop-down filter.
-    $edahChooser = new FormItemInstanceChooser("Edah Ids", false, "edah_ids", $liNumCounter++);
+    $edahChooser = new FormItemInstanceChooser(ucfirst(edah_term_plural), false, "edah_ids", $liNumCounter++);
     $edahChooser->setId2Name($edahId2Name);
     $edahChooser->setActiveIdHash($activeEdahIds);
-    $edahChooser->setGuideText("<b>Step 3:</b> Choose one or more edot for your report, or leave empty to see all edot");
+    $edahChooser->setGuideText("<b>Step 3:</b> Choose one or more " . edah_term_plural . " for your report, or leave empty to see all " . edah_term_plural);
     if ($outputType == OutputTypes::Html) {
         echo $edahChooser->renderHtml();
     }
@@ -899,8 +909,8 @@ if ($reportMethod == ReportTypes::ByEdah) {
     // block.  The same applies to chugim with space and campers not
     // assigned to a chug.  Missing prefs is similar,
     // except it filters by session and not by group.
-    $edahChooser = new FormItemInstanceChooser("Show Campers in these Edot", false, "edah_ids", $liNumCounter++);
-    $edahChooser->setGuideText("<b>Step 3:</b> Choose one or more edot, or leave empty to see all edot.");
+    $edahChooser = new FormItemInstanceChooser("Show Campers in these " . ucfirst(edah_term_plural), false, "edah_ids", $liNumCounter++);
+    $edahChooser->setGuideText("<b>Step 3:</b> Choose one or more " . edah_term_plural . ", or leave empty to see all " . edah_term_plural . ".");
     $edahChooser->setActiveIdHash($activeEdahIds);
     $edahChooser->setId2Name($edahId2Name);
 
@@ -934,8 +944,8 @@ if ($reportMethod == ReportTypes::ByEdah) {
     // For the AllRegisteredCampers report, the step level
     // here is 2, because we did not display a block filter.
     $step = ($reportMethod == ReportTypes::AllRegisteredCampers) ? 2 : 3;
-    $edahChooser = new FormItemInstanceChooser("Show Campers in these Edot", false, "edah_ids", $liNumCounter++);
-    $edahChooser->setGuideText("<b>Step $step:</b> Choose one or more edot, or leave empty to see all edot.");
+    $edahChooser = new FormItemInstanceChooser("Show Campers in these " . ucfirst(edah_term_plural), false, "edah_ids", $liNumCounter++);
+    $edahChooser->setGuideText("<b>Step $step:</b> Choose one or more " . edah_term_plural . ", or leave empty to see all " . edah_term_plural . ".");
     $edahChooser->setActiveIdHash($activeEdahIds);
     $edahChooser->setId2Name($edahId2Name);
     $step++;
@@ -1097,7 +1107,7 @@ if ($doReport) {
         $edahReport = new ZebraReport($db, $sql, $outputType);
         $edahReport->setReportTypeAndNameOfItem("Edah", $edahText);
         $edahReport->addNewTableColumn("edah");
-        $edahReport->setCaption(ucfirst(chug_term_singular). " Assignments by Edah for LINK0<br>Rosh: ROSH, PHONE");
+        $edahReport->setCaption(ucfirst(chug_term_singular). " Assignments by " . ucfirst(edah_term_singular) . " for LINK0<br>Rosh: ROSH, PHONE");
         $edahReport->addIgnoreColumn("edah_sort_order");
         $edahReport->addIgnoreColumn("rosh");
         $edahReport->addIgnoreColumn("roshphone");
@@ -1313,7 +1323,7 @@ if ($doReport) {
 
         // Now, build and fun the full query.
         $fullSql = "SELECT c.chug_id chug_id, CONCAT(c.name, ' (', g.name, ')') chug_name, " .
-            "a.match_count num_campers_assigned, a.block_name block_name, " .
+            "a.match_count num_campers_assigned, a.block_name " . block_term_singular . "_name, " .
             "CASE WHEN c.max_size = 0 OR c.max_size = " . MAX_SIZE_NUM . " THEN \"No limit\" ELSE c.max_size END num_campers_allowed " .
             "FROM chugim c, chug_groups g, (";
         $fullSql .= $inner;
@@ -1378,7 +1388,7 @@ if ($doReport) {
             // The parentheses around the FROM tables ahead of the left join on preferences
             // are essential, because of a quirk in the way MySQL evaluates statements:
             //
-            $sql = "SELECT CONCAT(c.last, ', ', c.first) name, c.camper_id camper_id, p.block_name block, p.block_id block_id ";
+            $sql = "SELECT CONCAT(c.last, ', ', c.first) name, c.camper_id camper_id, p.block_name " . block_term_singular . ", p.block_id block_id ";
             if ($groupClause) {
                 $sql .= ", " . $groupClause;
             }
@@ -1410,7 +1420,7 @@ if ($doReport) {
             }
             addWhereClause($sql, $db, $activeEdahIds,
                 "c.edah_id", true);
-            $sql .= " GROUP BY camper_id, block ORDER BY name, block";
+            $sql .= " GROUP BY camper_id, " . block_term_singular . " ORDER BY name, " . block_term_singular;
         }
         $camperHappinessReport = new ZebraReport($db, $sql, $outputType);
         $camperHappinessReport->addNewTableColumn("edah");

@@ -273,13 +273,19 @@ class FormItemDropDown extends FormItem
         $selectedMap = array();
         $ocStr = "";
         if ($this->displayListName &&
-            $this->displayListSelectedIds) {
-            $this->html .= "<ul class=\"options_toggle\">";
+            $this->displayListName != NULL) {
+            $this->html .= "<input type=\"hidden\" name=\"$this->displayListName[]\" value=\"\" />";
+            $this->html .= "<ul class=\"m-3\">";
             foreach ($this->displayListSelectedIds as $selectedId) {
+                if (empty($selectedId)) {
+                    continue;
+                }
                 $name = $this->id2Name[$selectedId];
-                $this->html .= "<li onclick=\"this.parentNode.removeChild(this);\">";
+                $this->html .= "<li class=\"alert alert-dark alert-dismissible fade show p-1 mb-1\" onclick=\"this.parentNode.removeChild(this); role=\"alert\"\">";
                 $this->html .= "<input type=\"hidden\" name=\"$this->displayListName[]\" value=\"$selectedId\" />";
-                $this->html .= "$name</li>";
+                $this->html .= "$name";
+                $this->html .= "<button type=\"button\" class=\"btn-close p-2\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>";
+                $this->html .= "</li>";
                 $selectedMap[$selectedId] = 1;
             }
             $this->html .= "</ul>";
@@ -328,6 +334,10 @@ class FormItemDropDown extends FormItem
                 var li = document.createElement('li');
                 var input = document.createElement('input');
                 var text = document.createTextNode(option.firstChild.data);
+                var button = document.createElement('button');
+                button.setAttribute('class', 'btn-close p-2');
+                button.setAttribute('data-bs-dismiss', 'alert');
+                button.setAttribute('aria-label', 'Close');
 
                 input.type = 'hidden';
                 input.name = "${name}[]";
@@ -335,7 +345,9 @@ class FormItemDropDown extends FormItem
 
                 li.appendChild(input);
                 li.appendChild(text);
+                li.appendChild(button);
                 li.setAttribute('onclick', 'this.parentNode.removeChild(this);');
+                li.setAttribute('class', 'alert alert-dark alert-dismissible fade show p-1 mb-1');
 
                 ul.appendChild(li);
             }

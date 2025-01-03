@@ -131,10 +131,10 @@ if (!camperLoggedIn()) {
                     echo $lastNameField->renderHtml();
 
                     $err = "";
-                    $edahField = new FormItemDropDown("Edah", false, "edah_id", $counter++);
-                    $edahField->setGuideText("Choose this camper's current edah");
+                    $edahField = new FormItemDropDown(ucfirst(edah_term_singular), false, "edah_id", $counter++);
+                    $edahField->setGuideText("Choose this camper's current " . (edah_term_singular));
                     $edahField->setInputClass("element medium");
-                    $edahField->setInputSingular("edah");
+                    $edahField->setInputSingular(edah_term_singular);
                     $edahField->fillDropDownId2Name($err,
                         "edah_id", "edot");
                     echo $edahField->renderHtml();

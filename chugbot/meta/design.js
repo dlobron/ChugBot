@@ -8,7 +8,9 @@
 // 1. SQL query for which groups and blocks are allowed for the edah
 // 2. Set the optional dropdowns to override default perek assignments
 // 3. Create shortcut buttons to include parameters in schedule
-function setAdvanced() {
+function setAdvanced(...params) {
+    block_term_singular = params[0]
+    edah_term_singular = params[1]
     // 1: SQL queries -- get blocks, chug group
     var values = {};
     values["get_legal_id_to_name"] = 1;
@@ -89,7 +91,7 @@ function setAdvanced() {
 
         // finally, build a picklist for each group with the blocks as options
         // step 1: create generic block options
-        var blockBase = "<option value=\"\">-- Override Block Assignments --</option>";
+        var blockBase = "<option value=\"\">-- Override " + block_term_singular + " Assignments --</option>";
         for (let i = 0; i < blockIds.length; i++) {
             blockBase += "<option value=\""+blockIds[i]+"\">"+blockNames[i]+"</option>";
         }
@@ -109,7 +111,7 @@ function setAdvanced() {
         // 3: Shortcut buttons
         html = "<div class=\"btn-group-vertical\" role=\"group\">";
         // make array with all options:
-        var shortcutsRequired = ["Name", "Bunk", "Edah", "Rosh", "Rosh Phone Number"];
+        var shortcutsRequired = ["Name", "Bunk", edah_term_singular, "Rosh", "Rosh Phone Number"];
         shortcutsRequired = shortcutsRequired.concat(groupNames);
         // write html for each button:
         for (let i = 0; i < shortcutsRequired.length; i++) {
@@ -200,7 +202,7 @@ document.getElementById("saveForm").onsubmit = function() {
         // Display Bootstrap alert
         var alertDiv = document.createElement("div");
         alertDiv.classList.add("alert", "alert-danger");
-        alertDiv.innerHTML = "Please select at least one edah.";
+        alertDiv.innerHTML = "Please select at least one " + edah_term_singular + ".";
         document.getElementById("saveForm").querySelector(".modal-body").prepend(alertDiv);
         return false; // Prevent form submission
     }

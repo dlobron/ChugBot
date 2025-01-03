@@ -48,7 +48,7 @@
     if(count($groupIds) == 0) {
         echo "<div class=\"col-md-6 offset-md-3\"><div class=\"alert alert-danger alert-dismissible fade show m-2\" role=\"alert\">" . 
         "<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button><h5><strong>Error:</strong> " . 
-        "No Available Prakim</h5>No prakim are available for the provided edah. Contact an administrator if you believe this to be an error.</div></div>";
+        "No Available Prakim</h5>No prakim are available for the provided " . edah_term_singular . ". Contact an administrator if you believe this to be an error.</div></div>";
         exit();
     }
 
@@ -62,7 +62,7 @@
     <h4> Dates: <?php echo date("D F j, Y", strtotime($startDate)) . " - " . date("D F j, Y", strtotime($endDate)); ?> </h4>
     </div>
 
-    <p>Utilize this attendance matrix to explore trends within an edah by perek. There is a separate table for each perek below, and in each one, campers have their own row reflecting their attendance records.
+    <p>Utilize this attendance matrix to explore trends within an <?php echo edah_term_singular ?> by perek. There is a separate table for each perek below, and in each one, campers have their own row reflecting their attendance records.
     Campers marked as absent on a particular day have the corresponding cell highlighted in <span style="background:#f8d7da;">red</span> and denoted with this icon: <i class="bi bi-x-circle-fill"></i>. 
     Campers for whom attendance has not been taken have the cell for that day highlighted in <span style="background:#fff3cd;">yellow</span> and marked with this icon: <i class="bi bi-exclamation-triangle"></i>.
     Otherwise, campers marked as present have no highlighting and are noted with this icon: <i class="bi bi-check-circle"></i>.
@@ -287,7 +287,7 @@ function validate_form_inputs()
         }
     }
     if(!$valid) {
-        $errors .= "<li>Improper edah id</li>";
+        $errors .= "<li>Improper " . edah_term_singular . " id</li>";
     }
 
     // Step 2: start, end date format

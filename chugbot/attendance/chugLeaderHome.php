@@ -56,7 +56,7 @@
 <div class="card card-body mt-2 p-3 mb-3 container">
     <h1><?php echo ucfirst(chug_term_singular)?> Leader Home</h1>
     <div class="page-header"><h2><?php echo ucfirst(chug_term_singular)?> Leader Home</h2>
-    <p>In the form below, select the date, edah/edot, perek, and <?php echo chug_term_singular?> you are taking attendance for.
+    <p>In the form below, select the date, <?php echo edah_term_singular . "/" . edah_term_plural;?>, perek, and <?php echo chug_term_singular?> you are taking attendance for.
     After clicking "Take Attendance" below the form, check the box for each camper who is <strong>present</strong>. Then press "Submit attendance" to complete the attendance.</p>
     
     <form id="attendance_chug_select_form" class="justify-content-center" method="GET" action="takeAttendance.php" onsubmit="return validateForm()"><ul>
@@ -67,7 +67,7 @@
             </div>
         </li>
         <li style="margin:auto;" class="ps-0">
-            <label class="description" for="edah[]"><span style="color:red;">*</span>Edah/Edot</label>
+            <label class="description" for="edah[]"><span style="color:red;">*</span><?php echo ucfirst(edah_term_singular) . "/" . ucfirst(edah_term_plural);?></label>
             <div id="edah_select" class="pb-2">
                 <select class="form-select bg-info choices-js" id="edah_list" name="edah[]" onchange="fillConstraintsPickList(); fillChugimConstraintsPickList();" multiple>
                     <?php echo genPickList($edahId2Name, array(), "edah"); ?>
@@ -118,7 +118,7 @@ function validateForm() {
     fields.forEach((field) => {
         let x = document.forms["attendance_chug_select_form"][field];
         if(field === "group") { field = "perek"; } // small override to keep backend and UI consistent with each other
-        if(field === "edah[]") { field = "edah"; } // add'l change so user just sees "Edah," not "Edah[]"
+        if(field === "edah[]") { field = "<?php echo edah_term_singular ?>"; } // add'l change so user just sees "Edah," not "Edah[]"
         // check field exists
         if(x === undefined) {
             error += "<li><strong>"+field[0].toUpperCase() + field.slice(1)+"</strong> missing</li>";

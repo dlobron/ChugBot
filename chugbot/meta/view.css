@@ -27,6 +27,7 @@ form li {
     background:#fff;
     text-align: center;
     width:35%;
+    border-radius: 10px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     font-size: 1.2em;
@@ -211,12 +212,12 @@ form li:after
     display:inline-block;
 }
 
-form li div
+/*form li div
 {
     /*color:#444;
     margin:0 4px 0 0;
     padding:0 0 8px;*/
-}
+/*}*/
 
 form li span
 {
@@ -616,7 +617,7 @@ ul.options_toggle li {
 }
 
 select.options_toggle {
-    swidth: 15em;
+    width: 15em;
     color: #46a;
     font-weight: bold;
 }

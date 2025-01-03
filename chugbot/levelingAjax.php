@@ -284,11 +284,11 @@ if (isset($_POST["matches_and_prefs"])) {
     while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
         $camper_id = $row[0];
         $chug_id = $row[1];
-        $block_name = $row[2];
+        $dup_block = $row[2];
         if (!array_key_exists($camper_id, $existingMatches)) {
             $existingMatches[$camper_id] = array();
         }
-        $existingMatches[$camper_id][$chug_id] = $block_name;
+        $existingMatches[$camper_id][$chug_id] = $dup_block;
     }
 
     // Compute the de-dup matrix, which we'll use to warn if the user
@@ -570,6 +570,8 @@ if (isset($_POST["names_for_id"])) {
         'chugimTerm' => chug_term_plural,
         'chugTerm' => chug_term_singular,
         'blockTerm' => block_term_singular,
+        'edahBothTerm' => ucfirst(edah_term_singular) . "/" . ucfirst(edah_term_plural),
+        'edahTerm' => edah_term_singular,
     );
     echo json_encode($retVal);
     exit();

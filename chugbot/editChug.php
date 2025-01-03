@@ -59,10 +59,10 @@ $sessionChooserField->setActiveIdHash($editChugPage->instanceActiveIdHash);
 $sessionChooserField->setGuideText("Check each time " . block_term_singular . " in which this " . chug_term_singular . " is active (you can do this later if you are not sure).");
 $editChugPage->addFormItem($sessionChooserField);
 
-$edahChooser = new FormItemInstanceChooser("Edot", false, "edot_for_chug", 4);
+$edahChooser = new FormItemInstanceChooser(ucfirst(edah_term_plural), false, "edot_for_chug", 4);
 $edahChooser->setId2Name($editChugPage->activeEdotFilterId2Name);
 $edahChooser->setActiveIdHash($editChugPage->activeEdotHash);
-$edahChooser->setGuideText("Choose the edot who may participate in this " . chug_term_singular . " (you can do this later if you are not sure now)");
+$edahChooser->setGuideText("Choose the " . edah_term_plural . " who may participate in this " . chug_term_singular . " (you can do this later if you are not sure now)");
 $editChugPage->addFormItem($edahChooser);
 
 $minField = new FormItemSingleTextField("Minimum participants", false, "min_size", 5);
@@ -100,7 +100,7 @@ $commentsField->setGuideText("Enter an optional description of this activity.");
 $editChugPage->addFormItem($commentsField);
 
 $dedupDropDown = new FormItemDropDown("De-duplication list", false, "dedup", 9);
-$dedupDropDown->setGuideText("Select ". chug_term_plural . " that should not be assigned to the same camper together with this one. As you select, each de-duplicated " . chug_term_singular . " will appear in a list above the drop-down. Click the red X next to a " . chug_term_singular . " in the list to remove it.");
+$dedupDropDown->setGuideText("Select ". chug_term_plural . " that should not be assigned to the same camper together with this one. As you select, each de-duplicated " . chug_term_singular . " will appear in a list above the drop-down. Click the X next to a " . chug_term_singular . " in the list to remove it.");
 $dedupDropDown->setInputSingular("chug");
 $dedupDropDown->setDefaultMsg("Choose " . ucfirst(chug_term_plural));
 $dedupDropDown->setInputClass("element medium");
