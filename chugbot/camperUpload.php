@@ -175,25 +175,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
         $stmt->execute();
     }
 
-    /*
-    $dbConn2 = new DbConn();
-    $dbErr2 = "";
-    $sql2 = "SET information_schema_stats_expiry = 0";
-    $result2 = $dbConn2->doQuery($sql2, $dbErr2);
-    $sql2 = "SELECT `auto_increment` FROM INFORMATION_SCHEMA.TABLES WHERE table_name = 'campers'";
-    $result2 = $dbConn2->doQuery($sql2, $dbErr2);
-    if ($result2 == false) {
-        echo "nope";
-        error_log($dbErr);
-    }
-    echo "Hiiiii";
-    while ($row2 = mysqli_fetch_array($result2, MYSQLI_ASSOC)) {
-        echo "yep";
-        print_r($row2);
-    }
-    echo "Done";
-    */
-
     if (count($campersWithErrors) > 0) {
         $dbConn->mysqliClient()->rollback();
         $redirUrl = urlBaseText() . "camperUpload.php?campersWithErrors";
