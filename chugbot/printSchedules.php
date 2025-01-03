@@ -13,8 +13,15 @@
     $scheduleTemplate = html_entity_decode(test_post_input('schedule-template'));
 
     $blockIdsOverride = [];
+    // Check to see if a "schedule" variable is passed as part of the POST command; if so, ignore it
+    // This happens when there is a template - the dropdown to select the template only shows when templates exist, 
+    //     and then the element becomes part of the form. This adjustment accounts for the potential discrepancy
+    $postNotInclude = 3;
+    if(array_key_exists("schedule", $_POST)) {
+	    $postNotInclude++;
+    }
     // Loop through all blocks, which is the number of values in the POST request minus 4 (excludes edah, block, schedule, and starts at 0)
-    for ($i = 0; $i < count($_POST)-4; $i ++) {
+    for ($i = 0; $i < count($_POST) - $postNotInclude; $i ++) {
         $temp = $_POST[$i];
         if (is_numeric($temp)) {
             array_push($blockIdsOverride, $temp);
@@ -59,8 +66,8 @@
     // Now moving on to the complete query, broken down into a couple parts:
 
     // sub-part 1: sql query returning table with info about each camper in one edah for a specific block
-    $camperSqlForBlock = "SELECT CONCAT(c.last, ', ', c.first) name, c.camper_id camper_id, IFNULL(bu.name, \"-\") bunk, " .
-        "bu.bunk_id, e.name edah, e.edah_id, e.rosh_name rosh, e.rosh_phone roshphone, p.block_id block_id, b.name BLOCK " .
+    $camperSqlForBlock = "SELECT CONCAT(c.first, ' ', c.last) name, c.camper_id camper_id, IFNULL(bu.name, \"-\") bunk, " .
+        "bu.bunk_id, e.name edah, e.edah_id, e.rosh_name rosh, e.rosh_phone roshphone, p.block_id block_id, b.name BLOCK, c.last " .
         "FROM campers c, bunks bu, edot e, " .
             "(SELECT m.camper_id camper_id, c.name chug_name, c.chug_id chug_id, g.name group_name, b.name block_name, " .
                 "b.block_id block_id " .
@@ -94,7 +101,8 @@
             $sql .= ") ";
         }
     }
-    $sql .= "GROUP BY p.name, p.bunk, p.edah, p.rosh, p.roshphone";
+    $sql .= "GROUP BY p.name, p.bunk, p.edah, p.rosh, p.roshphone ORDER BY p.bunk, p.last";
+
 
     $result = $dbc->doQuery($sql, $localErr);
     if ($result == false) {
