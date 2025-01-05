@@ -9,17 +9,7 @@ setup_camp_specific_terminology_constants();
 $fields = array(edah_term_singular, "session", "first_name", "last_name", "bunk", "email", "email2", "needs_first_choice");
 
 // ensure camper importer is enabled
-$db = new DbConn();
-$sql = "SELECT enable_camper_importer FROM admin_data";
-$err = "";
-$result = $db->runQueryDirectly($sql, $err);
-$enableCamperImporter = false;
-if ($result) {
-    $row = $result->fetch_assoc();
-    if ($row) {
-        $enableCamperImporter = (bool)$row["enable_camper_importer"];
-    }
-}
+$enableCamperImporter = check_enabled("enable_camper_importer");
 if (!$enableCamperImporter) {
     $redirUrl = urlIfy("../staffHome.php?from=camperUpload.php");
     header("Location: $redirUrl");

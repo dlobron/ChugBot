@@ -937,7 +937,7 @@ function navText()
             "<li><a class=\"dropdown-item\" href=\"$adminAttendanceUrl\">Admin Attendance Settings</a></li>" . 
             "</ul></li>";
     }
-    if (roshLoggedIn()) {
+    if (roshLoggedIn() & check_enabled("rosh_yoetzet_password")) {
         $roshUrl = urlIfy("../attendance/roshHome.php");
         $retVal .= "<li class=\"nav-item dropdown\"><a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"roshNavbarDropdown\" role=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">" . 
             "Rosh/Yoetzet</a><ul class=\"dropdown-menu\" aria-labelledby=\"roshNavbarDropdown\">" .
@@ -945,7 +945,7 @@ function navText()
             "<li><a class=\"dropdown-item\" href=\"../designSchedules.php\">Schedule Builder</a></li>" . 
             "</ul></li>";
     }
-    if (chugLeaderLoggedIn()) {
+    if (chugLeaderLoggedIn() & check_enabled("chug_leader_password")) {
         $chugLeaderUrl = urlIfy("../attendance/chugLeaderHome.php");
         $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$chugLeaderUrl\">" . ucfirst(chug_term_singular) . " Leader Home</a></li>";
     }
@@ -1012,6 +1012,22 @@ function headerText($title)
 $navText
 EOM;
     return $retVal;
+}
+
+function check_enabled($adminColumn)
+{
+    $db = new DbConn();
+    $dbErr = "";
+    $db->isSelect = true;
+    $db->addSelectColumn($adminColumn);
+    $result = $db->simpleSelectFromTable("admin_data", $dbErr);
+    if ($result) {
+        $row = $result->fetch_assoc();
+        if ($row) {
+            return (bool)$row[$adminColumn];
+        }
+    }
+    return false;
 }
 
 

@@ -33,19 +33,8 @@ foreach ($parts as $part) {
     }
 }
 
-$db = new DbConn();
-$sql = "SELECT enable_camper_importer, enable_chugim_importer FROM admin_data";
-$err = "";
-$result = $db->runQueryDirectly($sql, $err);
-$enableCamperImporter = false;
-$enableChugimImporter = false;
-if ($result) {
-    $row = $result->fetch_assoc();
-    if ($row) {
-        $enableCamperImporter = (bool)$row["enable_camper_importer"];
-        $enableChugimImporter = (bool)$row["enable_chugim_importer"];
-    }
-}
+$enableCamperImporter = check_enabled("enable_camper_importer");
+$enableChugimImporter = check_enabled("enable_chugim_importer");
 
 $matrixUrl = urlIfy("exclusionMatrix.html");
 $advancedUrl = urlIfy("advanced.php");

@@ -7,17 +7,7 @@ checkLogout();
 setup_camp_specific_terminology_constants();
 
 // ensure camper importer is enabled
-$db = new DbConn();
-$sql = "SELECT enable_chugim_importer FROM admin_data";
-$err = "";
-$result = $db->runQueryDirectly($sql, $err);
-$enableChugimImporter = false;
-if ($result) {
-    $row = $result->fetch_assoc();
-    if ($row) {
-        $enableChugimImporter = (bool)$row["enable_chugim_importer"];
-    }
-}
+$enableChugimImporter = check_enabled("enable_chugim_importer");
 if (!$enableChugimImporter) {
     $redirUrl = urlIfy("../staffHome.php?from=chugimUpload.php");
     header("Location: $redirUrl");
