@@ -123,6 +123,8 @@ foreach ($parts as $part) {
         $count = 0;
         while ($count < sizeof($group_name_to_id)*3) {
             $blockEdahLen = sizeof($block_name_to_id) + sizeof($edah_name_to_id) - 1;
+            // randomly marks a few edot/block columns with "1" to indicate the chug is available for that edah/block
+            // builds a string of commas, then inserts a few "1"s starting at the end of the string
             $blockEdah = str_repeat(",", $blockEdahLen);
             $temp = $blockEdahLen - random_int(0,3);
             while ($temp >= 0) {
@@ -158,13 +160,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
     // ensure all headers are present and correct
     foreach($fields as $field) {
         if (!array_key_exists($field, $header)) {
-            $redirUrl = urlBaseText() . "chugUpload.php?missingHeader=$field";
+            $redirUrl = urlBaseText() . "chugUpload.php?missingHeader=" . urlencode($field);
             header("Location: $redirUrl");
             exit();
         }
     }
 
-    // determine next chug_id
+    // determine next chug_id so we can prepare entries to db tables chugim, chug_instances, and edot_for_chug
     $nextChugId = 0;
     $dbErr = "";
     $sql = "SET information_schema_stats_expiry = 0";
@@ -199,23 +201,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
         }
 
         // min is non-negative number
-        $min = (int)$chug['min'];
-        if ($chug['min'] != null & $chug['min'] != $min) {
-            $error = "min ('" . $chug['min'] . "') is not a number";
-        }
-        if ($chug['min'] != null & $min < 0) {
-            $error = "min (" . $chug['min'] . ") is less than zero";
+        $min = convert_to_nonnegative_int($chug['min']);
+        if ($min < 0 || $min != $chug['min']) {
+            $error = "min ('" . $chug['min'] . "') is not a nonnegative integer";
         }
         // max is non-negative number
-        $max = (int)$chug['max'];
-        if ($chug['max'] != null & $chug['max'] != $max) {
-            $error = "max ('"  . $chug['max'] . "') is not a number";
-        }
-        if ($chug['max'] != null & $max < 0) {
-            $error = "max (" . $chug['max'] . ") is less than zero";
+        $max = convert_to_nonnegative_int($chug['max']);
+        if ($max < 0 || $max != $chug['max']) {
+            $error = "max ('"  . $chug['max'] . "') is not a nonnegative integer";
         }
         // min is smaller than max
-        if ($min > $max) {
+        if ($min > $max & $error == null) {
             $error = "min ($min) is larger than max ($max)";
         }
         
@@ -225,7 +221,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
             continue;
         }
 
-        // add chug to db
+        // prepare to add chug to db
         $stmt = $dbConn->mysqliClient()->prepare("INSERT INTO chugim(name, group_id, max_size, min_size, description, chug_id, department_name, rosh_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("siiisiss", $chug[chug_term_singular], $groupId, $max, $min, $chug['description'], $nextChugId, $chug['department'], $chug['rosh']);
         $stmt->execute();
@@ -255,6 +251,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_FILES["csv"]["tmp_name"])) 
         $nextChugId ++;
     }
 
+    // if errors, do not commit new additions to db
     if (count($chugimWithErrors) > 0) {
         $dbConn->mysqliClient()->rollback();
         $redirUrl = urlBaseText() . "chugUpload.php?chugimWithErrors";
@@ -375,3 +372,15 @@ echo footerText();
 
 </body>
 </html>
+
+<?php 
+
+function convert_to_nonnegative_int($value) {
+    $number = (int)$value;
+    if ($number >= 0) {
+        return $number;
+    }
+    return null;
+}
+
+?>

@@ -72,8 +72,10 @@ foreach ($parts as $part) {
         }
         $count = 1;
         while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+            // sets 1 of every 4 sample campers to "needs_first_choice"
             $firstPref = null;
             if ($count % 4 == 0) {$firstPref = true;}
+            // add sample camper to the output CSV
             fputcsv($f, array($row['edah'], $row['session'], "First $count", "Last $count", $row['bunk'], "example@example.com", null, $firstPref), ",");
             $count++;
         }

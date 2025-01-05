@@ -87,7 +87,7 @@ class DbConn
         array_push($this->colVals, $val);
         // Determine if next column should be and/or for conditional - default AND
         if ($andOr != "AND" && $andOr != "OR") {
-            $andOr != "AND";
+            $andOr = "AND";
         }
         array_push($this->whereColAndOr, $andOr);
         $this->colTypes .= $type;

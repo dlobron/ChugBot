@@ -313,7 +313,7 @@ CREATE TABLE `chug_dedup_instances_v2` (
   KEY `fk_right_chug_id` (`right_chug_id`),
   CONSTRAINT `chug_dedup_instances_v2_ibfk_1` FOREIGN KEY (`left_chug_id`) REFERENCES `chugim` (`chug_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chug_dedup_instances_v2_ibfk_2` FOREIGN KEY (`right_chug_id`) REFERENCES `chugim` (`chug_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  UNIQUE (`left_chug_id`, `right_chug_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
+  UNIQUE `unique` (`left_chug_id`, `right_chug_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
