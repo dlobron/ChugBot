@@ -402,264 +402,201 @@ echo $campWebField->renderHtml();
 ?>
 
 <li>
-<label class="description mt-2" for="passwordChangeAccordion">
+<label class="description mt-2" for="accordionPassword">
     Update Password(s)
 </label>
 Update any number of passwords in the applicable sections of the accordion below. Passwords must be between 5-255 characters.
-<div class="accordion" id="passwordChangeAccordion">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingAdmin">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdmin" aria-expanded="true" aria-controls="collapseAdmin">
-                Admin Password
-            </button>
-        </h2>
-        <div id="collapseAdmin" class="accordion-collapse collapse show" aria-labelledby="headingAdmin" data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-                <?php
-                $adminPasswordField = new FormItemSingleTextField("New Admin Password (leave this field blank to keep admin password the same.)",
+
+<?php
+// 1. create password fields
+
+// 1a. admin
+$adminPasswordField = new FormItemSingleTextField("New Admin Password (leave this field blank to keep admin password the same.)",
                     false, "admin_password", $counter++);
-                $adminPasswordField->setInputType("password");
-                $adminPasswordField->setInputClass("element text medium");
-                $adminPasswordField->setInputMaxLength(50);
-                $adminPasswordField->setPlaceHolder(" ");
-                $adminPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
-                
-                $adminPasswordStr = $adminPasswordField->renderHtml();
+$adminPasswordField->setInputType("password");
+$adminPasswordField->setInputClass("element text medium");
+$adminPasswordField->setInputMaxLength(50);
+$adminPasswordField->setPlaceHolder(" ");
+$adminPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the admin password.");
+$adminPasswordStr = $adminPasswordField->renderHtml();
 
-                // change from list element to just regular div with same id
-                $adminPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $adminPasswordStr);
-                $adminPasswordStr = str_replace("/li>", "/div>", $adminPasswordStr);
+// change from list element to just regular div with same id
+$adminPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $adminPasswordStr);
+$adminPasswordStr = str_replace("/li>", "/div>", $adminPasswordStr);
 
-                echo $adminPasswordStr;
+$adminPasswordField2 = new FormItemSingleTextField("Retype New Admin Password", false, "admin_password2", $counter++);
+$adminPasswordField2->setInputType("password");
+$adminPasswordField2->setInputClass("element text medium");
+$adminPasswordField2->setInputMaxLength(50);
+$adminPasswordField2->setPlaceHolder(" ");
+$adminPassword2Str = $adminPasswordField2->renderHtml();
 
-                $adminPasswordField2 = new FormItemSingleTextField("Retype New Admin Password", false, "admin_password2", $counter++);
-                $adminPasswordField2->setInputType("password");
-                $adminPasswordField2->setInputClass("element text medium");
-                $adminPasswordField2->setInputMaxLength(50);
-                $adminPasswordField2->setPlaceHolder(" ");
+// change from list element to just regular div with same id
+$adminPassword2Str = str_replace("<li", "<div", $adminPassword2Str);
+$adminPassword2Str = str_replace("/li>", "/div>", $adminPassword2Str);
 
-                $adminPassword2Str = $adminPasswordField2->renderHtml();
 
-                // change from list element to just regular div with same id
-                $adminPassword2Str = str_replace("<li", "<div", $adminPassword2Str);
-                $adminPassword2Str = str_replace("/li>", "/div>", $adminPassword2Str);
-
-                echo $adminPassword2Str;
-                ?>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingRosh">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRosh" aria-expanded="false" aria-controls="collapseRosh">
-                Rosh Edah/Yoetzet Password
-            </button>
-        </h2>
-        <div id="collapseRosh" class="accordion-collapse collapse" aria-labelledby="headingRosh" data-bs-parent="#passwordChangeAccordion">
-            <div class="accordion-body">
-            <?php
-                $roshPasswordField = new FormItemSingleTextField("New Rosh/Yoetzet Password (leave this field blank to keep rosh/yoetzet password the same.)",
+// 1b. rosh/yoetzet
+$roshPasswordField = new FormItemSingleTextField("New Rosh/Yoetzet Password (leave this field blank to keep rosh/yoetzet password the same.)",
                     false, "rosh_password", $counter++);
-                $roshPasswordField->setInputType("password");
-                $roshPasswordField->setInputClass("element text medium");
-                $roshPasswordField->setInputMaxLength(50);
-                $roshPasswordField->setPlaceHolder(" ");
-                $roshPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the rosh/yoetzet password.");
-                
-                $roshPasswordStr = $roshPasswordField->renderHtml();
+$roshPasswordField->setInputType("password");
+$roshPasswordField->setInputClass("element text medium");
+$roshPasswordField->setInputMaxLength(50);
+$roshPasswordField->setPlaceHolder(" ");
+$roshPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the rosh/yoetzet password.");
 
-                // change from list element to just regular div with same id
-                $roshPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $roshPasswordStr);
-                $roshPasswordStr = str_replace("/li>", "/div>", $roshPasswordStr);
+$roshPasswordStr = $roshPasswordField->renderHtml();
 
-                echo $roshPasswordStr;
+// change from list element to just regular div with same id
+$roshPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $roshPasswordStr);
+$roshPasswordStr = str_replace("/li>", "/div>", $roshPasswordStr);
 
-                $roshPasswordField2 = new FormItemSingleTextField("Retype New Rosh/Yoetzet Password", false, "rosh_password2", $counter++);
-                $roshPasswordField2->setInputType("password");
-                $roshPasswordField2->setInputClass("element text medium");
-                $roshPasswordField2->setInputMaxLength(50);
-                $roshPasswordField2->setPlaceHolder(" ");
+$roshPasswordField2 = new FormItemSingleTextField("Retype New Rosh/Yoetzet Password", false, "rosh_password2", $counter++);
+$roshPasswordField2->setInputType("password");
+$roshPasswordField2->setInputClass("element text medium");
+$roshPasswordField2->setInputMaxLength(50);
+$roshPasswordField2->setPlaceHolder(" ");
 
-                $roshPassword2Str = $roshPasswordField2->renderHtml();
+$roshPassword2Str = $roshPasswordField2->renderHtml();
 
-                // change from list element to just regular div with same id
-                $roshPassword2Str = str_replace("<li", "<div", $roshPassword2Str);
-                $roshPassword2Str = str_replace("/li>", "/div>", $roshPassword2Str);
+// change from list element to just regular div with same id
+$roshPassword2Str = str_replace("<li", "<div", $roshPassword2Str);
+$roshPassword2Str = str_replace("/li>", "/div>", $roshPassword2Str);
 
-                echo $roshPassword2Str;
-                ?>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingChugLeader">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChugLeader" aria-expanded="false" aria-controls="collapseChugLeader">
-                Chug Leader Password
-            </button>
-        </h2>
-        <div id="collapseChugLeader" class="accordion-collapse collapse" aria-labelledby="headingChugLeader" data-bs-parent="#passwordChangeAccordion">
-            <div class="accordion-body">
-            <?php
-                $chugLeaderPasswordField = new FormItemSingleTextField("New " . ucfirst($chug_term_singular) . " Leader Password (leave this field blank to keep $chug_term_singular leader password the same.)",
+// 1c. chug leader
+$chugLeaderPasswordField = new FormItemSingleTextField("New " . ucfirst($chug_term_singular) . " Leader Password (leave this field blank to keep $chug_term_singular leader password the same.)",
                     false, "chug_leader_password", $counter++);
-                $chugLeaderPasswordField->setInputType("password");
-                $chugLeaderPasswordField->setInputClass("element text medium");
-                $chugLeaderPasswordField->setInputMaxLength(50);
-                $chugLeaderPasswordField->setPlaceHolder(" ");
-                $chugLeaderPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the $chug_term_singular leader password.");
-                
-                $chugLeaderPasswordStr = $chugLeaderPasswordField->renderHtml();
+$chugLeaderPasswordField->setInputType("password");
+$chugLeaderPasswordField->setInputClass("element text medium");
+$chugLeaderPasswordField->setInputMaxLength(50);
+$chugLeaderPasswordField->setPlaceHolder(" ");
+$chugLeaderPasswordField->setGuideText("Leave this field and the next one blank if you do not wish to change the $chug_term_singular leader password.");
 
-                // change from list element to just regular div with same id
-                $chugLeaderPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $chugLeaderPasswordStr);
-                $chugLeaderPasswordStr = str_replace("/li>", "/div>", $chugLeaderPasswordStr);
+$chugLeaderPasswordStr = $chugLeaderPasswordField->renderHtml();
 
-                echo $chugLeaderPasswordStr;
+// change from list element to just regular div with same id
+$chugLeaderPasswordStr = str_replace("<li", "<div class=\"mb-3\"", $chugLeaderPasswordStr);
+$chugLeaderPasswordStr = str_replace("/li>", "/div>", $chugLeaderPasswordStr);
 
-                $chugLeaderPasswordField2 = new FormItemSingleTextField("Retype New " . ucfirst($chug_term_singular) . " Leader Password", false, "chug_leader_password2", $counter++);
-                $chugLeaderPasswordField2->setInputType("password");
-                $chugLeaderPasswordField2->setInputClass("element text medium");
-                $chugLeaderPasswordField2->setInputMaxLength(50);
-                $chugLeaderPasswordField2->setPlaceHolder(" ");
+$chugLeaderPasswordField2 = new FormItemSingleTextField("Retype New " . ucfirst($chug_term_singular) . " Leader Password", false, "chug_leader_password2", $counter++);
+$chugLeaderPasswordField2->setInputType("password");
+$chugLeaderPasswordField2->setInputClass("element text medium");
+$chugLeaderPasswordField2->setInputMaxLength(50);
+$chugLeaderPasswordField2->setPlaceHolder(" ");
 
-                $chugLeaderPassword2Str = $chugLeaderPasswordField2->renderHtml();
+$chugLeaderPassword2Str = $chugLeaderPasswordField2->renderHtml();
 
-                // change from list element to just regular div with same id
-                $chugLeaderPassword2Str = str_replace("<li", "<div", $chugLeaderPassword2Str);
-                $chugLeaderPassword2Str = str_replace("/li>", "/div>", $chugLeaderPassword2Str);
+// change from list element to just regular div with same id
+$chugLeaderPassword2Str = str_replace("<li", "<div", $chugLeaderPassword2Str);
+$chugLeaderPassword2Str = str_replace("/li>", "/div>", $chugLeaderPassword2Str);
 
-                echo $chugLeaderPassword2Str;
-                ?>
-            </div>
-        </div>
-    </div>
-</div></li>
+// 2. assemble/output accordion
+$passwordAccordion = new bootstrapAccordion($name="Password", $flush=false, $alwaysOpen=false);
+$passwordAccordion->addAccordionElement($id="Admin", $title="Admin Password", $body=$adminPasswordStr . $adminPassword2Str, $open=true);
+$passwordAccordion->addAccordionElement($id="RoshYoetzet", $title="Rosh/Yoetzet Password", $body=$roshPasswordStr . $roshPassword2Str, $open=false);
+$passwordAccordion->addAccordionElement($id="ChugLeader", $title=chug_term_singular . " Leader Password", $body=$chugLeaderPasswordStr . $chugLeaderPassword2Str, $open=false);
+echo $passwordAccordion->renderHtml();
+
+?>
+</li>
 
 <br>
 <li>
-<label class="description mt-2" for="termEditAccordion">
+<label class="description mt-2" for="accordionTermEdit">
     Update Camp-Specific Terms
 </label>
 Modify the terms used for certain things in your camp. Please provide both a singular and plural version for each term.
-<div class="accordion" id="termEditAccordion">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingChug">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChug" aria-expanded="true" aria-controls="collapseChug">
-                <?php echo ucfirst(chug_term_singular) ?> Term
-            </button>
-        </h2>
-        <div id="collapseChug" class="accordion-collapse collapse show" aria-labelledby="headingChug" data-bs-parent="#termEditAccordion">
-            <div class="accordion-body">
-            A "<?php echo (chug_term_singular) ?>" is a certain activity or elective. Campers rank their preferences for these activities and are assigned to certain ones. For example, a camper may have “soccer” or “painting” as a chug - this refers to the specific activity.
-                <?php
-                    $chugTermSingularField = new FormItemSingleTextField("Chug Term (singular)", false, "chug_term_singular", $counter++);
-                    $chugTermSingularField->setInputType("text");
-                    $chugTermSingularField->setInputClass("element text medium");
-                    $chugTermSingularField->setInputMaxLength(50);
-                    $chugTermSingularField->setPlaceHolder(" ");
-                    $chugTermSingularField->setInputValue(chug_term_singular);
+<?php
+// 1. create term fields
 
-                    $chugTermSingularField2Str = $chugTermSingularField->renderHtml();
+// 1a. chug
+    $chugTermStart = "A " . chug_term_singular . " is a certain activity or elective. Campers rank their preferences for these activities and are assigned to certain ones. For example, a camper may have “soccer” or “painting” as a " . chug_term_singular . " - this refers to the specific activity.";
+    $chugTermSingularField = new FormItemSingleTextField("Chug Term (singular)", false, "chug_term_singular", $counter++);
+    $chugTermSingularField->setInputType("text");
+    $chugTermSingularField->setInputClass("element text medium");
+    $chugTermSingularField->setInputMaxLength(50);
+    $chugTermSingularField->setPlaceHolder(" ");
+    $chugTermSingularField->setInputValue(chug_term_singular);
 
-                    $chugTermSingularField2Str = str_replace("<li", "<div", $chugTermSingularField2Str);
-                    $chugTermSingularField2Str = str_replace("/li>", "/div>", $chugTermSingularField2Str);
-                    echo $chugTermSingularField2Str;
+    $chugTermSingularField2Str = $chugTermSingularField->renderHtml();
 
-                    $chugTermPluralField = new FormItemSingleTextField("Chug Term (plural)", false, "chug_term_plural", $counter++);
-                    $chugTermPluralField->setInputType("text");
-                    $chugTermPluralField->setInputClass("element text medium");
-                    $chugTermPluralField->setInputMaxLength(50);
-                    $chugTermPluralField->setPlaceHolder(" ");
-                    $chugTermPluralField->setInputValue(chug_term_plural);
-                    
-                    $chugTermPluralField2Str = $chugTermPluralField->renderHtml();
+    $chugTermSingularField2Str = str_replace("<li", "<div", $chugTermSingularField2Str);
+    $chugTermSingularField2Str = str_replace("/li>", "/div>", $chugTermSingularField2Str);
 
-                    $chugTermPluralField2Str = str_replace("<li", "<div", $chugTermPluralField2Str);
-                    $chugTermPluralField2Str = str_replace("/li>", "/div>", $chugTermPluralField2Str);
-                    echo $chugTermPluralField2Str;
-                ?>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingBlock">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlock" aria-expanded="false" aria-controls="collapseBlock">
-                <?php echo ucfirst(block_term_singular) ?> Term
-            </button>
-        </h2>
-        <div id="collapseBlock" class="accordion-collapse collapse" aria-labelledby="headingBlock" data-bs-parent="#termEditAccordion">
-            <div class="accordion-body">
-            A "<?php echo ucfirst(block_term_singular) ?>" is a time period. For example, camp may be made up of multiple sessions (e.g. 2 sessions, each lasting 4 weeks) where campers have multiple elective cycles. If the sessions are “1st session” and “2nd session,” the blocks may be “Weeks 1+2,” “Weeks 3+4,” “Weeks 5+6,” and “Weeks 7+8.” It is unlikely you will need to change this term, mostly just including it in case you have a different preference.
-                <?php
-                    $blockTermSingularField = new FormItemSingleTextField("Block Term (singular)", false, "block_term_singular", $counter++);
-                    $blockTermSingularField->setInputType("text");
-                    $blockTermSingularField->setInputClass("element text medium");
-                    $blockTermSingularField->setInputMaxLength(50);
-                    $blockTermSingularField->setPlaceHolder(" ");
-                    $blockTermSingularField->setInputValue(block_term_singular);
-                    
-                    $blockTermSingularField2Str = $blockTermSingularField->renderHtml();
+    $chugTermPluralField = new FormItemSingleTextField("Chug Term (plural)", false, "chug_term_plural", $counter++);
+    $chugTermPluralField->setInputType("text");
+    $chugTermPluralField->setInputClass("element text medium");
+    $chugTermPluralField->setInputMaxLength(50);
+    $chugTermPluralField->setPlaceHolder(" ");
+    $chugTermPluralField->setInputValue(chug_term_plural);
+    
+    $chugTermPluralField2Str = $chugTermPluralField->renderHtml();
 
-                    $blockTermSingularField2Str = str_replace("<li", "<div", $blockTermSingularField2Str);
-                    $blockTermSingularField2Str = str_replace("/li>", "/div>", $blockTermSingularField2Str);
-                    echo $blockTermSingularField2Str;
-                    
-                    $blockTermPluralField = new FormItemSingleTextField("Block Term (plural)", false, "block_term_plural", $counter++);
-                    $blockTermPluralField->setInputType("text");
-                    $blockTermPluralField->setInputClass("element text medium");
-                    $blockTermPluralField->setInputMaxLength(50);
-                    $blockTermPluralField->setPlaceHolder(" ");
-                    $blockTermPluralField->setInputValue(block_term_plural);
+    $chugTermPluralField2Str = str_replace("<li", "<div", $chugTermPluralField2Str);
+    $chugTermPluralField2Str = str_replace("/li>", "/div>", $chugTermPluralField2Str);
 
-                    $blockTermPluralField2Str = $blockTermPluralField->renderHtml();
 
-                    $blockTermPluralField2Str = str_replace("<li", "<div", $blockTermPluralField2Str);
-                    $blockTermPluralField2Str = str_replace("/li>", "/div>", $blockTermPluralField2Str);
-                    echo $blockTermPluralField2Str;
-                ?>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingEdah">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdah" aria-expanded="false" aria-controls="collapseEdah">
-                <?php echo ucfirst(edah_term_singular) ?> Term
-            </button>
-        </h2>
-        <div id="collapseEdah" class="accordion-collapse collapse" aria-labelledby="headingEdah" data-bs-parent="#termEditAccordion">
-            <div class="accordion-body">
-                An "<?php echo (edah_term_singular) ?>" is an age group at camp. Different camps utilize different spellings of the term; specify your version here.
-                <?php
-                    $edahTermSingularField = new FormItemSingleTextField("Edah Term (singular)", false, "edah_term_singular", $counter++);
-                    $edahTermSingularField->setInputType("text");
-                    $edahTermSingularField->setInputClass("element text medium");
-                    $edahTermSingularField->setInputMaxLength(50);
-                    $edahTermSingularField->setPlaceHolder(" ");
-                    $edahTermSingularField->setInputValue(edah_term_singular);
-                    
-                    $edahTermSingularField2Str = $edahTermSingularField->renderHtml();
+// 1b. block
+    $blockTermStart = "A " .  ucfirst(block_term_singular) . " is a time period. For example, camp may be made up of multiple sessions (e.g. 2 sessions, each lasting 4 weeks) where campers have multiple elective cycles. If the sessions are “1st session” and “2nd session,” the " . block_term_plural . " may be “Weeks 1+2,” “Weeks 3+4,” “Weeks 5+6,” and “Weeks 7+8.” It is unlikely you will need to change this term, mostly just including it in case you have a different preference.";
+    $blockTermSingularField = new FormItemSingleTextField("Block Term (singular)", false, "block_term_singular", $counter++);
+    $blockTermSingularField->setInputType("text");
+    $blockTermSingularField->setInputClass("element text medium");
+    $blockTermSingularField->setInputMaxLength(50);
+    $blockTermSingularField->setPlaceHolder(" ");
+    $blockTermSingularField->setInputValue(block_term_singular);
+    
+    $blockTermSingularField2Str = $blockTermSingularField->renderHtml();
 
-                    $edahTermSingularField2Str = str_replace("<li", "<div", $edahTermSingularField2Str);
-                    $edahTermSingularField2Str = str_replace("/li>", "/div>", $edahTermSingularField2Str);
-                    echo $edahTermSingularField2Str;
-                    
-                    $edahTermPluralField = new FormItemSingleTextField("Edah Term (plural)", false, "edah_term_plural", $counter++);
-                    $edahTermPluralField->setInputType("text");
-                    $edahTermPluralField->setInputClass("element text medium");
-                    $edahTermPluralField->setInputMaxLength(50);
-                    $edahTermPluralField->setPlaceHolder(" ");
-                    $edahTermPluralField->setInputValue(edah_term_plural);
+    $blockTermSingularField2Str = str_replace("<li", "<div", $blockTermSingularField2Str);
+    $blockTermSingularField2Str = str_replace("/li>", "/div>", $blockTermSingularField2Str);
+    
+    $blockTermPluralField = new FormItemSingleTextField("Block Term (plural)", false, "block_term_plural", $counter++);
+    $blockTermPluralField->setInputType("text");
+    $blockTermPluralField->setInputClass("element text medium");
+    $blockTermPluralField->setInputMaxLength(50);
+    $blockTermPluralField->setPlaceHolder(" ");
+    $blockTermPluralField->setInputValue(block_term_plural);
 
-                    $edahTermPluralField2Str = $edahTermPluralField->renderHtml();
+    $blockTermPluralField2Str = $blockTermPluralField->renderHtml();
 
-                    $edahTermPluralField2Str = str_replace("<li", "<div", $edahTermPluralField2Str);
-                    $edahTermPluralField2Str = str_replace("/li>", "/div>", $edahTermPluralField2Str);
-                    echo $edahTermPluralField2Str;
-                ?>
-            </div>
-        </div>
-    </div>
-</div></li>
+    $blockTermPluralField2Str = str_replace("<li", "<div", $blockTermPluralField2Str);
+    $blockTermPluralField2Str = str_replace("/li>", "/div>", $blockTermPluralField2Str);
+
+// 1c. edah
+    $edahTermStart = "An " . edah_term_singular . " is an age group at camp. Different camps utilize different spellings of the term; specify your version here.";
+    $edahTermSingularField = new FormItemSingleTextField("Edah Term (singular)", false, "edah_term_singular", $counter++);
+    $edahTermSingularField->setInputType("text");
+    $edahTermSingularField->setInputClass("element text medium");
+    $edahTermSingularField->setInputMaxLength(50);
+    $edahTermSingularField->setPlaceHolder(" ");
+    $edahTermSingularField->setInputValue(edah_term_singular);
+    
+    $edahTermSingularField2Str = $edahTermSingularField->renderHtml();
+
+    $edahTermSingularField2Str = str_replace("<li", "<div", $edahTermSingularField2Str);
+    $edahTermSingularField2Str = str_replace("/li>", "/div>", $edahTermSingularField2Str);
+    
+    $edahTermPluralField = new FormItemSingleTextField("Edah Term (plural)", false, "edah_term_plural", $counter++);
+    $edahTermPluralField->setInputType("text");
+    $edahTermPluralField->setInputClass("element text medium");
+    $edahTermPluralField->setInputMaxLength(50);
+    $edahTermPluralField->setPlaceHolder(" ");
+    $edahTermPluralField->setInputValue(edah_term_plural);
+
+    $edahTermPluralField2Str = $edahTermPluralField->renderHtml();
+
+    $edahTermPluralField2Str = str_replace("<li", "<div", $edahTermPluralField2Str);
+    $edahTermPluralField2Str = str_replace("/li>", "/div>", $edahTermPluralField2Str);
+
+// 2. assemble/output accordion
+$termEditAccordion = new bootstrapAccordion($name="TermEdit", $flush=false, $alwaysOpen=false);
+$termEditAccordion->addAccordionElement($id="Chug", $title=ucfirst(chug_term_singular) . " Term", $body=$chugTermStart . $chugTermSingularField2Str . $chugTermPluralField2Str, $open=true);
+$termEditAccordion->addAccordionElement($id="Block", $title=ucfirst(block_term_singular) . " Term", $body=$blockTermStart . $blockTermSingularField2Str . $blockTermPluralField2Str, $open=false);
+$termEditAccordion->addAccordionElement($id="Edah", $title=ucfirst(edah_term_singular) . " Term", $body=$edahTermStart . $edahTermSingularField2Str . $edahTermPluralField2Str, $open=false);
+echo $termEditAccordion->renderHtml();
+
+?>
+</li>
 
 <li class="buttons">
 <input id="saveForm" class="btn btn-primary" type="submit" name="submit" value="Submit" />

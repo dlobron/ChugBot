@@ -206,62 +206,36 @@ if ($message) {
 
 <p class="mb-1">Expand any of the below fields to view allowed values for each column</p>
 
-<div class="accordion mb-4" id="detailAccordion">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingEdah">
-            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdah" aria-expanded="false" aria-controls="collapseOne">
-                Valid values for&nbsp<strong><?php echo (edah_term_singular); ?></strong>
-            </button>
-        </h2>
-        <div id="collapseEdah" class="accordion-collapse collapse" aria-labelledby="headingEdah">
-            <div class="accordion-body p-3">
-                <ul style="column-count: 3; column-gap:20px;" class="mb-0"><li><?php echo implode("</li><li>", array_keys($edah_name_to_id)); ?></li></ul>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingSession">
-            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSession" aria-expanded="false" aria-controls="collapseTwo">
-                Valid values for&nbsp<b>session</b>
-            </button>
-        </h2>
-        <div id="collapseSession" class="accordion-collapse collapse" aria-labelledby="headingSession">
-            <div class="accordion-body p-3">
-                <ul style="column-count: 3; column-gap:20px;" class="mb-0"><li> <?php echo implode("</li><li>", array_keys($session_name_to_id)); ?></li></ul>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingBunk">
-            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBunk" aria-expanded="false" aria-controls="collapseThree">
-                Valid values for&nbsp<b>bunk</b>
-            </button>
-        </h2>
-        <div id="collapseBunk" class="accordion-collapse collapse" aria-labelledby="headingBunk">
-            <div class="accordion-body p-3">
-                <ul style="column-count: 6; column-gap:20px;" class="mb-0"><li> <?php echo implode("</li><li>", array_keys($bunk_name_to_id)); ?></li></ul>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingFirstChoice">
-            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFirstChoice" aria-expanded="false" aria-controls="collapseFour">
-                Other details
-            </button>
-        </h2>
-        <div id="collapseFirstChoice" class="accordion-collapse collapse" aria-labelledby="headingFirstChoice">
-        <div class="accordion-body p-3">
-            <ul class="mb-0">
-                <li>If <b>needs_first_choice</b> is NOT blank, the camper will always receive their first choice preference</li>
-                <li><b>email</b> should have an email; <b>email2</b> can be blank</li>
-                <li>Campers will search for their information using <b>edah</b>, <b>first_name</b>, and <b>last_name</b> to enter preferences. It is recommended to use preferred names for <b>first_name</b></li>
-            </ul>
-        </div>
-    </div>
-    </div>
-</div>
+<?php
+$detailAccordion = new bootstrapAccordion($name="detail", $flush=false, $alwaysOpen=true);
 
-<h4>Select File to Upload</h4>
+// edah
+$elementTitle = "Valid values for&nbsp<strong>" . edah_term_singular . "</strong>";
+$elementBody = "<ul style=\"column-count: 3; column-gap:20px;\" class=\"mb-0\"><li>" . implode("</li><li>", array_keys($edah_name_to_id)) . "</li></ul>";
+$detailAccordion->addAccordionElement($id="Edah", $title=$elementTitle, $body=$elementBody, $open=false);
+
+// session
+$elementTitle = "Valid values for&nbsp<b>session</b>";
+$elementBody = "<ul style=\"column-count: 3; column-gap:20px;\" class=\"mb-0\"><li>" . implode("</li><li>", array_keys($session_name_to_id)) . "</li></ul>";
+$detailAccordion->addAccordionElement($id="Session", $title=$elementTitle, $body=$elementBody, $open=false);
+
+// bunk
+$elementTitle = "Valid values for&nbsp<b>bunk</b>";
+$elementBody = "<ul style=\"column-count: 3; column-gap:20px;\" class=\"mb-0\"><li>" . implode("</li><li>", array_keys($bunk_name_to_id)) . "</li></ul>";
+$detailAccordion->addAccordionElement($id="BlockEdah", $title=$elementTitle, $body=$elementBody, $open=false);
+
+// all else
+$elementTitle = "Other details";
+$elementBody = "<ul class=\"mb-0\"><li>If <b>needs_first_choice</b> is NOT blank, the camper will always receive their first choice preference</li>" . 
+                "<li><b>email</b> should have an email; <b>email2</b> can be blank</li>" .
+                "<li>Campers will search for their information using <b>edah</b>, <b>first_name</b>, and <b>last_name</b> to enter preferences. It is recommended to use preferred names for <b>first_name</b></li></ul>";
+$detailAccordion->addAccordionElement($id="MoreInfo", $title=$elementTitle, $body=$elementBody, $open=false);
+
+echo $detailAccordion->renderHtml();
+
+?>
+
+<h4 class="mt-4">Select File to Upload</h4>
 <div class="row">
 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data">
     <div class="col-4 mb-3">

@@ -282,64 +282,38 @@ if ($message) {
 
 <p class="mb-1">Expand any of the below fields to view allowed values for each column</p>
 
-<div class="accordion mb-4" id="detailAccordion">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingGroup">
-            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGroup" aria-expanded="false" aria-controls="collapseOne">
-                Valid values for&nbsp<strong>group</strong>
-            </button>
-        </h2>
-        <div id="collapseGroup" class="accordion-collapse collapse" aria-labelledby="headingGroup">
-            <div class="accordion-body p-3">
-                <ul style="column-count: 3; column-gap:20px;" class="mb-0"><li><?php echo implode("</li><li>", array_keys($group_name_to_id)); ?></li></ul>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingMinMax">
-            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMinMax" aria-expanded="false" aria-controls="collapseTwo">
-                Valid values for&nbsp<b>min</b>&nbspand&nbsp<b>max</b>
-            </button>
-        </h2>
-        <div id="collapseMinMax" class="accordion-collapse collapse" aria-labelledby="headingMinMax">
-            <div class="accordion-body p-3">
-                <b>min</b> and <b>max</b> must each be non-negative whole numbers as regular numerals. <b>min</b> should be smaller than <b>max</b>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingBlockEdah">
-            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockEdah" aria-expanded="false" aria-controls="collapseThree">
-                Valid values for any&nbsp<b><?php echo block_term_singular?></b>&nbspor&nbsp<b><?php echo edah_term_singular?></b>&nbspcolumn
-            </button>
-        </h2>
-        <div id="collapseBlockEdah" class="accordion-collapse collapse" aria-labelledby="headingBlockEdah">
-            <div class="accordion-body p-3">
-                For clarity, here are the headers for each of these columns. The CSV file uploaded must match each bullet point exactly
-                <ul style="column-count: 3; column-gap:20px;" class="mb-2"><li> <?php echo implode("</li><li>", array_merge($block_heading_name, $edah_heading_name)); ?></li></ul>
-                If the cell for an associated column/row is NOT blank, the <?php echo chug_term_singular?> will be available for that <?php echo block_term_singular?>/<?php echo edah_term_singular?>.
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingMoreInfo">
-            <button class="accordion-button collapsed p-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMoreInfo" aria-expanded="false" aria-controls="collapseFour">
-                Valid values for&nbsp<strong>department</strong>,&nbsp<strong>rosh</strong>, and/or&nbsp<strong>description</strong>
-            </button>
-        </h2>
-        <div id="collapseMoreInfo" class="accordion-collapse collapse" aria-labelledby="headingMoreInfo">
-        <div class="accordion-body p-3">
-            Each of these fields are optional; it is okay if the cells are left blank
-            <ul class="mb-0">
-                <li><b>rosh</b> indicates the head counselor for the <?php echo chug_term_singular?>; <b>department</b> indicates the division. Both of these are for your information and are not critical</li>
-                <li><b>description</b> is shown to campers when leveling their <?php echo chug_term_plural?>; enter an optional (fun encouraged!) one here</li>
-            </ul>
-        </div>
-    </div>
-    </div>
-</div>
+<?php
+$detailAccordion = new bootstrapAccordion($name="detail", $flush=false, $alwaysOpen=true);
 
-<div class="alert alert-primary" role="alert">
+// group
+$elementTitle = "Valid values for&nbsp<strong>group</strong>";
+$elementBody = "<ul style=\"column-count: 3; column-gap:20px;\" class=\"mb-0\"><li>" . implode("</li><li>", array_keys($group_name_to_id)) . "</li></ul>";
+$detailAccordion->addAccordionElement($id="Group", $title=$elementTitle, $body=$elementBody, $open=false);
+
+// minmax
+$elementTitle = "Valid values for&nbsp<b>min</b>&nbspand&nbsp<b>max</b>";
+$elementBody = "<b>min</b> and <b>max</b> must each be non-negative whole numbers as regular numerals. <b>min</b> should be smaller than <b>max</b>";
+$detailAccordion->addAccordionElement($id="MinMax", $title=$elementTitle, $body=$elementBody, $open=false);
+
+// block/edah
+$elementTitle = "Valid values for any&nbsp<b>" . block_term_singular . "</b>&nbspor&nbsp<b>" . edah_term_singular . "</b>&nbspcolumn";
+$elementBody = "For clarity, here are the headers for each of these columns. The CSV file uploaded must match each bullet point exactly" . 
+                "<ul style=\"column-count: 3; column-gap:20px;\" class=\"mb-2\"><li>" . implode("</li><li>", array_merge($block_heading_name, $edah_heading_name)) . "</li></ul>" .
+                "If the cell for an associated column/row is NOT blank, the " . chug_term_singular . " will be available for that " . block_term_singular . "/" . edah_term_singular . ".";
+$detailAccordion->addAccordionElement($id="BlockEdah", $title=$elementTitle, $body=$elementBody, $open=false);
+
+// all else
+$elementTitle = "Valid values for&nbsp<strong>department</strong>,&nbsp<strong>rosh</strong>, and/or&nbsp<strong>description</strong>";
+$elementBody = "Each of these fields are optional; it is okay if the cells are left blank<ul class=\"mb-0\">" . 
+                "<li><b>rosh</b> indicates the head counselor for the " . chug_term_singular . " <b>department</b> indicates the division. Both of these are for your information and are not critical</li>" . 
+                "<li><b>description</b> is shown to campers when leveling their " . chug_term_plural . "enter an optional (fun encouraged!) one here</li></ul>";
+$detailAccordion->addAccordionElement($id="MoreInfo", $title=$elementTitle, $body=$elementBody, $open=false);
+
+echo $detailAccordion->renderHtml();
+
+?>
+
+<div class="alert alert-primary mt-3" role="alert">
   <h5 class="alert-heading">Important Note</h4>
   <p>There <b>CANNOT</b> be multiple <?php echo chug_term_plural?> within the same <?php echo chug_term_singular?> group which share the same name. Attempting to upload multiple <?php echo chug_term_plural?> with the same name in one group or uploading a duplicate <?php echo chug_term_singular?> which already exists will result in an error</p>
   <p class="mb-0">If you need to make updates to the availability of an existing <?php echo chug_term_singular?>, edit it within the menu on the staff home page</p>
