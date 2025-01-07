@@ -15,10 +15,11 @@ checkLogout();
 $preserveTableId2Name = array();
 $preserveTableId2Name[1] = "blocks";
 $preserveTableId2Name[2] = "bunks";
-$preserveTableId2Name[3] = "chugim + chug_groups";
-$preserveTableId2Name[4] = "edot";
-$preserveTableId2Name[5] = "sessions";
-$preserveTableId2Name[6] = "campers";
+$preserveTableId2Name[3] = "chug_groups";
+$preserveTableId2Name[4] = "chugim";
+$preserveTableId2Name[5] = "edot";
+$preserveTableId2Name[6] = "sessions";
+$preserveTableId2Name[7] = "campers";
 
 function generateToolCommand($bin_path, $database, $dir, $dbPath)
 {

@@ -33,17 +33,8 @@ foreach ($parts as $part) {
     }
 }
 
-$db = new DbConn();
-$sql = "SELECT enable_camper_importer FROM admin_data";
-$err = "";
-$result = $db->runQueryDirectly($sql, $err);
-$enableCamperImporter = false;
-if ($result) {
-    $row = $result->fetch_assoc();
-    if ($row) {
-        $enableCamperImporter = (bool)$row["enable_camper_importer"];
-    }
-}
+$enableCamperImporter = check_enabled("enable_camper_importer");
+$enableChugimImporter = check_enabled("enable_chugim_importer");
 
 $matrixUrl = urlIfy("exclusionMatrix.html");
 $advancedUrl = urlIfy("advanced.php");
@@ -52,6 +43,7 @@ $resetUrl = urlIfy("staffReset.php");
 $levelingUrl = urlIfy("levelHomeLaunch.php");
 $reportUrl = urlIfy("report.php");
 $camperUploadUrl = urlIfy("camperUpload.php");
+$chugimUploadUrl = urlIfy("chugUpload.php");
 $dbErr = "";
 $sessionId2Name = array();
 $blockId2Name = array();
@@ -98,7 +90,7 @@ EOM;
 
 <div class="card card-body mt-3 mb-3 container">
 <h2>Camp Staff Control Panel</h2>
-<p>To add and edit Edot, Sessions, <?php echo ucfirst(block_term_plural) ?>, Groups, and <?php echo ucfirst(chug_term_plural) ?>, expand the relevant group below.  You may also view and edit campers according to edah.</p>
+<p>To add and edit <?php echo ucfirst(edah_term_plural) ?>, Sessions, <?php echo ucfirst(block_term_plural) ?>, Groups, and <?php echo ucfirst(chug_term_plural) ?>, expand the relevant group below.  You may also view and edit campers according to <?php echo (edah_term_singular) ?>.</p>
 <p>Use the Leveling section to run the leveling algorithm.</p>
 <p>For help, hover your mouse over an item, or press on mobile.</p>
 <p>To archive your data at the end of a summer, and prepare the database for the next summer, click <a href="<?php echo $archiveUrl; ?>">here</a>.</p>
@@ -108,9 +100,21 @@ EOM;
     <a href="<?php echo $resetUrl; ?>"  class="btn btn-primary me-2 mb-2" role="button" title="Click here to update the administrative settings, including staff password and camper code">Edit Admin Settings</a>
     <a href="<?php echo $matrixUrl; ?>" class="btn btn-primary me-2 mb-2" role="button" title="Click here to update the de-duplication settings">De-Duplication Matrix</a>
     <a href="<?php echo $advancedUrl; ?>" class="btn btn-primary me-2 mb-2" role="button" title="Click here to prune illegal or obsolete assignments">Fix Illegal And Duplicate</a>
-    <?php if ($enableCamperImporter) : ?>
+    <?php if ($enableCamperImporter & !$enableChugimImporter) : ?>
         <a href="<?php echo $camperUploadUrl; ?>" class="btn btn-primary mb-2" role="button" title="Click here to upload campers">Upload Campers</a>
-    <?php endif; ?>
+    <?php elseif ($enableChugimImporter & !$enableCamperImporter) : ?>
+        <a href="<?php echo $chugimUploadUrl; ?>" class="btn btn-primary mb-2" role="button" title="Click here to upload <?php echo chug_term_plural ?>">Upload <?php echo ucfirst(chug_term_plural) ?></a>
+    <?php elseif ($enableChugimImporter & $enableCamperImporter) : ?>
+        <!--<div class="dropdown">-->
+            <a class="btn btn-secondary dropdown-toggle me-2 mb-2" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                Upload Campers/<?php echo ucfirst(chug_term_plural) ?>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <li><a class="dropdown-item" href="<?php echo $camperUploadUrl; ?>">Campers</a></li>
+                <li><a class="dropdown-item" href="<?php echo $chugimUploadUrl; ?>"><?php echo ucfirst(chug_term_plural) ?></a></li>
+            </ul>
+       <!--</div>-->
+    <? endif; ?>
 </div>
 
 </div>
@@ -145,21 +149,21 @@ EOM;
 
 <div class="card card-body mt-3 mb-3 container">
 <h3>Leveling</h3>
-<p>To view the leveling page, choose a time <?php echo block_term_singular ?> and <b>1-8</b> edot, and click "Go."</p>
-<p>If there is an existing saved assignment for the selected edah/edot and <?php echo block_term_singular ?>, it will be displayed.  Nothing will be
+<p>To view the leveling page, choose a time <?php echo block_term_singular ?> and <b>1-8</b> <?php echo edah_term_plural ?>, and click "Go."</p>
+<p>If there is an existing saved assignment for the selected <?php echo edah_term_singular ?>/<?php echo edah_term_plural ?> and <?php echo block_term_singular ?>, it will be displayed.  Nothing will be
 changed until you click the Save or Reassign buttons on the leveling page.  If there is no existing assignment, one
 will be created and then displayed.</p>
-<p>If you choose two edot, make sure they share at least some <?php echo chug_term_plural ?>.</p>
+<p>If you choose two <?php echo edah_term_plural ?>, make sure they share at least some <?php echo chug_term_plural ?>.</p>
 <p>To generate a printable <?php echo chug_term_singular ?> assigment report, click "Report".
 <form id="leveling_choice_form" class="card card-body mb-3 bg-light" method="get" action="<?php echo $levelingUrl; ?>">
 <ul>
 <li>
-<label class="description" for="edah">Edah (choose 1-8)</label>
+<label class="description" for="edah"><?php echo ucfirst(edah_term_singular) ?> (choose 1-8)</label>
 <div id="edah_checkbox">
 <?php
 echo genCheckBox($edahId2Name, array(), "edah_ids");
 ?>
-</div><p class="guidelines" id="guide_1"><small>Choose 1-8 Edot.</small></p>
+</div><p class="guidelines" id="guide_1"><small>Choose 1-8 <?php echo ucfirst(edah_term_plural) ?>.</small></p>
 </li>
 <li>
 <label class="description" for="group" id="group_desc">Group (choose one or more)</label>

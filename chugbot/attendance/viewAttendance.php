@@ -67,7 +67,7 @@
 
     <p>By default, all campers are shown. Campers marked as absent are highlighted in <span style="background:#f8d7da;">red</span>. Campers for whom attendance has not been taken are highlighted in <span style="background:#fff3cd;">yellow</span>.
     If a <?php echo chug_term_singular; ?> name is underlined, hover over it (or click if on a mobile device) to see more information.
-    Beneath the report for an edah is a button which copies a plaintext report of missing campers to your clipboard (which can then be easily sent to madrichim).</p>
+    Beneath the report for an <?php echo edah_term_singular ?> is a button which copies a plaintext report of missing campers to your clipboard (which can then be easily sent to madrichim).</p>
     
     Toggle the switch below to adjust if all campers are shown or only missing ones:
 
@@ -180,7 +180,7 @@
 
         // if no campers had their attendance taken, show message saying that instead
         if($campersMissingAttendance == mysqli_num_rows($result)) {
-            echo "<div class=\"card card-body bg-light mb-3 edah-attendance\"><h5 class=\"text-center\" id=\"edah$edahId\">Edah: " . $edahId2Name[$edahId] . "</h5>" . 
+            echo "<div class=\"card card-body bg-light mb-3 edah-attendance\"><h5 class=\"text-center\">" . ucfirst(edah_term_singular) . ": <span id=\"edah$edahId\">" . $edahId2Name[$edahId] . "</span></h5>" . 
                 "<h6>No $groupId2Name[$groupId] attendance has been taken yet for $edahId2Name[$edahId] on " . date("D F j, Y", strtotime($date)) . "; ask an administrator if you believe you are seeing this message in error.</h6>";
             break;
         }
@@ -192,7 +192,7 @@
 
         // final section which will be returned showing the attendance for the edah
         $attendanceSection = "<div class=\"card card-body bg-light mb-3 edah-attendance\">";
-        $attendanceSection .= "<h5 class=\"text-center\" id=\"edah$edahId\">Edah: " . $edahId2Name[$edahId] . "</h5>";
+        $attendanceSection .= "<h5 class=\"text-center\">" . ucfirst(edah_term_singular) . ": <span id=\"edah$edahId\">" . $edahId2Name[$edahId] . "</span></h5>";
         $attendanceSection .= "<table class=\"table table-hover\" id=\"attendance$edahId\"><thead class=\"table-dark\"><tr>";
         $attendanceSection .= "<th scope=\"col\"></th>";
         if($multipleBunks) {
@@ -315,7 +315,7 @@ function validate_form_inputs()
         var output = "";
         var table = document.getElementById("attendance"+edahId);
         var absent = table.querySelectorAll(".absent");
-        output += document.getElementById("edah"+edahId).innerText.substr(5) + " Missing Campers\n";
+        output += document.getElementById("edah"+edahId).innerText + " Missing Campers\n";
         output += "<?php echo $groupId2Name[$groupId]; ?> -- <?php echo $date; ?>";
 
         // bunk not included

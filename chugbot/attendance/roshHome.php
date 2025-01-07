@@ -53,103 +53,96 @@
 <div class="container row justify-content-center" style="margin:auto;"><div id="errors" class="mt-2"></div></div>
 
 <div class="card card-body mt-2 p-3 mb-3 container">
-    <h1>Rosh Edah/Yoetzet Home</h1>
+    <h1>Rosh <?php echo ucfirst(edah_term_singular)?>/Yoetzet Home</h1>
     <div class="page-header mb-3"><h2>Rosh Edah/Yoetzet Home</h2>
         Below, choose to review detailed attendance records for one particular perek on a given day, or view the attendance matrix over a specified time frame.
         <ul>
-            <li>If quickly checking attendance for your edah, utilize <strong>Attendance by Date</strong></li>
+            <li>If quickly checking attendance for your <?php echo edah_term_singular?>, utilize <strong>Attendance by Date</strong></li>
             <li>If exploring attendance trends over time, look at <strong>Attendance Matrix</strong></li>
         </ul>
     </div>
 
-    <div class="accordion" id="viewAttendanceAccordion">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingSingle">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSingle" aria-expanded="true" aria-controls="collapseSingle">
-                Attendance by Date
-            </button>
-        </h2>
-        <div id="collapseSingle" class="accordion-collapse collapse show" aria-labelledby="headingSingle" data-bs-parent="#viewAttendanceAccordion">
-            <div class="accordion-body">
-                <p>In the form below, select the date, edah, and perek you wish to review attendance records for.
-                Just click "View Attendance" below the form to see the latest record.</p>
-                
-                <form id="attendance_chug_select_form" class="justify-content-center" method="GET" action="viewAttendance.php" onsubmit="return validateAttendanceForm()"><ul>
-                    <li style="margin:auto;" class="ps-0">
-                        <label class="description" for="date"><span style="color:red;">*</span>Date</label>
-                        <div id="date_pick" class="pb-2">
-                            <input type="date" id="date" name="date" class="form-control medium" required>
-                        </div>
-                    </li>
-                    <li style="margin:auto;" class="ps-0">
-                        <label class="description" for="edah"><span style="color:red;">*</span>Edah/Edot</label>
-                        <div id="edah_select" class="pb-2">
-                            <select class="form-select bg-info choices-js" id="edah_list" name="edah[]" onchange="fillConstraintsPickList();" multiple>
-                                <?php echo genPickList($edahId2Name, array(), "edah"); ?>
-                            </select>
-                        </div>
-                    </li>
-                    <li style="margin:auto;" class="ps-0"> 
-                        <label class="description" for="group" id="group_desc"><span style="color:red;">*</span>Perek</label>
-                        <div id="group_select" class="pb-2">
-                            <?php echo genConstrainedPickListScript("group_select", "edah", "group_desc", "group", true); ?>
-                        </div>
-                    </li>
-                    <li style="margin:auto;">
-                        <div class="row justify-content-center">
-                            <div class="col-6" style="text-align:center;"><button class="btn btn-primary" type="submit" id="submit_btn">View Attendance</button></div>
-                        </div>
-                    </li>
-                </ul></form>
-            </div>
-        </div>
-    </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingAdmin">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdmin" aria-expanded="false" aria-controls="collapseAdmin">
-                Attendance Matrix
-            </button>
-        </h2>
-        <div id="collapseAdmin" class="accordion-collapse collapse" aria-labelledby="headingAdmin" data-bs-parent="#viewAttendanceAccordion">
-            <div class="accordion-body">
-                Select the beginning and ending dates (inclusive) you wish to review the attendance records for, and select the edah you are checking. Then, press "View Attendance Matrix" below the form to see the attendance trends.<br>
-                <strong>Note:</strong> it is NOT recommended to view this page on a mobile device - computers or tablets are highly recommended for viewing the attendance matrix
 
-                <form id="attendance_matrix_form" class="justify-content-center mt-4" method="GET" action="viewAttendanceMatrix.php" onsubmit="return validateMatrixForm()"><ul>
-                    <li style="margin:auto;" class="ps-0">
-                        <div class="row">
-                            <div class="col">
-                                <label class="description" for="start-date"><span style="color:red;">*</span>Start Date (inclusive)</label>
-                                <div id="date_pick" class="pb-2 ps-2">
-                                    <input type="date" id="start-date" name="start-date" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col">
-                                <label class="description" for="end-date"><span style="color:red;">*</span>End Date (inclusive)</label>
-                                <div id="date_pick" class="pb-2">
-                                    <input type="date" id="end-date" name="end-date" class="form-control">
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li style="margin:auto;" class="ps-0">
-                        <label class="description" for="edah"><span style="color:red;">*</span>Edah/Edot</label>
-                        <div id="edah_select" class="pb-2">
-                            <select class="form-select bg-info choices-js" id="edah_list" name="edah">
-                                <?php echo genPickList($edahId2Name, array(), "edah"); ?>
-                            </select>
-                        </div>
-                    </li>
-                    <li style="margin:auto;">
-                        <div class="row justify-content-center mt-2">
-                            <div class="col-6" style="text-align:center;"><button class="btn btn-primary" type="submit" id="submit_btn">View Attendance Matrix</button></div>
-                        </div>
-                    </li>
-                </ul></form>
+<?php
+
+// body of date section of accordion
+$dateBody = "<p>In the form below, select the date, " . edah_term_singular . ", and perek you wish to review attendance records for.";
+$dateBody .= <<<EOM
+    Just click "View Attendance" below the form to see the latest record.</p>
+    <form id="attendance_chug_select_form" class="justify-content-center" method="GET" action="viewAttendance.php" onsubmit="return validateAttendanceForm()"><ul>
+        <li style="margin:auto;" class="ps-0">
+        <label class="description" for="date"><span style="color:red;">*</span>Date</label>
+            <div id="date_pick" class="pb-2">
+                <input type="date" id="date" name="date" class="form-control medium" required>
             </div>
+        </li>
+        <li style="margin:auto;" class="ps-0">
+EOM;
+//$dateBody .= $eom1;
+$dateBody .= "<label class=\"description\" for=\"edah\"><span style=\"color:red;\">*</span>" . ucfirst(edah_term_singular) . "/" . ucfirst(edah_term_plural) . "</label>" .
+    "<div id=\"edah_select\" class=\"pb-2\">" . 
+    "<select class=\"form-select bg-info choices-js\" id=\"edah_list\" name=\"edah[]\" onchange=\"fillConstraintsPickList();\" multiple>" . 
+        genPickList($edahId2Name, array(), "edah") . 
+    "</select></div>" . 
+    "</li><li style=\"margin:auto;\" class=\"ps-0\">" . 
+    "<label class=\"description\" for=\"group\" id=\"group_desc\"><span style=\"color:red;\">*</span>Perek</label>" . 
+    "<div id=\"group_select\" class=\"pb-2\">" . 
+        genConstrainedPickListScript("group_select", "edah", "group_desc", "group", true);
+$dateBody .= <<<EOM
+</div></li>
+    <li style="margin:auto;">
+        <div class="row justify-content-center">
+            <div class="col-6" style="text-align:center;"><button class="btn btn-primary" type="submit" id="submit_btn">View Attendance</button></div>
         </div>
-    </div>
-    </div>
+    </li>
+</ul></form>
+EOM;
+
+// body of matrix section of accordion
+$matrixBody = "Select the beginning and ending dates (inclusive) you wish to review the attendance records for, and select the " . edah_term_singular . " you are checking. Then, press \"View Attendance Matrix\" below the form to see the attendance trends.<br>";
+$matrixBody .= <<<EOM
+<strong>Note:</strong> it is NOT recommended to view this page on a mobile device - computers or tablets are highly recommended for viewing the attendance matrix
+    <form id="attendance_matrix_form" class="justify-content-center mt-4" method="GET" action="viewAttendanceMatrix.php" onsubmit="return validateMatrixForm()"><ul>
+        <li style="margin:auto;" class="ps-0">
+            <div class="row">
+                <div class="col">
+                    <label class="description" for="start-date"><span style="color:red;">*</span>Start Date (inclusive)</label>
+                    <div id="date_pick" class="pb-2 ps-2">
+                        <input type="date" id="start-date" name="start-date" class="form-control">
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="description" for="end-date"><span style="color:red;">*</span>End Date (inclusive)</label>
+                    <div id="date_pick" class="pb-2">
+                        <input type="date" id="end-date" name="end-date" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li style="margin:auto;" class="ps-0">
+EOM;
+$matrixBody .= "<label class=\"description\" for=\"edah\"><span style=\"color:red;\">*</span>" . ucfirst(edah_term_singular) . "/" . ucfirst(edah_term_plural) . "</label>" .
+    "<div id=\"edah_select\" class=\"pb-2\">" . 
+    "<select class=\"form-select bg-info choices-js\" id=\"edah_list\" name=\"edah\">" . 
+        genPickList($edahId2Name, array(), "edah");
+$matrixBody .= <<<EOM
+            </select>
+        </div>
+    </li>
+    <li style="margin:auto;">
+        <div class="row justify-content-center mt-2">
+            <div class="col-6" style="text-align:center;"><button class="btn btn-primary" type="submit" id="submit_btn">View Attendance Matrix</button></div>
+        </div>
+    </li>
+</ul></form>
+EOM;
+
+$attendanceAccordion = new bootstrapAccordion($name="detail", $flush=false, $alwaysOpen=false);
+$attendanceAccordion->addAccordionElement($id="Date", $title="Attendance by Date", $body=$dateBody, $open=true);
+$attendanceAccordion->addAccordionElement($id="Matrix", $title="Attendance Matrix", $body=$matrixBody, $open=false);
+echo $attendanceAccordion->renderHtml();
+
+?>
 
 </div>
 
@@ -176,7 +169,7 @@ function validateAttendanceForm() {
     fields.forEach((field) => {
         let x = document.forms["attendance_chug_select_form"][field];
         if(field === "group") { field = "perek"; } // small override to keep backend and UI consistent with each other
-        if(field === "edah[]") { field = "edah"; } // add'l change so user just sees "Edah," not "Edah[]"
+        if(field === "edah[]") { field = "<?php echo edah_term_singular ?>"; } // add'l change so user just sees "Edah," not "Edah[]"
         // check field exists
         if(x === undefined) {
             error += "<li><strong>"+field[0].toUpperCase() + field.slice(1)+"</strong> missing</li>";
@@ -222,6 +215,7 @@ function validateMatrixForm() {
         console.log(field);
         let x = document.forms["attendance_matrix_form"][field];
         field = field.replace("-", " "); // small change to remove hyphen from field name for UI
+        if(field === "edah") { field = "<?php echo edah_term_singular ?>"; } // add'l change so user just sees "Edah," not "Edah[]"
         // check field exists
         if(x === undefined) {
             error += "<li><strong>"+field[0].toUpperCase() + field.slice(1)+"</strong> missing</li>";

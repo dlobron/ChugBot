@@ -665,14 +665,24 @@ class EditPage extends AddEditBase
                 // First, we delete dedup rows where this chug is in the left
                 // column.  Then, we add rows from our active list.
                 $db = new DbConn();
-                $db->addWhereColumn("left_chug_id", $idVal, 'i');
+                $db->addWhereColumn("left_chug_id", $idVal, 'i', 'OR');
+                $db->addWhereColumn("right_chug_id", $idVal, 'i', 'OR');
                 $db->deleteFromTable("chug_dedup_instances_v2", $this->dbErr);
                 // Add the current set of names.
-                foreach ($this->displayListSelectedIds as $dedupId) {
+                if (count($this->displayListSelectedIds) > 0) {
                     $db = new DbConn();
                     $db->addIgnore();
-                    $db->addColumn("left_chug_id", $idVal, 'i');
-                    $db->addColumn("right_chug_id", $dedupId, 'i');
+                    $db->addColName("left_chug_id");
+                    $db->addColName("right_chug_id");
+                    foreach ($this->displayListSelectedIds as $dedupId) {
+                        $db->addColVal($idVal, 'i');
+                        $db->addColVal($dedupId, 'i');
+                        // add complement, if applicable
+                        if ($dedupId != $idVal) {
+                            $db->addColVal($dedupId, 'i');
+                            $db->addColVal($idVal, 'i');
+                        }
+                    }
                     $db->insertIntoTable("chug_dedup_instances_v2", $this->dbErr);
                 }
                 debugLog("Added " . count($this->displayListSelectedIds) . " dedup instances");
@@ -822,18 +832,25 @@ class AddPage extends AddEditBase
             $dedupIds = array($mainTableInsertId);
             // Dedup other chugim as requested.
             if (array_key_exists("dedup_chugim", $_POST)) {
-                array_push($dedupIds, $_POST["dedup_chugim"]);
+                foreach ($_POST["dedup_chugim"] as $id) {
+                    if ($id != NULL) {
+                        array_push($dedupIds, $id);
+                    }
+                }
             }
-            foreach ($dedupIds as $dedupChugId) {
+            // Save the dedup to the db           
+            if (count($dedupIds) > 0) {
                 $db = new DbConn();
                 $db->addIgnore();
-                $db->addColumn("left_chug_id", $mainTableInsertId, 'i');
-                $db->addColumn("right_chug_id", $dedupChugId, 'i');
-                $insertOk = $db->insertIntoTable("chug_dedup_instances_v2", $this->dbErr);
-                if (!$insertOk) {
-                    error_log("Insert into chug_dedup_instances_v2 failed: $this->dbErr");
-                    return;
+                $db->addColName("left_chug_id", $mainTableInsertId, 'i');
+                $db->addColName("right_chug_id", $mainTableInsertId, 'i');
+                foreach ($dedupIds as $dedupId) {
+                    $db->addColVal($mainTableInsertId, 'i');
+                    $db->addColVal($dedupId, 'i');
+                    $db->addColVal($dedupId, 'i');
+                    $db->addColVal($mainTableInsertId, 'i');
                 }
+                $db->insertIntoTable("chug_dedup_instances_v2", $this->dbErr);
             }
         }
 

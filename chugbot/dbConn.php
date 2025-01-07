@@ -58,7 +58,7 @@ class DbConn
         $this->colTypes .= $type;
     }
 
-    // The next three functions are variations on addColumn.  This one
+    // The next four functions are variations on addColumn.  This one
     // is for SELECT clauses, where only the column name is needed.
     public function addSelectColumn($col)
     {
@@ -73,13 +73,33 @@ class DbConn
         $this->colTypes .= $type;
     }
 
+    // This function does the opposite of addColVal - it adds the name of the column
+    public function addColName($col)
+    {
+        array_push($this->colNames, $col);
+    }
+
     // This is similar to addColumn, except the column appears in a WHERE
     // clause.
-    public function addWhereColumn($col, $val, $type)
+    public function addWhereColumn($col, $val, $type, $andOr = "AND")
     {
         array_push($this->whereColNames, $col);
         array_push($this->colVals, $val);
+        // Determine if next column should be and/or for conditional - default AND
+        if ($andOr != "AND" && $andOr != "OR") {
+            $andOr = "AND";
+        }
+        array_push($this->whereColAndOr, $andOr);
         $this->colTypes .= $type;
+    }
+
+    public function addWhereBreak()
+    {
+        if (count($this->whereColAndOr) > 0) {
+            array_push($this->whereColNames, NULL);
+            $this->whereColAndOr[count($this->whereColAndOr)-1] = ") OR (";
+            array_push($this->whereColAndOr, NULL);
+        }
     }
 
     private function buildWhereClause()
@@ -87,14 +107,21 @@ class DbConn
         if (count($this->whereColNames) == 0) {
             return;
         }
-        $this->whereClause = "WHERE ";
+        $this->whereClause = "WHERE (";
         for ($i = 0; $i < count($this->whereColNames); $i++) {
             $colName = $this->whereColNames[$i];
-            $this->whereClause .= "$colName = ? ";
-            if ($i < (count($this->whereColNames) - 1)) {
-                $this->whereClause .= "AND ";
+            if (strlen($colName) > 0) {
+                $this->whereClause .= "$colName = ? ";
             }
+            if ($i < (count($this->whereColNames) - 1)) {
+                $this->whereClause .= $this->whereColAndOr[$i] . " ";
+            }
+            /*if ($this->whereColBreaks[0] = $i) {
+                //$this->whereClause .= ") OR (";
+                array_shift($this->whereColBreaks);
+            }*/
         }
+        $this->whereClause .= ")";
     }
 
     // Do a simple SELECT foo, bar FROM baz WHERE blurfl query.  More
@@ -164,12 +191,28 @@ class DbConn
                 $colCsv .= ", $colName";
             }
         }
+        $qmCsv = "(" . $qmCsv . ")";
+
+        // If multiple sets of values are being inserted:
+        if (count($this->colNames) != count($this->colVals)) {
+            // Note: assumes other values were added using addColVar in same order as columns
+            // e.g. (a, b, c), (d, e, f), (g, h, i) are added in the following order:
+            //      addColumn(a), addColumn(b), addColumn(c)
+            //      addColVal(d), addColVal(e), addColVal(f)
+            //      addColVal(g), addColVal(h), addColVal(i)
+            // Here, repeate $qmCsv the number of entries being added
+            $numEntries = intdiv(count($this->colVals), count($this->colNames));
+
+            $tempQmCsv = str_repeat($qmCsv . ", ", $numEntries - 1);
+            $tempQmCsv .= $qmCsv;
+            $qmCsv = $tempQmCsv;
+        }
 
         $action = "INSERT";
         if ($replace) {
             $action = "REPLACE";
         }
-        $insertOk = $this->doQuery("$action $this->ignore INTO $table ($colCsv) VALUES ($qmCsv)",
+        $insertOk = $this->doQuery("$action $this->ignore INTO $table ($colCsv) VALUES $qmCsv",
             $err);
         $this->insert_id = $this->mysqli->insert_id;
 
@@ -232,6 +275,8 @@ class DbConn
     private $stmt;
     private $colNames = array();
     private $whereColNames = array();
+    private $whereColAndOr = array();
+    private $whereColBreaks = array();
     private $colVals = array();
     private $colTypes = "";
     private $whereClause = "";
@@ -256,6 +301,9 @@ function fillId2Name($archiveYear,
     if ($table == "edot") {
         $db->addSelectColumn("sort_order");
         $db->addOrderByClause(" ORDER BY sort_order");
+    }
+    if ($table == "bunks") {
+        $db->addOrderByClause(" ORDER BY name+0>0 DESC, name+0, LENGTH( name ), name");
     }
     $result = $db->simpleSelectFromTable($table, $dbErr);
     if ($result == false) {

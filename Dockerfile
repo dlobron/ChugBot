@@ -3,6 +3,13 @@ FROM php:8.0-apache
 RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
 RUN apt-get update && apt-get upgrade -y
 
+# To set up the Docker image to test the archive page, uncomment the following line
+# RUN apt-get update && apt-get -yy install mariadb-server
+#   to install while the Docker image is running, enter the shell via:
+#       `docker compose exec php-apache-environment sh`
+#   and then enter:
+#       `apt-get update && apt-get -yy install mariadb-server`
+
 RUN a2enmod ssl
 
 RUN echo "Installed PHP"

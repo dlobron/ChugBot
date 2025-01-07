@@ -60,10 +60,10 @@ $sessionChooserField->setActiveIdHash($addChugPage->instanceActiveIdHash);
 $sessionChooserField->setGuideText("Check each time " . block_term_singular . " in which this " . chug_term_singular . " is active (you can do this later if you are not sure).");
 $addChugPage->addFormItem($sessionChooserField);
 
-$edahChooser = new FormItemInstanceChooser("Edot", false, "edot_for_chug", 4);
+$edahChooser = new FormItemInstanceChooser(ucfirst(edah_term_plural), false, "edot_for_chug", 4);
 $edahChooser->setId2Name($addChugPage->activeEdotFilterId2Name);
 $edahChooser->setActiveIdHash($addChugPage->activeEdotHash);
-$edahChooser->setGuideText("Choose the edot who may participate in this " . chug_term_singular . " (you can do this later if you are not sure now)");
+$edahChooser->setGuideText("Choose the " . (edah_term_plural) . " who may participate in this " . chug_term_singular . " (you can do this later if you are not sure now)");
 $addChugPage->addFormItem($edahChooser);
 
 $minField = new FormItemSingleTextField("Minimum participants", false, "min_size", 5);

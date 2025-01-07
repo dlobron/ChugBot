@@ -255,16 +255,22 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
 
     if ($tableName == 'chugim') {
         $ucPlural = ucfirst(chug_term_plural);
+        $ucName = ucfirst(chug_term_singular);
     } else if ($tableName == 'blocks') {
         $ucPlural = ucfirst(block_term_plural);
+        $ucName = ucfirst(block_term_singular);
     } else if ($tableName == 'chug_groups') {
         $ucPlural = ucfirst(chug_term_singular) . ' Groups';
+        $ucName = ucfirst(chug_term_singular);
+    } else if ($tableName == 'edot') {
+        $ucPlural = ucfirst(edah_term_plural);
+        $ucName = ucfirst(edah_term_singular);
     }
 
     $formName = "form_" . $name;
     $idCol = $name . "_id";
-    $editUrl = urlIfy("edit" . $ucName . ".php");
-    $addUrl = urlIfy("add" . $ucName . ".php");
+    $editUrl = urlIfy("edit" . ucfirst($name) . ".php");
+    $addUrl = urlIfy("add" . ucfirst($name) . ".php");
     $deleteUrl = urlIfy("delete.php?tableName=$tableName&idCol=$idCol");
     $article = "a";
     if (preg_match('/^[aeiou]/i', $name)) {
@@ -272,14 +278,14 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
     }
     $edahExtraText = "";
     if ($name == "edah") {
-        $edahExtraText = " To view the campers in an edah, select an edah and click <font color=\"red\">\"Show Campers\"</font>.";
+        $edahExtraText = " To view the campers in an " . edah_term_singular . ", select an " . edah_term_singular . " and click <font color=\"red\">\"Show Campers\"</font>.";
     }
     $guideText = "";
     if ($deleteAllowed) {
         $guideText = "To add, edit or delete $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName, Edit or Delete. $edahExtraText";
     } else {
-        $guideText = "To add or edit $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName or Edit. Deletion of $tableName " .
-            "is currently disallowed: to allow deletion, click \"Edit Admin Settings\" at the top of this page and adjust the check boxes. $edahExtraText";
+        $guideText = "To add or edit $article $ucName, choose $article $ucName from the drop-down list and click Add New $ucName or Edit. Deletion of " . lcfirst($ucPlural) .
+            " is currently disallowed: to allow deletion, click \"Edit Admin Settings\" at the top of this page and adjust the check boxes. $edahExtraText";
     }
     $retVal = <<<EOM
 <h2 class="accordion-header" id="heading-$name">
@@ -338,13 +344,23 @@ EOM;
 
 function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
 {
+
     $ucName = ucfirst($name);
+
+    if ($name == 'chug') {
+        $ucName = ucfirst(chug_term_singular);
+    } else if ($name == 'block') {
+        $ucName = ucfirst(block_term_singular);
+    } else if ($name == 'edah') {
+        $ucName = ucfirst(edah_term_singular);
+    }
+
     $ddMsg = "Choose $ucName";
     if ($defaultMessage !== null) {
         $ddMsg = $defaultMessage;
     }
     $retVal = "<option value=\"\" >-- $ddMsg --</option>";
-    if($name != "edah" && !strstr($name, "edot_for")) {
+    if($name != "edah" && !strstr($name, "edot_for") & $name != edah_term_singular) {
         asort($id2Name);
     }
     foreach ($id2Name as $id => $name) {
@@ -921,7 +937,7 @@ function navText()
             "<li><a class=\"dropdown-item\" href=\"$adminAttendanceUrl\">Admin Attendance Settings</a></li>" . 
             "</ul></li>";
     }
-    if (roshLoggedIn()) {
+    if (roshLoggedIn() & check_enabled("rosh_yoetzet_password")) {
         $roshUrl = urlIfy("../attendance/roshHome.php");
         $retVal .= "<li class=\"nav-item dropdown\"><a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"roshNavbarDropdown\" role=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">" . 
             "Rosh/Yoetzet</a><ul class=\"dropdown-menu\" aria-labelledby=\"roshNavbarDropdown\">" .
@@ -929,7 +945,7 @@ function navText()
             "<li><a class=\"dropdown-item\" href=\"../designSchedules.php\">Schedule Builder</a></li>" . 
             "</ul></li>";
     }
-    if (chugLeaderLoggedIn()) {
+    if (chugLeaderLoggedIn() & check_enabled("chug_leader_password")) {
         $chugLeaderUrl = urlIfy("../attendance/chugLeaderHome.php");
         $retVal .= "<li class=\"nav-item\"><a class=\"nav-link\" href=\"$chugLeaderUrl\">" . ucfirst(chug_term_singular) . " Leader Home</a></li>";
     }
@@ -996,6 +1012,22 @@ function headerText($title)
 $navText
 EOM;
     return $retVal;
+}
+
+function check_enabled($adminColumn)
+{
+    $db = new DbConn();
+    $dbErr = "";
+    $db->isSelect = true;
+    $db->addSelectColumn($adminColumn);
+    $result = $db->simpleSelectFromTable("admin_data", $dbErr);
+    if ($result) {
+        $row = $result->fetch_assoc();
+        if ($row) {
+            return (bool)$row[$adminColumn];
+        }
+    }
+    return false;
 }
 
 
@@ -1073,7 +1105,7 @@ function genPassToEditPageForm($action, $paramHash)
 
 function setup_camp_specific_terminology_constants() {
     $db = new DbConn();
-    $sql = "SELECT chug_term_singular, chug_term_plural, block_term_singular, block_term_plural FROM admin_data";
+    $sql = "SELECT chug_term_singular, chug_term_plural, block_term_singular, block_term_plural, edah_term_singular, edah_term_plural FROM admin_data";
     $result = $db->runQueryDirectly($sql, $dbErr);
     if ($dbErr) {
         fatalError($dbErr);
@@ -1084,5 +1116,125 @@ function setup_camp_specific_terminology_constants() {
         if (!defined($key)) {
             define($key, $value);
         }
+    }
+}
+
+// class to easily create Bootstrap Accordions
+// to use, just create a new instance of the accordion and add each entry
+//      call renderHtml() to export
+class bootstrapAccordion
+{
+    // the following three variables are options for the accordion. $name is a string, the others are booleans
+    protected $name;
+    protected $flush; // makes accordion edge-to-edge with parent
+    protected $alwaysOpen; // if true, multiple entries can be open at once
+    // ids are first param set - used in the accordion itself and for editing fields (if needed)
+    protected $ids = array();
+    // all other entries are added in according to ids
+    protected $titles = array();
+    protected $bodies = array();
+    protected $open = array();
+
+
+
+    // initialize
+    public function __construct(string $name, bool $flush=false, bool $alwaysOpen=false)
+    {
+        $this->name = $name;
+        $this->flush = $flush;
+        $this->alwaysOpen = $alwaysOpen;
+    }
+
+    // add element
+    public function addAccordionElement($id, string $title, string $body, bool $open)
+    {
+        // only one instance of id is allowed
+        if (!in_array($id, $this->ids))
+        {
+            array_push($this->ids, $id);
+            $this->titles[$id] = $title;
+            $this->bodies[$id] = $body;
+            // if $alwaysOpen is set, only one entry can start off open. Use first by default
+            if (($this->alwaysOpen & !in_array(true, $this->open)) || !$this->alwaysOpen)
+            {
+                $this->open[$id] = $open;
+            } else
+            {
+                $this->open[$id] = false;
+            }
+        }
+    }
+
+    // edit element
+    // uses $id as key, requires key to exist
+    public function editAccordionElement($id, string $title, string $body, bool $open)
+    {
+        // only one instance of id is allowed
+        if (in_array($id, $this->ids))
+        {
+            $this->titles[$id] = $title;
+            $this->bodies[$id] = $body;
+            // if $alwaysOpen is set, only one entry can start off open. Use first by default
+            // but here, start by clearing existing value for this key
+            unset($this->open[$id]);
+            if (($this->alwaysOpen & !in_array(true, $this->open)) || !$this->alwaysOpen)
+            {
+                $this->open[$id] = $open;
+            } else
+            {
+                $this->open[$id] = false;
+            }
+        }
+    }
+
+    // echoes the accordion instance
+    // elements are returned by the order they were added
+    public function renderHtml()
+    {
+        $html = "<div class=\"accordion";
+        // if flush, include it
+        if ($this->flush)
+        {
+            $html .= " accordion-flush";
+        }
+        $html .= "\" id=\"accordion" . $this->name . "\">";
+
+        // create each element
+        foreach($this->ids as $id)
+        {
+            // add element
+            $html .= "<div class=\"accordion-item\"><h2 class=\"accordion-header\" id=\"heading$id\">";
+            
+            // create header
+            $html .= "<button class=\"accordion-button";
+            if (!$this->open[$id])
+            {
+                $html .= " collapsed";
+            }
+            $html .= "\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse$id\" aria-expanded=\"" . $this->open[$id] . "\" aria-controls=\"collapse$id\">";
+            $html .= $this->titles[$id];
+            $html .= "</button></h2>";
+            
+            // create body
+            $html .= "<div id=\"collapse$id\" class=\"accordion-collapse collapse";
+            if ($this->open[$id]) 
+            {
+                $html .= " show";
+            }
+            $html .= "\" aria-labelledby=\"heading$id\"";
+            if (!$this->alwaysOpen)
+            {
+                $html .= " data-bs-parent=\"#accordion" . $this->name . "\"";
+            }
+            $html .= "><div class=\"accordion-body\">";
+            $html .= $this->bodies[$id];
+            $html .= "</div></div></div>";
+        }
+
+        // close accordion
+        $html .= "</div>";
+
+        // returns result (if necessary to edit, it is then theoretically possible (e.g. using str_replace to change classes))
+        return $html;
     }
 }
