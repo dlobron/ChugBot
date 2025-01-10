@@ -171,17 +171,17 @@
                     // determine unique data for this camper and day
                     $tooltipText = $icon = $class = "";
                     if(is_null($row[$i])) { // attendance not yet taken
-                        $tooltipText = "<b>Attendance Not Taken</b><br><b>" . ucfirst(chug_term_singular) . ":</b>${row[$i+1]}";
+                        $tooltipText = "<b>Attendance Not Taken</b><br><b>" . ucfirst(chug_term_singular) . ":</b>{$row[$i+1]}";
                         $icon = "<i class=\"bi bi-exclamation-triangle\"></i>";
                         $class = "table-warning";
                     }
                     else if($row[$i] == 0) { // absent
-                        $tooltipText = "<b>Absent</b><br><b>" . ucfirst(chug_term_singular) . ":</b>${row[$i+1]}";
+                        $tooltipText = "<b>Absent</b><br><b>" . ucfirst(chug_term_singular) . ":</b>{$row[$i+1]}";
                         $icon = "<i class=\"bi bi-x-circle-fill\"></i>";
                         $class = "table-danger";
                     }
                     else if ($row[$i] == 1) { // present
-                        $tooltipText = "<b>Present</b><br><b>" . ucfirst(chug_term_singular) . ":</b>${row[$i+1]}";
+                        $tooltipText = "<b>Present</b><br><b>" . ucfirst(chug_term_singular) . ":</b>{$row[$i+1]}";
                         $icon = "<i class=\"bi bi-check-circle\"></i>";
                     }
 

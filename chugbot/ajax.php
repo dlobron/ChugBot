@@ -167,7 +167,9 @@ if (isset($_POST["submit_prefs"])) {
         $db->addColumn("first", $_SESSION["first"], 's');
         $db->addColumn("last", $_SESSION["last"], 's');
         $db->addColumn("email", $_SESSION["email"], 's');
-        $db->addColumn("email2", $_SESSION["email2"], 's');
+        if (isset($_SESSION["email2"])) {
+            $db->addColumn("email2", $_SESSION["email2"], 's');
+        }
         $db->addColumn("session_id", intval($_SESSION["session_id"]), 'i');
         $db->addColumn("edah_id", intval($_SESSION["edah_id"]), 'i');
         $bunkIdVal = null;

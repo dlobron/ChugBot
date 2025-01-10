@@ -116,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 exit();
             }
             // 2b: delete that attendance was taken for that perek
-            $sql = "DELETE FROM chug_attendance_taken WHERE date < '$date'";
+            $sql = "DELETE FROM attendance_block_by_date WHERE date < '$date'";
             $result = $dbc->doQuery($sql, $localErr);
             if ($result == false) {
                 echo dbErrorString($sql, $localErr);

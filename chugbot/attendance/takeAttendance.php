@@ -176,7 +176,7 @@
                 $selected = "checked=checked";
             }
             $att .= "<label class=\"form-check-label\"><input class=\"form-check-input ms-2 me-1 att-child\" type=\"checkbox\"" .  
-                    "name=\"present[]\" value=\"${row[0]}\" id=\"\" $selected>$row[1]</label>";
+                    "name=\"present[]\" value=\"{$row[0]}\" id=\"\" $selected>$row[1]</label>";
         }
 
         $attendanceSection = "<div class=\"card card-body bg-light mt-3 mb-3 edah-attendance\">";

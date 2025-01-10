@@ -220,7 +220,7 @@ class FormItemInstanceChooser extends FormItem
         $idString = "form_item_instance_chooser_" . $num;
         $javascript = <<<JSEND
             <script>
-            function toggle${num}(source) {
+            function toggle{$num}(source) {
                 var checkboxes = $("#$idString").find(":input");
                 for (var i = 0; i < checkboxes.length; i++) {
                     var checkbox = checkboxes[i];
@@ -230,7 +230,7 @@ class FormItemInstanceChooser extends FormItem
             </script>
 JSEND;
         $this->html .= "$javascript \n";
-        $this->html .= "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" onClick=\"toggle${num}(this)\">Toggle All</label><br>";
+        $this->html .= "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" onClick=\"toggle{$num}(this)\">Toggle All</label><br>";
         $this->html .= "<div class=\"form_item_instance_chooser card card-body bg-light\" id=\"$idString\" >\n";
         $this->html .= genCheckBox($this->id2Name, $this->activeIdHash, $this->inputName);
         $this->html .= "</div>";
@@ -340,7 +340,7 @@ class FormItemDropDown extends FormItem
                 button.setAttribute('aria-label', 'Close');
 
                 input.type = 'hidden';
-                input.name = "${name}[]";
+                input.name = "{$name}[]";
                 input.value = option.value;
 
                 li.appendChild(input);
@@ -429,9 +429,9 @@ class FormItemConstrainedDropDown extends FormItem
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
 <script>
 function fillConstraints() {
-    var parent = $("#${parentId}");
+    var parent = $("#{$parentId}");
     var parentName = "$parentName";
-    var ourDropDown = $("#${ourId}");
+    var ourDropDown = $("#{$ourId}");
     var selected = "$ourCurrentValue";
     var values = {};
     values["get_legal_id_to_name"] = 1;
@@ -483,8 +483,8 @@ function fillConstraints() {
     });
 }
 $(function() {
-  $("select#${parentId}").load(fillConstraints());
-  $("select#${parentId}").bind('change',fillConstraints);
+  $("select#{$parentId}").load(fillConstraints());
+  $("select#{$parentId}").bind('change',fillConstraints);
 });
 
 </script>
