@@ -155,8 +155,13 @@ if (isset($_POST["save_changes"])) {
             $chugId2Chug[intval($row["chug_id"])] = $c;
         }
 
+        // unassigned chug objects: chug is -1
+        $c = new Chug("Not Assigned", -1, -1, -1);
+        $chugId2Chug[-1] = $c;
+
+        // note: when chugId = -1, this indicates they are now being unassigned
         foreach ($chugId2MatchList as $chugId => $matchedCamperList) {
-            if (!array_key_exists($chugId, $chugId2Chug)) {
+            if (!array_key_exists($chugId, $chugId2Chug) && $chugId != -1) {
                 error_log("WARNING: No chug found matching ID $chugId");
                 continue;
             }
@@ -197,44 +202,50 @@ if (isset($_POST["save_changes"])) {
                     die(json_encode(array("error" => $err)));
                 }
                 $row = $result->fetch_assoc();
-                $existingChugInstanceId = $row["existing_instance_id"];
-                $db = new DbConn();
-                $db->addWhereColumn("camper_id", $camperId, 'i');
-                $db->addWhereColumn("chug_instance_id", $existingChugInstanceId, 'i');
-                if (!$db->deleteFromTable("matches", $err)) {
-                    error_log("Unable to delete existing match: $err");
-                    exit;
+                // if there was a match; remove it
+                if(isset($row["existing_instance_id"])) {
+                    $existingChugInstanceId = $row["existing_instance_id"];
+                    $db = new DbConn();
+                    $db->addWhereColumn("camper_id", $camperId, 'i');
+                    $db->addWhereColumn("chug_instance_id", $existingChugInstanceId, 'i');
+                    if (!$db->deleteFromTable("matches", $err)) {
+                        error_log("Unable to delete existing match: $err");
+                        exit;
+                    }
                 }
                 // Next, get the instance ID for this chug in this block and group.
-                $db = new DbConn();
-                $db->isSelect = true;
-                $db->addColVal($chugId, 'i');
-                $db->addColVal($block_id, 'i');
-                $db->addColVal($groupId, 'i');
-                $sql = "SELECT i.chug_instance_id new_instance_id from chug_instances i, chugim c WHERE " .
-                    "i.chug_id = c.chug_id AND c.chug_id = ? AND i.block_id = ? AND c.group_id = ?";
-                $result = $db->doQuery($sql, $err);
-                if ($result == false) {
-                    error_log("Chug instance ID select failed: $err");
-                    header('HTTP/1.1 500 Internal Server Error');
-                    die(json_encode(array("error" => $err)));
-                }
-                $row = $result->fetch_assoc();
-                $newInstanceId = $row["new_instance_id"];
-                // Finally, insert the new instance into the matches table.
-                $db = new DbConn();
-                $db->addColumn("camper_id", $camperId, 'i');
-                $db->addColumn("chug_instance_id", $newInstanceId, 'i');
-                if (!$db->insertIntoTable("matches", $err)) {
-                    error_log("Unable to insert match: $err");
-                    header('HTTP/1.1 500 Internal Server Error');
-                    die(json_encode(array("error" => $err)));
+                if($chugId != -1) {
+                    $db = new DbConn();
+                    $db->isSelect = true;
+                    $db->addColVal($chugId, 'i');
+                    $db->addColVal($block_id, 'i');
+                    $db->addColVal($groupId, 'i');
+                    $sql = "SELECT i.chug_instance_id new_instance_id from chug_instances i, chugim c WHERE " .
+                        "i.chug_id = c.chug_id AND c.chug_id = ? AND i.block_id = ? AND c.group_id = ?";
+                    $result = $db->doQuery($sql, $err);
+                    if ($result == false) {
+                        error_log("Chug instance ID select failed: $err");
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => $err)));
+                    }
+                    $row = $result->fetch_assoc();
+                    $newInstanceId = $row["new_instance_id"];
+                    // Finally, insert the new instance into the matches table.
+                    $db = new DbConn();
+                    $db->addColumn("camper_id", $camperId, 'i');
+                    $db->addColumn("chug_instance_id", $newInstanceId, 'i');
+                    if (!$db->insertIntoTable("matches", $err)) {
+                        error_log("Unable to insert match: $err");
+                        header('HTTP/1.1 500 Internal Server Error');
+                        die(json_encode(array("error" => $err)));
+                    }
                 }
             }
         }
     }
 
     $retVal["ok"] = 1;
+    $retVal["chugimTerm"] = chug_term_plural;
     echo json_encode($retVal);
     exit;
 }
@@ -314,6 +325,18 @@ if (isset($_POST["matches_and_prefs"])) {
         $deDupMatrix[$rightChug][$leftChug] = 1;
     }
 
+
+    // Prepare a set of allowable chugim for each edah, by group
+    // structure: {GroupId => {EdahId => array(chugIds)}}
+    // will actually build this as we get all chugim
+    $groupId2EdahId2AllowedChugim = array();
+    foreach ($group_ids as $group_id) {
+        foreach ($edah_ids as $edah_id) {
+            $groupId2EdahId2AllowedChugim[$group_id][$edah_id] = array();
+        }
+    }
+
+
     // Get preferences (as strings) for these campers.
     // First, map chug ID to name, allowed edot, and min/max, for the edot we
     // are assigning.  Also, define an "unassigned" chug, which we will use
@@ -359,7 +382,7 @@ if (isset($_POST["matches_and_prefs"])) {
             $maxIndex = $chugId;
         }
     }
-    $unAssignedIndex = $maxIndex + 1;
+    $unAssignedIndex = -1;
     $chugId2Beta[$unAssignedIndex]["name"] = "Not Assigned Yet";
     $chugId2Beta[$unAssignedIndex]["min_size"] = 0;
     $chugId2Beta[$unAssignedIndex]["max_size"] = 0;
@@ -367,7 +390,13 @@ if (isset($_POST["matches_and_prefs"])) {
 
     // Grab and note the allowed edot for each chug.
     $db = new DbConn();
-    $result = $db->doQuery("SELECT chug_id, edah_id FROM edot_for_chug", $err);
+    $db->addColVal($block_id, 'i');
+    foreach ($edah_ids as $edah_id) {
+        $db->addColVal($edah_id, 'i');
+    }
+    $result = $db->doQuery("SELECT e.chug_id, e.edah_id, c.group_id FROM edot_for_chug e " . 
+    "JOIN chugim c ON c.chug_id = e.chug_id JOIN chug_instances ci ON c.chug_id = ci.chug_id " . 
+    "WHERE ci.block_id = ? AND $edahIdOrText ORDER BY c.name", $err);
     if ($result == false) {
         error_log("Allowed chugim query failed: $err");
         header('HTTP/1.1 500 Internal Server Error');
@@ -375,6 +404,8 @@ if (isset($_POST["matches_and_prefs"])) {
     }
     while ($row = $result->fetch_assoc()) {
         $chugId = intval($row["chug_id"]);
+        $edahId = intval($row["edah_id"]);
+        $groupId = intval($row["group_id"]);
         if (!array_key_exists($chugId, $chugId2Beta)) {
             // This chug isn't offered in any of our edot: OK to ignore it.
             continue;
@@ -383,6 +414,9 @@ if (isset($_POST["matches_and_prefs"])) {
             $chugId2Beta[$chugId]["allowed_edot"] = array();
         }
         array_push($chugId2Beta[$chugId]["allowed_edot"], $row["edah_id"]);
+
+        // add to $groupId2EdahId2AllowedChugim
+        array_push($groupId2EdahId2AllowedChugim[$groupId][$edahId], $row["chug_id"]);
     }
 
     // Next, map camper ID to an ordered list of preferred chugim, by
@@ -507,6 +541,7 @@ if (isset($_POST["matches_and_prefs"])) {
     $retVal = array();
     $retVal["camperId2Group2PrefList"] = $camperId2Group2PrefList; // {Camper ID -> {Group ID->(Chug ID pref list)}}
     $retVal["groupId2ChugId2MatchedCampers"] = $groupId2ChugId2MatchedCampers; // {Group ID->{Chug ID->(Matched camper ID list - might be empty)}}
+    $retVal["groupId2EdahId2AllowedChugim"] = $groupId2EdahId2AllowedChugim; // {Group ID->{Edah Id->array(allowed Chugim)}}
     $retVal["groupId2Name"] = $groupId2Name; // {Group ID -> Group Name}
     $retVal["camperId2Name"] = $camperId2Name; // {Camper ID -> Camper Name}
     $retVal["camperId2Edah"] = $camperId2Edah; // {Camper ID -> Edah ID for that camper}
