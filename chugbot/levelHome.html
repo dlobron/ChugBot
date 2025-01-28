@@ -119,30 +119,52 @@
 
   <div class="card card-body mt-3 p-3 container">
     <h2>Welcome to the Leveling Page!</h2>
-    <h2><span class="edahtermbothfill">EDAH_TERM_COMBO:</span><span class="edahfill"> EDAH</span></h2>
-    <h2><span class="blocktermfill">Time BLOCK_TERM:</span><span class="blockfill"> BLOCK</span></h2>
-    <p>This page displays suggested <span class="chugfill">CHUG</span> assignments for one <span class="edahtermfill">EDAH_TERM:</span> in a time
+    <h3><span class="edahtermbothfill">EDAH_TERM_COMBO:</span><span class="edahfill"> EDAH</span></h2>
+    <h3><span class="blocktermfill">Time BLOCK_TERM:</span><span class="blockfill"> BLOCK</span></h2>
+    <p>This page displays <span class="chugfill">CHUG</span> assignments for the selected <span class="edahtermbothfill">EDAH_TERM_COMBO</span> in one time
       <span class="blocktermfill">BLOCK_TERM</span>. Assignments are highlighted according to the camper's preference:
       <span style="background:#1aff1a;">first</span>, <span style="background:#f0f000;">second</span>,
       <span style="background:#ffa500;">third</span>, <span style="background:#ff3333">fourth or worse</span>.
       Campers with no preferences for a <span class="chugfill">CHUG</span> group are highlighted in <span style="background:#ef60ff">purple</span>.
     </p>
+    <h4>How to Use:</h4>
     <ul>
-      <li>To change a camper's assignment, drag the camper's bubble from one
-        activity to another. When you are ready to save your manual changes, click
-        <b>Save</b>. To see a camper's preferred <span class="chugimfill">CHUGIM</span>, hover your mouse over
-        the bubble for that camper.
+      <li>
+        <strong>View Preferences:</strong> Hover your mouse over that camper's tile to display their <span class="chugfill">CHUG</span> preferences.
       </li>
-      <li>To re-run the assignment algorithm, click <b>Reassign</b>. This will
-        reassign campers automatically.</li>
-      <li>If a camper signed up late, or changed registration, they might not have
-        an assignment yet. Such campers will appear in a box
-        labeled <font color="red">Not Assigned Yet</font>. To assign these campers,
-        you can drag them to a <span class="chugfill">CHUG</span> and click Save, or click the Reassign button.</li>
-      <li>NOTE: campers who have not submitted preferences are NOT automatically assigned; they are highlighted in <span class="li_no_pref">purple</span>
-        and appear in the <font color="red">Not Assigned Yet</font> box.</li>
-      <li>To exit this page and return to the staff home page, click <b>Done</b>.
-      <li>To design custom schedules with each camper's saved <span class="chugfill">CHUG</span> assignments, click <b>Design Schedules</b>.
+      <li>
+        <strong>Change Assignments:</strong>
+        <ul>
+          <li> Drag a camper's bubble from one activity to another OR</li>
+          <li> Right-click on a camper's tile and select a new <span class="chugfill">CHUG</span>. </li>
+        </ul>
+      </li>
+      <li>
+        <strong>Reassign All Campers:</strong> Click <b>Reassign</b> to rerun the algorithm and assign all campers with preferences.
+      </li>
+    </ul>
+      <h4>Special Cases</h4>
+    <ul>
+      <li>
+        Campers who signed up late or changed registration may not have an assignment yet. Such campers will appear in a box labeled <font color="red">Not Assigned Yet</font>.
+        Assign these campers manually (drag and drop, or right-click on their tile), or click the <b>Reassign</b> to redo ALL assignments.
+      </li>
+      <li>
+        Campers without submitted preferences are NOT automatically assigned; they are highlighted in <span class="li_no_pref">purple</span>
+        and appear in the <font color="red">Not Assigned Yet</font> box.
+      </li>
+    </ul>
+      <h4>Additional Actions</h4>
+    <ul>
+      <li>
+        <strong>Save Changes:</strong> Adjustments are auto-saved after 3 seconds of inactivity
+      </li>
+      <li>
+        <strong>Design Schedules:</strong> Click <b>Design Schedules</b> to create custom schedules with each camper's saved <span class="chugfill">CHUG</span> assignments.
+      </li>
+      <li>
+        <strong>Exit:</strong> Select <b>Done</b> to exit this page and return to the staff home page.
+      </li>
     </ul>
   </div>
   <div class="toggler">

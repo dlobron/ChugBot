@@ -560,6 +560,15 @@ function getAndDisplayCurrentMatches() {
 				// add it to the new one - change chug assignment)
 				targetElement = event.target.parentElement;
 				if (targetElement.nodeName == "DIV") {
+					// If the specific element being clicked on was a DIV (as opposed to H5 or P), we know it was the dup-warning for a camper
+					// Instead, we want to move up a level to maintain consistency with the H5 and P elements which could be clicked on
+					// Hierarchy:
+					/* 	<li>
+					 *		<h5>
+					 *		<p>
+					 *		<div DUP> - usually empty, holds dup warning if present
+					 *			<div CARD> - written when there is a dup warning - able to be clicked on
+					 */
 					targetElement = targetElement.parentElement;
 				}
 
