@@ -241,6 +241,11 @@ EOM;
             $saveAndReturnText = "<input id=\"saveAndReturn\" class=\"btn btn-primary\" type=\"submit\" name=\"saveAndReturn\" value=\"$label\" />";
         }
         if ($this->editPage) {
+            if(!isset($this->col2Val[$this->idCol])) {
+                // if we are on an edit page, something should be edited;
+                // if no value was selected, exit
+                exit();
+            }
             $val = $this->col2Val[$this->idCol];
             if ((!$val) &&
                 (!is_null($this->constantIdValue))) {

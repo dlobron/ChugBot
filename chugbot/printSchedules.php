@@ -141,17 +141,17 @@
         // Now, replace all keywords with the info from the camper's row
 
         // 1. Manual ones we know to always expect (name, bunk, edah, rosh, roshphone)
-        $schedule = str_replace("{{Name}}", $row[0], $schedule); // name
-        $schedule = str_replace("{{Bunk}}", $row[1], $schedule); // bunk
+        $schedule = str_replace("{{Name}}", $row[0] ?? "", $schedule); // name
+        $schedule = str_replace("{{Bunk}}", $row[1] ?? "", $schedule); // bunk
         $schedule = str_replace("{{" . ucfirst(edah_term_singular) . "}}", $row[2], $schedule); // edah
-        $schedule = str_replace("{{Rosh}}", $row[3], $schedule); // rosh
-        $schedule = str_replace("{{Rosh Phone Number}}", $row[4], $schedule); // roshphone
+        $schedule = str_replace("{{Rosh}}", $row[3] ?? "", $schedule); // rosh
+        $schedule = str_replace("{{Rosh Phone Number}}", $row[4] ?? "", $schedule); // roshphone
 
         // 2. Replace Chug/Perek Assignments
         for($i = 0; $i < count($chugGroups); $i++) {
             // $chugGroups has chug group names corresponding to the order the chugim are ordered in the 
             // SQL response, so can iterate through those lists simultaneously (and 5 fields are always expected)
-            $schedule = str_replace("{{" . $chugGroups[$i] . "}}", $row[$i+5], $schedule);
+            $schedule = str_replace("{{" . $chugGroups[$i] . "}}", $row[$i+5] ?? "", $schedule);
         }
 
         $schedule .= "</div>"; // close the div (or else we end up with them all nested!)

@@ -106,7 +106,11 @@ class PDF extends FPDF
         }
 
         $wmax = ($w - 2 * $this->cMargin) * 1000 / $this->FontSize;
-        $s = str_replace("\r", '', $txt);
+        if (!empty($txt)) {
+            $s = str_replace("\r", '', $txt);
+        } else {
+            $s = "";
+        }
         $nb = strlen($s);
         if ($nb > 0 and $s[$nb - 1] == "\n") {
             $nb--;
@@ -477,15 +481,6 @@ class ZebraReport
                     }
                 }
                 array_push($pdfDataRow, $d);
-                //if ((strlen($d) * $this->mult) > $pdfColWidths[$i]) {
-                //$pdfColWidths[$i] = (strlen($d) * $this->mult);
-                //}
-                $words = explode(" ", $d);
-                foreach ($words as $word) {
-                    if ((strlen($word) * $this->mult) + $this->add > $pdfColWidths[$i]) {
-                        $pdfColWidths[$i] = (strlen($word) * $this->mult) + $this->add;
-                    }
-                }
                 $i++;
             }
 

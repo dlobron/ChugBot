@@ -70,8 +70,7 @@ function updateCount(chugId2Beta, curChugHolder) {
 	var chugHolders = $(groupHolder).children(".chugholder");
 	$(chugHolders).each(function (index) {
 		var chugId = $(this).attr('name');
-		var newCount = $(this).find("ul div").children().length;
-		console.log($(this));
+		var newCount = $(this).find("ul div li").length;
 		var min = parseInt(chugId2Beta[chugId]["min_size"]);
 		var max = parseInt(chugId2Beta[chugId]["max_size"]);
 		var colorClass = getColorForCount(newCount, min, max);
@@ -205,6 +204,139 @@ function doAssignmentAjax(action, title, errText,
 	});
 }
 
+// Updates the "chugim with free space" box at top of page
+// This function executes on page load and after a save (as capacity numbers change),
+// refreshing the box at those times
+function displayChugimWithSpace(edah_ids, group_ids, block) {
+	$.ajax({
+		url: 'levelingAjax.php',
+		type: 'post',
+		async: false,
+		data: {
+			matches_and_prefs: 1,
+			edah_ids: edah_ids,
+			group_ids: group_ids,
+			block_id: block
+		},
+		success: function (json) {
+			// general info
+			var groupId2Name = json["groupId2Name"];
+			var edahId2Name = json["edahId2Name"];
+			var chugId2Beta = json["chugId2Beta"];
+			var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
+			var chugId2FreeSpace = {};
+
+			// freeHtml is the HTML which will be output - a mega accordion containing another accordion
+			// which says how much space is left in chugim
+			var freeHtml = "<div class=\"accordion\" id=\"chugimMegaFreeSpaceAccordion\"><div class=\"accordion-item\"><h2 class=\"accordion-header\" id=\"chugimSpaceHeader\">"
+				+ "<button class=\"accordion-button collapsed\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapseSpace\" aria-expanded=\"false\" aria-controls=\"collapseSpace\">"
+				+ capitalize(json['chugimTerm']) + " with Free Space</h4></button></h2><div id=\"collapseSpace\" class=\"accordion-collapse collapse\" aria-labelledby=\"chugimSpaceHeader\" data-bs-parent=\"#chugimMegaFreeSpaceAccordion\">"
+				+ "<div class=\"accordion-body\">";
+			freeHtml += "<h4>Expand to view " + json['chugimTerm'] + " with free space</h4>";
+
+			// add the accordion which will be for for each chug group
+			freeHtml += "<div class=\"accordion\" id=\"chugimFreeSpaceAccordion\">";
+	
+			// go through each chug group
+			var sortedGroupIds = sortedGroupIdKeysByName(groupId2ChugId2MatchedCampers, groupId2Name);
+			for (var j = 0; j < sortedGroupIds.length; j++) {
+				var groupId = sortedGroupIds[j];
+				var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
+				var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers);
+				freeHtml += "<div class=\"accordion-item\"><h2 class=\"accordion-header\" id=\"group_" + groupId + "\">"
+				+ "<button class=\"inner accordion-button collapsed\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapseGroup_" + groupId + "\" aria-expanded=\"false\" aria-controls=\"collapseGroup_" + groupId + "\">"
+				+ groupId2Name[groupId] + "</h4></button></h2><div id=\"collapseGroup_" + groupId + "\" class=\"accordion-collapse collapse\" aria-labelledby=\"group_" + groupId + "\" data-bs-parent=\"#chugimFreeSpaceAccordion\">"
+				+ "<div class=\"accordion-body\">";
+				// see amount of space in each chug in the group
+				for (var i = 0; i < sortedChugIds.length; i++) {
+					var chugId = sortedChugIds[i];
+					if (chugId == -1) {
+						continue
+					}
+					var matchedCampers = chugId2MatchedCampers[chugId];
+					var curCount = matchedCampers.length;
+					// Add a chug holder, and put camper holders inside it.
+					var freeSpace;
+					var name = chugId2Beta[chugId]["name"];
+					var chugMin = chugId2Beta[chugId]["min_size"];
+					var chugMax = chugId2Beta[chugId]["max_size"];
+					if (chugMax == "0" || chugMax == 0 || chugMax == "10000" || chugMax == 10000 || 
+						chugMax === null || (typeof (chugMax) === 'undefined')) {
+						freeSpace = "unlimited";
+					} else if ((!(chugId in chugId2FreeSpace)) && chugMax > curCount) {
+						freeSpace = chugMax - curCount;
+					}
+
+					// assembles the line in following format:
+					//  "CHUG NAME: x space(s) left"
+					var sp = "spaces";
+					var endTag = " left<br>";
+					if (freeSpace == 1) {
+						sp = "space";
+					} else if (freeSpace == "unlimited") {
+						sp = "space";
+						endTag = "<br>";
+					}
+					var sp = (freeSpace == 1 || freeSpace == "unlimited") ? "space" : "spaces";
+					freeHtml += name + ": " + freeSpace + " " + sp + endTag;
+
+				}
+				freeHtml += "</div></div></div>"
+			}
+			// Display chugim with space.  Link to the reporting page.
+			var loc = window.location;
+			var basePath = removeLastDirectoryPartOf(loc.pathname);
+			var edahQueryString = "";
+			$.each(edahId2Name, function (edahId, edahName) {
+				edahQueryString += "&edah_ids%5B%5D=" + edahId;
+			});
+			var groupQueryString = "";
+			$.each(groupId2Name, function (groupId, groupName) {
+				groupQueryString += "&group_ids%5B%5D=" + groupId;
+			});
+			
+			var reportLink = "<a class=\"btn btn-dark text-light mt-2\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Free Space Report</a>";
+			freeHtml += reportLink + "</div></div></div></div>";
+			$("#results").html(freeHtml);
+			$("#results:visible").removeAttr("style").fadeOut();
+			$("#results").show("slide", 500);
+			$("#results").attr('disabled', false);
+		},
+		error: function (xhr, desc, err) {
+			console.log(xhr);
+			console.log("Details: " + desc + "\nError:" + err);
+		}});
+}
+
+// Helper function to display a Bootstap "toast" message - alert popup in lower-right corner
+// Used for autosave functionality
+function showToast(type, title, message) {
+    const toastId = `toast-${Date.now()}`;
+    const toastHTML = `
+        <div id="${toastId}" class="toast align-items-center bg-${type}-subtle border-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <strong>${title}</strong><br>${message}
+                </div>
+                <button type="button" class="btn-close btn-close-dark me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>`;
+    
+    // Append the toast to the container
+    const toastContainer = document.getElementById("toast-container");
+    toastContainer.insertAdjacentHTML("beforeend", toastHTML);
+
+    // Initialize and show the toast
+    const toastElement = document.getElementById(toastId);
+    const bootstrapToast = new bootstrap.Toast(toastElement);
+    bootstrapToast.show();
+
+    // Remove the toast after it hides
+    toastElement.addEventListener("hidden.bs.toast", () => {
+        toastElement.remove();
+    });
+}
+
 // Get the current match and chug info for this edah/block, and display it by group.
 // Also, display chugim with no matches, because the user needs the ability to drag
 // to them.
@@ -256,6 +388,7 @@ function getAndDisplayCurrentMatches() {
 				showEdahForCamper = 1;
 			}
 			groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
+			groupId2EdahId2AllowedChugim = json["groupId2EdahId2AllowedChugim"];
 			camperId2Group2PrefList = json["camperId2Group2PrefList"];
 			existingMatches = json["existingMatches"];
 			deDupMatrix = json["deDupMatrix"];
@@ -278,6 +411,7 @@ function getAndDisplayCurrentMatches() {
 				// Within each group, add a holder for campers, and then populate with
 				// campers.  List chugim in alphabetical order.
 				var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2MatchedCampers);
+				var notAssignedHtml = "";
 				for (var i = 0; i < sortedChugIds.length; i++) {
 					var chugId = sortedChugIds[i];
 					var matchedCampers = chugId2MatchedCampers[chugId];
@@ -307,15 +441,15 @@ function getAndDisplayCurrentMatches() {
 						chugId2FreeSpace[chugId] = chugMax - curCount;
 					}
 					var colorClass = getColorForCount(curCount, chugMin, chugMax);
-					html += "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder card-body bg-white border rounded mb-3 pb-0 ui-droppable\">\n";
+					htmlChug = "<div id=\"chugholder_" + chugId + "\" name=\"" + chugId + "\" class=\"ui-widget ui-helper-clearfix chugholder card-body bg-white border rounded mb-3 pb-0 ui-droppable\">\n";
 					if (chugName == "Not Assigned Yet") {
-						html += "<h4><font color=\"red\">" + chugName + "</font></h4>";
+						htmlChug += "<h4><font color=\"red\">" + chugName + "</font></h4>";
 					} else {
-						html += "<h4>" + "<a href=\"" + editChugUrl + "\">" + chugName + "</a>"
+						htmlChug += "<h4>" + "<a href=\"" + editChugUrl + "\">" + chugName + "</a>"
 							+ " (min = " + chugMin + ", max = " + chugMax + ", <span name=\"curCountHolder\" class=\"" + colorClass + "\" value=\"" + curCount + "\">cur = " + curCount + "</span>)</h4>";
 					}
-					html += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
-					html += "<div class=\"row row-cols-1 row-cols-md-2 justify-content-center mt-2\">"
+					htmlChug += "<ul class=\"gallery ui-helper-reset ui-helper-clearfix\">";
+					htmlChug += "<div class=\"row row-cols-1 row-cols-md-2 justify-content-center mt-2\">"
 					$.each(matchedCampers,
 						function (index, camperId) {
 							var camperName = camperId2Name[camperId];
@@ -323,7 +457,7 @@ function getAndDisplayCurrentMatches() {
 							var camperEdah = edahId2Name[edahId];
 							var camperEdahText = "";
 							if (Object.keys(edahId2Name).length > 1) {
-								camperEdahText = "<div class=\"card-body ps-1 pe-1 mb-0 d-flex align-items-center\" style=\"font-size:70%\"><p class=\"m-0\">(" + camperEdah + ")</p></div>";
+								camperEdahText = "<p class=\"card-body ps-1 pe-1 mb-0 d-flex align-items-center m-0\" style=\"font-size:70%\">(" + camperEdah + ")</p>";
 							}
 							var prefListText = "";
 							var prefClass = prefClasses[prefClasses.length - 1];
@@ -332,12 +466,11 @@ function getAndDisplayCurrentMatches() {
 								if (groupId in group2PrefList) {
 									var prefList = group2PrefList[groupId];
 									$.each(prefList, function (index, prefChugId) {
-										var listNum = index + 1;
 										if (prefListText == "") {
-											prefListText += "Preferences:\n";
+											prefListText += "Preferences:<ol>";
 										}
 										if (prefChugId in chugId2Beta) {
-											prefListText += listNum + ". " + chugId2Beta[prefChugId]["name"] + "\n";
+											prefListText += "<li>" + chugId2Beta[prefChugId]["name"] + "</li>";
 										}
 										if (prefChugId == chugId) {
 											if (index < prefClasses.length) {
@@ -347,6 +480,7 @@ function getAndDisplayCurrentMatches() {
 											}
 										}
 									});
+									prefListText += "</ol>"
 								}
 								else {
 									prefClass = "li_no_pref";
@@ -355,66 +489,182 @@ function getAndDisplayCurrentMatches() {
 							else {
 								prefClass = "li_no_pref";
 							}
-							var titleText = "title=\"<no preferences>\"";
+							var titleText = "title=\"No preferences\"";
 							if (prefListText) {
 								// If we have a pref list, write it as a tool tip.
 								titleText = "title=\"" + prefListText + "\"";
 							}
-							html += "<li value=\"" + camperId + "\" class=\" " + prefClass + " card p-0\" " + titleText;
-							html += "><h5 class=\"card-header text-break p-1 mb-0 d-flex align-items-center justify-content-center h-100\">" + camperName + "</h5>"+ camperEdahText + "<div class=\"dup-warning\"></div></li>\n";
+							htmlChug += "<li value=\"" + camperId + "\" data-bs-toggle=\"tooltip\" data-bs-html=\"true\" data-bs-placement=\"bottom\" class=\" " + prefClass + " card p-0\" " + titleText;
+							htmlChug += "><h5 class=\"card-header text-break p-1 mb-0 d-flex align-items-center justify-content-center h-100\">" + camperName + "</h5>"+ camperEdahText + "<div class=\"dup-warning\"></div></li>\n";
 						});
-					html += "</div></ul><br style=\"clear: both\"></div>\n";
+					htmlChug += "</div></ul><br style=\"clear: both\"></div>\n";
+					if (chugId != -1) {
+						html += htmlChug;
+					}
+					else {
+						notAssignedHtml = htmlChug;
+					}
 				}
+				html += notAssignedHtml;
 				html += "</div>\n";
 			};
-			// Compute and display chugim with space.  Link to the reporting page.
-			var loc = window.location;
-			var basePath = removeLastDirectoryPartOf(loc.pathname);
-			var edahQueryString = "";
-			$.each(edahId2Name, function (edahId, edahName) {
-				edahQueryString += "&edah_ids%5B%5D=" + edahId;
-			});
-			var groupQueryString = "";
-			$.each(groupId2Name, function (groupId, groupName) {
-				groupQueryString += "&group_ids%5B%5D=" + groupId;
-			});
-			var freeHtml = "<div class=\"accordion\" id=\"chugimFreeSpaceAccordion\"><div class=\"accordion-item\"><h2 class=\"accordion-header\" id=\"chugimSpaceHeader\">"
-				+ "<button class=\"accordion-button collapsed\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapseSpace\" aria-expanded=\"false\" aria-controls=\"collapseSpace\">"
-				+ capitalize(json['chugimTerm']) + " with Free Space</h4></button></h2><div id=\"collapseSpace\" class=\"accordion-collapse collapse\" aria-labelledby=\"chugimSpaceHeader\" data-bs-parent=\"#chugimFreeSpaceAccordion\">"
-				+ "<div class=\"accordion-body\">";
-						
-				//+ "</div></div></div></div>";
-			var reportLink = "<a class=\"btn btn-dark text-light mt-2\" role=\"button\" href=\"" + loc.protocol + "//" + loc.hostname + ":" + loc.port + basePath + "/report.php?report_method=7&do_report=1&block_ids%5B%5D=" + block + edahQueryString + groupQueryString + "&submit=Display\">Report</a>";
-			freeHtml += "<h4>" + capitalize(json['chugimTerm']) + " with Free Space:</h4>";
-			var sortedChugIds = chugIdsSortedByName(chugId2Beta, chugId2Beta);
-			for (var i = 0; i < sortedChugIds.length; i++) {
-				var betaHash = chugId2Beta[sortedChugIds[i]];
-				var name = betaHash["name"];
-				var groupName = betaHash["group_name"];
-				var freeSpace = undefined;
-				if (sortedChugIds[i] in chugId2FreeSpace) {
-					freeSpace = chugId2FreeSpace[sortedChugIds[i]];
-				}
-				if (freeSpace !== undefined) {
-					var sp = "spaces";
-					var endTag = " left<br>";
-					if (freeSpace == 1) {
-						sp = "space";
-					} else if (freeSpace == "unlimited") {
-						sp = "space";
-						endTag = "<br>";
-					}
-					var sp = (freeSpace == 1 || freeSpace == "unlimited") ? "space" : "spaces";
-					freeHtml += name + " (" + groupName + "): " + freeSpace + " " + sp + endTag;
-				}
-			}
-			freeHtml += reportLink + "</div></div></div></div>";
-			$("#results").html(freeHtml);
-			$("#results:visible").removeAttr("style").fadeOut();
-			$("#results").show("slide", 500);
-			$("#results").attr('disabled', false);
+
+			// Display chugim with space
+			displayChugimWithSpace(edah_ids, group_ids, block);
+			
 			// Display matches and chugim.
 			$("#fillmatches").html(html);
+
+			// enable tooltips
+			var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+			var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+				return new bootstrap.Tooltip(tooltipTriggerEl)
+			})
+
+			// Variables for context menu (right-click on camper tiles)
+			const contextMenu = $("#context-menu");
+			const contextMenuOptions = $("#context-menu-options");
+			var targetElement = null; // target for when element is right-clicked on
+		
+			// Right-click event on camper tiles
+			$(document).on("contextmenu", ".gallery li", function (event) {
+				event.preventDefault();
+		
+				// Get variables
+				camperId = $(this).attr("value");
+				groupId = $(this).closest(".groupholder").attr("name");
+				edahId = camperId2Edah[camperId];
+				curChugId = $(this).closest(".chugholder").attr("name");
+		
+				contextMenuOptions.empty(); // Clear previous options
+		
+				// Fetch available chugim for this group
+				let availableChugim = groupId2EdahId2AllowedChugim[groupId][edahId];
+		
+				// Set available chugim
+				availableChugim.forEach(function (chugId) {
+					if (chugId == curChugId) {
+						return;
+					}
+					let chugName = chugId2Beta[chugId]["name"];
+					let menuItem = $("<li>").text(chugName).attr("data-chug-id", chugId).attr("camper-id", camperId);
+					contextMenuOptions.append(menuItem);
+				});
+
+				// Unassign option (and make it red!)
+				let chugName = "Unassign Camper";
+				let menuItem = $("<li style=\"color: red\">").text(chugName).attr("data-chug-id", -1).attr("camper-id", camperId);
+				contextMenuOptions.append(menuItem);
+
+				// Save the target element (so we can remove it from the list it is currently in and 
+				// add it to the new one - change chug assignment)
+				targetElement = event.target.parentElement;
+				if (targetElement.nodeName == "DIV") {
+					// If the specific element being clicked on was a DIV (as opposed to H5 or P), we know it was the dup-warning for a camper
+					// Instead, we want to move up a level to maintain consistency with the H5 and P elements which could be clicked on
+					// Hierarchy:
+					/* 	<li>
+					 *		<h5>
+					 *		<p>
+					 *		<div DUP> - usually empty, holds dup warning if present
+					 *			<div CARD> - written when there is a dup warning - able to be clicked on
+					 */
+					targetElement = targetElement.parentElement;
+				}
+
+				// ChugId it comes from
+				var sourceChugId = $(targetElement).closest(".chugholder").attr("name");
+				$(this).data("sourceChugId", sourceChugId);
+		
+				// Position menu
+				contextMenu.css({ top: event.pageY + "px", left: event.pageX + "px" }).show();
+			});
+		
+			// Handle chug selection
+			$(document).on("click", "#context-menu-options li", function () {
+				// Uses very similar code from when elements are dropped, except some data (e.g. ids, elements)
+				// is from different sources. There is just enough different (plus the challenge of either simulating
+				// a dropped element, or creating and calling a function with 8 parameters) it felt better to 
+				// just re-use the code here
+				let newChugId = $(this).attr("data-chug-id");
+				let camperId = $(this).attr("camper-id");
+		
+				var droppedOn = document.getElementById("chugholder_"+newChugId).getElementsByClassName('row')[0];
+				var droppedChugId = newChugId;
+				var dropped = targetElement;
+				// Change the color of the dropped item according to the camper's
+				// preference for the dropped-on chug.
+				var groupId = $(dropped).parent().parent().parent().parent().attr("name");
+				var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
+				var prefClass = prefClasses[prefClasses.length - 1];
+				if (camperId in camperId2Group2PrefList) {
+					var group2PrefList = camperId2Group2PrefList[camperId];
+					if (groupId in group2PrefList) {
+						var prefList = group2PrefList[groupId];
+						$.each(prefList, function (index, prefChugId) {
+							if (prefChugId == droppedChugId) {
+								var idx = (index < prefClasses.length) ? index : prefClasses.length - 1;
+								prefClass = prefClasses[idx];
+								return false; // break
+							}
+						});
+					}
+					else {
+						prefClass = "li_no_pref";
+					}
+				}
+				else {
+					prefClass = "li_no_pref";
+				}
+				if (prefClass) {
+					$.each(prefClasses, function (index, prefClassToRemove) {
+						// Remove old color class.
+						$(dropped).removeClass(prefClassToRemove);
+					});
+					// Add new color class.
+					$(dropped).addClass(prefClass);
+				}
+				$(dropped).detach().css({ top: 0, left: 0 }).appendTo(droppedOn);
+				// Check to see if the dropped-on chug is a duplicate for the dropped
+				// camper, and if so, show a warning.
+				var dupWarningDiv = $(dropped).find(".dup-warning");
+				$(dupWarningDiv).hide(); // Hide dup warning by default.
+				// Store sourceChugId in a variable, and remove it from the element.
+				var sourceChugId = $(dropped).data("sourceChugId");
+				$(dropped).removeData("sourceChugId");
+				if (camperId in existingMatches) {
+					var matchHash = existingMatches[camperId];
+					// Update matchHash: we need to remove the chug from which the camper
+					// was dragged, and add the one in which they were dropped.  We won't
+					// count the one in which they were dropped when we check for dups.
+					delete matchHash[sourceChugId];
+					var ourBlockName = $(".blockfill").text().substring(12);
+					matchHash[droppedChugId] = ourBlockName;
+					var dupId = isDupOf(droppedChugId, matchHash,
+						deDupMatrix, chugId2MatchedCampers,
+						$(dropped).attr('value'));
+					if (dupId in chugId2Beta && dupId != -1) {
+						var dupName = chugId2Beta[dupId]["name"];
+						var dupGroup = chugId2Beta[dupId]["group_name"];
+						var dupBlockName = matchHash[dupId];
+						$(dupWarningDiv).html("<div class=\"card bg-warning border-danger border-3 m-2 mt-0\" style=\"font-size: 70%\">Dup of " + dupName + " (" + dupBlockName + " " + dupGroup + ")</div>");
+						$(dupWarningDiv).fadeIn("fast");
+					}
+				}
+				// Update counts.
+				updateCount(chugId2Beta, droppedOn);
+				autosave();
+		
+				// Reset
+				targetElement = null;
+				contextMenu.hide();
+			});
+		
+			// Hide context menu when clicking elsewhere
+			$(document).click(function () {
+				targetElement = null;
+				contextMenu.hide();
+			});
 		},
 		error: function (xhr, desc, err) {
 			console.log(xhr);
@@ -526,16 +776,17 @@ function getAndDisplayCurrentMatches() {
 							var dupId = isDupOf(droppedChugId, matchHash,
 								deDupMatrix, chugId2MatchedCampers,
 								$(dropped).attr('value'));
-							if (dupId in chugId2Beta) {
+							if (dupId in chugId2Beta && dupId != -1) {
 								var dupName = chugId2Beta[dupId]["name"];
 								var dupGroup = chugId2Beta[dupId]["group_name"];
 								var dupBlockName = matchHash[dupId];
-								$(dupWarningDiv).html("<small><span class=\"label label-warning\">Dup of " + dupName + " (" + dupBlockName + " " + dupGroup + ")</span></small>");
+								$(dupWarningDiv).html("<div class=\"card bg-warning border-danger border-3 m-2 mt-0\" style=\"font-size: 70%\">Dup of " + dupName + " (" + dupBlockName + " " + dupGroup + ")</div>");
 								$(dupWarningDiv).fadeIn("fast");
 							}
 						}
 						// Update counts.
 						updateCount(chugId2Beta, droppedOn);
+						autosave();
 					}
 				});
 			});
@@ -590,7 +841,6 @@ $(function () {
 				}
 			});
 			$(".edahtermbothfill").text(function () {
-				console.log(json)
 				if (json.edahBothTerm &&
 					json.edahBothTerm.length > 0) {
 					return $(this).text().replace("EDAH_TERM_COMBO", json.edahBothTerm);
@@ -683,48 +933,69 @@ $(function () {
 		if (r != true) {
 			return;
 		}
-		// Loop through the groups, and then loop through the
-		// chugim within each group.
-		var assignments = new Object(); // Associative array
-		var groupDivs = $(document).find(".groupholder");
-		for (var i = 0; i < groupDivs.length; i++) {
-			var groupElement = groupDivs[i];
-			var groupId = groupElement.getAttribute("name");
-			var chugDivs = $(groupElement).find(".chugholder");
-			assignments[groupId] = new Object();// Associative array
-			for (var j = 0; j < chugDivs.length; j++) {
-				var chugDiv = chugDivs[j];
-				var chugId = chugDiv.getAttribute("name");
-				var ulElement = $(chugDiv).find("ul");
-				var camperElements = $(ulElement).find("li");
-				assignments[groupId][chugId] = [];
-				for (var k = 0; k < camperElements.length; k++) {
-					var camperElement = camperElements[k];
-					var camperId = camperElement.getAttribute("value");
-					assignments[groupId][chugId].push(camperId);
-				}
-			}
-		}
-		var values = {};
-		values["save_changes"] = 1;
-		values["assignments"] = assignments;
-		values["edah_ids"] = edah_ids;
-		values["group_ids"] = group_ids;
-		values["block"] = block;
-		$.ajax({
-			url: 'levelingAjax.php',
-			type: 'post',
-			async: false,
-			data: values,
-			success: function (json) {
-				doAssignmentAjax("get_current_stats", "Changes Saved! Stats:", "save your changes",
-					edah_ids, group_ids, block);
-				getAndDisplayCurrentMatches();
-			},
-			error: function (xhr, desc, err) {
-				console.log(xhr);
-				console.log("Details: " + desc + "\nError:" + err);
-			}
-		});
+		save(edah_ids, group_ids, block);
 	});
 });
+
+
+// Prepare autosaver
+let saveTimer;
+function autosave() {
+    clearTimeout(saveTimer); // Clear any pending save calls
+    saveTimer = setTimeout(() => {
+		const edah_ids = getParameterByName("edah_ids");
+		const group_ids = getParameterByName("group_ids");
+		const block = getParameterByName("block");
+        save(edah_ids, group_ids, block);
+    }, 3000); // Adjust the delay (in milliseconds) as needed
+}
+
+// Save function
+async function save(edah_ids, group_ids, block) {
+	showToast("info", "Loading", "Please wait, save in progress...");
+	await new Promise(resolve => setTimeout(resolve, 100));
+	// Loop through the groups, and then loop through the
+	// chugim within each group.
+	// + adds short delay so browser renders "loading" message
+	var assignments = new Object(); // Associative array
+	var groupDivs = $(document).find(".groupholder");
+	for (var i = 0; i < groupDivs.length; i++) {
+		var groupElement = groupDivs[i];
+		var groupId = groupElement.getAttribute("name");
+		var chugDivs = $(groupElement).find(".chugholder");
+		assignments[groupId] = new Object();// Associative array
+		for (var j = 0; j < chugDivs.length; j++) {
+			var chugDiv = chugDivs[j];
+			var chugId = chugDiv.getAttribute("name");
+			var ulElement = $(chugDiv).find("ul");
+			var camperElements = $(ulElement).find("li");
+			assignments[groupId][chugId] = [];
+			for (var k = 0; k < camperElements.length; k++) {
+				var camperElement = camperElements[k];
+				var camperId = camperElement.getAttribute("value");
+				assignments[groupId][chugId].push(camperId);
+			}
+		}
+	}
+	var values = {};
+	values["save_changes"] = 1;
+	values["assignments"] = assignments;
+	values["edah_ids"] = edah_ids;
+	values["group_ids"] = group_ids;
+	values["block"] = block;
+	try {
+		const response = await $.ajax({
+			url: 'levelingAjax.php',
+			type: 'post',
+			data: values
+		});
+		doAssignmentAjax("get_current_stats", "Changes Saved! Stats:", "save your changes",
+			edah_ids, group_ids, block);
+		displayChugimWithSpace(edah_ids, group_ids, block);
+		showToast("success", "Success", "Updated " + response.chugimTerm + " were successfully saved.");
+	} catch (error) {
+		console.log(error);
+		console.log("Details: " + error.statusText + "\nError: " + error.responseJSON.error);
+		showToast("danger", "Error", "Something went wrong while saving your changes. Please try again.");
+	}
+}

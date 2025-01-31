@@ -14,6 +14,8 @@ elif [[ $ENV == "Chugbotbos-env" ]]; then
   DOMAIN="bos.campramahchug.org"
 elif [[ $ENV == "Chugbotrr-env" ]]; then
   DOMAIN="rr.campramahchug.org"
+elif [[ $ENV == "Chugbotla-env" ]]; then
+  DOMAIN="la.campramahchug.org"
 else
   DOMAIN="test.campramahchug.org"
 fi

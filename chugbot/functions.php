@@ -387,7 +387,7 @@ function genCheckBox($id2Name, $activeIds, $arrayName)
             array_key_exists($idStr, $activeIds)) {
             $selStr = "checked=checked";
         }
-        $retVal .= "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" name=\"${arrayName}[]\" value=\"$idStr\" id=\"${arrayName}_$idStr\" $selStr>$name</label>";
+        $retVal .= "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" name=\"{$arrayName}[]\" value=\"$idStr\" id=\"{$arrayName}_$idStr\" $selStr>$name</label>";
     }
     return $retVal;
 }
@@ -402,13 +402,13 @@ function genConstrainedCheckBoxScript($id2Name, $arrayName,
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
 <script>
 function fillConstraintsCheckBox() {
-    var parent = $("#${parentId}");
-    var ourCheckBox = $("#${ourId}");
-    var ourDesc = $("#${descId}");
+    var parent = $("#{$parentId}");
+    var ourCheckBox = $("#{$ourId}");
+    var ourDesc = $("#{$descId}");
     var values = {};
     values["get_legal_id_to_name"] = 1;
     var curSelectedEdahIds = [];
-    $("#${parentId} input:checked").each(function() {
+    $("#{$parentId} input:checked").each(function() {
        curSelectedEdahIds.push($(this).attr('value'));
     });
     var sql = "SELECT e.group_id group_id, g.name group_name FROM edot_for_group e, chug_groups g WHERE e.edah_id IN (";
@@ -444,7 +444,7 @@ function fillConstraintsCheckBox() {
                return;
            }
            $.each(data, function(itemId, itemName) {
-                html = "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" name=\"" + "${arrayName}" +
+                html = "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" name=\"" + "{$arrayName}" +
                   "[]\" value=\"" + itemId + "\" checked=checked/>" + itemName + "</label>";
                 $(ourCheckBox).append(html);
             });
@@ -458,8 +458,8 @@ function fillConstraintsCheckBox() {
     });
 }
 $(function() {
-  $("#${parentId}").load(fillConstraintsCheckBox());
-  $("#${parentId}").bind('change',fillConstraintsCheckBox);
+  $("#{$parentId}").load(fillConstraintsCheckBox());
+  $("#{$parentId}").bind('change',fillConstraintsCheckBox);
 });
 </script>
 JS;
@@ -479,32 +479,32 @@ function genConstrainedPickListScript($ourId, $parentId, $descId, $type, $choice
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
 <script>
 function fillConstraintsPickList() {
-    var parent = $("#${parentId}");
-    var ourPickList = $("#${ourId}");
-    var ourDesc = $("#${descId}");
+    var parent = $("#{$parentId}");
+    var ourPickList = $("#{$ourId}");
+    var ourDesc = $("#{$descId}");
     var values = {};
     values["get_legal_id_to_name"] = 1;
     $(ourDesc).hide();
-    if(!${choicesJS}) {
-        var parentField = document.getElementsByName("${parentId}")[0];
+    if(!{$choicesJS}) {
+        var parentField = document.getElementsByName("{$parentId}")[0];
     }
     else {
-        var parentField = document.getElementsByName("${parentId}[]")[0];
+        var parentField = document.getElementsByName("{$parentId}[]")[0];
     }
     var curSelectedEdahIds = [];
     for (var option of parentField.selectedOptions) {
         curSelectedEdahIds.push(option.value);
     }
-    if("${type}" == "group" || "${type}" == "block" || "${type}" == "schedule") {
-        var sql = "SELECT e.${type}_id ${type}_id, g.name ${type}_name FROM edot_for_${type} e, "
+    if("{$type}" == "group" || "{$type}" == "block" || "{$type}" == "schedule") {
+        var sql = "SELECT e.{$type}_id {$type}_id, g.name {$type}_name FROM edot_for_{$type} e, "
         // Determine right table to search from
-        if ("${type}" == "group") {
+        if ("{$type}" == "group") {
             sql += "chug_groups g WHERE e.edah_id IN (";
         }
-        else if ("${type}" == "block") {
+        else if ("{$type}" == "block") {
             sql += "blocks g WHERE e.edah_id IN (";
         }
-        else if ("${type}" == "schedule") {
+        else if ("{$type}" == "schedule") {
             sql += "schedules g WHERE e.edah_id IN (";
         }
         var ct = 0;
@@ -514,11 +514,11 @@ function fillConstraintsPickList() {
             }
             sql += "?";
         }
-        sql += ") AND e.${type}_id = g.${type}_id ";
-        if("${type}" == "group" && $("#${choicesJS}")) {
+        sql += ") AND e.{$type}_id = g.{$type}_id ";
+        if("{$type}" == "group" && $("#{$choicesJS}")) {
             sql += "AND active_block_id IS NOT NULL ";
         }
-        sql += "GROUP BY e.${type}_id HAVING COUNT(e.edah_id) = " + ct;
+        sql += "GROUP BY e.{$type}_id HAVING COUNT(e.edah_id) = " + ct;
     }
     if(ourPickList === "edah") {
         sql += " SORT BY e.sort_order";
@@ -542,17 +542,17 @@ function fillConstraintsPickList() {
             $(ourDesc).hide();
             return;
         }
-        if(!$("#${choicesJS}")) {
-            html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type}\" required";
+        if(!$("#{$choicesJS}")) {
+            html = "<select class=\"form-select\" id=\"{$ourId}\" name=\"{$type}\" required";
         }
         else {
-            html = "<select class=\"form-select choices-js\" id=\"${ourId}\" name=\"${type}\"";
+            html = "<select class=\"form-select choices-js\" id=\"{$ourId}\" name=\"{$type}\"";
         }
 
-        if ("${type}" == "schedule") {
+        if ("{$type}" == "schedule") {
             html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
         }
-        else if ("${type}" == "group") {
+        else if ("{$type}" == "group") {
             if(typeof fillChugimConstraintsPickList === "function") {
                 html += " onchange=\"fillChugimConstraintsPickList()\"> <option value=\"\"> -- Choose Perek -- </option>";
             }
@@ -570,7 +570,7 @@ function fillConstraintsPickList() {
         $(ourPickList).append(html);
         $(ourPickList).show();
         $(ourDesc).show();
-        if(${choicesJS}) {
+        if({$choicesJS}) {
             const choices = new Choices($(ourPickList).find('select')[0], {shouldSort: false, allowHTML: true, searchEnabled: false});
         }
         },
@@ -581,8 +581,8 @@ function fillConstraintsPickList() {
     });
 }
 $(function() {
-  $("#${parentId}").load(fillConstraintsPickList());
-  $("#${parentId}").bind('change',fillConstraintsPickList);
+  $("#{$parentId}").load(fillConstraintsPickList());
+  $("#{$parentId}").bind('change',fillConstraintsPickList);
 });
 </script>
 JS;
@@ -597,18 +597,18 @@ function genChugimPickListScript($ourId, $parent1, $parent2, $descId, $type, $ch
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha384-Dziy8F2VlJQLMShA6FHWNul/veM9bCkRUaLqr199K94ntO5QUrLJBEbYegdSkkqX" crossorigin="anonymous"></script>
 <script>
 function fillChugimConstraintsPickList() {
-    var parent1 = $("#${parent1}");
-    var parent2 = $("#${parent2}");
-    var ourPickList = $("#${ourId}");
-    var ourDesc = $("#${descId}");
+    var parent1 = $("#{$parent1}");
+    var parent2 = $("#{$parent2}");
+    var ourPickList = $("#{$ourId}");
+    var ourDesc = $("#{$descId}");
     var values = {};
     values["get_legal_id_to_name"] = 1;
     $(ourDesc).hide();
     $(ourPickList).hide();
 
     // perform basic sanity checks to ensure the two parent fields (edah, group) have valid values
-    var parent1Field = document.getElementsByName("${parent1}[]")[0];
-    var parent2Field = document.getElementsByName("${parent2}");
+    var parent1Field = document.getElementsByName("{$parent1}[]")[0];
+    var parent2Field = document.getElementsByName("{$parent2}");
     if(parent2Field.length < 1) { return; } // verifies there is a value present for group; if not, end
     parent2Field = parent2Field[0];
     var instanceIds = [];
@@ -619,7 +619,7 @@ function fillChugimConstraintsPickList() {
     }
     if(parent1Field.selectedOptions.length < 1) { return; } // ensures 1+ edot are selected before continuing
 
-    if("${type}" == "chug") {
+    if("{$type}" == "chug") {
         // sql statement looks for all chugim which apply to any number of the selected edot for given chug group and active block
         var sql = "SELECT e.chug_id, c.name FROM edot_for_chug e JOIN (SELECT c.chug_id, c.name FROM chug_instances i ";
         sql += "JOIN chugim c ON i.chug_id = c.chug_id WHERE i.block_id = (SELECT active_block_id FROM chug_groups WHERE group_id = ?) AND c.group_id = ?) c "
@@ -653,17 +653,17 @@ function fillChugimConstraintsPickList() {
             $(ourDesc).hide();
             return;
         }
-        if(!$("#${choicesJS}")) {
-            html = "<select class=\"form-select\" id=\"${ourId}\" name=\"${type} required\"";
+        if(!$("#{$choicesJS}")) {
+            html = "<select class=\"form-select\" id=\"{$ourId}\" name=\"{$type} required\"";
         }
         else {
-            html = "<select class=\"form-select choices-js\" id=\"${ourId}\" name=\"${type}\"";
+            html = "<select class=\"form-select choices-js\" id=\"{$ourId}\" name=\"{$type}\"";
         }
 
-        if ("${type}" == "schedule") {
+        if ("{$type}" == "schedule") {
             html += " onchange=\"loadSchedule()\"> <option value=\"\"> -- New Schedule -- </option>";
         }
-        else if ("${type}" == "chug") {
+        else if ("{$type}" == "chug") {
             html += " onchange=\"\"> <option value=\"\"> -- Choose Chug -- </option>";
         }
         else {
@@ -676,7 +676,7 @@ function fillChugimConstraintsPickList() {
         $(ourPickList).append(html);
         $(ourPickList).show();
         $(ourDesc).show();
-        if($("#${choicesJS}")) {
+        if($("#{$choicesJS}")) {
             const choices = new Choices($(ourPickList).find('select')[0], {shouldSort: true, allowHTML: true});
         }
         },
@@ -687,10 +687,10 @@ function fillChugimConstraintsPickList() {
     });
 }
 $(function() {
-  $("#${parent1}").load(fillChugimConstraintsPickList());
-  $("#${parent1}").bind('change',fillChugimConstraintsPickList);
-  $("#${parent2}").load(fillChugimConstraintsPickList());
-  $("#${parent2}").bind('change',fillChugimConstraintsPickList);
+  $("#{$parent1}").load(fillChugimConstraintsPickList());
+  $("#{$parent1}").bind('change',fillChugimConstraintsPickList);
+  $("#{$parent2}").load(fillChugimConstraintsPickList());
+  $("#{$parent2}").bind('change',fillChugimConstraintsPickList);
 });
 </script>
 JS;
@@ -885,7 +885,9 @@ function staffBounceBackUrl()
     $parts = array();
     $qs = htmlspecialchars($_SERVER['QUERY_STRING']);
     $qs_from_post = test_post_input('query_string');
-    $qs_from_post = preg_replace("/&#?[a-z0-9]+;/i", "", $qs_from_post);
+    if (!empty($qs_from_post)) {
+        $qs_from_post = preg_replace("/&#?[a-z0-9]+;/i", "", $qs_from_post);
+    }
     if (!empty($qs)) {
         $parts = explode("/", $qs);
     } else if (!empty($qs_from_post)) {

@@ -18,8 +18,8 @@
     integrity="sha256-AAhU14J4Gv8bFupUUcHaPQfvrdNauRHMt+S4UVcaJb0=" crossorigin="anonymous"></script>
   <script src="meta/leveling.js"></script>
   <link rel="stylesheet" href="meta/view.css" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" 
-    integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
     integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></head>
   <style>
@@ -52,8 +52,8 @@
       -webkit-border-radius: 5px;
     }
 
-    .chugholder li h5 {
-      margin: 0 0 0.4em;
+    .chugholder li {
+      margin: 0 0 0.4em 0.4em;
       cursor: move;
     }
 
@@ -76,6 +76,39 @@
     .li_no_pref {
       border-color: #ef60ff;
     }
+
+    .tooltip-inner ol {
+      margin-bottom: 0px;
+      padding-left: 1.5rem;
+    }
+    .context-menu {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+
+    .context-menu ul {
+      list-style: none;
+      padding: 5px;
+      margin: 0;
+    }
+
+    .context-menu ul li {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .context-menu ul li:hover {
+      background: #f0f0f0;
+    }
+
+    .inner.accordion-button:not(.collapsed) {
+      color: var(--bs-info-active-color);
+      background-color: var(--bs-info-bg-subtle);
+    }
   </style>
 
 </head>
@@ -86,33 +119,55 @@
 
   <div class="card card-body mt-3 p-3 container">
     <h2>Welcome to the Leveling Page!</h2>
-    <h2><span class="edahtermbothfill">EDAH_TERM_COMBO:</span><span class="edahfill"> EDAH</span></h2>
-    <h2><span class="blocktermfill">Time BLOCK_TERM:</span><span class="blockfill"> BLOCK</span></h2>
-    <p>This page displays suggested <span class="chugfill">CHUG</span> assignments for one <span class="edahtermfill">EDAH_TERM:</span> in a time
+    <h3><span class="edahtermbothfill">EDAH_TERM_COMBO:</span><span class="edahfill"> EDAH</span></h2>
+    <h3><span class="blocktermfill">Time BLOCK_TERM:</span><span class="blockfill"> BLOCK</span></h2>
+    <p>This page displays <span class="chugfill">CHUG</span> assignments for the selected <span class="edahtermbothfill">EDAH_TERM_COMBO</span> in one time
       <span class="blocktermfill">BLOCK_TERM</span>. Assignments are highlighted according to the camper's preference:
       <span style="background:#1aff1a;">first</span>, <span style="background:#f0f000;">second</span>,
       <span style="background:#ffa500;">third</span>, <span style="background:#ff3333">fourth or worse</span>.
       Campers with no preferences for a <span class="chugfill">CHUG</span> group are highlighted in <span style="background:#ef60ff">purple</span>.
     </p>
+    <h4>How to Use:</h4>
     <ul>
-      <li>To change a camper's assignment, drag the camper's bubble from one
-        activity to another. When you are ready to save your manual changes, click
-        <b>Save</b>. To see a camper's preferred <span class="chugimfill">CHUGIM</span>, hover your mouse over
-        the bubble for that camper.
+      <li>
+        <strong>View Preferences:</strong> Hover your mouse over that camper's tile to display their <span class="chugfill">CHUG</span> preferences.
       </li>
-      <li>To re-run the assignment algorithm, click <b>Reassign</b>. This will
-        reassign campers automatically.</li>
-      <li>If a camper signed up late, or changed registration, they might not have
-        an assignment yet. Such campers will appear in a box
-        labeled <font color="red">Not Assigned Yet</font>. To assign these campers,
-        you can drag them to a <span class="chugfill">CHUG</span> and click Save, or click the Reassign button.</li>
-      <li>NOTE: campers who have not submitted preferences are NOT automatically assigned; they are highlighted in <span class="li_no_pref">purple</span>
-        and appear in the <font color="red">Not Assigned Yet</font> box.</li>
-      <li>To exit this page and return to the staff home page, click <b>Done</b>.
-      <li>To design custom schedules with each camper's saved <span class="chugfill">CHUG</span> assignments, click <b>Design Schedules</b>.
+      <li>
+        <strong>Change Assignments:</strong>
+        <ul>
+          <li> Drag a camper's bubble from one activity to another OR</li>
+          <li> Right-click on a camper's tile and select a new <span class="chugfill">CHUG</span>. </li>
+        </ul>
+      </li>
+      <li>
+        <strong>Reassign All Campers:</strong> Click <b>Reassign</b> to rerun the algorithm and assign all campers with preferences.
+      </li>
+    </ul>
+      <h4>Special Cases</h4>
+    <ul>
+      <li>
+        Campers who signed up late or changed registration may not have an assignment yet. Such campers will appear in a box labeled <font color="red">Not Assigned Yet</font>.
+        Assign these campers manually (drag and drop, or right-click on their tile), or click the <b>Reassign</b> to redo ALL assignments.
+      </li>
+      <li>
+        Campers without submitted preferences are NOT automatically assigned; they are highlighted in <span class="li_no_pref">purple</span>
+        and appear in the <font color="red">Not Assigned Yet</font> box.
+      </li>
+    </ul>
+      <h4>Additional Actions</h4>
+    <ul>
+      <li>
+        <strong>Save Changes:</strong> Adjustments are auto-saved after 3 seconds of inactivity
+      </li>
+      <li>
+        <strong>Design Schedules:</strong> Click <b>Design Schedules</b> to create custom schedules with each camper's saved <span class="chugfill">CHUG</span> assignments.
+      </li>
+      <li>
+        <strong>Exit:</strong> Select <b>Done</b> to exit this page and return to the staff home page.
+      </li>
     </ul>
   </div>
-  <div class="toggler p-1">
+  <div class="toggler">
     <div id="results" style="display:none">
     </div>
   </div>
@@ -133,6 +188,15 @@
   <div class="card card-body mt-3 mb-3 pb-0 container">
     <div id="fillmatches"></div>
   </div>
+
+  <div id="context-menu" class="context-menu">
+    <ul id="context-menu-options"></ul>
+  </div>
+
+  <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+    <!-- Toasts will be appended here dynamically -->
+  </div>
+
 
 </body>
 
