@@ -55,7 +55,7 @@ foreach ($parts as $part) {
         $dbConn->isSelect = true;
         $sql = "SELECT e.name AS 'edah', s.name AS 'session', b.name AS 'bunk' FROM edot e, sessions s, bunks b, bunk_instances bi " . 
             "WHERE b.bunk_id = bi.bunk_id AND e.edah_id = bi.edah_id GROUP BY edah, session, bunk " . 
-            "ORDER BY e.sort_order, s.name, bunk+0>0 DESC, bunk+0, LENGTH(bunk), bunk;";
+            "ORDER BY e.sort_order, s.sort_order, bunk+0>0 DESC, bunk+0, LENGTH(bunk), bunk;";
         $result = $dbConn->doQuery($sql, $dbErr);
         if ($result == false) {
             error_log($dbErr);
@@ -87,7 +87,7 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 }
 
 $dbConn->isSelect = true;
-$sql = "SELECT * FROM sessions";
+$sql = "SELECT * FROM sessions ORDER BY sort_order";
 $result = $dbConn->doQuery($sql, $dbErr);
 if ($result == false) {
     error_log($dbErr);

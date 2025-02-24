@@ -153,6 +153,7 @@ CREATE TABLE `blocks` (
   `block_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `visible_to_campers` tinyint(1) NOT NULL DEFAULT '0',
+  `sort_order` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`block_id`),
   UNIQUE KEY `uk_blocks` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
@@ -337,6 +338,7 @@ CREATE TABLE `chug_groups` (
   `group_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `active_block_id` int,
+  `sort_order` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`group_id`),
   UNIQUE KEY `uk_groups` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
@@ -668,6 +670,7 @@ DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `session_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`session_id`),
   UNIQUE KEY `uk_sessions` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;

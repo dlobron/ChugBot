@@ -185,6 +185,7 @@ CREATE TABLE `blocks` (
   `block_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `visible_to_campers` tinyint(1) NOT NULL DEFAULT '0',
+  `sort_order` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`block_id`),
   UNIQUE KEY `uk_blocks` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
@@ -196,7 +197,7 @@ CREATE TABLE `blocks` (
 
 LOCK TABLES `blocks` WRITE;
 /*!40000 ALTER TABLE `blocks` DISABLE KEYS */;
-INSERT INTO `blocks` VALUES (1,'Session A',0),(2,'Session B',1),(3,'Session C',1),(4,'Session D',1);
+INSERT INTO `blocks` VALUES (1,'Session A',0,1),(2,'Session B',1,2),(3,'Session C',1,3),(4,'Session D',1,4);
 /*!40000 ALTER TABLE `blocks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -354,6 +355,7 @@ CREATE TABLE `chug_groups` (
   `group_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `active_block_id` int,
+  `sort_order` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`group_id`),
   UNIQUE KEY `uk_groups` (`name`),
   CONSTRAINT `chug_groups_ibfk_1` FOREIGN KEY (`active_block_id`) REFERENCES `blocks` (`block_id`) ON DELETE SET NULL ON UPDATE CASCADE
@@ -366,7 +368,7 @@ CREATE TABLE `chug_groups` (
 
 LOCK TABLES `chug_groups` WRITE;
 /*!40000 ALTER TABLE `chug_groups` DISABLE KEYS */;
-INSERT INTO `chug_groups` VALUES (1,'Chug Aleph',1),(2,'Chug Bet',1),(4,'Chug Dalet',1),(3,'Chug Gimel',1);
+INSERT INTO `chug_groups` VALUES (1,'Chug Aleph',1,1),(2,'Chug Bet',1,2),(4,'Chug Dalet',1,4),(3,'Chug Gimel',1,3);
 /*!40000 ALTER TABLE `chug_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -708,6 +710,7 @@ DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `session_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`session_id`),
   UNIQUE KEY `uk_sessions` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
@@ -719,7 +722,7 @@ CREATE TABLE `sessions` (
 
 LOCK TABLES `sessions` WRITE;
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
-INSERT INTO `sessions` VALUES (16,'Full Summer'),(5,'Session A'),(6,'Session B'),(7,'Session C'),(8,'Session D'),(9,'Sessions AB'),(12,'Sessions ABC'),(14,'Sessions ABD'),(10,'Sessions AC'),(15,'Sessions ACD'),(11,'Sessions AD'),(17,'Sessions BC'),(18,'Sessions BCD'),(20,'Sessions CD');
+INSERT INTO `sessions` VALUES (16,'Full Summer',1),(5,'Session A',2),(6,'Session B',3),(7,'Session C',4),(8,'Session D',5),(9,'Sessions AB',6),(12,'Sessions ABC',7),(14,'Sessions ABD',8),(10,'Sessions AC',9),(15,'Sessions ACD',10),(11,'Sessions AD',11),(17,'Sessions BC',12),(18,'Sessions BCD',13),(20,'Sessions CD',14);
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 

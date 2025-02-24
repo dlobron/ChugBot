@@ -237,7 +237,7 @@ EOM;
     return $retVal;
 }
 
-function genPickListForm($id2Name, $name, $tableName, $method = "POST")
+function genPickListForm($id2Name, $name, $tableName, $editSort = false, $method = "POST")
 {
     // Check to see if items in this table may be deleted.
     $err = "";
@@ -261,7 +261,7 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
         $ucName = ucfirst(block_term_singular);
     } else if ($tableName == 'chug_groups') {
         $ucPlural = ucfirst(chug_term_singular) . ' Groups';
-        $ucName = ucfirst(chug_term_singular);
+        $ucName = ucfirst(chug_term_singular) . ' Group';
     } else if ($tableName == 'edot') {
         $ucPlural = ucfirst(edah_term_plural);
         $ucName = ucfirst(edah_term_singular);
@@ -296,9 +296,17 @@ function genPickListForm($id2Name, $name, $tableName, $method = "POST")
 <div id="collapse-$name" class="accordion-collapse collapse" aria-labelledby="heading-$name" data-bs-parent="#accordionExample">
     <div class="accordion-body">
 
-    <form method="$method">
     <div class="page-header">
     <h3>$ucPlural</h3></div>
+EOM;
+
+    // if we should allow editing of the sort_order
+    if ($editSort) {
+        $retVal .= genSortableModal($id2Name, $name, $tableName, $ucName, $ucPlural);
+    }
+
+$retVal .= <<<EOM
+    <form method="$method">
     <ul><li>
     <div>
     <select class="form-select mb-3" id="$idCol" name="$idCol">
@@ -342,6 +350,75 @@ EOM;
     return $retVal;
 }
 
+function genSortableModal($id2Name, $name, $tableName, $ucName, $ucPlural)
+{
+    $ulNames = "";
+    $i = 1;
+    foreach ($id2Name as $itemId => $itemName) {
+        $ulNames .= "<li draggable=\"true\" class=\"card mb-2 bg-light lead\" style=\"max-width: 100%\">" . $itemName . "<input type=\"hidden\" name=\"" . $itemId . "\" value=\"$i\"></li>";
+        $i++;
+    }
+    $lcName = strtolower($ucName);
+
+    $modal = <<<EOM
+    <!-- trigger modal -->
+    <p>To edit $lcName sort order, click
+    <a href data-bs-toggle="modal" data-bs-target="#modal$name">here</a>.</p>
+    <p class="mt-3 mb-1">Otherwise, select the $lcName you wish to manage, or add a new one below:</p>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modal$name" tabindex="-1" aria-labelledby="modalLabel$name" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="modalLabel$name">Sort $ucPlural</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5>Drag and drop each $lcName into the correctly sorted order. When finished, press "Save changes."</h5>
+                    <p>Note: this may not function properly on mobile devices, please use a computer.</p>
+                    <form id="sort{$name}Form" method="POST" action="/staffHome.php">
+                        <ul id="sort{$name}List">
+                            $ulNames
+                        </ul>
+                        <input type="hidden" name="sort" value="$tableName">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" form="sort{$name}Form">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function(){
+            var list = $('#sort{$name}List'),
+            updatePosition = function() {
+                list.children().each(function(i, e){
+                    $(this).children('input[type="hidden"]').val(++i);
+                });
+            };
+            list.sortable({
+                placeholder: "ui-state-highlight mb-2 bg-primary-subtle",
+                update: updatePosition
+            });
+        });
+    </script>
+    <style>
+    .ui-state-highlight {
+        display: block;
+        box-sizing: border-box;
+        height: 2.38em;
+        border-radius: var(--bs-border-radius);
+        max-width: 100%;
+    }
+    </style>
+    EOM;
+
+    return $modal;
+}
+
 function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
 {
 
@@ -360,7 +437,10 @@ function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
         $ddMsg = $defaultMessage;
     }
     $retVal = "<option value=\"\" >-- $ddMsg --</option>";
-    if($name != "edah" && !strstr($name, "edot_for") & $name != edah_term_singular) {
+    if($name != "edah" && !strstr($name, "edot_for") & $name != edah_term_singular
+        & $name != "block" && !strstr($name, "edot_for") & $name != block_term_singular
+        & $name != "session" && !strstr($name, "edot_for")
+        & $name != "group" && !strstr($name, "edot_for")) {
         asort($id2Name);
     }
     foreach ($id2Name as $id => $name) {
@@ -376,7 +456,8 @@ function genPickList($id2Name, $selectedMap, $name, $defaultMessage = null)
 function genCheckBox($id2Name, $activeIds, $arrayName)
 {
     $retVal = "";
-    if($arrayName != "edah_ids" && !strstr($arrayName, "edot_for")) {
+    if($arrayName != "edah_ids" && !strstr($arrayName, "edot_for") && $arrayName != "session_ids" 
+        && $arrayName != "block_ids" && $arrayName != "group_ids") {
         asort($id2Name);
     }
     foreach ($id2Name as $id => $name) {
@@ -423,6 +504,9 @@ function fillConstraintsCheckBox() {
     if(ourCheckBox === "edah") {
         sql += " SORT BY e.sort_order";
     }
+    if(ourCheckBox.selector === "#group_checkbox") {
+        sql += " ORDER BY g.sort_order"
+    }
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
     $.ajax({
@@ -443,9 +527,9 @@ function fillConstraintsCheckBox() {
                $(ourDesc).hide();
                return;
            }
-           $.each(data, function(itemId, itemName) {
+           $.each(data, function(_, item) {
                 html = "<label class=\"form-check-label\"><input class=\"form-check-input me-1\" type=\"checkbox\" name=\"" + "{$arrayName}" +
-                  "[]\" value=\"" + itemId + "\" checked=checked/>" + itemName + "</label>";
+                  "[]\" value=\"" + item.id + "\" checked=checked/>" + item.name + "</label>";
                 $(ourCheckBox).append(html);
             });
            $(ourCheckBox).show();
@@ -521,7 +605,10 @@ function fillConstraintsPickList() {
         sql += "GROUP BY e.{$type}_id HAVING COUNT(e.edah_id) = " + ct;
     }
     if(ourPickList === "edah") {
-        sql += " SORT BY e.sort_order";
+        sql += " ORDER BY e.sort_order";
+    }
+    if ("{$type}" == "group") {
+        sql += " ORDER BY g.sort_order";
     }
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
@@ -564,8 +651,8 @@ function fillConstraintsPickList() {
             html += ">";
         }
         // add individual options
-        $.each(data, function(itemId, itemName) {
-                html += "<option value=\""+itemId+"\">"+itemName+"</option>";
+        $.each(data, function(_, item) {
+                html += "<option value=\""+item.id+"\">"+item.name+"</option>";
             });
         $(ourPickList).append(html);
         $(ourPickList).show();
@@ -670,8 +757,8 @@ function fillChugimConstraintsPickList() {
             html += ">";
         }
         // add individual options
-        $.each(data, function(itemId, itemName) {
-                html += "<option value=\""+itemId+"\">"+itemName+"</option>";
+        $.each(data, function(_, item) {
+                html += "<option value=\""+item.id+"\">"+item.name+"</option>";
             });
         $(ourPickList).append(html);
         $(ourPickList).show();

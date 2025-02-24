@@ -86,26 +86,21 @@ function updateCount(chugId2Beta, curChugHolder) {
 	});
 }
 
-function sortedGroupIdKeysByName(groupId2ChugId2MatchedCampers, groupId2Name) {
+function sortedGroupIdKeys(groupId2ChugId2MatchedCampers, groupIdSorted) {
 	// Populate the sorted list.
-	var sorted = new Array();
+	var present = new Array();
 	for (var groupId in groupId2ChugId2MatchedCampers) {
-		sorted.push(groupId);
+		present.push(groupId);
 	}
-	// Do the actual sort by chug name, and return the sorted array.
-	sorted.sort(function (x, y) {
-		var xName = groupId2Name[x];
-		var yName = groupId2Name[y];
-		if (xName.toLowerCase() < yName.toLowerCase()) {
-			return -1;
+	
+	// Only include the groupIds which we have chugim for
+	groupIdSorted.forEach((id) => {
+		if(present.includes(toString(id))) {
+			groupIdSorted = groupIdSorted.filter(item => item !== id);
 		}
-		if (xName.toLowerCase() > yName.toLowerCase()) {
-			return 1;
-		}
-		return 0;
 	});
 
-	return sorted;
+	return groupIdSorted;
 }
 
 function chugIdsSortedByName(chugId2Beta, chugId2Entity) {
@@ -221,6 +216,7 @@ function displayChugimWithSpace(edah_ids, group_ids, block) {
 		success: function (json) {
 			// general info
 			var groupId2Name = json["groupId2Name"];
+			var groupIdSorted = json["groupIdSorted"];
 			var edahId2Name = json["edahId2Name"];
 			var chugId2Beta = json["chugId2Beta"];
 			var groupId2ChugId2MatchedCampers = json["groupId2ChugId2MatchedCampers"];
@@ -238,7 +234,7 @@ function displayChugimWithSpace(edah_ids, group_ids, block) {
 			freeHtml += "<div class=\"accordion\" id=\"chugimFreeSpaceAccordion\">";
 	
 			// go through each chug group
-			var sortedGroupIds = sortedGroupIdKeysByName(groupId2ChugId2MatchedCampers, groupId2Name);
+			var sortedGroupIds = sortedGroupIdKeys(groupId2ChugId2MatchedCampers, groupIdSorted);
 			for (var j = 0; j < sortedGroupIds.length; j++) {
 				var groupId = sortedGroupIds[j];
 				var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];
@@ -381,6 +377,7 @@ function getAndDisplayCurrentMatches() {
 			var edahNames = json["edahNames"];
 			var blockName = json["blockName"];
 			var groupId2Name = json["groupId2Name"];
+			var groupIdSorted = json["groupIdSorted"];
 			var edahId2Name = json["edahId2Name"];
 			var showEdahForCamper = 0;
 			if (Object.keys(edahId2Name).length > 1) {
@@ -395,7 +392,7 @@ function getAndDisplayCurrentMatches() {
 			chugId2Beta = json["chugId2Beta"];
 			var camperId2Name = json["camperId2Name"];
 			camperId2Edah = json["camperId2Edah"];
-			var sortedGroupIds = sortedGroupIdKeysByName(groupId2ChugId2MatchedCampers, groupId2Name);
+			var sortedGroupIds = sortedGroupIdKeys(groupId2ChugId2MatchedCampers, groupIdSorted);
 			for (var j = 0; j < sortedGroupIds.length; j++) {
 				var groupId = sortedGroupIds[j];
 				var chugId2MatchedCampers = groupId2ChugId2MatchedCampers[groupId];

@@ -450,7 +450,7 @@ if (isset($_POST["matches_and_prefs"])) {
     }
     $groupInText .= ")";
     $sql = "SELECT g.group_id group_id, g.name name FROM chug_groups g, edot_for_group e " .
-        "WHERE g.group_id = e.group_id AND $edahIdOrText $groupInText";
+        "WHERE g.group_id = e.group_id AND $edahIdOrText $groupInText ORDER BY g.sort_order";
     $result = $db->doQuery($sql, $dbErr);
     if ($result == false) {
         error_log("Unable to select chug_groups: $err");
@@ -459,6 +459,7 @@ if (isset($_POST["matches_and_prefs"])) {
     }
     $groupId2Name = array();
     $groupId2ChugId2MatchedCampers = array();
+    $groupIdSorted = array();
     while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
         $unAssignedCampersInThisGroup = $camperId2Name; // Make a copy
         $group_id = intval($row[0]);
@@ -466,6 +467,7 @@ if (isset($_POST["matches_and_prefs"])) {
         $groupId2Name[$group_id] = $group_name;
         if (!array_key_exists($group_id, $groupId2ChugId2MatchedCampers)) {
             $groupId2ChugId2MatchedCampers[$group_id] = array();
+            array_push($groupIdSorted, $group_id);
         }
         // Get all chugim for this group/edot, and make an array entry.
         $db = new DbConn();
@@ -543,6 +545,7 @@ if (isset($_POST["matches_and_prefs"])) {
     $retVal["groupId2ChugId2MatchedCampers"] = $groupId2ChugId2MatchedCampers; // {Group ID->{Chug ID->(Matched camper ID list - might be empty)}}
     $retVal["groupId2EdahId2AllowedChugim"] = $groupId2EdahId2AllowedChugim; // {Group ID->{Edah Id->array(allowed Chugim)}}
     $retVal["groupId2Name"] = $groupId2Name; // {Group ID -> Group Name}
+    $retVal["groupIdSorted"] = $groupIdSorted; // {sort_order -> groupId}
     $retVal["camperId2Name"] = $camperId2Name; // {Camper ID -> Camper Name}
     $retVal["camperId2Edah"] = $camperId2Edah; // {Camper ID -> Edah ID for that camper}
     $retVal["chugId2Beta"] = $chugId2Beta; // {Chug ID -> Chug Name, Allowed Edot, Min and Max}

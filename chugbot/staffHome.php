@@ -52,6 +52,50 @@ $edahId2Name = array();
 $chugId2Name = array();
 $bunkId2Name = array();
 
+
+// if sort order is being updated, handle that here:
+if ($_SERVER["REQUEST_METHOD"] = "POST") {
+    // array to get the relevant id column - contains both id column and singular term
+    $sort2Id = array(
+        "edot" => ["edah_id", edah_term_singular],
+        "sessions" => ["session_id", "session"],
+        "blocks" => ["block_id", block_term_singular],
+        "chug_groups" => ["group_id", chug_term_singular . " group"]
+    );
+    // make sure we are instructed to sort, and one of the sortable tables
+    if (key_exists("sort", $_POST)) {
+        $sort = $_POST["sort"];
+        if($sort == "edot" || $sort == "sessions" || $sort == "blocks" || $sort == "chug_groups") {
+            // get list of all ids for the table
+            $ids = array();
+            $db = new DbConn();
+            $err = "";
+            $db->addSelectColumn($sort2Id[$sort][0]);
+            $result = $db->simpleSelectFromTable($sort, $err);
+            while ($row = $result->fetch_row()) {
+                array_push($ids, $row[0]);
+            }
+
+            // name of id column:
+            $sortIdCol = $sort2Id[$sort][0];
+            // update sort_order for each entry
+            foreach ($ids as $itemId) {
+                // get what order the element should be
+                $sortOrder = test_post_input(strval($itemId));
+                // update db
+                $db = new DbConn();
+                $err = "";
+                $db->addColumn("sort_order", $sortOrder, "i");
+                $db->addWhereColumn($sortIdCol, $itemId, "i");
+                $db->updateTable($sort, $err);
+            }
+
+            $message = ucfirst($sort2Id[$sort][1]) . " sort order updated!";
+        }
+    }
+}
+
+
 fillId2Name(null, $chugId2Name, $dbErr,
     "chug_id", "chugim", "group_id",
     "chug_groups");
@@ -69,6 +113,8 @@ fillId2Name(null, $bunkId2Name, $dbErr,
 
 <?php
 echo headerText("Staff Home");
+echo "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js\"
+    integrity=\"sha256-AAhU14J4Gv8bFupUUcHaPQfvrdNauRHMt+S4UVcaJb0=\" crossorigin=\"anonymous\"></script>";
 
 $errText = genFatalErrorReport(array($dbErr), true);
 if (!is_null($errText)) {
@@ -122,19 +168,19 @@ EOM;
 <div class="panel-group card card-body container" id="accordion">
     <div class="accordion" id="accordion">
         <div class="accordion-item">
-        <?php echo genPickListForm($edahId2Name, "edah", "edot"); ?>
+        <?php echo genPickListForm($edahId2Name, "edah", "edot", $editSort = true); ?>
         </div>
 
         <div class="accordion-item">
-        <?php echo genPickListForm($sessionId2Name, "session", "sessions"); ?>
+        <?php echo genPickListForm($sessionId2Name, "session", "sessions", $editSort = true); ?>
         </div>
 
         <div class="accordion-item">
-        <?php echo genPickListForm($blockId2Name, "block", "blocks"); ?>
+        <?php echo genPickListForm($blockId2Name, "block", "blocks", $editSort = true); ?>
         </div>
 
         <div class="accordion-item">
-        <?php echo genPickListForm($groupId2Name, "group", "chug_groups"); ?>
+        <?php echo genPickListForm($groupId2Name, "group", "chug_groups", $editSort = true); ?>
         </div>
 
         <div class="accordion-item">

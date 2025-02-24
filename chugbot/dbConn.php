@@ -298,7 +298,7 @@ function fillId2Name($archiveYear,
         $db->addSelectColumn($secondIdColumn);
     }
     $db->addSelectColumn("name");
-    if ($table == "edot") {
+    if ($table == "edot" || $table == "sessions" || $table == "blocks" || $table == "chug_groups") {
         $db->addSelectColumn("sort_order");
         $db->addOrderByClause(" ORDER BY sort_order");
     }
