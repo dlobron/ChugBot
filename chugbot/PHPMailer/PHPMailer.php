@@ -1281,7 +1281,9 @@ class PHPMailer
     public function setFrom($address, $name = '', $auto = true)
     {
         $address = trim($address);
-        $name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
+        if(!empty($name)) {
+            $name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
+        }
         //Don't validate now addresses with IDN. Will be done in send().
         $pos = strrpos($address, '@');
         if (

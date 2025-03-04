@@ -1,0 +1,7 @@
+# Disallow all general bots:
+User-agent: *
+Disallow: /
+
+# Disallow Google adsbot (needs to be named separately)
+User-agent: AdsBot-Google
+Disallow: /
