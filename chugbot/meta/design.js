@@ -35,7 +35,7 @@ function setAdvanced(...params) {
         }
         sql += "?";
     }
-    sql += ") AND e.group_id = g.group_id GROUP BY e.group_id HAVING COUNT(e.edah_id) = " + ct;
+    sql += ") AND e.group_id = g.group_id GROUP BY e.group_id HAVING COUNT(e.edah_id) = " + ct + " ORDER BY g.sort_order";
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
     var groupNames = [];
@@ -45,9 +45,9 @@ function setAdvanced(...params) {
         type: 'post',
         data: values,
         success: function(data) {
-            $.each(data, function(itemId, itemName) {
-                groupNames.push(itemName);
-                groupIds.push(itemId)
+            $.each(data, function(_, item) {
+                groupNames.push(item.name);
+                groupIds.push(item.id);
             });
         },
         error: function(xhr, desc, err) {
@@ -64,7 +64,7 @@ function setAdvanced(...params) {
         }
         sql += "?";
     }
-    sql += ") AND e.block_id = g.block_id GROUP BY e.block_id HAVING COUNT(e.edah_id) = " + ct;
+    sql += ") AND e.block_id = g.block_id GROUP BY e.block_id HAVING COUNT(e.edah_id) = " + ct + " ORDER BY g.sort_order";
     values["sql"] = sql;
     values["instance_ids"] = curSelectedEdahIds;
     const blockNames = [];
@@ -74,9 +74,9 @@ function setAdvanced(...params) {
         type: 'post',
         data: values,
         success: function(data) {
-            $.each(data, function(itemId, itemName) {
-                blockNames.push(itemName);
-                blockIds.push(itemId)
+            $.each(data, function(_, item) {
+                blockNames.push(item.name);
+                blockIds.push(item.id)
             });
         },
         error: function(xhr, desc, err) {

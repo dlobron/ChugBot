@@ -1035,7 +1035,7 @@ if ($doReport) {
         // use in our main SELECT.
         $localErr = "";
         $dbc = new DbConn();
-        $sql = "SELECT DISTINCT g.name groupname " .
+        $sql = "SELECT DISTINCT g.name groupname, g.sort_order " .
             "FROM chug_groups g, matches m, chug_instances i, chugim c, campers ca " .
             "WHERE i.chug_instance_id = m.chug_instance_id " .
             "AND i.chug_id = c.chug_id " .
@@ -1045,7 +1045,7 @@ if ($doReport) {
             "i.block_id", true);
         addWhereClause($sql, $dbc, $activeEdahIds,
             "ca.edah_id", true);
-        $sql .= "ORDER BY groupname";
+        $sql .= "ORDER BY sort_order";
         $result = $dbc->doQuery($sql, $localErr);
         if ($result == false) {
             echo dbErrorString($sql, $localErr);
@@ -1097,7 +1097,7 @@ if ($doReport) {
                 "AND c.bunk_id = bu.bunk_id ";
             addWhereClause($sql, $db, $activeEdahIds,
                 "c.edah_id", true);
-            $sql .= " GROUP BY camper_id, block_id ORDER BY edah_sort_order, edah, block, name";
+            $sql .= " GROUP BY camper_id, block_id ORDER BY edah_sort_order, edah, b.sort_order, name";
         }
         $edahReport = new ZebraReport($db, $sql, $outputType);
         $edahReport->setReportTypeAndNameOfItem("Edah", $edahText);
@@ -1141,7 +1141,7 @@ if ($doReport) {
             }
             $db->addColVal($bunkId, 'i');
         }
-        $sql .= "ORDER BY bunk, name, edah_sort_order, edah, group_name";
+        $sql .= "ORDER BY bunk+0>0 DESC, bunk+0, LENGTH(bunk), bunk, name, edah_sort_order, edah, g.sort_order";
 
         // Create and display the report.
         $bunkReport = new ZebraReport($db, $sql, $outputType);
@@ -1174,7 +1174,7 @@ if ($doReport) {
         $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
         addWhereClause($sql, $db, $activeChugIds, "ch.chug_id",
             $haveWhere);
-        $sql .= " ORDER BY chug_name, edah_sort_order, edah, block, camper, bunk";
+        $sql .= " ORDER BY chug_name, edah_sort_order, edah, bl.sort_order, camper, bunk+0>0 DESC, bunk+0, LENGTH(bunk), bunk";
 
         $chugReport = new ZebraReport($db, $sql, $outputType);
         $chugReport->addNewTableColumn("chug_name");
@@ -1209,7 +1209,7 @@ if ($doReport) {
         $haveWhere = addWhereClause($sql, $db, $activeBlockIds);
         addWhereClause($sql, $db, $activeChugIds, "ch.chug_id",
             $haveWhere);
-        $sql .= " ORDER BY department_name, rosh, chug_name, edah_sort_order, edah, block, camper, bunk";
+        $sql .= " ORDER BY department_name, rosh, chug_name, edah_sort_order, edah, bl.sort_order, camper, bunk+0>0 DESC, bunk+0, LENGTH(bunk), bunk";
 
         $chugReport = new ZebraReport($db, $sql, $outputType);
         $chugReport->addNewTableColumn("chug_name");
@@ -1252,7 +1252,7 @@ if ($doReport) {
             "c.edah_id", $haveWhere);
         $haveWhere = addWhereClause($sql, $db, $activeGroupIds,
             "g.group_id", $haveWhere);
-        $sql .= "ORDER BY edah_sort_order, edah, block, name, group_name";
+        $sql .= "ORDER BY edah_sort_order, edah, bl.sort_order, name, g.sort_order";
         $camperReport = new ZebraReport($db, $sql, $outputType);
         $camperReport->setIdNameMap($chugId2Name, " -");
         $camperReport->addIdNameMapCol("first_choice");
@@ -1286,7 +1286,7 @@ if ($doReport) {
             "JOIN chug_groups AS g ON g.group_id = ch.group_id " .
             "LEFT OUTER JOIN bunks AS b ON b.bunk_id = c.bunk_id ";
         addWhereClause($sql, $db, $activeBlockIds);
-        $sql .= " ORDER BY edah_sort_order, edah, last_name, first_name, block, group_name";
+        $sql .= " ORDER BY edah_sort_order, edah, last_name, first_name, bl.sort_order, g.sort_order";
 
         // Create and display the report.
         $directorReport = new ZebraReport($db, $sql, $outputType);
@@ -1306,7 +1306,7 @@ if ($doReport) {
 
         // First, build a sub-query that computes the assigned count
         // for each chug.
-        $inner = "SELECT c.chug_id chug_id, b.name block_name, count(*) match_count FROM matches m, chugim c, chug_instances i, blocks b, campers ca " .
+        $inner = "SELECT c.chug_id chug_id, b.name block_name, b.sort_order block_sort_order, count(*) match_count FROM matches m, chugim c, chug_instances i, blocks b, campers ca " .
             "WHERE m.chug_instance_id = i.chug_instance_id AND i.chug_id = c.chug_id AND i.block_id = b.block_id AND ca.camper_id = m.camper_id ";
         addWhereClause($inner, $db, $activeGroupIds,
             "c.group_id", true);
@@ -1325,6 +1325,7 @@ if ($doReport) {
         $fullSql .= ") a " .
             "WHERE c.chug_id = a.chug_id AND c.group_id = g.group_id AND " .
             "(a.match_count < c.max_size OR c.max_size = 0 OR c.max_size = " . MAX_SIZE_NUM . ")";
+        $fullSql .= " ORDER BY a.block_sort_order, g.sort_order, chug_name";
         $chugimWithSpaceReport = new ZebraReport($db, $fullSql, $outputType);
         $chugimWithSpaceReport->addNewTableColumn("edah");
         $caption = ucfirst(chug_term_plural) . " With Free Space";
@@ -1341,7 +1342,7 @@ if ($doReport) {
         // use in our main SELECT.
         $localErr = "";
         $dbc = new DbConn();
-        $sql = "SELECT DISTINCT g.name groupname " .
+        $sql = "SELECT DISTINCT g.name groupname, g.sort_order " .
             "FROM chug_groups g, matches m, chug_instances i, chugim c, campers ca " .
             "WHERE i.chug_instance_id = m.chug_instance_id " .
             "AND i.chug_id = c.chug_id " .
@@ -1355,7 +1356,7 @@ if ($doReport) {
             $sql .= "AND ca.session_id = ? ";
             $dbc->addColVal($sessionId, 'i');
         }
-        $sql .= "ORDER BY groupname";
+        $sql .= " ORDER BY sort_order";
         $result = $dbc->doQuery($sql, $localErr);
         if ($result == false) {
             echo dbErrorString($sql, $localErr);
@@ -1389,7 +1390,7 @@ if ($doReport) {
             }
             $sql .= "FROM campers c, " .
                 "(SELECT " .
-                "m.camper_id camper_id, c.name chug_name, g.name group_name, b.name block_name, b.block_id, " .
+                "m.camper_id camper_id, c.name chug_name, g.name group_name, b.name block_name, b.block_id, b.sort_order block_sort_order, " .
                 "CASE WHEN i.chug_id = p.first_choice_id THEN 1 " .
                 "WHEN i.chug_id = p.second_choice_id THEN 2 " .
                 "WHEN i.chug_id = p.third_choice_id THEN 3 " .
@@ -1415,7 +1416,7 @@ if ($doReport) {
             }
             addWhereClause($sql, $db, $activeEdahIds,
                 "c.edah_id", true);
-            $sql .= " GROUP BY camper_id, " . block_term_singular . " ORDER BY name, " . block_term_singular;
+            $sql .= " GROUP BY camper_id, " . block_term_singular . " ORDER BY name, p.block_sort_order";
         }
         $camperHappinessReport = new ZebraReport($db, $sql, $outputType);
         $camperHappinessReport->addNewTableColumn("edah");
@@ -1433,8 +1434,8 @@ if ($doReport) {
         $camperHappinessReport->addIgnoreColumn("block_id");
         $camperHappinessReport->renderTable($generateCheckboxes=false);
     } else if ($reportMethod == ReportTypes::RegisteredMissingPrefs) {
-        $sql = "SELECT DISTINCT a.name name, a.email email, a.edah edah, a.session session FROM " .
-            "(SELECT CONCAT(c.last, ', ', c.first) AS name, c.email email, e.name edah, s.name session, p.preference_id pref_id " .
+        $sql = "SELECT a.name name, a.email email, a.edah edah, a.session session FROM " .
+            "(SELECT CONCAT(c.last, ', ', c.first) AS name, c.email email, e.name edah, e.sort_order edah_sort_order, s.name session, s.sort_order session_sort_order, p.preference_id pref_id " .
             "FROM edot e, sessions s, campers c LEFT OUTER JOIN " .
             "(SELECT * FROM preferences ";
         // Optionally filter prefs by block.
@@ -1452,7 +1453,7 @@ if ($doReport) {
             $sql .= " WHERE ";
         }
         $sql .= "c.edah_id = e.edah_id AND c.session_id = s.session_id) a ";
-        $sql .= "WHERE a.pref_id IS NULL ORDER BY edah, session, name";
+        $sql .= "WHERE a.pref_id IS NULL ORDER BY a.edah_sort_order, a.session_sort_order, name";
 
         $campersMissingPrefsReport = new ZebraReport($db, $sql, $outputType);
         $caption = "Campers Missing Preferences for ";
@@ -1468,7 +1469,7 @@ if ($doReport) {
 
         // First, build an inner sql query creating a table with every camper and the desired chug groups/time blocks:
         $inner = "SELECT CONCAT(c.last, ', ', c.first) AS name, c.camper_id AS c_id, c.edah_id, e.name AS edah, e.sort_order edah_sort_order, " .
-            "IFNULL(b.name,\"-\") bunk, bl.name AS block, bl.block_id as bl_id, c.camper_id, c.bunk_id, cg.name AS chug_group, cg.group_id " .
+            "IFNULL(b.name,\"-\") bunk, bl.name AS block, bl.block_id as bl_id, bl.sort_order as block_sort_order, c.camper_id, c.bunk_id, cg.name AS chug_group, cg.group_id, cg.sort_order as group_sort_order " .
             "FROM campers AS c " .
             "JOIN edot AS e on c.edah_id = e.edah_id " .
             "JOIN edot_for_block AS eb ON c.edah_id = eb.edah_id " .
@@ -1490,7 +1491,7 @@ if ($doReport) {
             "WHERE m.chug_instance_id=i.chug_instance_id AND ch.chug_id=i.chug_id) AS ma " .
             "ON ma.camper_id=ca.camper_id AND ma.block_id=ca.bl_id AND ma.g_id=ca.group_id " .
             "WHERE ma.chug_instance_id IS NULL " .
-            "ORDER BY edah_sort_order, edah, name, block, chug_group";
+            "ORDER BY edah_sort_order, edah, name, block_sort_order, group_sort_order";
 
         $notAssignedReport = new ZebraReport($db, $fullSql, $outputType);
         $caption = "Campers Missing " . ucfirst(chug_term_singular) . " Assignment(s)";
@@ -1506,6 +1507,8 @@ if ($doReport) {
         $notAssignedReport->addIgnoreColumn("bunk_id");
         $notAssignedReport->addIgnoreColumn("edah_id");
         $notAssignedReport->addIgnoreColumn("edah_sort_order");
+        $notAssignedReport->addIgnoreColumn("block_sort_order");
+        $notAssignedReport->addIgnoreColumn("group_sort_order");
         $notAssignedReport->addIgnoreColumn("group_id");
         $notAssignedReport->addIgnoreColumn("camper_id");
         $notAssignedReport->addIgnoreColumn("chug_instance_id");

@@ -447,13 +447,13 @@ function fillConstraints() {
            ourDropDown.empty();
            var html = "";
            var hadSel = 0;
-           $.each(data, function(itemId, itemName) {
-                  var optionText = "<option value=\"" + itemId + "\"";
-                  if (itemId == selected) {
+           $.each(data, function(_, item) {
+                  var optionText = "<option value=\"" + item.id + "\"";
+                  if (item.id == selected) {
                       optionText += " selected";
                       hadSel = 1;
                   }
-                  optionText += " >" + itemName + "</option>";
+                  optionText += " >" + item.name + "</option>";
                   html += optionText;
            });
            // Prepend a -- option for default choice.  Make this the selected

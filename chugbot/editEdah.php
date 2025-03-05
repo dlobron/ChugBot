@@ -46,11 +46,4 @@ $commentsField->setInputValue($editEdahPage->columnValue("comments"));
 $commentsField->setGuideText("Comments about this " . ucfirst(edah_term_singular) . " (optional)");
 $editEdahPage->addFormItem($commentsField);
 
-$sortOrderField = new FormItemSingleTextField("Sort Order", false, "sort_order", 4);
-$sortOrderField->setInputType("number");
-$sortOrderField->setInputMaxLength(3);
-$sortOrderField->setInputValue($editEdahPage->columnValue("sort_order"));
-$sortOrderField->setGuideText("Indicate where this " . (edah_term_singular) . " should appear when all " . edah_term_plural . " are sorted, with lower appearing earlier.  For example, if this is the youngest and that group should be listed first, enter 1.  If this group should appear third, enter 3.  If no choices are made for this box, edot will be listed alphabetically.");
-$editEdahPage->addFormItem($sortOrderField);
-
 $editEdahPage->renderForm();

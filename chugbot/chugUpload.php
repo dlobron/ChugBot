@@ -29,7 +29,7 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 }
 
 $dbConn->isSelect = true;
-$sql = "SELECT * FROM blocks";
+$sql = "SELECT * FROM blocks ORDER BY sort_order";
 $result = $dbConn->doQuery($sql, $dbErr);
 if ($result == false) {
     error_log($dbErr);
@@ -40,7 +40,7 @@ while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 }
 
 $dbConn->isSelect = true;
-$sql = "SELECT * FROM chug_groups";
+$sql = "SELECT * FROM chug_groups ORDER BY sort_order";
 $result = $dbConn->doQuery($sql, $dbErr);
 if ($result == false) {
     error_log($dbErr);

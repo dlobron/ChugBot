@@ -15,7 +15,6 @@ bouncePastIfLoggedIn("attendance/chugLeaderHome.php", "chugLeader");
 // a new one, and to enter an email address.  Password changes will be
 // handled by a separate page - it's too complicated to squeeze all the logic
 // into this page.
-$forgotUrl = urlIfy("forgotPassword.php");
 $dbError = $staffPasswordErr = $staffPasswordErr2 = "";
 $existingAdminPasswordHashed = $existingChugLeaderPasswordHashed = $existingRoshPasswordHashed = "";
 $staffPasswordHashed = "";
@@ -34,6 +33,40 @@ if ($result == false) {
 }
 
 $staffEmailErr = $staffPasswordErr = $staffPasswordErr2 = "";
+
+// Include a CAPTCHA to ensure a person is the only being trying to reset a password
+// Simple CAPTCHA - user must sum 2 digits before progressing to forgotPassword.php, which checks to see
+// if the POST value sent matches the SESSION value stored.
+$forgotUrl = urlIfy("forgotPassword.php");
+$num1 = rand(1, 10);
+$num2 = rand(1, 10);
+$_SESSION['password_captcha_answer'] = $num1 + $num2;
+$forgotPasswordButton = <<<EOM
+<p class="mt-4"><b>ADMIN:</b> <a href data-bs-toggle="modal" data-bs-target="#resetPasswordCAPTCHAModal">Forgot your password?</a></p>
+EOM;
+$forgotPasswordModal = <<<EOM
+<div class="modal fade" id="resetPasswordCAPTCHAModal" tabindex="-1" aria-labelledby="resetPasswordCAPTCHAModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="resetPasswordCAPTCHAModalLabel">Wait!</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+    <form id="reset-pwd" action="$forgotUrl" method="POST">
+      <div class="modal-body">
+            <p>Proceeding will email a password reset link to the admin email.</p>
+            <label for="sum" class="form-label"><span style="color: red;">*</span> To make sure you're human, what is $num1 + $num2 (required)?</label>
+            <input type="number" class="form-control form-control-sm" id="sum" placeholder="0" name="captcha" style="width: 40%;" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Reset Admin Password</button>
+      </div>
+    </form>
+    </div>
+  </div>
+</div>
+EOM;
 
 // Note the redirect text and destination.  The default is the staff home page,
 // but if there is a "from" query string, we redirect back to that page.
@@ -103,7 +136,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if($role == "admin") {
                 if (!password_verify($staff_password, $existingAdminPasswordHashed)) {
                     $staffPasswordErr = errorString("Password does not match - please try again.") .
-                        "<p>If you forgot the password, please click <a href=\"$forgotUrl\">here</a>.</p>";
+                        "<p>If you forgot the password, please click <a href data-bs-toggle=\"modal\" data-bs-target=\"#resetPasswordCAPTCHAModal\">here</a>.</p>";
+                    echo $forgotPasswordModal;
                     usleep(250000); // Sleep for 0.25 sec, to slow a dictionary attack.
                 } else {
                     // New password entered OK: redirect.
@@ -118,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             else if ($role == "chugleader") {
                 if (!password_verify($staff_password, $existingChugLeaderPasswordHashed)) {
                     $staffPasswordErr = errorString("Password does not match - please try again.") .
-                        "<p>If you forgot the password, please click <a href=\"$forgotUrl\">here</a>.</p>";
+                        "<p>If you forgot the password, please contact an administrator.</p>";
                     usleep(250000); // Sleep for 0.25 sec, to slow a dictionary attack.
                 } else {
                     // New password entered OK: redirect.
@@ -134,7 +168,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             else if ($role == "rosh") {
                 if (!password_verify($staff_password, $existingRoshPasswordHashed)) {
                     $staffPasswordErr = errorString("Password does not match - please try again.") .
-                        "<p>If you forgot the password, please click <a href=\"$forgotUrl\">here</a>.</p>";
+                        "<p>If you forgot the password, please contact an administrator.</p>";
                     usleep(250000); // Sleep for 0.25 sec, to slow a dictionary attack.
                 } else {
                     // New password entered OK: redirect.
@@ -245,7 +279,7 @@ if (empty($existingAdminPasswordHashed)) {
 </li>
     <?php
     if(!empty($existingAdminPasswordHashed)) {
-        echo ("<li><p><strong>ADMIN ONLY:</strong> if you forgot the password, please click <a href=\"$forgotUrl\">here</a> to reset it.</p></li>");
+        echo $forgotPasswordButton;
     }?>
 </ul>
 <?php
@@ -257,6 +291,11 @@ $qs = htmlspecialchars($_SERVER['QUERY_STRING']);
 </form>
 </div>
 
+<?php
+    // include forgot password popup if password exists
+    if(!empty($existingAdminPasswordHashed)) {
+        echo $forgotPasswordModal;
+    }?>
 <?php
 echo footerText();
 ?>

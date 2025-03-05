@@ -71,7 +71,7 @@ if ($uuid) {
     if ($matchedUuid == false) {
         fatalError("The reset code you supplied does not match any valid reset code.  Please try the reset link again.");
     }
-} else if ($_SERVER["REQUEST_METHOD"] == "POST") {
+} else if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST["captcha"])) {
     if (!$_SESSION['reset_password_ok']) {
         fatalError("You must present a valid reset code before attempting a password reset");
     }
@@ -101,6 +101,11 @@ if ($uuid) {
     header("Location: $redirUrl");
     exit();
 } else {
+    // Begin by checking the CAPTCHA to ensure the page was properly reached by a person
+    if (!isset($_POST['captcha'])  || $_POST['captcha'] != $_SESSION['password_captcha_answer']) {
+        fatalError("Invalid CAPTCHA.");
+    }
+
     // If there's no POST data or UUID string, we need to generate a new code and
     // send an email.
     // Generate and send the email.  Display a message indicating the email status.

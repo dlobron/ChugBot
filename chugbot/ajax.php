@@ -54,8 +54,10 @@ if (isset($_POST["get_legal_id_to_name"])) {
     // Return a list of legal IDs.  We assume that the query maps
     // legal IDs to their corresponding names.
     $retVal = array();
+    $i = 0;
     while ($row = $result->fetch_row()) {
-        $retVal[$row[0]] = $row[1];
+        $retVal += [$i => ["name" => $row[1], "id" => $row[0]]];
+        $i++;
     }
     if (empty($retVal)) {
         echo json_encode("no-intersection");
@@ -467,8 +469,8 @@ if (isset($_POST["get_chug_info"])) {
     }
     // Order July ahead of August, for UI clarity.
     $sql .= "ORDER BY CASE WHEN (blockname LIKE '%July%' OR blockname LIKE '%july%') THEN CONCAT('a', blockname) " .
-        "WHEN (blockname LIKE '%Aug%' OR blockname LIKE '%aug%') THEN CONCAT('b', blockname) ELSE blockname END, " .
-        "groupname, chugname";
+        "WHEN (blockname LIKE '%Aug%' OR blockname LIKE '%aug%') THEN CONCAT('b', blockname) ELSE b.sort_order END, " .
+        "g.sort_order, chugname";
     $err = "";
     $result = $db->doQuery($sql, $err);
     if ($result == false) {
